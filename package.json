@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack --config support/webpack/webpack.config.js",
+    "standard": "standard",
     "test": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "repository": {
@@ -46,5 +47,11 @@
       "ecmaVersion": 2017,
       "sourceType": "module"
     }
+  },
+  "standard": {
+    "ignore": [
+      "**/dist",
+      "**/support"
+    ]
   }
 }

@@ -1,4 +1,3 @@
-import State from '../state'
 import Experience from './experience'
 
 export default class Monitor {

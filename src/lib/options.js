@@ -20,14 +20,13 @@ export default class Options {
    */
   async loadStoredData () {
     try {
-      let values = await browser.storage.sync.get()
+      let values = await window.browser.storage.sync.get()
       for (let key in values) {
         if (this._values.hasOwnProperty(key)) {
           this._values[key].currentValue = values[key]
         }
       }
-    }
-    catch (errorMessage) {
+    } catch (errorMessage) {
       console.error(`Cannot retrieve options for Alpheios extension from a local storage: ${errorMessage}`)
     }
   }
@@ -56,7 +55,7 @@ export default class Options {
     let optionObj = {}
     optionObj[option] = value
 
-    browser.storage.sync.set(optionObj).then(
+    window.browser.storage.sync.set(optionObj).then(
       () => {
         // Options storage succeeded
         console.log('Option value was stored successfully.')

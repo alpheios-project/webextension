@@ -82,8 +82,7 @@ export default class Panel {
   toggle () {
     if (this.isOpen || this.isOpenFW) {
       this.close()
-    }
-    else {
+    } else {
       this.open()
     }
     return this
@@ -121,6 +120,7 @@ export default class Panel {
   }
 
   set optionsPage (htmlContent) {
-    return this.optionsContainer.innerHTML = htmlContent
+    this.optionsContainer.innerHTML = htmlContent
+    return this.optionsContainer.innerHTML
   }
 }

@@ -74,7 +74,7 @@ export default class Service {
 
   sendRequestToTab (request, timeout, tabID) {
     let promise = this.registerRequest(request, timeout)
-    browser.tabs.sendMessage(tabID, request).catch(
+    window.browser.tabs.sendMessage(tabID, request).catch(
       (error) => {
         console.error(`tabs.sendMessage() failed: ${error}`)
         this.rejectRequest(request.ID, error)
@@ -85,7 +85,7 @@ export default class Service {
 
   sendRequestToBg (request, timeout) {
     let promise = this.registerRequest(request, timeout)
-    browser.runtime.sendMessage(request).catch(
+    window.browser.runtime.sendMessage(request).catch(
       (error) => {
         console.error(`runtime.sendMessage() failed: ${error}`)
         this.rejectRequest(request.ID, error)
@@ -95,11 +95,11 @@ export default class Service {
   }
 
   sendResponseToTab (message, tabID) {
-    return browser.tabs.sendMessage(tabID, message)
+    return window.browser.tabs.sendMessage(tabID, message)
   }
 
   sendResponseToBg (message) {
-    return browser.runtime.sendMessage(message)
+    return window.browser.runtime.sendMessage(message)
   }
 
   fulfillRequest (responseMessage) {

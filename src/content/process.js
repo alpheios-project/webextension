@@ -77,7 +77,7 @@ class Process {
     this.messagingService.addHandler(Message.types.STATUS_REQUEST, this.handleStatusRequest, this)
     this.messagingService.addHandler(Message.types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
     this.messagingService.addHandler(Message.types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
-    browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
+    window.browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))

@@ -71,12 +71,12 @@ class BackgroundProcess {
     this.langData = new InflectionTables.LanguageData([InflectionTables.LatinDataSet, InflectionTables.GreekDataSet]).loadData()
 
     this.messagingService.addHandler(Message.types.WORD_DATA_REQUEST, this.handleWordDataRequestStatefully, this)
-    browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
+    window.browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     BackgroundProcess.createMenuItem()
 
-    browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
-    browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
+    window.browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
+    window.browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
   }
 
   isContentLoaded (tabID) {
@@ -123,7 +123,7 @@ class BackgroundProcess {
   loadPolyfill (tabID) {
     if (!this.settings.browserSupport) {
       console.log('Loading WebExtension polyfill into a content tab')
-      return browser.tabs.executeScript(
+      return window.browser.tabs.executeScript(
                 tabID,
         {
           file: this.settings.browserPolyfillName
@@ -136,14 +136,14 @@ class BackgroundProcess {
 
   loadContentScript (tabID) {
     console.log('Loading content script into a content tab')
-    return browser.tabs.executeScript(tabID, {
+    return window.browser.tabs.executeScript(tabID, {
       file: this.settings.contentScriptFileName
     })
   };
 
   loadContentCSS (tabID) {
     console.log('Loading CSS into a content tab')
-    return browser.tabs.insertCSS(tabID, {
+    return window.browser.tabs.insertCSS(tabID, {
       file: this.settings.contentCSSFileName
     })
   };
@@ -199,7 +199,7 @@ class BackgroundProcess {
   }
 
   static async getActiveTabID () {
-    let tabs = await browser.tabs.query({ active: true })
+    let tabs = await window.browser.tabs.query({ active: true })
     return tabs[0].id
   }
 
@@ -216,11 +216,11 @@ class BackgroundProcess {
   }
 
   static createMenuItem () {
-    browser.contextMenus.create({
+    window.browser.contextMenus.create({
       id: BackgroundProcess.defaults.activateMenuItemId,
       title: BackgroundProcess.defaults.activateMenuItemText
     })
-    browser.contextMenus.create({
+    window.browser.contextMenus.create({
       id: BackgroundProcess.defaults.deactivateMenuItemId,
       title: BackgroundProcess.defaults.deactivateMenuItemText
     })

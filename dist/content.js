@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -68,7 +68,7 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v1__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v1__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v1___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v1__);
 
 
@@ -7906,40 +7906,8 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* defa
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-class State {
-  static value (state, value = undefined) {
-    return {
-      value: value,
-      state: state
-    }
-  }
-
-  static emptyValue (state) {
-    return {
-      value: undefined,
-      state: state
-    }
-  }
-
-  static getValue (stateObject) {
-    return stateObject.value
-  }
-
-  static getState (stateObject) {
-    return stateObject.state
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = State;
-
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__process__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__process__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_experience_monitor__ = __webpack_require__(21);
 
 
@@ -7965,19 +7933,19 @@ monitoredContentProcess.loadData().then(function () {
 });
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Process; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__panel__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_options__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_state__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__panel__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_options__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_state__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf__ = __webpack_require__(18);
@@ -8059,7 +8027,7 @@ var Process = function () {
       this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.STATUS_REQUEST, this.handleStatusRequest, this);
       this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this);
       this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this);
-      browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService));
+      window.browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService));
 
       this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this));
       document.body.addEventListener('dblclick', this.getSelectedText.bind(this));
@@ -8271,11 +8239,11 @@ var Process = function () {
 
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(7);
-var bytesToUuid = __webpack_require__(9);
+var rng = __webpack_require__(6);
+var bytesToUuid = __webpack_require__(8);
 
 // **`v1()` - Generate time-based UUID**
 //
@@ -8377,7 +8345,7 @@ module.exports = v1;
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -8414,10 +8382,10 @@ if (!rng) {
 
 module.exports = rng;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7)))
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports) {
 
 var g;
@@ -8444,7 +8412,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports) {
 
 /**
@@ -8473,12 +8441,12 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(10);
 
 
 
@@ -8555,7 +8523,7 @@ class Service {
 
   sendRequestToTab (request, timeout, tabID) {
     let promise = this.registerRequest(request, timeout)
-    browser.tabs.sendMessage(tabID, request).catch(
+    window.browser.tabs.sendMessage(tabID, request).catch(
       (error) => {
         console.error(`tabs.sendMessage() failed: ${error}`)
         this.rejectRequest(request.ID, error)
@@ -8566,7 +8534,7 @@ class Service {
 
   sendRequestToBg (request, timeout) {
     let promise = this.registerRequest(request, timeout)
-    browser.runtime.sendMessage(request).catch(
+    window.browser.runtime.sendMessage(request).catch(
       (error) => {
         console.error(`runtime.sendMessage() failed: ${error}`)
         this.rejectRequest(request.ID, error)
@@ -8576,11 +8544,11 @@ class Service {
   }
 
   sendResponseToTab (message, tabID) {
-    return browser.tabs.sendMessage(tabID, message)
+    return window.browser.tabs.sendMessage(tabID, message)
   }
 
   sendResponseToBg (message) {
-    return browser.runtime.sendMessage(message)
+    return window.browser.runtime.sendMessage(message)
   }
 
   fulfillRequest (responseMessage) {
@@ -8608,7 +8576,7 @@ class Service {
 
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8630,13 +8598,13 @@ class StoredRequest {
 
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__request_message__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__request_message__ = __webpack_require__(12);
 
 
 
@@ -8652,7 +8620,7 @@ class WordDataRequest extends __WEBPACK_IMPORTED_MODULE_2__request_message__["a"
 
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8670,7 +8638,7 @@ class RequestMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* defau
 
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8695,7 +8663,7 @@ class StatusResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a"
 
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8857,7 +8825,8 @@ var Panel = function () {
       return this.optionsContainer;
     },
     set: function set(htmlContent) {
-      return this.optionsContainer.innerHTML = htmlContent;
+      this.optionsContainer.innerHTML = htmlContent;
+      return this.optionsContainer.innerHTML;
     }
   }]);
 
@@ -8867,7 +8836,7 @@ var Panel = function () {
 /* harmony default export */ __webpack_exports__["a"] = (Panel);
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -8893,14 +8862,13 @@ class Options {
    */
   async loadStoredData () {
     try {
-      let values = await browser.storage.sync.get()
+      let values = await window.browser.storage.sync.get()
       for (let key in values) {
         if (this._values.hasOwnProperty(key)) {
           this._values[key].currentValue = values[key]
         }
       }
-    }
-    catch (errorMessage) {
+    } catch (errorMessage) {
       console.error(`Cannot retrieve options for Alpheios extension from a local storage: ${errorMessage}`)
     }
   }
@@ -8929,7 +8897,7 @@ class Options {
     let optionObj = {}
     optionObj[option] = value
 
-    browser.storage.sync.set(optionObj).then(
+    window.browser.storage.sync.set(optionObj).then(
       () => {
         // Options storage succeeded
         console.log('Option value was stored successfully.')
@@ -8941,6 +8909,39 @@ class Options {
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Options;
+
+
+
+/***/ }),
+/* 16 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class State {
+  static value (state, value = undefined) {
+    return {
+      value: value,
+      state: state
+    }
+  }
+
+  static emptyValue (state) {
+    return {
+      value: undefined,
+      state: state
+    }
+  }
+
+  static getValue (stateObject) {
+    return stateObject.value
+  }
+
+  static getState (stateObject) {
+    return stateObject.state
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = State;
+
 
 
 /***/ }),
@@ -8972,9 +8973,7 @@ module.exports = "<h4>Options</h4>\r\n<div id=\"alpheios-locale-switcher\" class
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__state__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__experience__ = __webpack_require__(22);
-
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__experience__ = __webpack_require__(22);
 
 
 class Monitor {
@@ -9016,13 +9015,51 @@ class Monitor {
     }
   }
 
+  /**
+   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
+   * as a direct result of a user action: use of UI controls, etc.
+   * @param target
+   * @param property
+   * @param monitoringData
+   * @return {Function}
+   */
+  static asyncNewExperienceWrapper (target, property, monitoringData) {
+    console.log(`${property}() async method has been requested`)
+    const origMethod = target[property]
+    return async function (...args) {
+      try {
+        let experience = new __WEBPACK_IMPORTED_MODULE_0__experience__["a" /* default */](monitoringData.experience)
+        console.log(`${property}() async method has been called`)
+        // Last item in arguments list is a transaction
+        args.push(experience)
+        let resultObject = await origMethod.apply(this, args)
+        // resultObject.value is a returned message, experience object is in a `experience` property
+        experience = __WEBPACK_IMPORTED_MODULE_0__experience__["a" /* default */].readObject(resultObject.value.experience)
+        experience.complete()
+        console.log(`${property}() completed with success, experience is:`, experience)
+        return resultObject
+      } catch (error) {
+        console.error(`${property}() completed with an error: ${error}`)
+        return error
+      }
+    }
+  }
+
+  /**
+   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
+   * functions that create user experience.
+   * @param target
+   * @param property
+   * @param monitoringData
+   * @return {Function}
+   */
   static asyncWrapper (target, property, monitoringData) {
     console.log(`${property}() async method has been requested`)
     const originalMethod = target[property]
     return async function (...args) {
       try {
+        let experience = new __WEBPACK_IMPORTED_MODULE_0__experience__["a" /* default */](monitoringData.experience)
         console.log(`${property}() async method has been called`)
-        let experience = new __WEBPACK_IMPORTED_MODULE_1__experience__["a" /* default */](monitoringData.experience)
         let resultObject = await originalMethod.apply(this, args)
         experience.complete()
         resultObject.state.attach(experience)
@@ -9035,60 +9072,22 @@ class Monitor {
     }
   }
 
-  static asyncNewExperienceWrapper (target, property, monitoringData) {
-    console.log(`${property}() async method has been requested`)
-    const origMethod = target[property]
-    return async function (...args) {
-      try {
-        console.log(`${property}() async method has been called`)
-        let experience = new __WEBPACK_IMPORTED_MODULE_1__experience__["a" /* default */](monitoringData.experience)
-        // Last item in arguments list is a transaction
-        args.push(experience)
-        let resultObject = await origMethod.apply(this, args)
-        // resultObject.value is a returned message, experience object is in a `experience` property
-        experience = __WEBPACK_IMPORTED_MODULE_1__experience__["a" /* default */].readObject(resultObject.value.experience)
-        experience.complete()
-        console.log(`${property}() completed with success, experience is:`, experience)
-        return resultObject
-      } catch (error) {
-        console.error(`${property}() completed with an error: ${error}`)
-        return error
-      }
-    }
-  }
-
-  static asyncRequestWrapper (target, property, monitoringData) {
-    console.log(`${property}() async method has been requested`)
-    let experience = new __WEBPACK_IMPORTED_MODULE_1__experience__["a" /* default */](monitoringData.experience)
-    const origMethod = target[property]
-    return function (...args) {
-      console.log(`${property}() async method has been called`)
-      // First argument is always a request object, last argument is a transaction object
-      args[0].experience = args[args.length - 1]
-      let result = origMethod.apply(this, args)
-      return result.then(
-        (result) => {
-          console.log(`${property}() completed with success`)
-          experience.complete()
-          console.log(`${experience}`)
-          return Promise.resolve(result)
-        },
-        (error) => {
-          console.error(`${property}() completed with an error: ${error}`)
-          return Promise.reject(error)
-        })
-    }
-  }
-
+  /**
+   * This is a wrapper around functions that handle incoming messages with an experience object attached.
+   * @param target
+   * @param property
+   * @param monitoringData
+   * @return {Function}
+   */
   static asyncIncomingMessageWrapper (target, property, monitoringData) {
     console.log(`${property}() async method has been requested`)
-    let experience = new __WEBPACK_IMPORTED_MODULE_1__experience__["a" /* default */](monitoringData.experience)
     const origMethod = target[property]
     return async function (...args) {
       try {
+        let experience = new __WEBPACK_IMPORTED_MODULE_0__experience__["a" /* default */](monitoringData.experience)
         console.log(`${property}() async method has been called`)
         // First argument is an incoming request object
-        args.push(__WEBPACK_IMPORTED_MODULE_1__experience__["a" /* default */].readObject(args[0].experience))
+        args.push(__WEBPACK_IMPORTED_MODULE_0__experience__["a" /* default */].readObject(args[0].experience))
         let result = await origMethod.apply(this, args)
         console.log(`${property}() completed with success`)
         experience.complete()
@@ -9101,12 +9100,20 @@ class Monitor {
     }
   }
 
+  /**
+   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
+   * to them.
+   * @param target
+   * @param property
+   * @param monitoringData
+   * @return {Function}
+   */
   static asyncOutgoingMessageWrapper (target, property, monitoringData) {
     console.log(`${property}() async method has been requested`)
-    let experience = new __WEBPACK_IMPORTED_MODULE_1__experience__["a" /* default */](monitoringData.experience)
     const origMethod = target[property]
     return async function (...args) {
       try {
+        let experience = new __WEBPACK_IMPORTED_MODULE_0__experience__["a" /* default */](monitoringData.experience)
         console.log(`${property}() async method has been called`)
         // First argument is always a request object, last argument is a state (Experience) object
         args[0].experience = args[args.length - 1]
