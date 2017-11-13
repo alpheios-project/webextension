@@ -1,13 +1,15 @@
 import * as Lib from 'alpheios-inflection-tables'
-import * as Message from '../lib/message'
+import Message from '../lib/messaging/message'
+import MessagingService from '../lib/messaging/service'
+import WordDataRequest from '../lib/messaging/request/word-data-request'
+import StatusResponse from '../lib/messaging/response/status-response'
 import Panel from './panel'
 import Options from '../lib/options'
+import State from '../lib/state'
 import SymbolsTemplate from './templates/symbols.htmlf'
 import PageControlsTemplate from './templates/page-controls.htmlf'
 import PanelTemplate from './templates/panel.htmlf'
 import OptionsTemplate from './templates/options.htmlf'
-
-export { Process }
 
 class Process {
   constructor () {
@@ -15,7 +17,7 @@ class Process {
     this.settings = Process.settingValues
     this.options = new Options()
 
-    this.messagingService = new Message.MessagingService()
+    this.messagingService = new MessagingService()
   }
 
   static get settingValues () {
@@ -27,9 +29,9 @@ class Process {
 
   static get statuses () {
     return {
-      PENDING: 'Pending', // Content script has not been fully initialized yet
-      ACTIVE: 'Active', // Content script is loaded and active
-      DEACTIVATED: 'Deactivated' // Content script has been loaded, but is deactivated
+      PENDING: Symbol.for('Pending'), // Content script has not been fully initialized yet
+      ACTIVE: Symbol.for('Active'), // Content script is loaded and active
+      DEACTIVATED: Symbol.for('Deactivated') // Content script has been loaded, but is deactivated
     }
   }
 
@@ -72,9 +74,13 @@ class Process {
     this.pageControl = document.querySelector(this.settings.pageControlSel)
 
     // Add a message listener
-    browser.runtime.onMessage.addListener(this.messageListener.bind(this))
+    this.messagingService.addHandler(Message.types.STATUS_REQUEST, this.handleStatusRequest, this)
+    this.messagingService.addHandler(Message.types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
+    this.messagingService.addHandler(Message.types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
+    browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
+
     this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
-    document.body.addEventListener('dblclick', Process.getSelectedText)
+    document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
   }
 
   static loadSymbols () {
@@ -95,63 +101,74 @@ class Process {
     document.body.insertBefore(container.firstChild, document.body.firstChild)
   }
 
-  static requestWordData (language, word) {
-    browser.runtime.sendMessage(new Message.WordDataRequest(language, word))
+  async sendRequestToBgStatefully (request, timeout, state = undefined) {
+    let result = await this.messagingService.sendRequestToBg(request, timeout)
+    return State.value(state, result)
   }
 
-  messageListener (message, sender) {
-    console.log('Message from the browser: ', message)
-    console.log('Sender is:', sender)
-    if (!message.type) {
-      console.warn('Message type not provided. Discarding unknown message.')
-    }
-    else if (message.type === Message.Message.types.ACTIVATE_REQUEST) {
-      // Send a status response
-      console.log(`Activate request received. Sending a response back.`)
-      if (!this.isActive) {
-        this.reactivate()
-      }
-      this.messagingService.sendResponseToBg(new Message.StatusResponse(this.status, message))
-    }
-    else if (message.type === Message.Message.types.DEACTIVATE_REQUEST) {
-      // Send a status response
-      console.log(`Deactivate request received. Sending a response back.`)
-      if (this.isActive) {
-        this.deactivate()
-      }
-      this.messagingService.sendResponseToBg(new Message.StatusResponse(this.status, message))
-    }
-    else if (message.type === Message.Message.types.STATUS_REQUEST) {
-      // Send a status response
-      console.log(`Status request received. Sending a response back.`)
-      this.messagingService.sendResponseToBg(new Message.StatusResponse(this.status, message))
-    }
-    else if (message.type === Message.Message.types.WORD_DATA_RESPONSE) {
+  async requestWordDataStatefully (language, word, state = undefined) {
+    try {
+      console.log('Before request')
+      let messageObject = await this.sendRequestToBgStatefully(new WordDataRequest(language, word), 1000, state)
+      let message = messageObject.value
+      // state = messageObject.state
+      // ({value: message, state} = await this.sendStatefulRequestToBg(new WordDataRequest(language, word), 1000, state))
+      console.log('After request')
       console.log('Message body is:', message.body)
 
-      if (message.status === Message.Message.statuses.DATA_FOUND) {
+      if (Message.statusSymIs(message, Message.statuses.DATA_FOUND)) {
         let wordData = Lib.WordData.readObject(message.body)
         console.log('Word data is: ', wordData)
         this.panel.clear()
         this.updateDefinition(wordData)
         this.updateInflectionTable(wordData)
         this.panel.open()
-      }
-      else if (message.status === Message.Message.statuses.NO_DATA_FOUND) {
+      } else if (Message.statusSymIs(message, Message.statuses.NO_DATA_FOUND)) {
         this.panel.clear()
         this.panel.definitionContainer.innerHTML = '<p>Sorry, the word you requested was not found.</p>'
         this.panel.open().changeActiveTabTo(this.panel.tabs[0])
       }
+      return messageObject
+    } catch (error) {
+      console.error(`Word data request failed with the following error: ${error}`)
     }
-    else if (message.type === Message.Message.types.STATUS_REQUEST) {
-      browser.runtime.sendMessage(new Message.WordDataRequest(language, word))
-    }
-    else {
-      console.warn(`Unsupported message type "${message.type}". Discarding this message.`)
-    }
+    console.log('After all')
+  }
 
-    // Should not send any response as it is not supported by webextensions polyfill and will probably be deprecated
-    return false
+  handleStatusRequest (request, sender) {
+    // Send a status response
+    console.log(`Status request received. Sending a response back.`)
+    this.messagingService.sendResponseToBg(new StatusResponse(request, this.status)).catch(
+      (error) => {
+        console.error(`Unable to send a response to activation request: ${error}`)
+      }
+    )
+  }
+
+  handleActivationRequest (request, sender) {
+    // Send a status response
+    console.log(`Activate request received. Sending a response back.`)
+    if (!this.isActive) {
+      this.reactivate()
+    }
+    this.messagingService.sendResponseToBg(new StatusResponse(request, this.status)).catch(
+      (error) => {
+        console.error(`Unable to send a response to activation request: ${error}`)
+      }
+    )
+  }
+
+  handleDeactivationRequest (request, sender) {
+    // Send a status response
+    console.log(`Deactivate request received. Sending a response back.`)
+    if (this.isActive) {
+      this.deactivate()
+    }
+    this.messagingService.sendResponseToBg(new StatusResponse(request, this.status)).catch(
+      (error) => {
+        console.error(`Unable to send a response to activation request: ${error}`)
+      }
+    )
   }
 
   togglePanel () {
@@ -189,8 +206,22 @@ class Process {
     }
   }
 
-  static getSelectedText () {
-    let selectedWord = document.getSelection().toString().trim()
-    Process.requestWordData('unknown', selectedWord)
+  getSelectedText () {
+    if (this.isActive) {
+      let selectedWord = document.getSelection().toString().trim()
+      // Start an experience
+      this.getWordData(selectedWord)
+    }
+  }
+
+  getWordData (selectedWord) {
+    // Start experience
+    this.requestWordDataStatefully('unknownLanguage', selectedWord).then(
+      // Record outcome
+      (success) => console.log(`Success result: ${success}`),
+      (error) => console.log(`Error result: ${error}`)
+    )
   }
 }
+
+export { Process }

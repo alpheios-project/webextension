@@ -1,7 +1,13 @@
 import * as InflectionTables from 'alpheios-inflection-tables'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
-import * as Message from '../lib/message'
-import * as Content from '../content/content-process'
+import Message from '../lib/messaging/message'
+import MessagingService from '../lib/messaging/service'
+import ActivationRequest from '../lib/messaging/request/activation-request'
+import DeactivationRequest from '../lib/messaging/request/deactivation-request'
+import WordDataResponse from '../lib/messaging/response/word-data-response'
+import * as Content from '../content/process'
+import ExperienceMonitor from '../lib/experience/monitor'
+import State from '../lib/state'
 
 let alpheiosTestData = {
   definition: `
@@ -43,7 +49,7 @@ class BackgroundProcess {
 
     this.tabs = new Map() // A list of tabs that have content script loaded
 
-    this.messagingService = new Message.MessagingService()
+    this.messagingService = new MessagingService()
   }
 
   static get defaults () {
@@ -64,7 +70,8 @@ class BackgroundProcess {
 
     this.langData = new InflectionTables.LanguageData([InflectionTables.LatinDataSet, InflectionTables.GreekDataSet]).loadData()
 
-    browser.runtime.onMessage.addListener(this.messageListener.bind(this))
+    this.messagingService.addHandler(Message.types.WORD_DATA_REQUEST, this.handleWordDataRequestStatefully, this)
+    browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     BackgroundProcess.createMenuItem()
 
@@ -86,14 +93,30 @@ class BackgroundProcess {
       this.loadContent(tabID)
     } else {
       if (!this.isContentActive(tabID)) {
-        this.sendRequestToTab(tabID, new Message.ActivateRequest(), 1000)
+        this.messagingService.sendRequestToTab(new ActivationRequest(), 1000, tabID).then(
+          (message) => {
+            console.log(`Status update, new status is "${message.status}"`)
+            this.tabs.get(tabID).status = Message.statusSym(message)
+          },
+          (error) => {
+            console.log(`No status confirmation from tab {tabID} on activation request: ${error}`)
+          }
+        )
       }
     }
   }
 
   deactivateContent (tabID) {
     if (this.isContentActive(tabID)) {
-      this.sendRequestToTab(tabID, new Message.DeactivateRequest(), 1000)
+      this.messagingService.sendRequestToTab(new DeactivationRequest(), 1000, tabID).then(
+        (message) => {
+          console.log(`Status update, new status is "${message.status}"`)
+          this.tabs.get(tabID).status = Message.statusSym(message)
+        },
+        (error) => {
+          console.log(`No status confirmation from tab {tabID} on deactivation request: ${error}`)
+        }
+      )
     }
   }
 
@@ -138,66 +161,46 @@ class BackgroundProcess {
     })
   }
 
-  sendRequestToTab (tabID, request, timeout) {
-    this.messagingService.sendRequestToTab(tabID, request, timeout).then(
-            (message) => {
-              console.log(`"${request.type}" request to tab completed successfully`, message)
-              this.tabs.get(tabID).status = message.status
-            },
-            (error) => {
-              console.log(`"${request.type}" request to tab failed, error: ${error}`)
-            }
-        )
+  sendResponseToTabStatefully (request, tabID, state = undefined) {
+    return State.value(state, this.messagingService.sendResponseToTab(request, tabID))
   }
 
-  static getActiveTab () {
-    return browser.tabs.query({
-      active: true
-    })
-        // return new Promise((resolve, reject) => reject('Rejected message'));
+  async getHomonymStatefully (language, word, state) {
+    let result = await this.maAdapter.getHomonym(language, word, state)
+    return State.value(state, result)
   }
 
-  static async sendMessageToActiveTab (message) {
-    const tabs = await BackgroundProcess.getActiveTab()
-    BackgroundProcess.sendMessageToTab(tabs[0].id, message)
-  };
+  async handleWordDataRequestStatefully (request, sender, state = undefined) {
+    let selectedWord = InflectionTables.SelectedWord.readObjects(request.body)
+    console.log(`Request for a "${selectedWord.word}" word`)
 
-  static async sendMessageToTab (tabID, message) {
-    browser.tabs.sendMessage(tabID, message)
-    console.log(`Sent a message to a tab with id "${tabID}"`)
-  };
-
-  async messageListener (message, sender) {
-    console.log('Message from the content script: ', message)
-
-    if (message.requestType === Message.Message.requestTypes.RESPONSE) {
-      this.messagingService.handleResponse(message)
-    }
-
-    if (message.type === Message.Message.types.WORD_DATA_REQUEST) {
-      let selectedWord = InflectionTables.SelectedWord.readObjects(message.body)
-      console.log(`Request for a "${selectedWord.word}" word`)
-
-      try {
-        let homonym = await this.maAdapter.getHomonym(selectedWord.language, selectedWord.word)
-        let wordData
-        let status = Message.Message.statuses.NO_DATA_FOUND
-        if (homonym) {
-                    // If word data is found, get matching suffixes from an inflection library
-          wordData = this.langData.getSuffixes(homonym)
-          wordData.definition = encodeURIComponent(alpheiosTestData.definition)
-          status = Message.Message.statuses.DATA_FOUND
-          console.log(wordData)
-        }
-        await BackgroundProcess.sendMessageToActiveTab(
-                    new Message.WordDataResponse(wordData, status, message)
-                )
-      } catch (error) {
-        console.error(`An error occurred during a retrieval of word data: ${error.message}`)
+    try {
+      // homonymObject is a state object, where 'value' proparty has homonym, and 'state' - a state
+      let homonymObject = await this.getHomonymStatefully(selectedWord.language, selectedWord.word, state)
+      let homonym = homonymObject.value
+      state = homonymObject.state
+      let wordData
+      let status = Message.statuses.NO_DATA_FOUND
+      if (homonym) {
+        // If word data is found, get matching suffixes from an inflection library
+        wordData = this.langData.getSuffixes(homonym, state)
+        wordData.definition = encodeURIComponent(alpheiosTestData.definition)
+        status = Message.statuses.DATA_FOUND
+        console.log(wordData)
       }
+      let tabID = await BackgroundProcess.getActiveTabID()
+      let returnObject = this.sendResponseToTabStatefully(new WordDataResponse(request, wordData, status), tabID, state)
+      state = returnObject.state
+      return State.emptyValue(state)
+    } catch (error) {
+      console.error(`An error occurred during a retrieval of word data: ${error}`)
+      return State.emptyValue(state)
     }
-        // Should not send any response as it is not supported by webextensions polyfill and will probably be deprecated
-    return false
+  }
+
+  static async getActiveTabID () {
+    let tabs = await browser.tabs.query({ active: true })
+    return tabs[0].id
   }
 
   async menuListener (info, tab) {
@@ -224,11 +227,30 @@ class BackgroundProcess {
   }
 }
 
-let backgroundProcess = new BackgroundProcess()
+let monitoredBackgroundProcess = ExperienceMonitor.track(
+  new BackgroundProcess(),
+  [
+    {
+      name: 'handleWordDataRequestStatefully',
+      wrapper: ExperienceMonitor.asyncIncomingMessageWrapper,
+      experience: 'Get word data from a library'
+    },
+    {
+      name: 'sendResponseToTabStatefully',
+      wrapper: ExperienceMonitor.asyncOutgoingMessageWrapper,
+      experience: 'Send word data back to a content script'
+    },
+    {
+      name: 'getHomonymStatefully',
+      wrapper: ExperienceMonitor.asyncWrapper,
+      experience: 'Get homonym from a morphological analyzer'
+    }
+  ]
+)
 /*
 BackgroundProcess constructor performs a `browser` global object support detection. Because of that,
 webextension-polyfill, that emulates a `browser` object, should be loaded after BackgroundProcess constructor.
  */
 window.browser = require('../../dist/support/webextension-polyfill/browser-polyfill')
-backgroundProcess.initialize()
-console.log(`Support of global "browser" object: ${backgroundProcess.settings.browserSupport}`)
+monitoredBackgroundProcess.initialize()
+console.log(`Support of global "browser" object: ${monitoredBackgroundProcess.settings.browserSupport}`)

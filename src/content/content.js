@@ -1,8 +1,31 @@
-import * as Content from './content-process'
+import * as Content from './process'
+import ExperienceMonitor from '../lib/experience/monitor'
+
+// monitoredProcess = track(what, how)
+let monitoredContentProcess = ExperienceMonitor.track(
+  new Content.Process(),
+  [
+    {
+      name: 'requestWordDataStatefully',
+      wrapper: ExperienceMonitor.asyncNewExperienceWrapper,
+      experience: 'Get word data'
+    },
+    {
+      name: 'sendRequestToBgStatefully',
+      wrapper: ExperienceMonitor.asyncOutgoingMessageWrapper,
+      experience: 'Send word data request to a background script'
+    }
+  ]
+  )
 
 // load options, then render
-let contentProcess = new Content.Process()
-contentProcess.loadData().then(() => {
-  contentProcess.status = Content.Process.statuses.ACTIVE
-  contentProcess.render()
-})
+monitoredContentProcess.loadData().then(
+  () => {
+    console.log('Activated')
+    monitoredContentProcess.status = Content.Process.statuses.ACTIVE
+    monitoredContentProcess.render()
+  },
+  (error) => {
+    console.error(`Cannot load content process data because of the following error: ${error}`)
+  }
+)
