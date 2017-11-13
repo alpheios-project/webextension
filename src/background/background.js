@@ -176,10 +176,9 @@ class BackgroundProcess {
 
     try {
       // homonymObject is a state object, where 'value' proparty has homonym, and 'state' - a state
-      let homonymObject = await this.getHomonymStatefully(selectedWord.language, selectedWord.word, state)
-      let homonym = homonymObject.value
-      state = homonymObject.state
+      let homonym
       let wordData
+      ({ value: homonym, state } = await this.getHomonymStatefully(selectedWord.language, selectedWord.word, state))
       let status = Message.statuses.NO_DATA_FOUND
       if (homonym) {
         // If word data is found, get matching suffixes from an inflection library

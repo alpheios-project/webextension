@@ -63,7 +63,7 @@ export default class Monitor {
         console.log(`${property}() completed with success, experience is:`, experience)
         return resultObject
       } catch (error) {
-        console.error(`${property}() completed with an error: ${error}`)
+        console.error(`${property}() completed with an error: ${error.value}`)
         return error
       }
     }
@@ -90,7 +90,7 @@ export default class Monitor {
         console.log(`${property}() completed with success, experience is: ${experience}`)
         return resultObject
       } catch (error) {
-        console.error(`${property}() completed with an error: ${error}`)
+        console.error(`${property}() completed with an error: ${error.value}`)
         return error
       }
     }
@@ -118,7 +118,7 @@ export default class Monitor {
         console.log(`${experience}`)
         return result
       } catch (error) {
-        console.error(`${property}() completed with an error: ${error}`)
+        console.error(`${property}() completed with an error: ${error.value}`)
         return error
       }
     }
@@ -147,7 +147,7 @@ export default class Monitor {
         console.log(`${experience}`)
         return result
       } catch (error) {
-        console.error(`${property}() completed with an error: ${error}`)
+        console.error(`${property}() completed with an error: ${error.value}`)
         return error
       }
     }

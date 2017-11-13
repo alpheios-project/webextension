@@ -9157,10 +9157,14 @@ var BackgroundProcess = function () {
 
       try {
         // homonymObject is a state object, where 'value' proparty has homonym, and 'state' - a state
-        var homonymObject = await this.getHomonymStatefully(selectedWord.language, selectedWord.word, state);
-        var homonym = homonymObject.value;
-        state = homonymObject.state;
+        var homonym = void 0;
         var wordData = void 0;
+
+        var _ref = await this.getHomonymStatefully(selectedWord.language, selectedWord.word, state);
+
+        homonym = _ref.value;
+        state = _ref.state;
+
         var status = __WEBPACK_IMPORTED_MODULE_2__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND;
         if (homonym) {
           // If word data is found, get matching suffixes from an inflection library
@@ -10959,7 +10963,7 @@ class Monitor {
         console.log(`${property}() completed with success, experience is:`, experience)
         return resultObject
       } catch (error) {
-        console.error(`${property}() completed with an error: ${error}`)
+        console.error(`${property}() completed with an error: ${error.value}`)
         return error
       }
     }
@@ -10986,7 +10990,7 @@ class Monitor {
         console.log(`${property}() completed with success, experience is: ${experience}`)
         return resultObject
       } catch (error) {
-        console.error(`${property}() completed with an error: ${error}`)
+        console.error(`${property}() completed with an error: ${error.value}`)
         return error
       }
     }
@@ -11014,7 +11018,7 @@ class Monitor {
         console.log(`${experience}`)
         return result
       } catch (error) {
-        console.error(`${property}() completed with an error: ${error}`)
+        console.error(`${property}() completed with an error: ${error.value}`)
         return error
       }
     }
@@ -11043,7 +11047,7 @@ class Monitor {
         console.log(`${experience}`)
         return result
       } catch (error) {
-        console.error(`${property}() completed with an error: ${error}`)
+        console.error(`${property}() completed with an error: ${error.value}`)
         return error
       }
     }
