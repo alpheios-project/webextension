@@ -1,11 +1,11 @@
-import uuidv1 from 'uuid/v1'
+import uuidv4 from 'uuid/v4'
 
 export default class Message {
   constructor (body) {
     /** @member {Symbol} requestType - */
     this.role = undefined
     this.type = Message.types.GENERIC_MESSAGE
-    this.ID = uuidv1()
+    this.ID = uuidv4()
     this.body = body
   }
 

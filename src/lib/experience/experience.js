@@ -1,3 +1,6 @@
+/**
+ * A base object class for an Experience object.
+ */
 export default class Experience {
   constructor (description) {
     this.description = description

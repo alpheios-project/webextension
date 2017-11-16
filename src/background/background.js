@@ -8,6 +8,8 @@ import WordDataResponse from '../lib/messaging/response/word-data-response'
 import * as Content from '../content/process'
 import ExperienceMonitor from '../lib/experience/monitor'
 import State from '../lib/state'
+import RemoteExperienceAdapter from '../lib/experience/remote/test-adapter'
+import ExperienceAccumulator from '../lib/experience/local/storage'
 
 let alpheiosTestData = {
   definition: `
@@ -35,9 +37,9 @@ class ContentData {
   }
 }
 
-class BackgroundProcess {
+class Process {
   constructor () {
-    this.settings = BackgroundProcess.defaults
+    this.settings = Process.defaults
     this.settings.browserSupport = !(typeof browser === 'undefined')
 
     let adapterArgs = {
@@ -58,9 +60,13 @@ class BackgroundProcess {
       activateMenuItemText: 'Activate',
       deactivateMenuItemId: 'deactivate-alpheios-content',
       deactivateMenuItemText: 'Deactivate',
+      sendExperiencesMenuItemId: 'send-experiences',
+      sendExperiencesMenuItemText: 'Send Experiences to a remote server',
       contentCSSFileName: 'styles/style.css',
       contentScriptFileName: 'content.js',
       browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
+      experienceStorageCheckInterval: 10000,
+      experienceStorageThreshold: 3,
       contentScriptLoaded: false
     }
   }
@@ -73,10 +79,12 @@ class BackgroundProcess {
     this.messagingService.addHandler(Message.types.WORD_DATA_REQUEST, this.handleWordDataRequestStatefully, this)
     window.browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
-    BackgroundProcess.createMenuItem()
+    Process.createMenuItem()
 
     window.browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
     window.browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
+
+    window.setInterval(Process.checkExperienceStorage, Process.defaults.experienceStorageCheckInterval)
   }
 
   isContentLoaded (tabID) {
@@ -155,7 +163,7 @@ class BackgroundProcess {
     Promise.all([polyfillScript, contentScript, contentCSS]).then(() => {
       console.log('Content script(s) has been loaded successfully or already present')
       this.tabs.set(tabID, new ContentData(tabID, Content.Process.statuses.ACTIVE))
-      BackgroundProcess.defaults.contentScriptLoaded = true
+      Process.defaults.contentScriptLoaded = true
     }, (error) => {
       throw new Error('Content script loading failed', error)
     })
@@ -187,13 +195,44 @@ class BackgroundProcess {
         status = Message.statuses.DATA_FOUND
         console.log(wordData)
       }
-      let tabID = await BackgroundProcess.getActiveTabID()
+      let tabID = await Process.getActiveTabID()
       let returnObject = this.sendResponseToTabStatefully(new WordDataResponse(request, wordData, status), tabID, state)
       state = returnObject.state
       return State.emptyValue(state)
     } catch (error) {
       console.error(`An error occurred during a retrieval of word data: ${error}`)
       return State.emptyValue(state)
+    }
+  }
+
+  newExperienceInStorageEvent () {
+    console.log('A new experience has been saved to a local storage:')
+  }
+
+  static async checkExperienceStorage () {
+    console.log(`Experience storage check`)
+    let records = await ExperienceAccumulator.readAll()
+    let keys = Object.keys(records)
+    if (keys.length > Process.defaults.experienceStorageThreshold) {
+      await Process.sendExperiencesToRemote()
+    }
+  }
+
+  static async sendExperiencesToRemote () {
+    try {
+      let records = await ExperienceAccumulator.readAll()
+      let values = Object.values(records)
+      let keys = Object.keys(records)
+      if (keys.length > 0) {
+        // If there are any records in a local storage
+        await RemoteExperienceAdapter.store(values)
+        await ExperienceAccumulator.remove(keys)
+      } else {
+        console.log(`No data in local experience storage`)
+      }
+    } catch (error) {
+      console.error(`Cannot send experiences to a remote server: ${error}`)
+      return error
     }
   }
 
@@ -216,18 +255,18 @@ class BackgroundProcess {
 
   static createMenuItem () {
     window.browser.contextMenus.create({
-      id: BackgroundProcess.defaults.activateMenuItemId,
-      title: BackgroundProcess.defaults.activateMenuItemText
+      id: Process.defaults.activateMenuItemId,
+      title: Process.defaults.activateMenuItemText
     })
     window.browser.contextMenus.create({
-      id: BackgroundProcess.defaults.deactivateMenuItemId,
-      title: BackgroundProcess.defaults.deactivateMenuItemText
+      id: Process.defaults.deactivateMenuItemId,
+      title: Process.defaults.deactivateMenuItemText
     })
   }
 }
 
 let monitoredBackgroundProcess = ExperienceMonitor.track(
-  new BackgroundProcess(),
+  new Process(),
   [
     {
       name: 'handleWordDataRequestStatefully',

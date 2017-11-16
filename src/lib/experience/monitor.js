@@ -1,4 +1,5 @@
 import Experience from './experience'
+import Storage from './local/storage'
 
 export default class Monitor {
   constructor (monitoringDataList) {
@@ -61,6 +62,8 @@ export default class Monitor {
         experience = Experience.readObject(resultObject.value.experience)
         experience.complete()
         console.log(`${property}() completed with success, experience is:`, experience)
+
+        Storage.write(experience)
         return resultObject
       } catch (error) {
         console.error(`${property}() completed with an error: ${error.value}`)
