@@ -1,9 +1,15 @@
 # Alpheios WebExtension
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-# Development Notes
+## Libraries
 
-## WebExtension ID
+### Experience
+
+Experience library documentation: (Experience)[src/lib/experience/README.md]
+
+## Development Notes
+
+### WebExtension ID
 Explicit WebExtension ID is not necessary ([https://developer.mozilla.org/en-US/Add-ons/WebExtensions/WebExtensions_and_the_Add-on_ID]).
 
 However, Mozilla Firefox does not support `storage.local` and `storage.sync` for extensions with a temporary ID 
@@ -14,7 +20,7 @@ so not a big deal).
 
 `applications` section can be removed once development is complete.
 
-## `sendResponse` callback in `onMessage`
+### `sendResponse` callback in `onMessage`
 It seems that sendResponse is not supported by webextension-polyfill: 
 [https://github.com/mozilla/webextension-polyfill/issues/16/#issuecomment-296693219]
 The reason seems to be that a response callback might be removed from `onMessage` some time later. 

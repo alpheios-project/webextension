@@ -17,7 +17,7 @@ A more detailed information: [Experience Object](doc/experience/experience.md)
 Experience monitor wraps function calls with its own functions and thus gathers information about any specific
 user experience. It also records a completed experience to the local storage.
 
-A more detailed information: [Experience Monitor](doc/experience/monitor.md)
+A more detailed information: [Experience Monitor](doc/monitor/monitor.md)
 
 ## Transporter
 
