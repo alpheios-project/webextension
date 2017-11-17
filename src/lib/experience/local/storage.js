@@ -7,12 +7,23 @@ import uuidv4 from 'uuid/v4'
  */
 export default class LocalStorageAdapter {
   /**
+   * Returns an adapter default values
+   * @return {{prefix: string}}
+   */
+  static get defaults () {
+    return {
+      // A prefix used to distinguish experience objects from objects of other types
+      prefix: 'experience_'
+    }
+  }
+
+  /**
    * Stores a single experience to the local storage.
    * @param {Experience} experience - An experience object to be saved.
    */
   static write (experience) {
     // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
-    let uuid = `experience_${uuidv4()}`
+    let uuid = `${LocalStorageAdapter.defaults.prefix}${uuidv4()}`
 
     window.browser.storage.local.set({[uuid]: experience}).then(
       () => {

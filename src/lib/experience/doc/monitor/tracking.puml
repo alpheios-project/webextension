@@ -1,0 +1,48 @@
+@startuml
+actor User
+participant Monitor #EEE
+participant "User Request Handler"
+participant "Function A"
+participant "Function B"
+database "Experience Storage"
+
+== User Request Initiation ==
+User -> Monitor: User Request
+activate Monitor
+Monitor -> Monitor: Create Experience
+Monitor -> "User Request Handler": Run User Request Handler
+activate "User Request Handler"
+
+== Sub Task A ==
+"User Request Handler" -> Monitor: Run Task A
+Monitor -> Monitor: Create SubExperience A
+Monitor -> "Function A":  Execute
+activate "Function A"
+"Function A" --> Monitor: Return Value
+deactivate "Function A"
+Monitor -> Monitor: Complete SubExperience A
+Monitor -> "User Request Handler": Function A Return Value
+
+== Sub Task B ==
+"User Request Handler" -> Monitor: Run Task B
+Monitor -> Monitor: Create SubExperience B
+Monitor -> "Function B":  Execute
+activate "Function B"
+"Function B" --> Monitor: Return Value
+deactivate "Function B"
+Monitor -> Monitor: Complete SubExperience B
+Monitor -> "User Request Handler": Function B Return Value
+
+== User Request Completion ==
+"User Request Handler" --> Monitor: User Request Fulfilled
+deactivate "User Request Handler"
+Monitor -> Monitor: Complete Experience
+
+Monitor -> "Experience Storage": Store Experience
+activate "Experience Storage"
+"Experience Storage" --> Monitor: Experience Stored
+deactivate "Experience Storage"
+
+Monitor -> User: Experience Action Complete
+deactivate Monitor
+@enduml

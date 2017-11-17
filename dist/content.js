@@ -9127,13 +9127,20 @@ class Experience {
  * Currently a `browser.storage.local` local storage is used.
  */
 class LocalStorageAdapter {
+  static get defaults () {
+    return {
+      // A prefix used to distinguish experience objects from objects of other types
+      prefix: 'experience_'
+    }
+  }
+
   /**
    * Stores a single experience to the local storage.
    * @param {Experience} experience - An experience object to be saved.
    */
   static write (experience) {
     // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
-    let uuid = `experience_${__WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()}`
+    let uuid = `${LocalStorageAdapter.defaults.prefix}${__WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()}`
 
     window.browser.storage.local.set({[uuid]: experience}).then(
       () => {

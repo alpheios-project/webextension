@@ -9020,13 +9020,20 @@ class State {
  * Currently a `browser.storage.local` local storage is used.
  */
 class LocalStorageAdapter {
+  static get defaults () {
+    return {
+      // A prefix used to distinguish experience objects from objects of other types
+      prefix: 'experience_'
+    }
+  }
+
   /**
    * Stores a single experience to the local storage.
    * @param {Experience} experience - An experience object to be saved.
    */
   static write (experience) {
     // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
-    let uuid = `experience_${__WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()}`
+    let uuid = `${LocalStorageAdapter.defaults.prefix}${__WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()}`
 
     window.browser.storage.local.set({[uuid]: experience}).then(
       () => {
@@ -9084,9 +9091,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_state__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_experience_remote_test_adapter__ = __webpack_require__(49);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_experience_local_storage__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lib_experience_transporter__ = __webpack_require__(51);
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 
 
 
@@ -9146,7 +9155,7 @@ var Process = function () {
       window.browser.contextMenus.onClicked.addListener(this.menuListener.bind(this));
       window.browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this));
 
-      window.setInterval(Process.checkExperienceStorage, Process.defaults.experienceStorageCheckInterval);
+      this.transporter = new __WEBPACK_IMPORTED_MODULE_12__lib_experience_transporter__["a" /* default */](__WEBPACK_IMPORTED_MODULE_11__lib_experience_local_storage__["a" /* default */], __WEBPACK_IMPORTED_MODULE_10__lib_experience_remote_test_adapter__["a" /* default */], Process.defaults.experienceStorageThreshold, Process.defaults.experienceStorageCheckInterval);
     }
   }, {
     key: 'isContentLoaded',
@@ -9304,35 +9313,6 @@ var Process = function () {
       this.activateContent(tab.id);
     }
   }], [{
-    key: 'checkExperienceStorage',
-    value: async function checkExperienceStorage() {
-      console.log('Experience storage check');
-      var records = await __WEBPACK_IMPORTED_MODULE_11__lib_experience_local_storage__["a" /* default */].readAll();
-      var keys = Object.keys(records);
-      if (keys.length > Process.defaults.experienceStorageThreshold) {
-        await Process.sendExperiencesToRemote();
-      }
-    }
-  }, {
-    key: 'sendExperiencesToRemote',
-    value: async function sendExperiencesToRemote() {
-      try {
-        var records = await __WEBPACK_IMPORTED_MODULE_11__lib_experience_local_storage__["a" /* default */].readAll();
-        var values = Object.values(records);
-        var keys = Object.keys(records);
-        if (keys.length > 0) {
-          // If there are any records in a local storage
-          await __WEBPACK_IMPORTED_MODULE_10__lib_experience_remote_test_adapter__["a" /* default */].store(values);
-          await __WEBPACK_IMPORTED_MODULE_11__lib_experience_local_storage__["a" /* default */].remove(keys);
-        } else {
-          console.log('No data in local experience storage');
-        }
-      } catch (error) {
-        console.error('Cannot send experiences to a remote server: ' + error);
-        return error;
-      }
-    }
-  }, {
     key: 'getActiveTabID',
     value: async function getActiveTabID() {
       var tabs = await window.browser.tabs.query({ active: true });
@@ -9390,7 +9370,7 @@ var monitoredBackgroundProcess = __WEBPACK_IMPORTED_MODULE_8__lib_experience_mon
 BackgroundProcess constructor performs a `browser` global object support detection. Because of that,
 webextension-polyfill, that emulates a `browser` object, should be loaded after BackgroundProcess constructor.
  */
-window.browser = __webpack_require__(51);
+window.browser = __webpack_require__(52);
 monitoredBackgroundProcess.initialize();
 console.log('Support of global "browser" object: ' + monitoredBackgroundProcess.settings.browserSupport);
 
@@ -11160,7 +11140,7 @@ class TestAdapter extends __WEBPACK_IMPORTED_MODULE_0__adapter__["a" /* default 
    * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
    * and is rejected when storing on a remote server failed.
    */
-  static store (experiences) {
+  static write (experiences) {
     return new Promise((resolve, reject) => {
       if (!experiences) {
         reject(new Error(`experience cannot be empty`))
@@ -11190,25 +11170,82 @@ class TestAdapter extends __WEBPACK_IMPORTED_MODULE_0__adapter__["a" /* default 
 /**
  * Defines an API for storing experiences on a remote server, such as LRS.
  */
-class Adapter {
+class RemoteStorageAdapter {
   /**
    * Stores one or several experiences on a remote server.
    * @param {Experience[]} experiences - An array of experiences to store remotely.
    * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
    * and is rejected when storing on a remote server failed.
    */
-  static store (experiences) {
+  static write (experiences) {
     console.warn(`This method should be implemented within a subclass and should never be called directly.  
       If you see this message then something is probably goes wrong`)
     return new Promise()
   }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = Adapter;
+/* harmony export (immutable) */ __webpack_exports__["a"] = RemoteStorageAdapter;
 
 
 
 /***/ }),
 /* 51 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/**
+ * Responsible form transporting experiences from one storage to the other. Current implementation
+ * sends a batch of experience objects to the remote server once a certain amount of them
+ * is accumulated in a local storage.
+ */
+class Transporter {
+  /**
+   * Sets a transporter configuration.
+   * @param {LocalStorageAdapter} localStorage - Represents local storage where experience objects are
+   * accumulated before being sent to a remote server.
+   * @param {RemoteStorageAdapter} remoteStorage - Represents a remote server that stores experience objects.
+   * @param {number} qtyThreshold - A minimal number of experiences to be sent to a remote storage.
+   * @param {number} interval - Interval, in milliseconds, of checking a local storage for changes
+   */
+  constructor (localStorage, remoteStorage, qtyThreshold, interval) {
+    this.localStorage = localStorage
+    this.remoteStorage = remoteStorage
+    this.qtyThreshold = qtyThreshold
+    window.setInterval(this.checkExperienceStorage.bind(this), interval)
+  }
+
+  async checkExperienceStorage () {
+    console.log(`Experience storage check`)
+    let records = await this.localStorage.readAll()
+    let keys = Object.keys(records)
+    if (keys.length > this.qtyThreshold) {
+      await this.sendExperiencesToRemote()
+    }
+  }
+
+  async sendExperiencesToRemote () {
+    try {
+      let records = await this.localStorage.readAll()
+      let values = Object.values(records)
+      let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0)
+      if (keys.length > 0) {
+        // If there are any records in a local storage
+        await this.remoteStorage.write(values)
+        await this.localStorage.remove(keys)
+      } else {
+        console.log(`No data in local experience storage`)
+      }
+    } catch (error) {
+      console.error(`Cannot send experiences to a remote server: ${error}`)
+      return error
+    }
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Transporter;
+
+
+
+/***/ }),
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {

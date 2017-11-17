@@ -8,8 +8,9 @@ import WordDataResponse from '../lib/messaging/response/word-data-response'
 import * as Content from '../content/process'
 import ExperienceMonitor from '../lib/experience/monitor'
 import State from '../lib/state'
-import RemoteExperienceAdapter from '../lib/experience/remote/test-adapter'
-import ExperienceAccumulator from '../lib/experience/local/storage'
+import RemoteExperienceServer from '../lib/experience/remote/test-adapter'
+import LocalExperienceStorage from '../lib/experience/local/storage'
+import Transporter from '../lib/experience/transporter'
 
 let alpheiosTestData = {
   definition: `
@@ -84,7 +85,8 @@ class Process {
     window.browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
     window.browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
 
-    window.setInterval(Process.checkExperienceStorage, Process.defaults.experienceStorageCheckInterval)
+    this.transporter = new Transporter(LocalExperienceStorage, RemoteExperienceServer,
+      Process.defaults.experienceStorageThreshold, Process.defaults.experienceStorageCheckInterval)
   }
 
   isContentLoaded (tabID) {
@@ -97,7 +99,7 @@ class Process {
 
   activateContent (tabID) {
     if (!this.isContentLoaded(tabID)) {
-            // This tab has no content loaded
+      // This tab has no content loaded
       this.loadContent(tabID)
     } else {
       if (!this.isContentActive(tabID)) {
@@ -207,33 +209,6 @@ class Process {
 
   newExperienceInStorageEvent () {
     console.log('A new experience has been saved to a local storage:')
-  }
-
-  static async checkExperienceStorage () {
-    console.log(`Experience storage check`)
-    let records = await ExperienceAccumulator.readAll()
-    let keys = Object.keys(records)
-    if (keys.length > Process.defaults.experienceStorageThreshold) {
-      await Process.sendExperiencesToRemote()
-    }
-  }
-
-  static async sendExperiencesToRemote () {
-    try {
-      let records = await ExperienceAccumulator.readAll()
-      let values = Object.values(records)
-      let keys = Object.keys(records)
-      if (keys.length > 0) {
-        // If there are any records in a local storage
-        await RemoteExperienceAdapter.store(values)
-        await ExperienceAccumulator.remove(keys)
-      } else {
-        console.log(`No data in local experience storage`)
-      }
-    } catch (error) {
-      console.error(`Cannot send experiences to a remote server: ${error}`)
-      return error
-    }
   }
 
   static async getActiveTabID () {
