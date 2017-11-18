@@ -8864,8 +8864,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_word_data_response__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__content_process__ = __webpack_require__(16);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_state__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_experience__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_experience__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_alpheios_experience__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_alpheios_experience__);
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -8926,7 +8926,7 @@ var Process = function () {
       window.browser.contextMenus.onClicked.addListener(this.menuListener.bind(this));
       window.browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this));
 
-      this.transporter = new __WEBPACK_IMPORTED_MODULE_9_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_9_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_9_experience__["TestAdapter"], Process.defaults.experienceStorageThreshold, Process.defaults.experienceStorageCheckInterval);
+      this.transporter = new __WEBPACK_IMPORTED_MODULE_9_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_9_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_9_alpheios_experience__["TestAdapter"], Process.defaults.experienceStorageThreshold, Process.defaults.experienceStorageCheckInterval);
     }
   }, {
     key: 'isContentLoaded',
@@ -9124,18 +9124,18 @@ var Process = function () {
   return Process;
 }();
 
-var monitoredBackgroundProcess = __WEBPACK_IMPORTED_MODULE_9_experience__["Monitor"].track(new Process(), [{
-  name: 'handleWordDataRequestStatefully',
-  wrapper: __WEBPACK_IMPORTED_MODULE_9_experience__["Monitor"].asyncIncomingMessageWrapper,
-  experience: 'Get word data from a library'
+var monitoredBackgroundProcess = __WEBPACK_IMPORTED_MODULE_9_alpheios_experience__["Monitor"].track(new Process(), [{
+  monitoredFunction: 'handleWordDataRequestStatefully',
+  experience: 'Get word data from a library',
+  asyncWrapper: __WEBPACK_IMPORTED_MODULE_9_alpheios_experience__["Monitor"].detachFromMessage
 }, {
-  name: 'sendResponseToTabStatefully',
-  wrapper: __WEBPACK_IMPORTED_MODULE_9_experience__["Monitor"].asyncOutgoingMessageWrapper,
-  experience: 'Send word data back to a content script'
+  monitoredFunction: 'sendResponseToTabStatefully',
+  experience: 'Send word data back to a content script',
+  asyncWrapper: __WEBPACK_IMPORTED_MODULE_9_alpheios_experience__["Monitor"].attachToMessage
 }, {
-  name: 'getHomonymStatefully',
-  wrapper: __WEBPACK_IMPORTED_MODULE_9_experience__["Monitor"].asyncWrapper,
-  experience: 'Get homonym from a morphological analyzer'
+  monitoredFunction: 'getHomonymStatefully',
+  experience: 'Get homonym from a morphological analyzer',
+  asyncWrapper: __WEBPACK_IMPORTED_MODULE_9_alpheios_experience__["Monitor"].recordExperienceDetails
 }]);
 /*
 BackgroundProcess constructor performs a `browser` global object support detection. Because of that,
@@ -11774,7 +11774,7 @@ class Monitor {
     this.monitored = new Map();
     if (monitoringDataList) {
       for (let monitoringData of monitoringDataList) {
-        this.monitored.set(monitoringData.name, monitoringData);
+        this.monitored.set(monitoringData.monitoredFunction, monitoringData);
       }
     }
   }
@@ -11786,8 +11786,11 @@ class Monitor {
   get (target, property, receiver) {
     if (this.monitored.has(property)) {
       let monitoringData = this.monitored.get(property);
-      return monitoringData.wrapper.call(this,
-        target, property, monitoringData)
+      if (monitoringData.hasOwnProperty('asyncWrapper')) {
+        return Monitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
+      } else {
+        console.error(`Only async wrappers are supported by monitor`);
+      }
     }
     return target[property]
   }
@@ -11813,115 +11816,109 @@ class Monitor {
    * as a direct result of a user action: use of UI controls, etc.
    * @param target
    * @param property
+   * @param actionFunction
    * @param monitoringData
    * @return {Function}
    */
-  static asyncNewExperienceWrapper (target, property, monitoringData) {
+  static asyncWrapper (target, property, actionFunction, monitoringData) {
     console.log(`${property}() async method has been requested`);
-    const origMethod = target[property];
     return async function (...args) {
       try {
-        let experience = new Experience(monitoringData.experience);
-        console.log(`${property}() async method has been called`);
-        // Last item in arguments list is a transaction
-        args.push(experience);
-        let resultObject = await origMethod.apply(this, args);
-        // resultObject.value is a returned message, experience object is in a `experience` property
-        experience = Experience.readObject(resultObject.value.experience);
-        experience.complete();
-        console.log(`${property}() completed with success, experience is:`, experience);
-
-        LocalStorageAdapter.write(experience);
-        return resultObject
+        // return await Monitor.logicFuntcion(this, target, property, args, monitoringData)
+        return await actionFunction(this, target, property, args, monitoringData, LocalStorageAdapter)
       } catch (error) {
         console.error(`${property}() completed with an error: ${error.value}`);
         return error
       }
     }
+  }
+
+  /**
+   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
+   * as a direct result of a user action: use of UI controls, and such.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @param monitoringData
+   * @param storage
+   * @return {Promise.<*>}
+   */
+  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
+    let experience = new Experience(monitoringData.experience);
+    console.log(`${property}() async method has been called`);
+    // Last item in arguments list is a transaction
+    args.push(experience);
+    let resultObject = await target[property].apply(monitor, args);
+    // resultObject.value is a returned message, experience object is in a `experience` property
+    experience = Experience.readObject(resultObject.value.experience);
+    experience.complete();
+    console.log(`${property}() completed with success, experience is:`, experience);
+
+    storage.write(experience);
+    return resultObject
   }
 
   /**
    * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
    * functions that create user experience.
+   * @param monitor
    * @param target
    * @param property
+   * @param args
    * @param monitoringData
-   * @return {Function}
+   * @return {Promise.<*>}
    */
-  static asyncWrapper (target, property, monitoringData) {
-    console.log(`${property}() async method has been requested`);
-    const originalMethod = target[property];
-    return async function (...args) {
-      try {
-        let experience = new Experience(monitoringData.experience);
-        console.log(`${property}() async method has been called`);
-        let resultObject = await originalMethod.apply(this, args);
-        experience.complete();
-        resultObject.state.attach(experience);
-        console.log(`${property}() completed with success, experience is: ${experience}`);
-        return resultObject
-      } catch (error) {
-        console.error(`${property}() completed with an error: ${error.value}`);
-        return error
-      }
-    }
-  }
-
-  /**
-   * This is a wrapper around functions that handle incoming messages with an experience object attached.
-   * @param target
-   * @param property
-   * @param monitoringData
-   * @return {Function}
-   */
-  static asyncIncomingMessageWrapper (target, property, monitoringData) {
-    console.log(`${property}() async method has been requested`);
-    const origMethod = target[property];
-    return async function (...args) {
-      try {
-        let experience = new Experience(monitoringData.experience);
-        console.log(`${property}() async method has been called`);
-        // First argument is an incoming request object
-        args.push(Experience.readObject(args[0].experience));
-        let result = await origMethod.apply(this, args);
-        console.log(`${property}() completed with success`);
-        experience.complete();
-        console.log(`${experience}`);
-        return result
-      } catch (error) {
-        console.error(`${property}() completed with an error: ${error.value}`);
-        return error
-      }
-    }
+  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
+    let experience = new Experience(monitoringData.experience);
+    console.log(`${property}() async method has been called`);
+    let resultObject = await target[property].apply(monitor, args);
+    experience.complete();
+    resultObject.state.attach(experience);
+    console.log(`${property}() completed with success, experience is: ${experience}`);
+    return resultObject
   }
 
   /**
    * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
-   * to them.
+   * @param monitor
    * @param target
    * @param property
+   * @param args
    * @param monitoringData
-   * @return {Function}
+   * @return {Promise.<*>}
    */
-  static asyncOutgoingMessageWrapper (target, property, monitoringData) {
-    console.log(`${property}() async method has been requested`);
-    const origMethod = target[property];
-    return async function (...args) {
-      try {
-        let experience = new Experience(monitoringData.experience);
-        console.log(`${property}() async method has been called`);
-        // First argument is always a request object, last argument is a state (Experience) object
-        args[0].experience = args[args.length - 1];
-        let result = await origMethod.apply(this, args);
-        console.log(`${property}() completed with success`);
-        experience.complete();
-        console.log(`${experience}`);
-        return result
-      } catch (error) {
-        console.error(`${property}() completed with an error: ${error.value}`);
-        return error
-      }
-    }
+  static async attachToMessage (monitor, target, property, args, monitoringData) {
+    let experience = new Experience(monitoringData.experience);
+    console.log(`${property}() async method has been called`);
+    // First argument is always a request object, last argument is a state (Experience) object
+    args[0].experience = args[args.length - 1];
+    let result = await target[property].apply(monitor, args);
+    console.log(`${property}() completed with success`);
+    experience.complete();
+    console.log(`${experience}`);
+    return result
+  }
+
+  /**
+   * This is a wrapper around functions that handle incoming messages with an experience object attached.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @param monitoringData
+   * @return {Promise.<*>}
+   */
+  static async detachFromMessage (monitor, target, property, args, monitoringData) {
+    let experience = new Experience(monitoringData.experience);
+    console.log(`${property}() async method has been called`);
+    // First argument is an incoming request object
+    args.push(Experience.readObject(args[0].experience));
+    let result = await target[property].apply(monitor, args);
+    console.log(`${property}() completed with success`);
+    experience.complete();
+    console.log(`${experience}`);
+    return result
   }
 }
 

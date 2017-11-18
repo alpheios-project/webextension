@@ -1,19 +1,18 @@
 import * as Content from './process'
-import {Monitor as ExperienceMonitor} from 'experience'
+import {Monitor as ExperienceMonitor} from 'alpheios-experience'
 
-// monitoredProcess = track(what, how)
 let monitoredContentProcess = ExperienceMonitor.track(
   new Content.Process(),
   [
     {
-      name: 'requestWordDataStatefully',
-      wrapper: ExperienceMonitor.asyncNewExperienceWrapper,
-      experience: 'Get word data'
+      monitoredFunction: 'requestWordDataStatefully',
+      experience: 'Get word data',
+      asyncWrapper: ExperienceMonitor.recordExperience
     },
     {
-      name: 'sendRequestToBgStatefully',
-      wrapper: ExperienceMonitor.asyncOutgoingMessageWrapper,
-      experience: 'Send word data request to a background script'
+      monitoredFunction: 'sendRequestToBgStatefully',
+      experience: 'Send word data request to a background script',
+      asyncWrapper: ExperienceMonitor.attachToMessage
     }
   ]
   )

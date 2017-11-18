@@ -12,7 +12,7 @@ import {
   Transporter,
   StorageAdapter as LocalExperienceStorage,
   TestAdapter as RemoteExperienceServer
-} from 'experience'
+} from 'alpheios-experience'
 
 let alpheiosTestData = {
   definition: `
@@ -246,19 +246,19 @@ let monitoredBackgroundProcess = ExperienceMonitor.track(
   new Process(),
   [
     {
-      name: 'handleWordDataRequestStatefully',
-      wrapper: ExperienceMonitor.asyncIncomingMessageWrapper,
-      experience: 'Get word data from a library'
+      monitoredFunction: 'handleWordDataRequestStatefully',
+      experience: 'Get word data from a library',
+      asyncWrapper: ExperienceMonitor.detachFromMessage
     },
     {
-      name: 'sendResponseToTabStatefully',
-      wrapper: ExperienceMonitor.asyncOutgoingMessageWrapper,
-      experience: 'Send word data back to a content script'
+      monitoredFunction: 'sendResponseToTabStatefully',
+      experience: 'Send word data back to a content script',
+      asyncWrapper: ExperienceMonitor.attachToMessage
     },
     {
-      name: 'getHomonymStatefully',
-      wrapper: ExperienceMonitor.asyncWrapper,
-      experience: 'Get homonym from a morphological analyzer'
+      monitoredFunction: 'getHomonymStatefully',
+      experience: 'Get homonym from a morphological analyzer',
+      asyncWrapper: ExperienceMonitor.recordExperienceDetails
     }
   ]
 )
