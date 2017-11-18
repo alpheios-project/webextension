@@ -5,7 +5,7 @@
 
 ### Experience
 
-Experience library documentation: (Experience)[src/lib/experience/README.md]
+Experience library documentation: [Experience](../experience/README.md)
 
 ## Development Notes
 

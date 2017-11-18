@@ -6,11 +6,13 @@ import ActivationRequest from '../lib/messaging/request/activation-request'
 import DeactivationRequest from '../lib/messaging/request/deactivation-request'
 import WordDataResponse from '../lib/messaging/response/word-data-response'
 import * as Content from '../content/process'
-import ExperienceMonitor from '../lib/experience/monitor'
 import State from '../lib/state'
-import RemoteExperienceServer from '../lib/experience/remote/test-adapter'
-import LocalExperienceStorage from '../lib/experience/local/storage'
-import Transporter from '../lib/experience/transporter'
+import {
+  Monitor as ExperienceMonitor,
+  Transporter,
+  StorageAdapter as LocalExperienceStorage,
+  TestAdapter as RemoteExperienceServer
+} from 'experience'
 
 let alpheiosTestData = {
   definition: `

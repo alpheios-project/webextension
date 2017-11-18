@@ -1,5 +1,5 @@
 import * as Content from './process'
-import ExperienceMonitor from '../lib/experience/monitor'
+import {Monitor as ExperienceMonitor} from 'experience'
 
 // monitoredProcess = track(what, how)
 let monitoredContentProcess = ExperienceMonitor.track(
