@@ -22,9 +22,15 @@ export default class Panel {
     this.hiddenClassName = 'hidden'
     this.panelOpenFWClassName = 'open-fw'
     this.bodyOpenClassName = 'alpheios-panel-open'
+    this.bodyPositionClassName = Panel.positions.left
+    if (this.options.items.panelPosition.currentValue === 'right') {
+      this.bodyPositionClassName = Panel.positions.right
+    }
 
     this.isOpen = false
     this.isOpenFW = false
+
+    this.pageBody.classList.add(this.bodyPositionClassName)
 
     this.showOpenBtn.addEventListener('click', this.open.bind(this))
     this.showFWBtn.addEventListener('click', this.openFullWidth.bind(this))
@@ -36,6 +42,27 @@ export default class Panel {
       tab.addEventListener('click', this.switchTab.bind(this))
     }
     this.changeActiveTabTo(this.tabs[0])
+  }
+
+  static get positions () {
+    return {
+      left: 'alpheios-panel-left',
+      right: 'alpheios-panel-right'
+    }
+  }
+
+  setPoistionToLeft () {
+    if (this.bodyPositionClassName !== Panel.positions.left) {
+      this.pageBody.classList.replace(this.bodyPositionClassName, Panel.positions.left)
+      this.bodyPositionClassName = Panel.positions.left
+    }
+  }
+
+  setPoistionToRight () {
+    if (this.bodyPositionClassName !== Panel.positions.right) {
+      this.pageBody.classList.replace(this.bodyPositionClassName, Panel.positions.right)
+      this.bodyPositionClassName = Panel.positions.right
+    }
   }
 
   open () {

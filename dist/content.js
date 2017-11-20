@@ -8719,6 +8719,8 @@ contentProcess.loadData().then(function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf__);
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -8891,22 +8893,50 @@ var ContentProcess = function () {
     key: 'renderOptions',
     value: function renderOptions() {
       this.panel.optionsPage = __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf___default.a;
-      var localeSelector = this.panel.optionsPage.querySelector('#alpheios-locale-selector-list');
+      var optionEntries = Object.entries(this.options.items);
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = this.options.items.locale.values[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var locale = _step.value;
+        for (var _iterator = optionEntries[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var _step$value = _slicedToArray(_step.value, 2),
+              optionName = _step$value[0],
+              option = _step$value[1];
 
-          var option = document.createElement('option');
-          option.value = locale.value;
-          option.text = locale.text;
-          if (locale.value === this.options.items.locale.currentValue) {
-            option.setAttribute('selected', 'selected');
+          var localeSelector = this.panel.optionsPage.querySelector(option.inputSelector);
+          var _iteratorNormalCompletion2 = true;
+          var _didIteratorError2 = false;
+          var _iteratorError2 = undefined;
+
+          try {
+            for (var _iterator2 = option.values[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+              var optionValue = _step2.value;
+
+              var optionElement = document.createElement('option');
+              optionElement.value = optionValue.value;
+              optionElement.text = optionValue.text;
+              if (optionValue.value === option.currentValue) {
+                optionElement.setAttribute('selected', 'selected');
+              }
+              localeSelector.appendChild(optionElement);
+            }
+          } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                _iterator2.return();
+              }
+            } finally {
+              if (_didIteratorError2) {
+                throw _iteratorError2;
+              }
+            }
           }
-          localeSelector.appendChild(option);
+
+          localeSelector.addEventListener('change', this.optionChangeListener.bind(this, optionName));
         }
       } catch (err) {
         _didIteratorError = true;
@@ -8922,8 +8952,6 @@ var ContentProcess = function () {
           }
         }
       }
-
-      localeSelector.addEventListener('change', this.optionChangeListener.bind(this, 'locale'));
     }
   }, {
     key: 'optionChangeListener',
@@ -8931,6 +8959,13 @@ var ContentProcess = function () {
       this.options.update(option, event.target.value);
       if (option === 'locale' && this.presenter) {
         this.presenter.setLocale(event.target.value);
+      }
+      if (option === 'panelPosition') {
+        if (event.target.value === 'right') {
+          this.panel.setPoistionToRight();
+        } else {
+          this.panel.setPoistionToLeft();
+        }
       }
     }
   }, {
@@ -9358,9 +9393,15 @@ var Panel = function () {
     this.hiddenClassName = 'hidden';
     this.panelOpenFWClassName = 'open-fw';
     this.bodyOpenClassName = 'alpheios-panel-open';
+    this.bodyPositionClassName = Panel.positions.left;
+    if (this.options.items.panelPosition.currentValue === 'right') {
+      this.bodyPositionClassName = Panel.positions.right;
+    }
 
     this.isOpen = false;
     this.isOpenFW = false;
+
+    this.pageBody.classList.add(this.bodyPositionClassName);
 
     this.showOpenBtn.addEventListener('click', this.open.bind(this));
     this.showFWBtn.addEventListener('click', this.openFullWidth.bind(this));
@@ -9397,6 +9438,22 @@ var Panel = function () {
   }
 
   _createClass(Panel, [{
+    key: 'setPoistionToLeft',
+    value: function setPoistionToLeft() {
+      if (this.bodyPositionClassName !== Panel.positions.left) {
+        this.pageBody.classList.replace(this.bodyPositionClassName, Panel.positions.left);
+        this.bodyPositionClassName = Panel.positions.left;
+      }
+    }
+  }, {
+    key: 'setPoistionToRight',
+    value: function setPoistionToRight() {
+      if (this.bodyPositionClassName !== Panel.positions.right) {
+        this.pageBody.classList.replace(this.bodyPositionClassName, Panel.positions.right);
+        this.bodyPositionClassName = Panel.positions.right;
+      }
+    }
+  }, {
     key: 'open',
     value: function open() {
       if (this.isOpenFW) {
@@ -9489,6 +9546,14 @@ var Panel = function () {
       this.optionsContainer.innerHTML = htmlContent;
       return this.optionsContainer.innerHTML;
     }
+  }], [{
+    key: 'positions',
+    get: function get() {
+      return {
+        left: 'alpheios-panel-left',
+        right: 'alpheios-panel-right'
+      };
+    }
   }]);
 
   return Panel;
@@ -9545,6 +9610,14 @@ class Options {
           {value: 'en-GB', text: 'English (GB)'}
         ],
         inputSelector: '#alpheios-locale-selector-list'
+      },
+      panelPosition: {
+        defaultValue: 'left',
+        values: [
+          {value: 'left', text: 'Left'},
+          {value: 'right', text: 'Right'}
+        ],
+        inputSelector: '#alpheios-position-selector-list'
       }
     }
   }
@@ -9623,13 +9696,13 @@ module.exports = "<svg id=\"alpheios-panel-toggle\" class=\"alpheios-panel-show-
 /* 19 */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"alpheios-panel\" class=\"alpheios-panel\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <h3>Alpheios</h3>\r\n        <div class=\"alpheios-panel__header-button-cont\">\r\n            <svg id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\">\r\n                <use xlink:href=\"#alf-icon-chevron-left\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\">\r\n                <use xlink:href=\"#alf-icon-arrow-left\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\">\r\n                <use xlink:href=\"#alf-icon-chevron-right\"/>\r\n            </svg>\r\n        </div>\r\n\r\n    </div>\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div id=\"alpheios-panel-content-definition\"></div>\r\n            <div id=\"alpheios-panel-content-infl-table\">\r\n                <div id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-options\"></div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <svg id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-definition\">\r\n                <use xlink:href=\"#alf-icon-commenting\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-infl-table\">\r\n                <use xlink:href=\"#alf-icon-table\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-options\">\r\n                <use xlink:href=\"#alf-icon-wrench\"/>\r\n            </svg>\r\n        </div>\r\n    </div>\r\n</div>"
+module.exports = "<div id=\"alpheios-panel\" class=\"alpheios-panel\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <h3 class=\"alpheios-panel__header-title\">Alpheios</h3>\r\n        <svg id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\">\r\n            <use xlink:href=\"#alf-icon-chevron-left\"/>\r\n        </svg>\r\n        <svg id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\">\r\n            <use xlink:href=\"#alf-icon-arrow-left\"/>\r\n        </svg>\r\n        <svg id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\">\r\n            <use xlink:href=\"#alf-icon-chevron-right\"/>\r\n        </svg>\r\n        <div class=\"alpheios-panel__header-button-cont\">\r\n\r\n        </div>\r\n\r\n    </div>\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div id=\"alpheios-panel-content-definition\"></div>\r\n            <div id=\"alpheios-panel-content-infl-table\">\r\n                <div id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-options\"></div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <svg id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-definition\">\r\n                <use xlink:href=\"#alf-icon-commenting\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-infl-table\">\r\n                <use xlink:href=\"#alf-icon-table\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-options\">\r\n                <use xlink:href=\"#alf-icon-wrench\"/>\r\n            </svg>\r\n        </div>\r\n    </div>\r\n</div>"
 
 /***/ }),
 /* 20 */
 /***/ (function(module, exports) {
 
-module.exports = "<h4>Options</h4>\r\n<div id=\"alpheios-locale-switcher\" class=\"alpheios-ui-form-group\">\r\n    <label for=\"alpheios-locale-selector-list\">Locale:</label>\r\n    <select id=\"alpheios-locale-selector-list\" class=\"alpheios-ui-form-control\">\r\n    </select>\r\n</div>"
+module.exports = "<h4>Options</h4>\r\n\r\n<div id=\"alpheios-locale-switcher\" class=\"alpheios-ui-form-group\">\r\n    <label for=\"alpheios-locale-selector-list\">Locale:</label>\r\n    <select id=\"alpheios-locale-selector-list\" class=\"alpheios-ui-form-control\"></select>\r\n</div>\r\n\r\n<div id=\"alpheios-position-switcher\" class=\"alpheios-ui-form-group\">\r\n    <label for=\"alpheios-position-selector-list\">Panel position:</label>\r\n    <select id=\"alpheios-position-selector-list\" class=\"alpheios-ui-form-control\"></select>\r\n</div>"
 
 /***/ }),
 /* 21 */

@@ -11755,23 +11755,33 @@ class ContentProcess {
 
   renderOptions () {
     this.panel.optionsPage = __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf___default.a
-    let localeSelector = this.panel.optionsPage.querySelector('#alpheios-locale-selector-list')
-    for (let locale of this.options.items.locale.values) {
-      let option = document.createElement('option')
-      option.value = locale.value
-      option.text = locale.text
-      if (locale.value === this.options.items.locale.currentValue) {
-        option.setAttribute('selected', 'selected')
+    let optionEntries = Object.entries(this.options.items)
+    for (let [optionName, option] of optionEntries) {
+      let localeSelector = this.panel.optionsPage.querySelector(option.inputSelector)
+      for (let optionValue of option.values) {
+        let optionElement = document.createElement('option')
+        optionElement.value = optionValue.value
+        optionElement.text = optionValue.text
+        if (optionValue.value === option.currentValue) {
+          optionElement.setAttribute('selected', 'selected')
+        }
+        localeSelector.appendChild(optionElement)
       }
-      localeSelector.appendChild(option)
+      localeSelector.addEventListener('change', this.optionChangeListener.bind(this, optionName))
     }
-    localeSelector.addEventListener('change', this.optionChangeListener.bind(this, 'locale'))
   }
 
   optionChangeListener (option, event) {
     this.options.update(option, event.target.value)
     if (option === 'locale' && this.presenter) {
       this.presenter.setLocale(event.target.value)
+    }
+    if (option === 'panelPosition') {
+      if (event.target.value === 'right') {
+        this.panel.setPoistionToRight()
+      } else {
+        this.panel.setPoistionToLeft()
+      }
     }
   }
 
@@ -11862,9 +11872,15 @@ class Panel {
     this.hiddenClassName = 'hidden'
     this.panelOpenFWClassName = 'open-fw'
     this.bodyOpenClassName = 'alpheios-panel-open'
+    this.bodyPositionClassName = Panel.positions.left
+    if (this.options.items.panelPosition.currentValue === 'right') {
+      this.bodyPositionClassName = Panel.positions.right
+    }
 
     this.isOpen = false
     this.isOpenFW = false
+
+    this.pageBody.classList.add(this.bodyPositionClassName)
 
     this.showOpenBtn.addEventListener('click', this.open.bind(this))
     this.showFWBtn.addEventListener('click', this.openFullWidth.bind(this))
@@ -11876,6 +11892,27 @@ class Panel {
       tab.addEventListener('click', this.switchTab.bind(this))
     }
     this.changeActiveTabTo(this.tabs[0])
+  }
+
+  static get positions () {
+    return {
+      left: 'alpheios-panel-left',
+      right: 'alpheios-panel-right'
+    }
+  }
+
+  setPoistionToLeft () {
+    if (this.bodyPositionClassName !== Panel.positions.left) {
+      this.pageBody.classList.replace(this.bodyPositionClassName, Panel.positions.left)
+      this.bodyPositionClassName = Panel.positions.left
+    }
+  }
+
+  setPoistionToRight () {
+    if (this.bodyPositionClassName !== Panel.positions.right) {
+      this.pageBody.classList.replace(this.bodyPositionClassName, Panel.positions.right)
+      this.bodyPositionClassName = Panel.positions.right
+    }
   }
 
   open () {
@@ -12017,6 +12054,14 @@ class Options {
           {value: 'en-GB', text: 'English (GB)'}
         ],
         inputSelector: '#alpheios-locale-selector-list'
+      },
+      panelPosition: {
+        defaultValue: 'left',
+        values: [
+          {value: 'left', text: 'Left'},
+          {value: 'right', text: 'Right'}
+        ],
+        inputSelector: '#alpheios-position-selector-list'
       }
     }
   }
@@ -12063,13 +12108,13 @@ module.exports = "<svg id=\"alpheios-panel-toggle\" class=\"alpheios-panel-show-
 /* 26 */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"alpheios-panel\" class=\"alpheios-panel\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <h3>Alpheios</h3>\r\n        <div class=\"alpheios-panel__header-button-cont\">\r\n            <svg id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\">\r\n                <use xlink:href=\"#alf-icon-chevron-left\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\">\r\n                <use xlink:href=\"#alf-icon-arrow-left\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\">\r\n                <use xlink:href=\"#alf-icon-chevron-right\"/>\r\n            </svg>\r\n        </div>\r\n\r\n    </div>\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div id=\"alpheios-panel-content-definition\"></div>\r\n            <div id=\"alpheios-panel-content-infl-table\">\r\n                <div id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-options\"></div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <svg id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-definition\">\r\n                <use xlink:href=\"#alf-icon-commenting\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-infl-table\">\r\n                <use xlink:href=\"#alf-icon-table\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-options\">\r\n                <use xlink:href=\"#alf-icon-wrench\"/>\r\n            </svg>\r\n        </div>\r\n    </div>\r\n</div>"
+module.exports = "<div id=\"alpheios-panel\" class=\"alpheios-panel\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <h3 class=\"alpheios-panel__header-title\">Alpheios</h3>\r\n        <svg id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\">\r\n            <use xlink:href=\"#alf-icon-chevron-left\"/>\r\n        </svg>\r\n        <svg id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\">\r\n            <use xlink:href=\"#alf-icon-arrow-left\"/>\r\n        </svg>\r\n        <svg id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\">\r\n            <use xlink:href=\"#alf-icon-chevron-right\"/>\r\n        </svg>\r\n        <div class=\"alpheios-panel__header-button-cont\">\r\n\r\n        </div>\r\n\r\n    </div>\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div id=\"alpheios-panel-content-definition\"></div>\r\n            <div id=\"alpheios-panel-content-infl-table\">\r\n                <div id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-options\"></div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <svg id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-definition\">\r\n                <use xlink:href=\"#alf-icon-commenting\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-infl-table\">\r\n                <use xlink:href=\"#alf-icon-table\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-options\">\r\n                <use xlink:href=\"#alf-icon-wrench\"/>\r\n            </svg>\r\n        </div>\r\n    </div>\r\n</div>"
 
 /***/ }),
 /* 27 */
 /***/ (function(module, exports) {
 
-module.exports = "<h4>Options</h4>\r\n<div id=\"alpheios-locale-switcher\" class=\"alpheios-ui-form-group\">\r\n    <label for=\"alpheios-locale-selector-list\">Locale:</label>\r\n    <select id=\"alpheios-locale-selector-list\" class=\"alpheios-ui-form-control\">\r\n    </select>\r\n</div>"
+module.exports = "<h4>Options</h4>\r\n\r\n<div id=\"alpheios-locale-switcher\" class=\"alpheios-ui-form-group\">\r\n    <label for=\"alpheios-locale-selector-list\">Locale:</label>\r\n    <select id=\"alpheios-locale-selector-list\" class=\"alpheios-ui-form-control\"></select>\r\n</div>\r\n\r\n<div id=\"alpheios-position-switcher\" class=\"alpheios-ui-form-group\">\r\n    <label for=\"alpheios-position-selector-list\">Panel position:</label>\r\n    <select id=\"alpheios-position-selector-list\" class=\"alpheios-ui-form-control\"></select>\r\n</div>"
 
 /***/ }),
 /* 28 */

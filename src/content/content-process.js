@@ -191,23 +191,33 @@ export default class ContentProcess {
 
   renderOptions () {
     this.panel.optionsPage = OptionsTemplate
-    let localeSelector = this.panel.optionsPage.querySelector('#alpheios-locale-selector-list')
-    for (let locale of this.options.items.locale.values) {
-      let option = document.createElement('option')
-      option.value = locale.value
-      option.text = locale.text
-      if (locale.value === this.options.items.locale.currentValue) {
-        option.setAttribute('selected', 'selected')
+    let optionEntries = Object.entries(this.options.items)
+    for (let [optionName, option] of optionEntries) {
+      let localeSelector = this.panel.optionsPage.querySelector(option.inputSelector)
+      for (let optionValue of option.values) {
+        let optionElement = document.createElement('option')
+        optionElement.value = optionValue.value
+        optionElement.text = optionValue.text
+        if (optionValue.value === option.currentValue) {
+          optionElement.setAttribute('selected', 'selected')
+        }
+        localeSelector.appendChild(optionElement)
       }
-      localeSelector.appendChild(option)
+      localeSelector.addEventListener('change', this.optionChangeListener.bind(this, optionName))
     }
-    localeSelector.addEventListener('change', this.optionChangeListener.bind(this, 'locale'))
   }
 
   optionChangeListener (option, event) {
     this.options.update(option, event.target.value)
     if (option === 'locale' && this.presenter) {
       this.presenter.setLocale(event.target.value)
+    }
+    if (option === 'panelPosition') {
+      if (event.target.value === 'right') {
+        this.panel.setPoistionToRight()
+      } else {
+        this.panel.setPoistionToLeft()
+      }
     }
   }
 

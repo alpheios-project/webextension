@@ -23,8 +23,12 @@
     height: calc(1.55rem + 2px);
 }
 
-.alpheios-panel-open {
+.alpheios-panel-open.alpheios-panel-left {
     padding-left: 70%;
+}
+
+.alpheios-panel-open.alpheios-panel-right {
+    padding-right: 70%;
 }
 
 .alpheios-panel-show-btn {
@@ -41,18 +45,29 @@
 }
 
 .alpheios-panel {
-    display: block !important; /* important is for testing only to override page's inline styles */
+    display: block;
     width: 70%;
     height: 100%;
     top: 0;
     z-index: 1000;
-    left: -70%;
     position: fixed;
     background: #FFF;
 }
 
-.alpheios-panel.open {
+.alpheios-panel-left .alpheios-panel {
+    left: -70%;
+}
+
+.alpheios-panel-right .alpheios-panel {
+    right: -70%;
+}
+
+.alpheios-panel-left .alpheios-panel.open {
     left: 0;
+}
+
+.alpheios-panel-right .alpheios-panel.open {
+    right: 0;
 }
 
 .alpheios-panel.open-fw {
@@ -62,26 +77,26 @@
 
 .alpheios-panel__header {
     position: relative;
+    display: flex;
+    flex-wrap: nowrap;
+    background: #0D77B6;
+    height: 75px;
 }
 
-.alpheios-panel__header h3 {
+h3.alpheios-panel__header-title {
     color: #AFDEFA;
     font-size: 1.9em;
     padding: 20px;
     margin: 0;
     font-weight: 300;
-    background: #0D77B6;
-}
-
-.alpheios-panel__header-button-cont {
-    position: absolute;
-    top: 20px;
-    right: 15px;
+    display: block;
+    flex-grow: 1;
 }
 
 .alpheios-panel__header-action-btn {
+    display: block;
     width: 50px;
-    height: 35px;
+    height: 75px;
     fill: #AFDEFA;
     cursor: pointer;
 }
@@ -93,6 +108,14 @@
 .alpheios-panel__body {
     display: flex;
     height: 100%;
+}
+
+.alpheios-panel-left .alpheios-panel__body {
+    flex-direction: row;
+}
+
+.alpheios-panel-right .alpheios-panel__body {
+    flex-direction: row-reverse;
 }
 
 .alpheios-panel__content {

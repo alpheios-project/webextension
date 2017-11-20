@@ -42,6 +42,14 @@ export default class Options {
           {value: 'en-GB', text: 'English (GB)'}
         ],
         inputSelector: '#alpheios-locale-selector-list'
+      },
+      panelPosition: {
+        defaultValue: 'left',
+        values: [
+          {value: 'left', text: 'Left'},
+          {value: 'right', text: 'Right'}
+        ],
+        inputSelector: '#alpheios-position-selector-list'
       }
     }
   }

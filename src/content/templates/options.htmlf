@@ -1,6 +1,11 @@
 <h4>Options</h4>
+
 <div id="alpheios-locale-switcher" class="alpheios-ui-form-group">
     <label for="alpheios-locale-selector-list">Locale:</label>
-    <select id="alpheios-locale-selector-list" class="alpheios-ui-form-control">
-    </select>
+    <select id="alpheios-locale-selector-list" class="alpheios-ui-form-control"></select>
+</div>
+
+<div id="alpheios-position-switcher" class="alpheios-ui-form-group">
+    <label for="alpheios-position-selector-list">Panel position:</label>
+    <select id="alpheios-position-selector-list" class="alpheios-ui-form-control"></select>
 </div>

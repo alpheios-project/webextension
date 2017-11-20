@@ -1,16 +1,17 @@
 <div id="alpheios-panel" class="alpheios-panel">
     <div class="alpheios-panel__header">
-        <h3>Alpheios</h3>
+        <h3 class="alpheios-panel__header-title">Alpheios</h3>
+        <svg id="alpheios-panel-hide" class="alpheios-panel__header-action-btn">
+            <use xlink:href="#alf-icon-chevron-left"/>
+        </svg>
+        <svg id="alpheios-panel-show-open" class="alpheios-panel__header-action-btn">
+            <use xlink:href="#alf-icon-arrow-left"/>
+        </svg>
+        <svg id="alpheios-panel-show-fw" class="alpheios-panel__header-action-btn">
+            <use xlink:href="#alf-icon-chevron-right"/>
+        </svg>
         <div class="alpheios-panel__header-button-cont">
-            <svg id="alpheios-panel-hide" class="alpheios-panel__header-action-btn">
-                <use xlink:href="#alf-icon-chevron-left"/>
-            </svg>
-            <svg id="alpheios-panel-show-open" class="alpheios-panel__header-action-btn">
-                <use xlink:href="#alf-icon-arrow-left"/>
-            </svg>
-            <svg id="alpheios-panel-show-fw" class="alpheios-panel__header-action-btn">
-                <use xlink:href="#alf-icon-chevron-right"/>
-            </svg>
+
         </div>
 
     </div>
