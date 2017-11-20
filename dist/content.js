@@ -8670,27 +8670,30 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* defa
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__process__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
 
 
 
-var monitoredContentProcess = __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].track(new __WEBPACK_IMPORTED_MODULE_0__process__["a" /* Process */](), [{
-  monitoredFunction: 'requestWordDataStatefully',
+var contentProcess = __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].track(new __WEBPACK_IMPORTED_MODULE_0__content_process__["a" /* default */](), [{
+  monitoredFunction: 'getWordDataStatefully',
   experience: 'Get word data',
   asyncWrapper: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].recordExperience
 }, {
   monitoredFunction: 'sendRequestToBgStatefully',
-  experience: 'Send word data request to a background script',
   asyncWrapper: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].attachToMessage
 }]);
 
 // load options, then render
-monitoredContentProcess.loadData().then(function () {
+contentProcess.loadData().then(function () {
   console.log('Activated');
-  monitoredContentProcess.status = __WEBPACK_IMPORTED_MODULE_0__process__["a" /* Process */].statuses.ACTIVE;
-  monitoredContentProcess.render();
+  contentProcess.status = __WEBPACK_IMPORTED_MODULE_0__content_process__["a" /* default */].statuses.ACTIVE;
+  contentProcess.initialize().then(function () {
+    console.log('Content process has been initialized successfully');
+  }, function (error) {
+    console.log('Content process has not been initialized due to the following error: ' + error);
+  });
 }, function (error) {
   console.error('Cannot load content process data because of the following error: ' + error);
 });
@@ -8700,7 +8703,6 @@ monitoredContentProcess.loadData().then(function () {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Process; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__ = __webpack_require__(9);
@@ -8721,6 +8723,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+/* global browser */
 
 
 
@@ -8734,18 +8737,18 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 
 
-var Process = function () {
-  function Process() {
-    _classCallCheck(this, Process);
+var ContentProcess = function () {
+  function ContentProcess() {
+    _classCallCheck(this, ContentProcess);
 
-    this.status = Process.statuses.PENDING;
-    this.settings = Process.settingValues;
+    this.status = ContentProcess.statuses.PENDING;
+    this.settings = ContentProcess.settingValues;
     this.options = new __WEBPACK_IMPORTED_MODULE_6__lib_options__["a" /* default */]();
 
     this.messagingService = new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__["a" /* default */]();
   }
 
-  _createClass(Process, [{
+  _createClass(ContentProcess, [{
     key: 'loadData',
 
 
@@ -8762,23 +8765,23 @@ var Process = function () {
       console.log('Content has been deactivated.');
       this.panel.close();
       this.pageControl.classList.add(this.settings.hiddenClassName);
-      this.status = Process.statuses.DEACTIVATED;
+      this.status = ContentProcess.statuses.DEACTIVATED;
     }
   }, {
     key: 'reactivate',
     value: function reactivate() {
       console.log('Content has been reactivated.');
       this.pageControl.classList.remove(this.settings.hiddenClassName);
-      this.status = Process.statuses.ACTIVE;
+      this.status = ContentProcess.statuses.ACTIVE;
     }
   }, {
-    key: 'render',
-    value: function render() {
+    key: 'initialize',
+    value: async function initialize() {
       // Inject HTML code of a plugin. Should go in reverse order.
       document.body.classList.add('alpheios');
-      Process.loadPanel();
-      Process.loadPageControls();
-      Process.loadSymbols();
+      ContentProcess.loadPanel();
+      ContentProcess.loadPageControls();
+      ContentProcess.loadSymbols();
 
       this.panel = new __WEBPACK_IMPORTED_MODULE_5__panel__["a" /* default */](this.options);
       this.panelToggleBtn = document.querySelector('#alpheios-panel-toggle');
@@ -8790,7 +8793,7 @@ var Process = function () {
       this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.STATUS_REQUEST, this.handleStatusRequest, this);
       this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this);
       this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this);
-      window.browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService));
+      browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService));
 
       this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this));
       document.body.addEventListener('dblclick', this.getSelectedText.bind(this));
@@ -8800,22 +8803,23 @@ var Process = function () {
     value: async function sendRequestToBgStatefully(request, timeout) {
       var state = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
 
-      var result = await this.messagingService.sendRequestToBg(request, timeout);
-      return __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, result);
+      try {
+        var result = await this.messagingService.sendRequestToBg(request, timeout);
+        return __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, result);
+      } catch (error) {
+        // Wrap error te same way we wrap value
+        console.log('Statefull request to a background failed: ' + error);
+        throw __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, error);
+      }
     }
   }, {
-    key: 'requestWordDataStatefully',
-    value: async function requestWordDataStatefully(language, word) {
+    key: 'getWordDataStatefully',
+    value: async function getWordDataStatefully(language, word) {
       var state = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
 
       try {
-        console.log('Before request');
-        var messageObject = await this.sendRequestToBgStatefully(new __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__["a" /* default */](language, word), 1000, state);
+        var messageObject = await this.sendRequestToBgStatefully(new __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__["a" /* default */](language, word), this.settings.requestTimeout, state);
         var message = messageObject.value;
-        // state = messageObject.state
-        // ({value: message, state} = await this.sendStatefulRequestToBg(new WordDataRequest(language, word), 1000, state))
-        console.log('After request');
-        console.log('Message body is:', message.body);
 
         if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND)) {
           var wordData = __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["c" /* WordData */].readObject(message.body);
@@ -8831,9 +8835,9 @@ var Process = function () {
         }
         return messageObject;
       } catch (error) {
-        console.error('Word data request failed with the following error: ' + error);
+        console.error('Word data request failed: ' + error.value);
+        throw error;
       }
-      console.log('After all');
     }
   }, {
     key: 'handleStatusRequest',
@@ -8934,41 +8938,28 @@ var Process = function () {
     value: function getSelectedText() {
       if (this.isActive) {
         var selectedWord = document.getSelection().toString().trim();
-        // Start an experience
-        this.getWordData(selectedWord);
+        this.getWordDataStatefully('unknownLanguage', selectedWord);
       }
-    }
-  }, {
-    key: 'getWordData',
-    value: function getWordData(selectedWord) {
-      // Start experience
-      this.requestWordDataStatefully('unknownLanguage', selectedWord).then(
-      // Record outcome
-      function (success) {
-        return console.log('Success result: ' + success);
-      }, function (error) {
-        return console.log('Error result: ' + error);
-      });
     }
   }, {
     key: 'isActive',
     get: function get() {
-      return this.status === Process.statuses.ACTIVE;
+      return this.status === ContentProcess.statuses.ACTIVE;
     }
   }], [{
     key: 'loadSymbols',
     value: function loadSymbols() {
-      Process.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf___default.a);
+      ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf___default.a);
     }
   }, {
     key: 'loadPageControls',
     value: function loadPageControls() {
-      Process.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf___default.a);
+      ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf___default.a);
     }
   }, {
     key: 'loadPanel',
     value: function loadPanel() {
-      Process.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf___default.a);
+      ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf___default.a);
     }
   }, {
     key: 'loadHTMLFragment',
@@ -8982,7 +8973,8 @@ var Process = function () {
     get: function get() {
       return {
         hiddenClassName: 'hidden',
-        pageControlSel: '#alpheios-panel-toggle'
+        pageControlSel: '#alpheios-panel-toggle',
+        requestTimeout: 4000
       };
     }
   }, {
@@ -8996,10 +8988,10 @@ var Process = function () {
     }
   }]);
 
-  return Process;
+  return ContentProcess;
 }();
 
-
+/* harmony default export */ __webpack_exports__["a"] = (ContentProcess);
 
 /***/ }),
 /* 6 */
@@ -9112,6 +9104,7 @@ module.exports = bytesToUuid;
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(10);
+/* global browser */
 
 
 
@@ -9175,10 +9168,11 @@ class Service {
     let requestInfo = new __WEBPACK_IMPORTED_MODULE_1__stored_request__["a" /* default */](request)
     this.messages.set(request.ID, requestInfo)
     if (timeout) {
-      requestInfo.timeoutID = window.setTimeout((messageID) => {
-        let requestInfo = this.messages.get(messageID)
-        requestInfo.reject('Timeout expired') // Reject a promise
-        this.messages.delete(messageID) // Remove from map
+      requestInfo.timeoutID = window.setTimeout((requestID) => {
+        let requestInfo = this.messages.get(requestID)
+        console.log('Timeout has been expired')
+        requestInfo.reject(new Error(`Timeout has been expired`))
+        this.messages.delete(requestID) // Remove from map
         console.log(`Map length is ${this.messages.size}`)
       }, timeout, request.ID)
     }
@@ -9188,7 +9182,8 @@ class Service {
 
   sendRequestToTab (request, timeout, tabID) {
     let promise = this.registerRequest(request, timeout)
-    window.browser.tabs.sendMessage(tabID, request).catch(
+    browser.tabs.sendMessage(tabID, request).then(
+      () => { console.log(`Successfully sent a request to a tab`) },
       (error) => {
         console.error(`tabs.sendMessage() failed: ${error}`)
         this.rejectRequest(request.ID, error)
@@ -9199,9 +9194,10 @@ class Service {
 
   sendRequestToBg (request, timeout) {
     let promise = this.registerRequest(request, timeout)
-    window.browser.runtime.sendMessage(request).catch(
+    browser.runtime.sendMessage(request).then(
+      () => { console.log(`Successfully sent a request to a background`) },
       (error) => {
-        console.error(`runtime.sendMessage() failed: ${error}`)
+        console.error(`Sending request to a background failed: ${error}`)
         this.rejectRequest(request.ID, error)
       }
     )
@@ -9209,11 +9205,11 @@ class Service {
   }
 
   sendResponseToTab (message, tabID) {
-    return window.browser.tabs.sendMessage(tabID, message)
+    return browser.tabs.sendMessage(tabID, message)
   }
 
   sendResponseToBg (message) {
-    return window.browser.runtime.sendMessage(message)
+    return browser.runtime.sendMessage(message)
   }
 
   fulfillRequest (responseMessage) {
@@ -9505,6 +9501,8 @@ var Panel = function () {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* global browser */
+
 class Options {
   constructor () {
     this._values = Options.defaults
@@ -9527,7 +9525,7 @@ class Options {
    */
   async loadStoredData () {
     try {
-      let values = await window.browser.storage.sync.get()
+      let values = await browser.storage.sync.get()
       for (let key in values) {
         if (this._values.hasOwnProperty(key)) {
           this._values[key].currentValue = values[key]
@@ -9562,7 +9560,7 @@ class Options {
     let optionObj = {}
     optionObj[option] = value
 
-    window.browser.storage.sync.set(optionObj).then(
+    browser.storage.sync.set(optionObj).then(
       () => {
         // Options storage succeeded
         console.log('Option value was stored successfully.')
@@ -9767,6 +9765,8 @@ function v4(options, buf, offset) {
 
 var v4_1 = v4;
 
+/* global browser */
+
 /**
  * Represents an adapter for a local storage where experiences are accumulated before a batch of
  * experiences is sent to a remote server and is removed from a local storage.
@@ -9792,7 +9792,7 @@ class LocalStorageAdapter {
     // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
     let uuid = `${LocalStorageAdapter.defaults.prefix}${v4_1()}`;
 
-    window.browser.storage.local.set({[uuid]: experience}).then(
+    browser.storage.local.set({[uuid]: experience}).then(
       () => {
         console.log(`Experience has been written to the local storage successfully`);
       },
@@ -9809,7 +9809,7 @@ class LocalStorageAdapter {
    */
   static async readAll () {
     try {
-      return await window.browser.storage.local.get()
+      return await browser.storage.local.get()
     } catch (error) {
       console.error(`Cannot read data from the local storage because of the following error: ${error}`);
       return error
@@ -9823,7 +9823,7 @@ class LocalStorageAdapter {
    * if the operation succeeded. If the operation failed, the promise will be rejected with an error message.
    */
   static async remove (keys) {
-    return window.browser.storage.local.remove(keys)
+    return browser.storage.local.remove(keys)
   }
 }
 
@@ -9882,11 +9882,11 @@ class Monitor {
     console.log(`${property}() async method has been requested`);
     return async function (...args) {
       try {
-        // return await Monitor.logicFuntcion(this, target, property, args, monitoringData)
         return await actionFunction(this, target, property, args, monitoringData, LocalStorageAdapter)
       } catch (error) {
-        console.error(`${property}() completed with an error: ${error.value}`);
-        return error
+        // If it's an error, there will be no state and value objects. Should fix that.
+        console.error(`${property}() failed: ${error.value}`);
+        throw error
       }
     }
   }
@@ -9943,18 +9943,14 @@ class Monitor {
    * @param target
    * @param property
    * @param args
-   * @param monitoringData
    * @return {Promise.<*>}
    */
-  static async attachToMessage (monitor, target, property, args, monitoringData) {
-    let experience = new Experience(monitoringData.experience);
+  static async attachToMessage (monitor, target, property, args) {
     console.log(`${property}() async method has been called`);
     // First argument is always a request object, last argument is a state (Experience) object
     args[0].experience = args[args.length - 1];
     let result = await target[property].apply(monitor, args);
     console.log(`${property}() completed with success`);
-    experience.complete();
-    console.log(`${experience}`);
     return result
   }
 
@@ -9964,18 +9960,14 @@ class Monitor {
    * @param target
    * @param property
    * @param args
-   * @param monitoringData
    * @return {Promise.<*>}
    */
-  static async detachFromMessage (monitor, target, property, args, monitoringData) {
-    let experience = new Experience(monitoringData.experience);
+  static async detachFromMessage (monitor, target, property, args) {
     console.log(`${property}() async method has been called`);
     // First argument is an incoming request object
     args.push(Experience.readObject(args[0].experience));
     let result = await target[property].apply(monitor, args);
     console.log(`${property}() completed with success`);
-    experience.complete();
-    console.log(`${experience}`);
     return result
   }
 }

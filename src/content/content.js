@@ -1,28 +1,30 @@
-import * as Content from './process'
+import ContentProcess from './content-process'
 import {Monitor as ExperienceMonitor} from 'alpheios-experience'
 
-let monitoredContentProcess = ExperienceMonitor.track(
-  new Content.Process(),
+let contentProcess = ExperienceMonitor.track(
+  new ContentProcess(),
   [
     {
-      monitoredFunction: 'requestWordDataStatefully',
+      monitoredFunction: 'getWordDataStatefully',
       experience: 'Get word data',
       asyncWrapper: ExperienceMonitor.recordExperience
     },
     {
       monitoredFunction: 'sendRequestToBgStatefully',
-      experience: 'Send word data request to a background script',
       asyncWrapper: ExperienceMonitor.attachToMessage
     }
   ]
-  )
+)
 
 // load options, then render
-monitoredContentProcess.loadData().then(
+contentProcess.loadData().then(
   () => {
     console.log('Activated')
-    monitoredContentProcess.status = Content.Process.statuses.ACTIVE
-    monitoredContentProcess.render()
+    contentProcess.status = ContentProcess.statuses.ACTIVE
+    contentProcess.initialize().then(
+      () => { console.log(`Content process has been initialized successfully`) },
+      (error) => { console.log(`Content process has not been initialized due to the following error: ${error}`) }
+    )
   },
   (error) => {
     console.error(`Cannot load content process data because of the following error: ${error}`)

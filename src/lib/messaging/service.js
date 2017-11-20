@@ -1,5 +1,6 @@
+/* global browser */
 import ResponseMessage from './response/response-message'
-import StoredIncomingRequest from './stored-request'
+import StoredOutgoingRequest from './stored-request'
 
 export default class Service {
   constructor () {
@@ -58,13 +59,14 @@ export default class Service {
    * @return {Promise} - An asynchronous result of an operation.
    */
   registerRequest (request, timeout = undefined) {
-    let requestInfo = new StoredIncomingRequest(request)
+    let requestInfo = new StoredOutgoingRequest(request)
     this.messages.set(request.ID, requestInfo)
     if (timeout) {
-      requestInfo.timeoutID = window.setTimeout((messageID) => {
-        let requestInfo = this.messages.get(messageID)
-        requestInfo.reject('Timeout expired') // Reject a promise
-        this.messages.delete(messageID) // Remove from map
+      requestInfo.timeoutID = window.setTimeout((requestID) => {
+        let requestInfo = this.messages.get(requestID)
+        console.log('Timeout has been expired')
+        requestInfo.reject(new Error(`Timeout has been expired`))
+        this.messages.delete(requestID) // Remove from map
         console.log(`Map length is ${this.messages.size}`)
       }, timeout, request.ID)
     }
@@ -74,7 +76,8 @@ export default class Service {
 
   sendRequestToTab (request, timeout, tabID) {
     let promise = this.registerRequest(request, timeout)
-    window.browser.tabs.sendMessage(tabID, request).catch(
+    browser.tabs.sendMessage(tabID, request).then(
+      () => { console.log(`Successfully sent a request to a tab`) },
       (error) => {
         console.error(`tabs.sendMessage() failed: ${error}`)
         this.rejectRequest(request.ID, error)
@@ -85,9 +88,10 @@ export default class Service {
 
   sendRequestToBg (request, timeout) {
     let promise = this.registerRequest(request, timeout)
-    window.browser.runtime.sendMessage(request).catch(
+    browser.runtime.sendMessage(request).then(
+      () => { console.log(`Successfully sent a request to a background`) },
       (error) => {
-        console.error(`runtime.sendMessage() failed: ${error}`)
+        console.error(`Sending request to a background failed: ${error}`)
         this.rejectRequest(request.ID, error)
       }
     )
@@ -95,11 +99,11 @@ export default class Service {
   }
 
   sendResponseToTab (message, tabID) {
-    return window.browser.tabs.sendMessage(tabID, message)
+    return browser.tabs.sendMessage(tabID, message)
   }
 
   sendResponseToBg (message) {
-    return window.browser.runtime.sendMessage(message)
+    return browser.runtime.sendMessage(message)
   }
 
   fulfillRequest (responseMessage) {

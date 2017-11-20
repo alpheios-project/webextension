@@ -1,3 +1,4 @@
+/* global browser */
 import * as Lib from 'alpheios-inflection-tables'
 import Message from '../lib/messaging/message'
 import MessagingService from '../lib/messaging/service'
@@ -11,10 +12,10 @@ import PageControlsTemplate from './templates/page-controls.htmlf'
 import PanelTemplate from './templates/panel.htmlf'
 import OptionsTemplate from './templates/options.htmlf'
 
-class Process {
+export default class ContentProcess {
   constructor () {
-    this.status = Process.statuses.PENDING
-    this.settings = Process.settingValues
+    this.status = ContentProcess.statuses.PENDING
+    this.settings = ContentProcess.settingValues
     this.options = new Options()
 
     this.messagingService = new MessagingService()
@@ -23,7 +24,8 @@ class Process {
   static get settingValues () {
     return {
       hiddenClassName: 'hidden',
-      pageControlSel: '#alpheios-panel-toggle'
+      pageControlSel: '#alpheios-panel-toggle',
+      requestTimeout: 4000
     }
   }
 
@@ -44,28 +46,28 @@ class Process {
   }
 
   get isActive () {
-    return this.status === Process.statuses.ACTIVE
+    return this.status === ContentProcess.statuses.ACTIVE
   }
 
   deactivate () {
     console.log('Content has been deactivated.')
     this.panel.close()
     this.pageControl.classList.add(this.settings.hiddenClassName)
-    this.status = Process.statuses.DEACTIVATED
+    this.status = ContentProcess.statuses.DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
     this.pageControl.classList.remove(this.settings.hiddenClassName)
-    this.status = Process.statuses.ACTIVE
+    this.status = ContentProcess.statuses.ACTIVE
   }
 
-  render () {
+  async initialize () {
     // Inject HTML code of a plugin. Should go in reverse order.
     document.body.classList.add('alpheios')
-    Process.loadPanel()
-    Process.loadPageControls()
-    Process.loadSymbols()
+    ContentProcess.loadPanel()
+    ContentProcess.loadPageControls()
+    ContentProcess.loadSymbols()
 
     this.panel = new Panel(this.options)
     this.panelToggleBtn = document.querySelector('#alpheios-panel-toggle')
@@ -77,22 +79,22 @@ class Process {
     this.messagingService.addHandler(Message.types.STATUS_REQUEST, this.handleStatusRequest, this)
     this.messagingService.addHandler(Message.types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
     this.messagingService.addHandler(Message.types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
-    window.browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
+    browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
   }
 
   static loadSymbols () {
-    Process.loadHTMLFragment(SymbolsTemplate)
+    ContentProcess.loadHTMLFragment(SymbolsTemplate)
   }
 
   static loadPageControls () {
-    Process.loadHTMLFragment(PageControlsTemplate)
+    ContentProcess.loadHTMLFragment(PageControlsTemplate)
   }
 
   static loadPanel () {
-    Process.loadHTMLFragment(PanelTemplate)
+    ContentProcess.loadHTMLFragment(PanelTemplate)
   }
 
   static loadHTMLFragment (html) {
@@ -102,19 +104,22 @@ class Process {
   }
 
   async sendRequestToBgStatefully (request, timeout, state = undefined) {
-    let result = await this.messagingService.sendRequestToBg(request, timeout)
-    return State.value(state, result)
+    try {
+      let result = await this.messagingService.sendRequestToBg(request, timeout)
+      return State.value(state, result)
+    } catch (error) {
+      // Wrap error te same way we wrap value
+      console.log(`Statefull request to a background failed: ${error}`)
+      throw State.value(state, error)
+    }
   }
 
-  async requestWordDataStatefully (language, word, state = undefined) {
+  async getWordDataStatefully (language, word, state = undefined) {
     try {
-      console.log('Before request')
-      let messageObject = await this.sendRequestToBgStatefully(new WordDataRequest(language, word), 1000, state)
+      let messageObject = await this.sendRequestToBgStatefully(
+        new WordDataRequest(language, word), this.settings.requestTimeout, state
+      )
       let message = messageObject.value
-      // state = messageObject.state
-      // ({value: message, state} = await this.sendStatefulRequestToBg(new WordDataRequest(language, word), 1000, state))
-      console.log('After request')
-      console.log('Message body is:', message.body)
 
       if (Message.statusSymIs(message, Message.statuses.DATA_FOUND)) {
         let wordData = Lib.WordData.readObject(message.body)
@@ -130,9 +135,9 @@ class Process {
       }
       return messageObject
     } catch (error) {
-      console.error(`Word data request failed with the following error: ${error}`)
+      console.error(`Word data request failed: ${error.value}`)
+      throw error
     }
-    console.log('After all')
   }
 
   handleStatusRequest (request, sender) {
@@ -209,19 +214,7 @@ class Process {
   getSelectedText () {
     if (this.isActive) {
       let selectedWord = document.getSelection().toString().trim()
-      // Start an experience
-      this.getWordData(selectedWord)
+      this.getWordDataStatefully('unknownLanguage', selectedWord)
     }
   }
-
-  getWordData (selectedWord) {
-    // Start experience
-    this.requestWordDataStatefully('unknownLanguage', selectedWord).then(
-      // Record outcome
-      (success) => console.log(`Success result: ${success}`),
-      (error) => console.log(`Error result: ${error}`)
-    )
-  }
 }
-
-export { Process }
