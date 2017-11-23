@@ -176,7 +176,7 @@ export default class BackgroundProcess {
         status = Message.statuses.DATA_FOUND
         console.log(wordData)
       }
-      let tabID = await BackgroundProcess.getActiveTabID()
+      let tabID = sender.tab.id
       let returnObject = this.sendResponseToTabStatefully(new WordDataResponse(request, wordData, status), tabID, state)
       state = returnObject.state
       return State.emptyValue(state)
@@ -192,6 +192,7 @@ export default class BackgroundProcess {
 
   static async getActiveTabID () {
     let tabs = await browser.tabs.query({ active: true })
+    console.log(`Active tab ID is ${tabs[0].id}`)
     return tabs[0].id
   }
 

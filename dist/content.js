@@ -9240,6 +9240,7 @@ class Service {
   }
 
   sendResponseToTab (message, tabID) {
+    console.log(`Sending response to a tab ID ${tabID}`)
     return browser.tabs.sendMessage(tabID, message)
   }
 

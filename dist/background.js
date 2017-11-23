@@ -8790,6 +8790,7 @@ class Service {
   }
 
   sendResponseToTab (message, tabID) {
+    console.log(`Sending response to a tab ID ${tabID}`)
     return browser.tabs.sendMessage(tabID, message)
   }
 
@@ -9574,7 +9575,7 @@ var BackgroundProcess = function () {
           status = __WEBPACK_IMPORTED_MODULE_2__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND;
           console.log(wordData);
         }
-        var tabID = await BackgroundProcess.getActiveTabID();
+        var tabID = sender.tab.id;
         var returnObject = this.sendResponseToTabStatefully(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_word_data_response__["a" /* default */](request, wordData, status), tabID, state);
         state = returnObject.state;
         return __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].emptyValue(state);
@@ -9606,6 +9607,7 @@ var BackgroundProcess = function () {
     key: 'getActiveTabID',
     value: async function getActiveTabID() {
       var tabs = await browser.tabs.query({ active: true });
+      console.log('Active tab ID is ' + tabs[0].id);
       return tabs[0].id;
     }
   }, {
