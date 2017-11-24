@@ -11,6 +11,7 @@ import SymbolsTemplate from './templates/symbols.htmlf'
 import PageControlsTemplate from './templates/page-controls.htmlf'
 import PanelTemplate from './templates/panel.htmlf'
 import OptionsTemplate from './templates/options.htmlf'
+import SourceSelection from '../lib/selection/source-selection'
 
 export default class ContentProcess {
   constructor () {
@@ -221,10 +222,14 @@ export default class ContentProcess {
     }
   }
 
-  getSelectedText () {
+  getSelectedText (event) {
     if (this.isActive) {
-      let selectedWord = document.getSelection().toString().trim()
-      this.getWordDataStatefully('unknownLanguage', selectedWord)
+      let selection = new SourceSelection(event.target, 'grc')
+      selection.reset()
+      if (selection.word_selection.word) {
+        let language = selection.language.toCode()
+        this.getWordDataStatefully(language, selection.word_selection.word)
+      }
     }
   }
 }
