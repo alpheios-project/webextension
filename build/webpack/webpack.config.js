@@ -60,6 +60,10 @@ module.exports = [
           use: 'raw-loader'
         },
         {
+          test: /\.vue$/,
+          loader: 'vue-loader'
+        },
+        {
           test: /\.js$/,
           include: path.resolve(__dirname, '../../src/content'),
           use: [{
