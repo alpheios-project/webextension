@@ -1,7 +1,7 @@
 import ContentProcess from './content-process'
 import {Monitor as ExperienceMonitor} from 'alpheios-experience'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
-import App from './app.vue'
+import VueApp from './app.vue'
 
 let contentProcess = ExperienceMonitor.track(
   new ContentProcess(),
@@ -29,7 +29,7 @@ contentProcess.loadData().then(
         let vue = new Vue({
           el: '#app',
           template: '<App/>',
-          components: { App }
+          components: { App: VueApp }
         })
       },
       (error) => { console.log(`Content process has not been initialized due to the following error: ${error}`) }

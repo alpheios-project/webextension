@@ -38,6 +38,7 @@
     "copy-webpack-plugin": "^4.0.1",
     "coveralls": "^3.0.0",
     "css-loader": "^0.28.0",
+    "element-closest": "^2.0.2",
     "extract-text-webpack-plugin": "^3.0.0",
     "file-loader": "^1.1.4",
     "font-awesome-svg-png": "^1.2.2",
