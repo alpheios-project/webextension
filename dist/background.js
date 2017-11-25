@@ -13708,7 +13708,7 @@ module.exports = "<svg xmlns=\"http://www.w3.org/2000/svg\" style=\"display: non
 /* 26 */
 /***/ (function(module, exports) {
 
-module.exports = "<div>\r\n    <svg id=\"alpheios-panel-toggle\" class=\"alpheios-panel-show-btn\">\r\n        <use xlink:href=\"#alf-icon-circle-o-notch\"/>\r\n    </svg>\r\n    <div id=\"app\">App</div>\r\n</div>"
+module.exports = "<div>\r\n    <svg id=\"alpheios-panel-toggle\" class=\"alpheios-panel-show-btn\">\r\n        <use xlink:href=\"#alf-icon-circle-o-notch\"/>\r\n    </svg>\r\n    <div id=\"app\">App</div>\r\n\r\n</div>"
 
 /***/ }),
 /* 27 */

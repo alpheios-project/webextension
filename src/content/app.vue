@@ -1,27 +1,35 @@
 <template>
-  <div id="app">
-    <HelloWorld/>
-  </div>
+    <div id="app">
+        <test-modal></test-modal>
+
+        <button class="btn" @click="$modal.show('popup')">
+            Test Modal
+        </button>
+    </div>
 </template>
 
 <script>
-import HelloWorld from './components/hello-world.vue'
+  import Popup from './components/popup.vue'
 
-export default {
-  name: 'app',
-  components: {
-    HelloWorld
+  export default {
+    name: 'app',
+    components: {
+      TestModal: Popup
+    },
+    created () { },
+    methods: { },
   }
-}
 </script>
 
-<style>
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+<style lang="scss" scoped>
+    button.btn {
+        outline: none;
+        padding: 6px 18px;
+        cursor: pointer;
+        border-radius: 0;
+        color: rgb(13, 119, 182);
+        background: rgb(255, 255, 255);
+        border: 1px solid rgb(13, 119, 182);
+        min-width: 90px;
+    }
 </style>

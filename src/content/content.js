@@ -2,6 +2,7 @@ import ContentProcess from './content-process'
 import {Monitor as ExperienceMonitor} from 'alpheios-experience'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import VueApp from './app.vue'
+import VueJsModal from 'vue-js-modal'
 
 let contentProcess = ExperienceMonitor.track(
   new ContentProcess(),
@@ -26,10 +27,18 @@ contentProcess.loadData().then(
     contentProcess.initialize().then(
       () => {
         console.log(`Content process has been initialized successfully`)
+
+        Vue.use(VueJsModal, {
+          dialog: true
+        })
+
         let vue = new Vue({
           el: '#app',
           template: '<App/>',
-          components: { App: VueApp }
+          components: { App: VueApp },
+          mounted: function () {
+            console.log('mounted')
+          }
         })
       },
       (error) => { console.log(`Content process has not been initialized due to the following error: ${error}`) }
