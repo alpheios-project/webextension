@@ -20,7 +20,7 @@
   "homepage": "https://github.com/alpheios-project/webextension#readme",
   "devDependencies": {
     "alpheios-data-models": "github:alpheios-project/data-models",
-    "alpheios-experience": "file:../experience",
+    "alpheios-experience": "github:alpheios-project/experience",
     "alpheios-inflection-tables": "github:alpheios-project/inflection-tables",
     "alpheios-tufts-adapter": "github:alpheios-project/analyzer",
     "autoprefixer": "^7.1.6",

@@ -154,35 +154,45 @@ export default class BackgroundProcess {
   }
 
   async getHomonymStatefully (language, word, state) {
-    let result = await this.maAdapter.getHomonym(language, word, state)
-    return State.value(state, result)
+    try {
+      let result = await this.maAdapter.getHomonym(language, word, state)
+      // If no valid homonym data found should always throw an error to be caught in a calling function
+      return State.value(state, result)
+    } catch (error) {
+      /*
+      getHomonym is non-statefull function. If it throws an error, we should catch it here, attach state
+      information, and rethrow
+      */
+      throw (State.value(state, error))
+    }
   }
 
   async handleWordDataRequestStatefully (request, sender, state = undefined) {
     let selectedWord = InflectionTables.SelectedWord.readObjects(request.body)
     console.log(`Request for a "${selectedWord.word}" word`)
+    let tabID = sender.tab.id
 
     try {
       // homonymObject is a state object, where 'value' proparty has homonym, and 'state' - a state
       let homonym
       let wordData
       ({ value: homonym, state } = await this.getHomonymStatefully(selectedWord.language, selectedWord.word, state))
-      let status = Message.statuses.NO_DATA_FOUND
-      if (homonym) {
-        // If word data is found, get matching suffixes from an inflection library
-        wordData = this.langData.getSuffixes(homonym, state)
-        wordData.definition = await TestDefinitionService.getDefinition(selectedWord.language, selectedWord.word)
-        wordData.definition = encodeURIComponent(wordData.definition)
-        status = Message.statuses.DATA_FOUND
-        console.log(wordData)
-      }
-      let tabID = sender.tab.id
-      let returnObject = this.sendResponseToTabStatefully(new WordDataResponse(request, wordData, status), tabID, state)
-      state = returnObject.state
-      return State.emptyValue(state)
+      if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
+
+      wordData = this.langData.getSuffixes(homonym, state)
+      wordData.definition = await TestDefinitionService.getDefinition(selectedWord.language, selectedWord.word)
+      wordData.definition = encodeURIComponent(wordData.definition)
+      console.log(wordData)
+
+      let returnObject = this.sendResponseToTabStatefully(new WordDataResponse(request, wordData, Message.statuses.DATA_FOUND), tabID, state)
+      return State.emptyValue(returnObject.state)
     } catch (error) {
-      console.error(`An error occurred during a retrieval of word data: ${error}`)
-      return State.emptyValue(state)
+      let errorValue = State.getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
+      console.error(`Word data retrieval failed: ${errorValue}`)
+      let returnObject = this.sendResponseToTabStatefully(
+        new WordDataResponse(request, undefined, Message.statuses.NO_DATA_FOUND), tabID, State.getState(error)
+      )
+      return State.emptyValue(returnObject.state)
     }
   }
 

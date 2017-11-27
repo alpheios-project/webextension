@@ -8828,26 +8828,30 @@ class Service {
 
 "use strict";
 class State {
+  constructor (state, value = undefined) {
+    this.state = state
+    this.value = value
+  }
   static value (state, value = undefined) {
-    return {
-      value: value,
-      state: state
-    }
+    return new State(state, value)
   }
 
   static emptyValue (state) {
-    return {
-      value: undefined,
-      state: state
+    return new State(state)
+  }
+
+  static getValue (state) {
+    if (!(state instanceof State)) {
+      // The object passed is of a different type, will return this object as a value
+      return state
     }
+    if (!state.hasOwnProperty('value')) { return undefined }
+    return state.value
   }
 
-  static getValue (stateObject) {
-    return stateObject.value
-  }
-
-  static getState (stateObject) {
-    return stateObject.state
+  static getState (state) {
+    if (!state.hasOwnProperty('state')) { return undefined }
+    return state.state
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = State;
@@ -11036,8 +11040,17 @@ var BackgroundProcess = function () {
   }, {
     key: 'getHomonymStatefully',
     value: async function getHomonymStatefully(language, word, state) {
-      var result = await this.maAdapter.getHomonym(language, word, state);
-      return __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].value(state, result);
+      try {
+        var result = await this.maAdapter.getHomonym(language, word, state);
+        // If no valid homonym data found should always throw an error to be caught in a calling function
+        return __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].value(state, result);
+      } catch (error) {
+        /*
+        getHomonym is non-statefull function. If it throws an error, we should catch it here, attach state
+        information, and rethrow
+        */
+        throw __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].value(state, error);
+      }
     }
   }, {
     key: 'handleWordDataRequestStatefully',
@@ -11046,6 +11059,7 @@ var BackgroundProcess = function () {
 
       var selectedWord = __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["e" /* SelectedWord */].readObjects(request.body);
       console.log('Request for a "' + selectedWord.word + '" word');
+      var tabID = sender.tab.id;
 
       try {
         // homonymObject is a state object, where 'value' proparty has homonym, and 'state' - a state
@@ -11057,22 +11071,22 @@ var BackgroundProcess = function () {
         homonym = _ref.value;
         state = _ref.state;
 
-        var status = __WEBPACK_IMPORTED_MODULE_2__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND;
-        if (homonym) {
-          // If word data is found, get matching suffixes from an inflection library
-          wordData = this.langData.getSuffixes(homonym, state);
-          wordData.definition = await __WEBPACK_IMPORTED_MODULE_10__test_stubs_definitions_test__["a" /* default */].getDefinition(selectedWord.language, selectedWord.word);
-          wordData.definition = encodeURIComponent(wordData.definition);
-          status = __WEBPACK_IMPORTED_MODULE_2__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND;
-          console.log(wordData);
+        if (!homonym) {
+          throw __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].value(state, new Error('Homonym data is empty'));
         }
-        var tabID = sender.tab.id;
-        var returnObject = this.sendResponseToTabStatefully(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_word_data_response__["a" /* default */](request, wordData, status), tabID, state);
-        state = returnObject.state;
-        return __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].emptyValue(state);
+
+        wordData = this.langData.getSuffixes(homonym, state);
+        wordData.definition = await __WEBPACK_IMPORTED_MODULE_10__test_stubs_definitions_test__["a" /* default */].getDefinition(selectedWord.language, selectedWord.word);
+        wordData.definition = encodeURIComponent(wordData.definition);
+        console.log(wordData);
+
+        var returnObject = this.sendResponseToTabStatefully(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_word_data_response__["a" /* default */](request, wordData, __WEBPACK_IMPORTED_MODULE_2__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND), tabID, state);
+        return __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].emptyValue(returnObject.state);
       } catch (error) {
-        console.error('An error occurred during a retrieval of word data: ' + error);
-        return __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].emptyValue(state);
+        var errorValue = __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].getValue(error); // In a mixed environment, both statefull and stateless error messages can be thrown
+        console.error('Word data retrieval failed: ' + errorValue);
+        var _returnObject = this.sendResponseToTabStatefully(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_word_data_response__["a" /* default */](request, undefined, __WEBPACK_IMPORTED_MODULE_2__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND), tabID, __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].getState(error));
+        return __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].emptyValue(_returnObject.state);
       }
     }
   }, {
@@ -13305,6 +13319,19 @@ class ContentProcess {
     document.body.insertBefore(container.firstChild, document.body.firstChild)
   }
 
+  showMessage (messageHTML) {
+    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+      this.panel.clear()
+      this.panel.definitionContainer.innerHTML = messageHTML
+      this.panel.open().changeActiveTabTo(this.panel.tabs[0])
+    } else {
+      this.vueInstance.panel = this.panel
+      this.vueInstance.popupTitle = ''
+      this.vueInstance.popupContent = messageHTML
+      this.vueInstance.$modal.show('popup')
+    }
+  }
+
   async sendRequestToBgStatefully (request, timeout, state = undefined) {
     try {
       let result = await this.messagingService.sendRequestToBg(request, timeout)
@@ -13353,14 +13380,12 @@ class ContentProcess {
           this.vueInstance.$modal.show('popup')
         }
       } else if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND)) {
-        this.panel.clear()
-        this.panel.definitionContainer.innerHTML = '<p>Sorry, the word you requested was not found.</p>'
-        this.panel.open().changeActiveTabTo(this.panel.tabs[0])
+        this.showMessage('<p>Sorry, the word you requested was not found.</p>')
       }
       return messageObject
     } catch (error) {
       console.error(`Word data request failed: ${error.value}`)
-      throw error
+      this.showMessage(`<p>Sorry, your word you requested failed:<br><strong>${error.value}</strong></p>`)
     }
   }
 

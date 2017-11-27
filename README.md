@@ -9,6 +9,11 @@ Experience library [documentation](../experience/README.md).
 
 ## Development Notes
 
+### Stateful Functions
+The functions that are monitored should be statefull. They should have a `Statefull` word in their names
+by convention. For more information on statefull functions please check "Statefull Functions" section in
+Experience Monitor documentation.
+
 ### WebExtension ID
 Explicit WebExtension ID is not necessary ([https://developer.mozilla.org/en-US/Add-ons/WebExtensions/WebExtensions_and_the_Add-on_ID]).
 

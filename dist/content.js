@@ -10332,6 +10332,20 @@ var ContentProcess = function () {
       document.body.addEventListener('dblclick', this.getSelectedText.bind(this));
     }
   }, {
+    key: 'showMessage',
+    value: function showMessage(messageHTML) {
+      if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+        this.panel.clear();
+        this.panel.definitionContainer.innerHTML = messageHTML;
+        this.panel.open().changeActiveTabTo(this.panel.tabs[0]);
+      } else {
+        this.vueInstance.panel = this.panel;
+        this.vueInstance.popupTitle = '';
+        this.vueInstance.popupContent = messageHTML;
+        this.vueInstance.$modal.show('popup');
+      }
+    }
+  }, {
     key: 'sendRequestToBgStatefully',
     value: async function sendRequestToBgStatefully(request, timeout) {
       var state = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
@@ -10374,14 +10388,12 @@ var ContentProcess = function () {
             this.vueInstance.$modal.show('popup');
           }
         } else if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND)) {
-          this.panel.clear();
-          this.panel.definitionContainer.innerHTML = '<p>Sorry, the word you requested was not found.</p>';
-          this.panel.open().changeActiveTabTo(this.panel.tabs[0]);
+          this.showMessage('<p>Sorry, the word you requested was not found.</p>');
         }
         return messageObject;
       } catch (error) {
         console.error('Word data request failed: ' + error.value);
-        throw error;
+        this.showMessage('<p>Sorry, your word you requested failed:<br><strong>' + error.value + '</strong></p>');
       }
     }
   }, {
@@ -11212,26 +11224,30 @@ class Options {
 
 "use strict";
 class State {
+  constructor (state, value = undefined) {
+    this.state = state
+    this.value = value
+  }
   static value (state, value = undefined) {
-    return {
-      value: value,
-      state: state
-    }
+    return new State(state, value)
   }
 
   static emptyValue (state) {
-    return {
-      value: undefined,
-      state: state
+    return new State(state)
+  }
+
+  static getValue (state) {
+    if (!(state instanceof State)) {
+      // The object passed is of a different type, will return this object as a value
+      return state
     }
+    if (!state.hasOwnProperty('value')) { return undefined }
+    return state.value
   }
 
-  static getValue (stateObject) {
-    return stateObject.value
-  }
-
-  static getState (stateObject) {
-    return stateObject.state
+  static getState (state) {
+    if (!state.hasOwnProperty('state')) { return undefined }
+    return state.state
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = State;

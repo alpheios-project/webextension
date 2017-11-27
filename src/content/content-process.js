@@ -136,6 +136,19 @@ export default class ContentProcess {
     document.body.insertBefore(container.firstChild, document.body.firstChild)
   }
 
+  showMessage (messageHTML) {
+    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+      this.panel.clear()
+      this.panel.definitionContainer.innerHTML = messageHTML
+      this.panel.open().changeActiveTabTo(this.panel.tabs[0])
+    } else {
+      this.vueInstance.panel = this.panel
+      this.vueInstance.popupTitle = ''
+      this.vueInstance.popupContent = messageHTML
+      this.vueInstance.$modal.show('popup')
+    }
+  }
+
   async sendRequestToBgStatefully (request, timeout, state = undefined) {
     try {
       let result = await this.messagingService.sendRequestToBg(request, timeout)
@@ -184,14 +197,12 @@ export default class ContentProcess {
           this.vueInstance.$modal.show('popup')
         }
       } else if (Message.statusSymIs(message, Message.statuses.NO_DATA_FOUND)) {
-        this.panel.clear()
-        this.panel.definitionContainer.innerHTML = '<p>Sorry, the word you requested was not found.</p>'
-        this.panel.open().changeActiveTabTo(this.panel.tabs[0])
+        this.showMessage('<p>Sorry, the word you requested was not found.</p>')
       }
       return messageObject
     } catch (error) {
       console.error(`Word data request failed: ${error.value}`)
-      throw error
+      this.showMessage(`<p>Sorry, your word you requested failed:<br><strong>${error.value}</strong></p>`)
     }
   }
 
