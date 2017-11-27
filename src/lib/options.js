@@ -50,6 +50,14 @@ export default class Options {
           {value: 'right', text: 'Right'}
         ],
         inputSelector: '#alpheios-position-selector-list'
+      },
+      uiType: {
+        defaultValue: 'popup',
+        values: [
+          {value: 'popup', text: 'Pop-up'},
+          {value: 'panel', text: 'Panel'}
+        ],
+        inputSelector: '#alpheios-ui-type-selector-list'
       }
     }
   }

@@ -1,8 +1,6 @@
 import ContentProcess from './content-process'
 import {Monitor as ExperienceMonitor} from 'alpheios-experience'
-import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
-import VueApp from './app.vue'
-import VueJsModal from 'vue-js-modal'
+import Popup from './vue-components/popup.vue' // For whatever reason it cannot be imported in content-process.js
 
 let contentProcess = ExperienceMonitor.track(
   new ContentProcess(),
@@ -26,20 +24,8 @@ contentProcess.loadData().then(
     contentProcess.status = ContentProcess.statuses.ACTIVE
     contentProcess.initialize().then(
       () => {
+        contentProcess.createVueInstance({ popup: Popup })
         console.log(`Content process has been initialized successfully`)
-
-        Vue.use(VueJsModal, {
-          dialog: true
-        })
-
-        let vue = new Vue({
-          el: '#app',
-          template: '<App/>',
-          components: { App: VueApp },
-          mounted: function () {
-            console.log('mounted')
-          }
-        })
       },
       (error) => { console.log(`Content process has not been initialized due to the following error: ${error}`) }
     )

@@ -12,12 +12,18 @@ import PageControlsTemplate from './templates/page-controls.htmlf'
 import PanelTemplate from './templates/panel.htmlf'
 import OptionsTemplate from './templates/options.htmlf'
 import HTMLSelector from '../lib/selection/media/html-selector'
+import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
+import VueJsModal from 'vue-js-modal'
+// import Popup from './vue-components/popup.vue' TODO: This does not work - why?
 
 export default class ContentProcess {
   constructor () {
     this.status = ContentProcess.statuses.PENDING
     this.settings = ContentProcess.settingValues
     this.options = new Options()
+    this.vueInstance = undefined
+
+    this.modal = undefined
 
     this.messagingService = new MessagingService()
   }
@@ -26,7 +32,9 @@ export default class ContentProcess {
     return {
       hiddenClassName: 'hidden',
       pageControlSel: '#alpheios-panel-toggle',
-      requestTimeout: 4000
+      requestTimeout: 4000,
+      uiTypePanel: 'panel',
+      uiTypePopup: 'popup'
     }
   }
 
@@ -44,6 +52,30 @@ export default class ContentProcess {
    */
   async loadData () {
     return this.options.loadStoredData()
+  }
+
+  createVueInstance (components) {
+    // Register a modal plugin
+    Vue.use(VueJsModal, {
+      dialog: false
+    })
+
+    let options = {
+      el: '#popup',
+      // template: '<app/>',
+      components: components,
+      data: {
+        popupTitle: '',
+        popupContent: '',
+        panel: undefined
+      },
+      mounted: function () {
+        console.log('Root instance is mounted')
+      }
+    }
+
+    this.vueInstance = new Vue(options)
+    this.modal = this.vueInstance.$modal
   }
 
   get isActive () {
@@ -125,10 +157,32 @@ export default class ContentProcess {
       if (Message.statusSymIs(message, Message.statuses.DATA_FOUND)) {
         let wordData = Lib.WordData.readObject(message.body)
         console.log('Word data is: ', wordData)
+
+        // Populate a panel
         this.panel.clear()
         this.updateDefinition(wordData)
         this.updateInflectionTable(wordData)
-        this.panel.open()
+
+        // Pouplate a popup
+        this.vueInstance.panel = this.panel
+        this.vueInstance.popupTitle = `${wordData.homonym.targetWord}`
+        this.vueInstance.popupContent = `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.
+                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.
+                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,
+                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.
+                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>
+
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.
+                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.
+                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,
+                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.
+                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>`
+
+        if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+          this.panel.open()
+        } else {
+          this.vueInstance.$modal.show('popup')
+        }
       } else if (Message.statusSymIs(message, Message.statuses.NO_DATA_FOUND)) {
         this.panel.clear()
         this.panel.definitionContainer.innerHTML = '<p>Sorry, the word you requested was not found.</p>'

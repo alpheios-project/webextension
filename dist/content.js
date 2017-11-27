@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 8);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -68,7 +68,7 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
 
 
@@ -10157,435 +10157,17 @@ class ResourceProvider {
 
 /***/ }),
 /* 5 */
-/***/ (function(module, exports) {
-
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-// css base code, injected by the css-loader
-module.exports = function(useSourceMap) {
-	var list = [];
-
-	// return the list of modules as css string
-	list.toString = function toString() {
-		return this.map(function (item) {
-			var content = cssWithMappingToString(item, useSourceMap);
-			if(item[2]) {
-				return "@media " + item[2] + "{" + content + "}";
-			} else {
-				return content;
-			}
-		}).join("");
-	};
-
-	// import a list of modules into the list
-	list.i = function(modules, mediaQuery) {
-		if(typeof modules === "string")
-			modules = [[null, modules, ""]];
-		var alreadyImportedModules = {};
-		for(var i = 0; i < this.length; i++) {
-			var id = this[i][0];
-			if(typeof id === "number")
-				alreadyImportedModules[id] = true;
-		}
-		for(i = 0; i < modules.length; i++) {
-			var item = modules[i];
-			// skip already imported module
-			// this implementation is not 100% perfect for weird media query combinations
-			//  when a module is imported multiple times with different media queries.
-			//  I hope this will never occur (Hey this way we have smaller bundles)
-			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-				if(mediaQuery && !item[2]) {
-					item[2] = mediaQuery;
-				} else if(mediaQuery) {
-					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-				}
-				list.push(item);
-			}
-		}
-	};
-	return list;
-};
-
-function cssWithMappingToString(item, useSourceMap) {
-	var content = item[1] || '';
-	var cssMapping = item[3];
-	if (!cssMapping) {
-		return content;
-	}
-
-	if (useSourceMap && typeof btoa === 'function') {
-		var sourceMapping = toComment(cssMapping);
-		var sourceURLs = cssMapping.sources.map(function (source) {
-			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
-		});
-
-		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
-	}
-
-	return [content].join('\n');
-}
-
-// Adapted from convert-source-map (MIT)
-function toComment(sourceMap) {
-	// eslint-disable-next-line no-undef
-	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
-	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
-
-	return '/*# ' + data + ' */';
-}
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/*
-  MIT License http://www.opensource.org/licenses/mit-license.php
-  Author Tobias Koppers @sokra
-  Modified by Evan You @yyx990803
-*/
-
-var hasDocument = typeof document !== 'undefined'
-
-if (typeof DEBUG !== 'undefined' && DEBUG) {
-  if (!hasDocument) {
-    throw new Error(
-    'vue-style-loader cannot be used in a non-browser environment. ' +
-    "Use { target: 'node' } in your Webpack config to indicate a server-rendering environment."
-  ) }
-}
-
-var listToStyles = __webpack_require__(38)
-
-/*
-type StyleObject = {
-  id: number;
-  parts: Array<StyleObjectPart>
-}
-
-type StyleObjectPart = {
-  css: string;
-  media: string;
-  sourceMap: ?string
-}
-*/
-
-var stylesInDom = {/*
-  [id: number]: {
-    id: number,
-    refs: number,
-    parts: Array<(obj?: StyleObjectPart) => void>
-  }
-*/}
-
-var head = hasDocument && (document.head || document.getElementsByTagName('head')[0])
-var singletonElement = null
-var singletonCounter = 0
-var isProduction = false
-var noop = function () {}
-
-// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
-// tags it will allow on a page
-var isOldIE = typeof navigator !== 'undefined' && /msie [6-9]\b/.test(navigator.userAgent.toLowerCase())
-
-module.exports = function (parentId, list, _isProduction) {
-  isProduction = _isProduction
-
-  var styles = listToStyles(parentId, list)
-  addStylesToDom(styles)
-
-  return function update (newList) {
-    var mayRemove = []
-    for (var i = 0; i < styles.length; i++) {
-      var item = styles[i]
-      var domStyle = stylesInDom[item.id]
-      domStyle.refs--
-      mayRemove.push(domStyle)
-    }
-    if (newList) {
-      styles = listToStyles(parentId, newList)
-      addStylesToDom(styles)
-    } else {
-      styles = []
-    }
-    for (var i = 0; i < mayRemove.length; i++) {
-      var domStyle = mayRemove[i]
-      if (domStyle.refs === 0) {
-        for (var j = 0; j < domStyle.parts.length; j++) {
-          domStyle.parts[j]()
-        }
-        delete stylesInDom[domStyle.id]
-      }
-    }
-  }
-}
-
-function addStylesToDom (styles /* Array<StyleObject> */) {
-  for (var i = 0; i < styles.length; i++) {
-    var item = styles[i]
-    var domStyle = stylesInDom[item.id]
-    if (domStyle) {
-      domStyle.refs++
-      for (var j = 0; j < domStyle.parts.length; j++) {
-        domStyle.parts[j](item.parts[j])
-      }
-      for (; j < item.parts.length; j++) {
-        domStyle.parts.push(addStyle(item.parts[j]))
-      }
-      if (domStyle.parts.length > item.parts.length) {
-        domStyle.parts.length = item.parts.length
-      }
-    } else {
-      var parts = []
-      for (var j = 0; j < item.parts.length; j++) {
-        parts.push(addStyle(item.parts[j]))
-      }
-      stylesInDom[item.id] = { id: item.id, refs: 1, parts: parts }
-    }
-  }
-}
-
-function createStyleElement () {
-  var styleElement = document.createElement('style')
-  styleElement.type = 'text/css'
-  head.appendChild(styleElement)
-  return styleElement
-}
-
-function addStyle (obj /* StyleObjectPart */) {
-  var update, remove
-  var styleElement = document.querySelector('style[data-vue-ssr-id~="' + obj.id + '"]')
-
-  if (styleElement) {
-    if (isProduction) {
-      // has SSR styles and in production mode.
-      // simply do nothing.
-      return noop
-    } else {
-      // has SSR styles but in dev mode.
-      // for some reason Chrome can't handle source map in server-rendered
-      // style tags - source maps in <style> only works if the style tag is
-      // created and inserted dynamically. So we remove the server rendered
-      // styles and inject new ones.
-      styleElement.parentNode.removeChild(styleElement)
-    }
-  }
-
-  if (isOldIE) {
-    // use singleton mode for IE9.
-    var styleIndex = singletonCounter++
-    styleElement = singletonElement || (singletonElement = createStyleElement())
-    update = applyToSingletonTag.bind(null, styleElement, styleIndex, false)
-    remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true)
-  } else {
-    // use multi-style-tag mode in all other cases
-    styleElement = createStyleElement()
-    update = applyToTag.bind(null, styleElement)
-    remove = function () {
-      styleElement.parentNode.removeChild(styleElement)
-    }
-  }
-
-  update(obj)
-
-  return function updateStyle (newObj /* StyleObjectPart */) {
-    if (newObj) {
-      if (newObj.css === obj.css &&
-          newObj.media === obj.media &&
-          newObj.sourceMap === obj.sourceMap) {
-        return
-      }
-      update(obj = newObj)
-    } else {
-      remove()
-    }
-  }
-}
-
-var replaceText = (function () {
-  var textStore = []
-
-  return function (index, replacement) {
-    textStore[index] = replacement
-    return textStore.filter(Boolean).join('\n')
-  }
-})()
-
-function applyToSingletonTag (styleElement, index, remove, obj) {
-  var css = remove ? '' : obj.css
-
-  if (styleElement.styleSheet) {
-    styleElement.styleSheet.cssText = replaceText(index, css)
-  } else {
-    var cssNode = document.createTextNode(css)
-    var childNodes = styleElement.childNodes
-    if (childNodes[index]) styleElement.removeChild(childNodes[index])
-    if (childNodes.length) {
-      styleElement.insertBefore(cssNode, childNodes[index])
-    } else {
-      styleElement.appendChild(cssNode)
-    }
-  }
-}
-
-function applyToTag (styleElement, obj) {
-  var css = obj.css
-  var media = obj.media
-  var sourceMap = obj.sourceMap
-
-  if (media) {
-    styleElement.setAttribute('media', media)
-  }
-
-  if (sourceMap) {
-    // https://developer.chrome.com/devtools/docs/javascript-debugging
-    // this makes source maps inside style tags work properly in Chrome
-    css += '\n/*# sourceURL=' + sourceMap.sources[0] + ' */'
-    // http://stackoverflow.com/a/26603875
-    css += '\n/*# sourceMappingURL=data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + ' */'
-  }
-
-  if (styleElement.styleSheet) {
-    styleElement.styleSheet.cssText = css
-  } else {
-    while (styleElement.firstChild) {
-      styleElement.removeChild(styleElement.firstChild)
-    }
-    styleElement.appendChild(document.createTextNode(css))
-  }
-}
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports) {
-
-/* globals __VUE_SSR_CONTEXT__ */
-
-// IMPORTANT: Do NOT use ES2015 features in this file.
-// This module is a runtime utility for cleaner component module output and will
-// be included in the final webpack user bundle.
-
-module.exports = function normalizeComponent (
-  rawScriptExports,
-  compiledTemplate,
-  functionalTemplate,
-  injectStyles,
-  scopeId,
-  moduleIdentifier /* server only */
-) {
-  var esModule
-  var scriptExports = rawScriptExports = rawScriptExports || {}
-
-  // ES6 modules interop
-  var type = typeof rawScriptExports.default
-  if (type === 'object' || type === 'function') {
-    esModule = rawScriptExports
-    scriptExports = rawScriptExports.default
-  }
-
-  // Vue.extend constructor export interop
-  var options = typeof scriptExports === 'function'
-    ? scriptExports.options
-    : scriptExports
-
-  // render functions
-  if (compiledTemplate) {
-    options.render = compiledTemplate.render
-    options.staticRenderFns = compiledTemplate.staticRenderFns
-    options._compiled = true
-  }
-
-  // functional template
-  if (functionalTemplate) {
-    options.functional = true
-  }
-
-  // scopedId
-  if (scopeId) {
-    options._scopeId = scopeId
-  }
-
-  var hook
-  if (moduleIdentifier) { // server build
-    hook = function (context) {
-      // 2.3 injection
-      context =
-        context || // cached call
-        (this.$vnode && this.$vnode.ssrContext) || // stateful
-        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
-      // 2.2 with runInNewContext: true
-      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
-        context = __VUE_SSR_CONTEXT__
-      }
-      // inject component styles
-      if (injectStyles) {
-        injectStyles.call(this, context)
-      }
-      // register component module identifier for async chunk inferrence
-      if (context && context._registeredComponents) {
-        context._registeredComponents.add(moduleIdentifier)
-      }
-    }
-    // used by ssr in case component is cached and beforeCreate
-    // never gets called
-    options._ssrRegister = hook
-  } else if (injectStyles) {
-    hook = injectStyles
-  }
-
-  if (hook) {
-    var functional = options.functional
-    var existing = functional
-      ? options.render
-      : options.beforeCreate
-
-    if (!functional) {
-      // inject component registration as beforeCreate hook
-      options.beforeCreate = existing
-        ? [].concat(existing, hook)
-        : [hook]
-    } else {
-      // for template-only hot-reload because in that case the render fn doesn't
-      // go through the normalizer
-      options._injectStyles = hook
-      // register for functioal component in vue file
-      options.render = function renderWithStyleInjection (h, context) {
-        hook.call(context)
-        return existing(h, context)
-      }
-    }
-  }
-
-  return {
-    esModule: esModule,
-    exports: scriptExports,
-    options: options
-  }
-}
-
-
-/***/ }),
-/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(32);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__app_vue__ = __webpack_require__(35);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_vue_js_modal__ = __webpack_require__(46);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_vue_js_modal__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__vue_components_popup_vue__ = __webpack_require__(33);
 
 
- // Vue in a runtime + compiler configuration
-
-
+ // For whatever reason it cannot be imported in content-process.js
 
 var contentProcess = __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].track(new __WEBPACK_IMPORTED_MODULE_0__content_process__["a" /* default */](), [{
   monitoredFunction: 'getWordDataStatefully',
@@ -10601,20 +10183,8 @@ contentProcess.loadData().then(function () {
   console.log('Activated');
   contentProcess.status = __WEBPACK_IMPORTED_MODULE_0__content_process__["a" /* default */].statuses.ACTIVE;
   contentProcess.initialize().then(function () {
+    contentProcess.createVueInstance({ popup: __WEBPACK_IMPORTED_MODULE_2__vue_components_popup_vue__["a" /* default */] });
     console.log('Content process has been initialized successfully');
-
-    __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_4_vue_js_modal___default.a, {
-      dialog: true
-    });
-
-    var vue = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
-      el: '#app',
-      template: '<App/>',
-      components: { App: __WEBPACK_IMPORTED_MODULE_3__app_vue__["a" /* default */] },
-      mounted: function mounted() {
-        console.log('mounted');
-      }
-    });
   }, function (error) {
     console.log('Content process has not been initialized due to the following error: ' + error);
   });
@@ -10623,27 +10193,31 @@ contentProcess.loadData().then(function () {
 });
 
 /***/ }),
-/* 9 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__panel__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_options__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_state__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__panel__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_options__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_state__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf__ = __webpack_require__(18);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_vue_js_modal__);
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
@@ -10664,6 +10238,9 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 
 
+ // Vue in a runtime + compiler configuration
+
+// import Popup from './vue-components/popup.vue' TODO: This does not work - why?
 
 var ContentProcess = function () {
   function ContentProcess() {
@@ -10672,6 +10249,9 @@ var ContentProcess = function () {
     this.status = ContentProcess.statuses.PENDING;
     this.settings = ContentProcess.settingValues;
     this.options = new __WEBPACK_IMPORTED_MODULE_6__lib_options__["a" /* default */]();
+    this.vueInstance = undefined;
+
+    this.modal = undefined;
 
     this.messagingService = new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__["a" /* default */]();
   }
@@ -10686,6 +10266,31 @@ var ContentProcess = function () {
      */
     value: async function loadData() {
       return this.options.loadStoredData();
+    }
+  }, {
+    key: 'createVueInstance',
+    value: function createVueInstance(components) {
+      // Register a modal plugin
+      __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_14_vue_js_modal___default.a, {
+        dialog: false
+      });
+
+      var options = {
+        el: '#popup',
+        // template: '<app/>',
+        components: components,
+        data: {
+          popupTitle: '',
+          popupContent: '',
+          panel: undefined
+        },
+        mounted: function mounted() {
+          console.log('Root instance is mounted');
+        }
+      };
+
+      this.vueInstance = new __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default.a(options);
+      this.modal = this.vueInstance.$modal;
     }
   }, {
     key: 'deactivate',
@@ -10752,10 +10357,22 @@ var ContentProcess = function () {
         if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND)) {
           var wordData = __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["c" /* WordData */].readObject(message.body);
           console.log('Word data is: ', wordData);
+
+          // Populate a panel
           this.panel.clear();
           this.updateDefinition(wordData);
           this.updateInflectionTable(wordData);
-          this.panel.open();
+
+          // Pouplate a popup
+          this.vueInstance.panel = this.panel;
+          this.vueInstance.popupTitle = '' + wordData.homonym.targetWord;
+          this.vueInstance.popupContent = '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.\n                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.\n                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,\n                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.\n                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>\n\n                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.\n                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.\n                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,\n                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.\n                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>';
+
+          if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+            this.panel.open();
+          } else {
+            this.vueInstance.$modal.show('popup');
+          }
         } else if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND)) {
           this.panel.clear();
           this.panel.definitionContainer.innerHTML = '<p>Sorry, the word you requested was not found.</p>';
@@ -10939,7 +10556,9 @@ var ContentProcess = function () {
       return {
         hiddenClassName: 'hidden',
         pageControlSel: '#alpheios-panel-toggle',
-        requestTimeout: 4000
+        requestTimeout: 4000,
+        uiTypePanel: 'panel',
+        uiTypePopup: 'popup'
       };
     }
   }, {
@@ -10959,11 +10578,11 @@ var ContentProcess = function () {
 /* harmony default export */ __webpack_exports__["a"] = (ContentProcess);
 
 /***/ }),
-/* 10 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(11);
-var bytesToUuid = __webpack_require__(12);
+var rng = __webpack_require__(8);
+var bytesToUuid = __webpack_require__(9);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -10994,7 +10613,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 11 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -11034,7 +10653,7 @@ module.exports = rng;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 12 */
+/* 9 */
 /***/ (function(module, exports) {
 
 /**
@@ -11063,12 +10682,12 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 13 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(11);
 /* global browser */
 
 
@@ -11203,7 +10822,7 @@ class Service {
 
 
 /***/ }),
-/* 14 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11225,13 +10844,13 @@ class StoredRequest {
 
 
 /***/ }),
-/* 15 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__request_message__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__request_message__ = __webpack_require__(13);
 
 
 
@@ -11247,7 +10866,7 @@ class WordDataRequest extends __WEBPACK_IMPORTED_MODULE_2__request_message__["a"
 
 
 /***/ }),
-/* 16 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11265,7 +10884,7 @@ class RequestMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* defau
 
 
 /***/ }),
-/* 17 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11290,7 +10909,7 @@ class StatusResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a"
 
 
 /***/ }),
-/* 18 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11493,7 +11112,7 @@ var Panel = function () {
 /* harmony default export */ __webpack_exports__["a"] = (Panel);
 
 /***/ }),
-/* 19 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11549,6 +11168,14 @@ class Options {
           {value: 'right', text: 'Right'}
         ],
         inputSelector: '#alpheios-position-selector-list'
+      },
+      uiType: {
+        defaultValue: 'popup',
+        values: [
+          {value: 'popup', text: 'Pop-up'},
+          {value: 'panel', text: 'Panel'}
+        ],
+        inputSelector: '#alpheios-ui-type-selector-list'
       }
     }
   }
@@ -11580,7 +11207,7 @@ class Options {
 
 
 /***/ }),
-/* 20 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11612,39 +11239,39 @@ class State {
 
 
 /***/ }),
-/* 21 */
+/* 18 */
 /***/ (function(module, exports) {
 
 module.exports = "<svg xmlns=\"http://www.w3.org/2000/svg\" style=\"display: none;\">\r\n    <symbol id=\"alf-icon-chevron-left\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1427 301l-531 531 531 531q19 19 19 45t-19 45l-166 166q-19 19-45 19t-45-19l-742-742q-19-19-19-45t19-45l742-742q19-19 45-19t45 19l166 166q19 19 19 45t-19 45z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-chevron-right\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1363 877l-742 742q-19 19-45 19t-45-19l-166-166q-19-19-19-45t19-45l531-531-531-531q-19-19-19-45t19-45l166-166q19-19 45-19t45 19l742 742q19 19 19 45t-19 45z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-arrow-left\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1664 896v128q0 53-32.5 90.5t-84.5 37.5h-704l293 294q38 36 38 90t-38 90l-75 76q-37 37-90 37-52 0-91-37l-651-652q-37-37-37-90 0-52 37-91l651-650q38-38 91-38 52 0 90 38l75 74q38 38 38 91t-38 91l-293 293h704q52 0 84.5 37.5t32.5 90.5z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-circle-o-notch\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1760 896q0 176-68.5 336t-184 275.5-275.5 184-336 68.5-336-68.5-275.5-184-184-275.5-68.5-336q0-213 97-398.5t265-305.5 374-151v228q-221 45-366.5 221t-145.5 406q0 130 51 248.5t136.5 204 204 136.5 248.5 51 248.5-51 204-136.5 136.5-204 51-248.5q0-230-145.5-406t-366.5-221v-228q206 31 374 151t265 305.5 97 398.5z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-commenting\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M640 896q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0 174-120 321.5t-326 233-450 85.5q-110 0-211-18-173 173-435 229-52 10-86 13-12 1-22-6t-13-18q-4-15 20-37 5-5 23.5-21.5t25.5-23.5 23.5-25.5 24-31.5 20.5-37 20-48 14.5-57.5 12.5-72.5q-146-90-229.5-216.5t-83.5-269.5q0-174 120-321.5t326-233 450-85.5 450 85.5 326 233 120 321.5z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-table\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M576 1376v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm0-384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm-512-768v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm-512-768v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm0-384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm128-320v1088q0 66-47 113t-113 47h-1344q-66 0-113-47t-47-113v-1088q0-66 47-113t113-47h1344q66 0 113 47t47 113z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-wrench\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M448 1472q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm644-420l-682 682q-37 37-90 37-52 0-91-37l-106-108q-38-36-38-90 0-53 38-91l681-681q39 98 114.5 173.5t173.5 114.5zm634-435q0 39-23 106-47 134-164.5 217.5t-258.5 83.5q-185 0-316.5-131.5t-131.5-316.5 131.5-316.5 316.5-131.5q58 0 121.5 16.5t107.5 46.5q16 11 16 28t-16 28l-293 169v224l193 107q5-3 79-48.5t135.5-81 70.5-35.5q15 0 23.5 10t8.5 25z\"/>\r\n    </symbol>\r\n</svg>"
 
 /***/ }),
-/* 22 */
+/* 19 */
 /***/ (function(module, exports) {
 
-module.exports = "<div>\r\n    <svg id=\"alpheios-panel-toggle\" class=\"alpheios-panel-show-btn\">\r\n        <use xlink:href=\"#alf-icon-circle-o-notch\"/>\r\n    </svg>\r\n    <div id=\"app\">App</div>\r\n\r\n</div>"
+module.exports = "<div>\r\n    <svg id=\"alpheios-panel-toggle\" class=\"alpheios-panel-show-btn\">\r\n        <use xlink:href=\"#alf-icon-circle-o-notch\"/>\r\n    </svg>\r\n    <div id=\"popup\"><popup></popup></div>\r\n\r\n</div>"
 
 /***/ }),
-/* 23 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = "<div id=\"alpheios-panel\" class=\"alpheios-panel\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <h3 class=\"alpheios-panel__header-title\">Alpheios</h3>\r\n        <svg id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\">\r\n            <use xlink:href=\"#alf-icon-chevron-left\"/>\r\n        </svg>\r\n        <svg id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\">\r\n            <use xlink:href=\"#alf-icon-arrow-left\"/>\r\n        </svg>\r\n        <svg id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\">\r\n            <use xlink:href=\"#alf-icon-chevron-right\"/>\r\n        </svg>\r\n        <div class=\"alpheios-panel__header-button-cont\">\r\n\r\n        </div>\r\n\r\n    </div>\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div id=\"alpheios-panel-content-definition\"></div>\r\n            <div id=\"alpheios-panel-content-infl-table\">\r\n                <div id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-options\"></div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <svg id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-definition\">\r\n                <use xlink:href=\"#alf-icon-commenting\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-infl-table\">\r\n                <use xlink:href=\"#alf-icon-table\"/>\r\n            </svg>\r\n            <svg id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\r\n                 data-target=\"alpheios-panel-content-options\">\r\n                <use xlink:href=\"#alf-icon-wrench\"/>\r\n            </svg>\r\n        </div>\r\n    </div>\r\n</div>"
 
 /***/ }),
-/* 24 */
+/* 21 */
 /***/ (function(module, exports) {
 
-module.exports = "<h4>Options</h4>\r\n\r\n<div id=\"alpheios-locale-switcher\" class=\"alpheios-ui-form-group\">\r\n    <label for=\"alpheios-locale-selector-list\">Locale:</label>\r\n    <select id=\"alpheios-locale-selector-list\" class=\"alpheios-ui-form-control\"></select>\r\n</div>\r\n\r\n<div id=\"alpheios-position-switcher\" class=\"alpheios-ui-form-group\">\r\n    <label for=\"alpheios-position-selector-list\">Panel position:</label>\r\n    <select id=\"alpheios-position-selector-list\" class=\"alpheios-ui-form-control\"></select>\r\n</div>"
+module.exports = "<h4>Options</h4>\r\n\r\n<div id=\"alpheios-locale-switcher\" class=\"alpheios-ui-form-group\">\r\n    <label for=\"alpheios-locale-selector-list\">Locale:</label>\r\n    <select id=\"alpheios-locale-selector-list\" class=\"alpheios-ui-form-control\"></select>\r\n</div>\r\n\r\n<div id=\"alpheios-ui-type-switcher\" class=\"alpheios-ui-form-group\">\r\n    <label for=\"alpheios-ui-type-selector-list\">Panel position:</label>\r\n    <select id=\"alpheios-ui-type-selector-list\" class=\"alpheios-ui-form-control\"></select>\r\n</div>\r\n\r\n<div id=\"alpheios-position-switcher\" class=\"alpheios-ui-form-group\">\r\n    <label for=\"alpheios-position-selector-list\">Panel position:</label>\r\n    <select id=\"alpheios-position-selector-list\" class=\"alpheios-ui-form-control\"></select>\r\n</div>"
 
 /***/ }),
-/* 25 */
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__selector__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__selector__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(26);
  // To polyfill Element.closest() if required
 
 
@@ -11804,7 +11431,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 26 */
+/* 23 */
 /***/ (function(module, exports) {
 
 // element-closest | CC0-1.0 | github.com/jonathantneal/closest
@@ -11843,11 +11470,11 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 27 */
+/* 24 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(25);
 
 
 class Selector {
@@ -11869,7 +11496,7 @@ class Selector {
 
 
 /***/ }),
-/* 28 */
+/* 25 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11883,7 +11510,7 @@ class TextQuoteSelector {
 
 
 /***/ }),
-/* 29 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11930,463 +11557,7 @@ class MediaSelector {
 
 
 /***/ }),
-/* 30 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-/**
- * A base object class for an Experience object.
- */
-class Experience {
-  constructor (description) {
-    this.description = description;
-    this.startTime = new Date().getTime();
-    this.endTime = undefined;
-    this.details = [];
-  }
-
-  static readObject (jsonObject) {
-    let experience = new Experience(jsonObject.description);
-    if (jsonObject.startTime) { experience.startTime = jsonObject.startTime; }
-    if (jsonObject.endTime) { experience.endTime = jsonObject.endTime; }
-    for (let detailsItem of jsonObject.details) {
-      experience.details.push(Experience.readObject(detailsItem));
-    }
-    return experience
-  }
-
-  attach (experience) {
-    this.details.push(experience);
-  }
-
-  complete () {
-    this.endTime = new Date().getTime();
-  }
-
-  get duration () {
-    return this.endTime - this.startTime
-  }
-
-  toString () {
-    return `"${this.description}" experience duration is ${this.duration} ms`
-  }
-}
-
-var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-// Unique ID creation requires a high quality random # generator.  In the
-// browser this is a little complicated due to unknown quality of Math.random()
-// and inconsistent support for the `crypto` API.  We do the best we can via
-// feature-detection
-var rng;
-
-var crypto = commonjsGlobal.crypto || commonjsGlobal.msCrypto; // for IE 11
-if (crypto && crypto.getRandomValues) {
-  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
-  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
-  rng = function whatwgRNG() {
-    crypto.getRandomValues(rnds8);
-    return rnds8;
-  };
-}
-
-if (!rng) {
-  // Math.random()-based (RNG)
-  //
-  // If all else fails, use Math.random().  It's fast, but is of unspecified
-  // quality.
-  var rnds = new Array(16);
-  rng = function() {
-    for (var i = 0, r; i < 16; i++) {
-      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-    }
-
-    return rnds;
-  };
-}
-
-var rngBrowser = rng;
-
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-var byteToHex = [];
-for (var i = 0; i < 256; ++i) {
-  byteToHex[i] = (i + 0x100).toString(16).substr(1);
-}
-
-function bytesToUuid(buf, offset) {
-  var i = offset || 0;
-  var bth = byteToHex;
-  return bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]];
-}
-
-var bytesToUuid_1 = bytesToUuid;
-
-function v4(options, buf, offset) {
-  var i = buf && offset || 0;
-
-  if (typeof(options) == 'string') {
-    buf = options == 'binary' ? new Array(16) : null;
-    options = null;
-  }
-  options = options || {};
-
-  var rnds = options.random || (options.rng || rngBrowser)();
-
-  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-  rnds[6] = (rnds[6] & 0x0f) | 0x40;
-  rnds[8] = (rnds[8] & 0x3f) | 0x80;
-
-  // Copy bytes to buffer, if provided
-  if (buf) {
-    for (var ii = 0; ii < 16; ++ii) {
-      buf[i + ii] = rnds[ii];
-    }
-  }
-
-  return buf || bytesToUuid_1(rnds);
-}
-
-var v4_1 = v4;
-
-/* global browser */
-
-/**
- * Represents an adapter for a local storage where experiences are accumulated before a batch of
- * experiences is sent to a remote server and is removed from a local storage.
- * Currently a `browser.storage.local` local storage is used.
- */
-class LocalStorageAdapter {
-  /**
-   * Returns an adapter default values
-   * @return {{prefix: string}}
-   */
-  static get defaults () {
-    return {
-      // A prefix used to distinguish experience objects from objects of other types
-      prefix: 'experience_'
-    }
-  }
-
-  /**
-   * Stores a single experience to the local storage.
-   * @param {Experience} experience - An experience object to be saved.
-   */
-  static write (experience) {
-    // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
-    let uuid = `${LocalStorageAdapter.defaults.prefix}${v4_1()}`;
-
-    browser.storage.local.set({[uuid]: experience}).then(
-      () => {
-        console.log(`Experience has been written to the local storage successfully`);
-      },
-      (error) => {
-        console.error(`Cannot write experience to the local storage because of the following error: ${error}`);
-      }
-    );
-  }
-
-  /**
-   * Reads all experiences that are present in a local storage.
-   * @return {Promise.<{key: Experience}, Error>} Returns a promise that resolves with an object
-   * containing key: value pairs for each experience stored and rejects with an Error object.
-   */
-  static async readAll () {
-    try {
-      return await browser.storage.local.get()
-    } catch (error) {
-      console.error(`Cannot read data from the local storage because of the following error: ${error}`);
-      return error
-    }
-  }
-
-  /**
-   * Removes experience objects with specified keys from a local storage.
-   * @param {String[]} keys - an array of keys that specifies what Experience objects need to be removed.
-   * @return {Promise.<*|{minArgs, maxArgs}>} A Promise that will be fulfilled with no arguments
-   * if the operation succeeded. If the operation failed, the promise will be rejected with an error message.
-   */
-  static async remove (keys) {
-    return browser.storage.local.remove(keys)
-  }
-}
-
-class Monitor {
-  constructor (monitoringDataList) {
-    this.monitored = new Map();
-    if (monitoringDataList) {
-      for (let monitoringData of monitoringDataList) {
-        this.monitored.set(monitoringData.monitoredFunction, monitoringData);
-      }
-    }
-  }
-
-  static track (object, monitoringDataList) {
-    return new Proxy(object, new Monitor(monitoringDataList))
-  }
-
-  get (target, property, receiver) {
-    if (this.monitored.has(property)) {
-      let monitoringData = this.monitored.get(property);
-      if (monitoringData.hasOwnProperty('asyncWrapper')) {
-        return Monitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
-      } else {
-        console.error(`Only async wrappers are supported by monitor`);
-      }
-    }
-    return target[property]
-  }
-
-  monitor (functionName, functionConfig) {
-    this.monitored.set(functionName, functionConfig);
-  }
-
-  static syncWrapper (target, property, experience) {
-    console.log(`${property}() sync method has been called`);
-    const origMethod = target[property];
-    return function (...args) {
-      let result = origMethod.apply(this, args);
-      console.log(`${property}() sync method has been completed`);
-      experience.complete();
-      console.log(`${experience}`);
-      return result
-    }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, etc.
-   * @param target
-   * @param property
-   * @param actionFunction
-   * @param monitoringData
-   * @return {Function}
-   */
-  static asyncWrapper (target, property, actionFunction, monitoringData) {
-    console.log(`${property}() async method has been requested`);
-    return async function (...args) {
-      try {
-        return await actionFunction(this, target, property, args, monitoringData, LocalStorageAdapter)
-      } catch (error) {
-        // If it's an error, there will be no state and value objects. Should fix that.
-        console.error(`${property}() failed: ${error.value}`);
-        throw error
-      }
-    }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, and such.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @param storage
-   * @return {Promise.<*>}
-   */
-  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
-    let experience = new Experience(monitoringData.experience);
-    console.log(`${property}() async method has been called`);
-    // Last item in arguments list is a transaction
-    args.push(experience);
-    let resultObject = await target[property].apply(monitor, args);
-    // resultObject.value is a returned message, experience object is in a `experience` property
-    experience = Experience.readObject(resultObject.value.experience);
-    experience.complete();
-    console.log(`${property}() completed with success, experience is:`, experience);
-
-    storage.write(experience);
-    return resultObject
-  }
-
-  /**
-   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
-   * functions that create user experience.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @return {Promise.<*>}
-   */
-  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
-    let experience = new Experience(monitoringData.experience);
-    console.log(`${property}() async method has been called`);
-    let resultObject = await target[property].apply(monitor, args);
-    experience.complete();
-    resultObject.state.attach(experience);
-    console.log(`${property}() completed with success, experience is: ${experience}`);
-    return resultObject
-  }
-
-  /**
-   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async attachToMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`);
-    // First argument is always a request object, last argument is a state (Experience) object
-    args[0].experience = args[args.length - 1];
-    let result = await target[property].apply(monitor, args);
-    console.log(`${property}() completed with success`);
-    return result
-  }
-
-  /**
-   * This is a wrapper around functions that handle incoming messages with an experience object attached.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async detachFromMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`);
-    // First argument is an incoming request object
-    args.push(Experience.readObject(args[0].experience));
-    let result = await target[property].apply(monitor, args);
-    console.log(`${property}() completed with success`);
-    return result
-  }
-}
-
-/**
- * Responsible form transporting experiences from one storage to the other. Current implementation
- * sends a batch of experience objects to the remote server once a certain amount of them
- * is accumulated in a local storage.
- */
-class Transporter {
-  /**
-   * Sets a transporter configuration.
-   * @param {LocalStorageAdapter} localStorage - Represents local storage where experience objects are
-   * accumulated before being sent to a remote server.
-   * @param {RemoteStorageAdapter} remoteStorage - Represents a remote server that stores experience objects.
-   * @param {number} qtyThreshold - A minimal number of experiences to be sent to a remote storage.
-   * @param {number} interval - Interval, in milliseconds, of checking a local storage for changes
-   */
-  constructor (localStorage, remoteStorage, qtyThreshold, interval) {
-    this.localStorage = localStorage;
-    this.remoteStorage = remoteStorage;
-    this.qtyThreshold = qtyThreshold;
-    window.setInterval(this.checkExperienceStorage.bind(this), interval);
-  }
-
-  /**
-   * Runs at a specified interval and check if any new experience objects has been recorded to the local storage.
-   * If number of experience records exceeds a threshold, sends all experiences to the remote server and
-   * removes them from local storage.
-   * @return {Promise.<void>}
-   */
-  async checkExperienceStorage () {
-    console.log(`Experience storage check`);
-    let records = await this.localStorage.readAll();
-    let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
-    if (keys.length > this.qtyThreshold) {
-      await this.sendExperiencesToRemote();
-    }
-  }
-
-  /**
-   * If there are any experiences in the local storage, sends all of them to a remote server and, if succeeded,
-   * removes them from a local storage.
-   * @return {Promise.<*>}
-   */
-  async sendExperiencesToRemote () {
-    try {
-      let records = await this.localStorage.readAll();
-      let values = Object.values(records);
-      let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
-      if (keys.length > 0) {
-        // If there are any records in a local storage
-        await this.remoteStorage.write(values);
-        await this.localStorage.remove(keys);
-      } else {
-        console.log(`No data in local experience storage`);
-      }
-    } catch (error) {
-      console.error(`Cannot send experiences to a remote server: ${error}`);
-      return error
-    }
-  }
-}
-
-/**
- * Defines an API for storing experiences on a remote server, such as LRS.
- */
-class RemoteStorageAdapter {
-  /**
-   * Stores one or several experiences on a remote server.
-   * @param {Experience[]} experiences - An array of experiences to store remotely.
-   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
-   * and is rejected when storing on a remote server failed.
-   */
-  static write (experiences) {
-    console.warn(`This method should be implemented within a subclass and should never be called directly.  
-      If you see this message then something is probably goes wrong`);
-    return new Promise()
-  }
-}
-
-/**
- * This is a test implementation of a remote experience store adapter. It does not send anything anywhere
- * and just records experiences that are passed to it.
- */
-class TestAdapter extends RemoteStorageAdapter {
-  /**
-   * Imitates storing of one or several experiences on a remote server.
-   * @param {Experience[]} experiences - An array of experiences to store remotely.
-   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
-   * and is rejected when storing on a remote server failed.
-   */
-  static write (experiences) {
-    return new Promise((resolve, reject) => {
-      if (!experiences) {
-        reject(new Error(`experience cannot be empty`));
-        return
-      }
-      if (!Array.isArray(experiences)) {
-        reject(new Error(`experiences must be an array`));
-        return
-      }
-      console.log('Experience sent to a remote server:');
-      for (let experience of experiences) {
-        console.log(experience);
-      }
-      resolve();
-    })
-  }
-}
-
-exports.Experience = Experience;
-exports.Monitor = Monitor;
-exports.Transporter = Transporter;
-exports.StorageAdapter = LocalStorageAdapter;
-exports.TestAdapter = TestAdapter;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
-
-/***/ }),
-/* 31 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
@@ -23072,10 +22243,10 @@ return Vue$3;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(32).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(28).setImmediate))
 
 /***/ }),
-/* 32 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var apply = Function.prototype.apply;
@@ -23128,13 +22299,13 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(33);
+__webpack_require__(29);
 exports.setImmediate = setImmediate;
 exports.clearImmediate = clearImmediate;
 
 
 /***/ }),
-/* 33 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -23324,10 +22495,10 @@ exports.clearImmediate = clearImmediate;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(34)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(30)))
 
 /***/ }),
-/* 34 */
+/* 30 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -23517,444 +22688,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 35 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_app_vue__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_381730fa_hasScoped_true_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_app_vue__ = __webpack_require__(45);
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(36)
-}
-var normalizeComponent = __webpack_require__(7)
-/* script */
-
-/* template */
-
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = "data-v-381730fa"
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_app_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_381730fa_hasScoped_true_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_app_vue__["a" /* default */],
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "app.vue"
-if (Component.esModule && Object.keys(Component.esModule).some(function (key) {  return key !== "default" && key.substr(0, 2) !== "__"})) {  console.error("named exports are not supported in *.vue files.")}
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-381730fa", Component.options)
-  } else {
-    hotAPI.reload("data-v-381730fa", Component.options)
-' + '  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
-
-
-/***/ }),
-/* 36 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(37);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(6)("948bcf12", content, false);
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../node_modules/css-loader/index.js!../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-381730fa\",\"scoped\":true,\"hasInlineConfig\":false}!../../node_modules/sass-loader/lib/loader.js!../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./app.vue", function() {
-     var newContent = require("!!../../node_modules/css-loader/index.js!../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-381730fa\",\"scoped\":true,\"hasInlineConfig\":false}!../../node_modules/sass-loader/lib/loader.js!../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./app.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 37 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(5)(undefined);
-// imports
-
-
-// module
-exports.push([module.i, "\nbutton.btn[data-v-381730fa] {\n  outline: none;\n  padding: 6px 18px;\n  cursor: pointer;\n  border-radius: 0;\n  color: #0d77b6;\n  background: white;\n  border: 1px solid #0d77b6;\n  min-width: 90px;\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
-/* 38 */
-/***/ (function(module, exports) {
-
-/**
- * Translates the list format produced by css-loader into something
- * easier to manipulate.
- */
-module.exports = function listToStyles (parentId, list) {
-  var styles = []
-  var newStyles = {}
-  for (var i = 0; i < list.length; i++) {
-    var item = list[i]
-    var id = item[0]
-    var css = item[1]
-    var media = item[2]
-    var sourceMap = item[3]
-    var part = {
-      id: parentId + ':' + i,
-      css: css,
-      media: media,
-      sourceMap: sourceMap
-    }
-    if (!newStyles[id]) {
-      styles.push(newStyles[id] = { id: id, parts: [part] })
-    } else {
-      newStyles[id].parts.push(part)
-    }
-  }
-  return styles
-}
-
-
-/***/ }),
-/* 39 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_popup_vue__ = __webpack_require__(40);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-  name: 'app',
-  components: {
-    TestModal: __WEBPACK_IMPORTED_MODULE_0__components_popup_vue__["a" /* default */]
-  },
-  created() {},
-  methods: {}
-});
-
-/***/ }),
-/* 40 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(43);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_59fca8f4_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(44);
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(41)
-}
-var normalizeComponent = __webpack_require__(7)
-/* script */
-
-/* template */
-
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_59fca8f4_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__["a" /* default */],
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "components\\popup.vue"
-if (Component.esModule && Object.keys(Component.esModule).some(function (key) {  return key !== "default" && key.substr(0, 2) !== "__"})) {  console.error("named exports are not supported in *.vue files.")}
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-59fca8f4", Component.options)
-  } else {
-    hotAPI.reload("data-v-59fca8f4", Component.options)
-' + '  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
-
-
-/***/ }),
-/* 41 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(42);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(6)("7758fa1e", content, false);
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-59fca8f4\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-59fca8f4\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 42 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(5)(true);
-// imports
-
-
-// module
-exports.push([module.i, "\n.popup {\n    border-radius: 5px;\n    background: #F7F7F7;\n    box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n}\n.popup-content {\n    padding: 20px;\n    font-size: 14px;\n}\n.v--modal-overlay[data-modal=\"popup\"] {\n    background: rgba(0, 0, 0, 0.5);\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/components/components/popup.vue?7348f37e"],"names":[],"mappings":";AAmEA;IACA,mBAAA;IACA,oBAAA;IACA,iDAAA;CACA;AAEA;IACA,cAAA;IACA,gBAAA;CACA;AAEA;IACA,+BAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <modal name=\"popup\"\r\n           transition=\"nice-modal-fade\"\r\n           classes=\"popup\"\r\n           :min-width=\"200\"\r\n           :min-height=\"200\"\r\n           :pivot-y=\"0.5\"\r\n           :adaptive=\"true\"\r\n           :resizable=\"true\"\r\n           :draggable=\"true\"\r\n           :scrollable=\"true\"\r\n           :reset=\"true\"\r\n           width=\"60%\"\r\n           height=\"auto\"\r\n           @before-open=\"beforeOpen\"\r\n           @opened=\"opened\"\r\n           @closed=\"closed\"\r\n           @before-close=\"beforeClose\">\r\n        <div class=\"popup-content\">\r\n            <h2>Title</h2>\r\n            <div>A new paragraph will be added every 5 sec to show how <b>height</b> scales.</div>\r\n            <div v-for=\"(p, i) in paragraphs\" :key=\"i\">\r\n                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.\r\n                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.\r\n                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,\r\n                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.\r\n                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.\r\n            </div>\r\n            <a href=\"http://test.com\">Test Link</a>\r\n        </div>\r\n    </modal>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'Popup',\r\n    data () {\r\n      return {\r\n        paragraphs: [true],\r\n        timer: null\r\n      }\r\n    },\r\n    methods: {\r\n      beforeOpen () {\r\n        this.timer = setInterval(() => {\r\n          this.paragraphs.push(true)\r\n        }, 5000)\r\n      },\r\n\r\n      beforeClose () {\r\n        clearInterval(this.timer)\r\n        this.timer = null\r\n        this.paragraphs = []\r\n      },\r\n\r\n      opened (e) {\r\n        // e.ref should not be undefined here\r\n        console.log('opened', e)\r\n        console.log('ref', e.ref)\r\n      },\r\n\r\n      closed (e) {\r\n        console.log('closed', e)\r\n      }\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .popup {\r\n        border-radius: 5px;\r\n        background: #F7F7F7;\r\n        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\r\n    }\r\n\r\n    .popup-content {\r\n        padding: 20px;\r\n        font-size: 14px;\r\n    }\r\n\r\n    .v--modal-overlay[data-modal=\"popup\"] {\r\n        background: rgba(0, 0, 0, 0.5);\r\n    }\r\n</style>\r\n"],"sourceRoot":""}]);
-
-// exports
-
-
-/***/ }),
-/* 43 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-  name: 'Popup',
-  data() {
-    return {
-      paragraphs: [true],
-      timer: null
-    };
-  },
-  methods: {
-    beforeOpen() {
-      this.timer = setInterval(() => {
-        this.paragraphs.push(true);
-      }, 5000);
-    },
-
-    beforeClose() {
-      clearInterval(this.timer);
-      this.timer = null;
-      this.paragraphs = [];
-    },
-
-    opened(e) {
-      // e.ref should not be undefined here
-      console.log('opened', e);
-      console.log('ref', e.ref);
-    },
-
-    closed(e) {
-      console.log('closed', e);
-    }
-  }
-});
-
-/***/ }),
-/* 44 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "modal",
-    {
-      attrs: {
-        name: "popup",
-        transition: "nice-modal-fade",
-        classes: "popup",
-        "min-width": 200,
-        "min-height": 200,
-        "pivot-y": 0.5,
-        adaptive: true,
-        resizable: true,
-        draggable: true,
-        scrollable: true,
-        reset: true,
-        width: "60%",
-        height: "auto"
-      },
-      on: {
-        "before-open": _vm.beforeOpen,
-        opened: _vm.opened,
-        closed: _vm.closed,
-        "before-close": _vm.beforeClose
-      }
-    },
-    [
-      _c(
-        "div",
-        { staticClass: "popup-content" },
-        [
-          _c("h2", [_vm._v("Title")]),
-          _vm._v(" "),
-          _c("div", [
-            _vm._v("A new paragraph will be added every 5 sec to show how "),
-            _c("b", [_vm._v("height")]),
-            _vm._v(" scales.")
-          ]),
-          _vm._v(" "),
-          _vm._l(_vm.paragraphs, function(p, i) {
-            return _c("div", { key: i }, [
-              _vm._v(
-                "\n            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.\n            Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.\n            Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,\n            nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.\n            Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.\n        "
-              )
-            ])
-          }),
-          _vm._v(" "),
-          _c("a", { attrs: { href: "http://test.com" } }, [_vm._v("Test Link")])
-        ],
-        2
-      )
-    ]
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-var esExports = { render: render, staticRenderFns: staticRenderFns }
-/* harmony default export */ __webpack_exports__["a"] = (esExports);
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-59fca8f4", esExports)
-  }
-}
-
-/***/ }),
-/* 45 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    { attrs: { id: "app" } },
-    [
-      _c("test-modal"),
-      _vm._v(" "),
-      _c(
-        "button",
-        {
-          staticClass: "btn",
-          on: {
-            click: function($event) {
-              _vm.$modal.show("popup")
-            }
-          }
-        },
-        [_vm._v("\n        Test Modal\n    ")]
-      )
-    ],
-    1
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-var esExports = { render: render, staticRenderFns: staticRenderFns }
-/* harmony default export */ __webpack_exports__["a"] = (esExports);
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-381730fa", esExports)
-  }
-}
-
-/***/ }),
-/* 46 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 !function(root, factory) {
@@ -24850,6 +23584,1124 @@ if (false) {
         };
     } ]);
 });
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+/**
+ * A base object class for an Experience object.
+ */
+class Experience {
+  constructor (description) {
+    this.description = description;
+    this.startTime = new Date().getTime();
+    this.endTime = undefined;
+    this.details = [];
+  }
+
+  static readObject (jsonObject) {
+    let experience = new Experience(jsonObject.description);
+    if (jsonObject.startTime) { experience.startTime = jsonObject.startTime; }
+    if (jsonObject.endTime) { experience.endTime = jsonObject.endTime; }
+    for (let detailsItem of jsonObject.details) {
+      experience.details.push(Experience.readObject(detailsItem));
+    }
+    return experience
+  }
+
+  attach (experience) {
+    this.details.push(experience);
+  }
+
+  complete () {
+    this.endTime = new Date().getTime();
+  }
+
+  get duration () {
+    return this.endTime - this.startTime
+  }
+
+  toString () {
+    return `"${this.description}" experience duration is ${this.duration} ms`
+  }
+}
+
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+var rng;
+
+var crypto = commonjsGlobal.crypto || commonjsGlobal.msCrypto; // for IE 11
+if (crypto && crypto.getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+  rng = function whatwgRNG() {
+    crypto.getRandomValues(rnds8);
+    return rnds8;
+  };
+}
+
+if (!rng) {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+  rng = function() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+var rngBrowser = rng;
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  return bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]];
+}
+
+var bytesToUuid_1 = bytesToUuid;
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options == 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rngBrowser)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid_1(rnds);
+}
+
+var v4_1 = v4;
+
+/* global browser */
+
+/**
+ * Represents an adapter for a local storage where experiences are accumulated before a batch of
+ * experiences is sent to a remote server and is removed from a local storage.
+ * Currently a `browser.storage.local` local storage is used.
+ */
+class LocalStorageAdapter {
+  /**
+   * Returns an adapter default values
+   * @return {{prefix: string}}
+   */
+  static get defaults () {
+    return {
+      // A prefix used to distinguish experience objects from objects of other types
+      prefix: 'experience_'
+    }
+  }
+
+  /**
+   * Stores a single experience to the local storage.
+   * @param {Experience} experience - An experience object to be saved.
+   */
+  static write (experience) {
+    // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
+    let uuid = `${LocalStorageAdapter.defaults.prefix}${v4_1()}`;
+
+    browser.storage.local.set({[uuid]: experience}).then(
+      () => {
+        console.log(`Experience has been written to the local storage successfully`);
+      },
+      (error) => {
+        console.error(`Cannot write experience to the local storage because of the following error: ${error}`);
+      }
+    );
+  }
+
+  /**
+   * Reads all experiences that are present in a local storage.
+   * @return {Promise.<{key: Experience}, Error>} Returns a promise that resolves with an object
+   * containing key: value pairs for each experience stored and rejects with an Error object.
+   */
+  static async readAll () {
+    try {
+      return await browser.storage.local.get()
+    } catch (error) {
+      console.error(`Cannot read data from the local storage because of the following error: ${error}`);
+      return error
+    }
+  }
+
+  /**
+   * Removes experience objects with specified keys from a local storage.
+   * @param {String[]} keys - an array of keys that specifies what Experience objects need to be removed.
+   * @return {Promise.<*|{minArgs, maxArgs}>} A Promise that will be fulfilled with no arguments
+   * if the operation succeeded. If the operation failed, the promise will be rejected with an error message.
+   */
+  static async remove (keys) {
+    return browser.storage.local.remove(keys)
+  }
+}
+
+class Monitor {
+  constructor (monitoringDataList) {
+    this.monitored = new Map();
+    if (monitoringDataList) {
+      for (let monitoringData of monitoringDataList) {
+        this.monitored.set(monitoringData.monitoredFunction, monitoringData);
+      }
+    }
+  }
+
+  static track (object, monitoringDataList) {
+    return new Proxy(object, new Monitor(monitoringDataList))
+  }
+
+  get (target, property, receiver) {
+    if (this.monitored.has(property)) {
+      let monitoringData = this.monitored.get(property);
+      if (monitoringData.hasOwnProperty('asyncWrapper')) {
+        return Monitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
+      } else {
+        console.error(`Only async wrappers are supported by monitor`);
+      }
+    }
+    return target[property]
+  }
+
+  monitor (functionName, functionConfig) {
+    this.monitored.set(functionName, functionConfig);
+  }
+
+  static syncWrapper (target, property, experience) {
+    console.log(`${property}() sync method has been called`);
+    const origMethod = target[property];
+    return function (...args) {
+      let result = origMethod.apply(this, args);
+      console.log(`${property}() sync method has been completed`);
+      experience.complete();
+      console.log(`${experience}`);
+      return result
+    }
+  }
+
+  /**
+   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
+   * as a direct result of a user action: use of UI controls, etc.
+   * @param target
+   * @param property
+   * @param actionFunction
+   * @param monitoringData
+   * @return {Function}
+   */
+  static asyncWrapper (target, property, actionFunction, monitoringData) {
+    console.log(`${property}() async method has been requested`);
+    return async function (...args) {
+      try {
+        return await actionFunction(this, target, property, args, monitoringData, LocalStorageAdapter)
+      } catch (error) {
+        // If it's an error, there will be no state and value objects. Should fix that.
+        console.error(`${property}() failed: ${error.value}`);
+        throw error
+      }
+    }
+  }
+
+  /**
+   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
+   * as a direct result of a user action: use of UI controls, and such.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @param monitoringData
+   * @param storage
+   * @return {Promise.<*>}
+   */
+  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
+    let experience = new Experience(monitoringData.experience);
+    console.log(`${property}() async method has been called`);
+    // Last item in arguments list is a transaction
+    args.push(experience);
+    let resultObject = await target[property].apply(monitor, args);
+    // resultObject.value is a returned message, experience object is in a `experience` property
+    experience = Experience.readObject(resultObject.value.experience);
+    experience.complete();
+    console.log(`${property}() completed with success, experience is:`, experience);
+
+    storage.write(experience);
+    return resultObject
+  }
+
+  /**
+   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
+   * functions that create user experience.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @param monitoringData
+   * @return {Promise.<*>}
+   */
+  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
+    let experience = new Experience(monitoringData.experience);
+    console.log(`${property}() async method has been called`);
+    let resultObject = await target[property].apply(monitor, args);
+    experience.complete();
+    resultObject.state.attach(experience);
+    console.log(`${property}() completed with success, experience is: ${experience}`);
+    return resultObject
+  }
+
+  /**
+   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @return {Promise.<*>}
+   */
+  static async attachToMessage (monitor, target, property, args) {
+    console.log(`${property}() async method has been called`);
+    // First argument is always a request object, last argument is a state (Experience) object
+    args[0].experience = args[args.length - 1];
+    let result = await target[property].apply(monitor, args);
+    console.log(`${property}() completed with success`);
+    return result
+  }
+
+  /**
+   * This is a wrapper around functions that handle incoming messages with an experience object attached.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @return {Promise.<*>}
+   */
+  static async detachFromMessage (monitor, target, property, args) {
+    console.log(`${property}() async method has been called`);
+    // First argument is an incoming request object
+    args.push(Experience.readObject(args[0].experience));
+    let result = await target[property].apply(monitor, args);
+    console.log(`${property}() completed with success`);
+    return result
+  }
+}
+
+/**
+ * Responsible form transporting experiences from one storage to the other. Current implementation
+ * sends a batch of experience objects to the remote server once a certain amount of them
+ * is accumulated in a local storage.
+ */
+class Transporter {
+  /**
+   * Sets a transporter configuration.
+   * @param {LocalStorageAdapter} localStorage - Represents local storage where experience objects are
+   * accumulated before being sent to a remote server.
+   * @param {RemoteStorageAdapter} remoteStorage - Represents a remote server that stores experience objects.
+   * @param {number} qtyThreshold - A minimal number of experiences to be sent to a remote storage.
+   * @param {number} interval - Interval, in milliseconds, of checking a local storage for changes
+   */
+  constructor (localStorage, remoteStorage, qtyThreshold, interval) {
+    this.localStorage = localStorage;
+    this.remoteStorage = remoteStorage;
+    this.qtyThreshold = qtyThreshold;
+    window.setInterval(this.checkExperienceStorage.bind(this), interval);
+  }
+
+  /**
+   * Runs at a specified interval and check if any new experience objects has been recorded to the local storage.
+   * If number of experience records exceeds a threshold, sends all experiences to the remote server and
+   * removes them from local storage.
+   * @return {Promise.<void>}
+   */
+  async checkExperienceStorage () {
+    console.log(`Experience storage check`);
+    let records = await this.localStorage.readAll();
+    let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
+    if (keys.length > this.qtyThreshold) {
+      await this.sendExperiencesToRemote();
+    }
+  }
+
+  /**
+   * If there are any experiences in the local storage, sends all of them to a remote server and, if succeeded,
+   * removes them from a local storage.
+   * @return {Promise.<*>}
+   */
+  async sendExperiencesToRemote () {
+    try {
+      let records = await this.localStorage.readAll();
+      let values = Object.values(records);
+      let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
+      if (keys.length > 0) {
+        // If there are any records in a local storage
+        await this.remoteStorage.write(values);
+        await this.localStorage.remove(keys);
+      } else {
+        console.log(`No data in local experience storage`);
+      }
+    } catch (error) {
+      console.error(`Cannot send experiences to a remote server: ${error}`);
+      return error
+    }
+  }
+}
+
+/**
+ * Defines an API for storing experiences on a remote server, such as LRS.
+ */
+class RemoteStorageAdapter {
+  /**
+   * Stores one or several experiences on a remote server.
+   * @param {Experience[]} experiences - An array of experiences to store remotely.
+   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
+   * and is rejected when storing on a remote server failed.
+   */
+  static write (experiences) {
+    console.warn(`This method should be implemented within a subclass and should never be called directly.  
+      If you see this message then something is probably goes wrong`);
+    return new Promise()
+  }
+}
+
+/**
+ * This is a test implementation of a remote experience store adapter. It does not send anything anywhere
+ * and just records experiences that are passed to it.
+ */
+class TestAdapter extends RemoteStorageAdapter {
+  /**
+   * Imitates storing of one or several experiences on a remote server.
+   * @param {Experience[]} experiences - An array of experiences to store remotely.
+   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
+   * and is rejected when storing on a remote server failed.
+   */
+  static write (experiences) {
+    return new Promise((resolve, reject) => {
+      if (!experiences) {
+        reject(new Error(`experience cannot be empty`));
+        return
+      }
+      if (!Array.isArray(experiences)) {
+        reject(new Error(`experiences must be an array`));
+        return
+      }
+      console.log('Experience sent to a remote server:');
+      for (let experience of experiences) {
+        console.log(experience);
+      }
+      resolve();
+    })
+  }
+}
+
+exports.Experience = Experience;
+exports.Monitor = Monitor;
+exports.Transporter = Transporter;
+exports.StorageAdapter = LocalStorageAdapter;
+exports.TestAdapter = TestAdapter;
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+
+/***/ }),
+/* 33 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(41);
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(34)
+}
+var normalizeComponent = __webpack_require__(39)
+/* script */
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__["a" /* default */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "vue-components\\popup.vue"
+if (Component.esModule && Object.keys(Component.esModule).some(function (key) {  return key !== "default" && key.substr(0, 2) !== "__"})) {  console.error("named exports are not supported in *.vue files.")}
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-09f5ebdb", Component.options)
+  } else {
+    hotAPI.reload("data-v-09f5ebdb", Component.options)
+' + '  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(35);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(37)("449bb36b", content, false);
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-09f5ebdb\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-09f5ebdb\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(36)(true);
+// imports
+
+
+// module
+exports.push([module.i, "\n.popup {\n    border-radius: 5px;\n    background: #F7F7F7;\n    box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n}\n.popup-content {\n    padding: 20px;\n    font-size: 14px;\n}\n.v--modal-overlay[data-modal=\"popup\"] {\n    background: rgba(0, 0, 0, 0.5);\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?29c61269"],"names":[],"mappings":";AA4DA;IACA,mBAAA;IACA,oBAAA;IACA,iDAAA;CACA;AAEA;IACA,cAAA;IACA,gBAAA;CACA;AAEA;IACA,+BAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <modal name=\"popup\"\r\n           transition=\"nice-modal-fade\"\r\n           classes=\"popup\"\r\n           :min-width=\"200\"\r\n           :min-height=\"200\"\r\n           :pivot-y=\"0.5\"\r\n           :adaptive=\"true\"\r\n           :resizable=\"true\"\r\n           :draggable=\"true\"\r\n           :scrollable=\"false\"\r\n           :reset=\"true\"\r\n           width=\"60%\"\r\n           height=\"60%\"\r\n           @before-open=\"beforeOpen\"\r\n           @opened=\"opened\"\r\n           @closed=\"closed\"\r\n           @before-close=\"beforeClose\">\r\n        <div class=\"popup-content\">\r\n            <h2>{{ $root.popupTitle }}</h2>\r\n            <div v-html=\"$root.popupContent\"></div>\r\n            <button v-on:click=\"openPanel\">Extended data ...</button>\r\n        </div>\r\n    </modal>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'Popup',\r\n    methods: {\r\n      openPanel () {\r\n        console.log('Opening a panel to show extended results')\r\n        this.$root.$modal.hide('popup')\r\n        this.$root.panel.open()\r\n      },\r\n\r\n      beforeOpen () { },\r\n\r\n      beforeClose () { },\r\n\r\n      opened (e) {\r\n        // e.ref should not be undefined here\r\n        console.log('opened', e)\r\n        console.log('ref', e.ref)\r\n      },\r\n\r\n      closed (e) {\r\n        console.log('closed', e)\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Popup is mounted')\r\n    },\r\n    watch: {\r\n      popupContent: function (value) {\r\n        console.log('Popup content changed to ' + value)\r\n      }\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .popup {\r\n        border-radius: 5px;\r\n        background: #F7F7F7;\r\n        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\r\n    }\r\n\r\n    .popup-content {\r\n        padding: 20px;\r\n        font-size: 14px;\r\n    }\r\n\r\n    .v--modal-overlay[data-modal=\"popup\"] {\r\n        background: rgba(0, 0, 0, 0.5);\r\n    }\r\n</style>\r\n"],"sourceRoot":""}]);
+
+// exports
+
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function(useSourceMap) {
+	var list = [];
+
+	// return the list of modules as css string
+	list.toString = function toString() {
+		return this.map(function (item) {
+			var content = cssWithMappingToString(item, useSourceMap);
+			if(item[2]) {
+				return "@media " + item[2] + "{" + content + "}";
+			} else {
+				return content;
+			}
+		}).join("");
+	};
+
+	// import a list of modules into the list
+	list.i = function(modules, mediaQuery) {
+		if(typeof modules === "string")
+			modules = [[null, modules, ""]];
+		var alreadyImportedModules = {};
+		for(var i = 0; i < this.length; i++) {
+			var id = this[i][0];
+			if(typeof id === "number")
+				alreadyImportedModules[id] = true;
+		}
+		for(i = 0; i < modules.length; i++) {
+			var item = modules[i];
+			// skip already imported module
+			// this implementation is not 100% perfect for weird media query combinations
+			//  when a module is imported multiple times with different media queries.
+			//  I hope this will never occur (Hey this way we have smaller bundles)
+			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+				if(mediaQuery && !item[2]) {
+					item[2] = mediaQuery;
+				} else if(mediaQuery) {
+					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+				}
+				list.push(item);
+			}
+		}
+	};
+	return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+	var content = item[1] || '';
+	var cssMapping = item[3];
+	if (!cssMapping) {
+		return content;
+	}
+
+	if (useSourceMap && typeof btoa === 'function') {
+		var sourceMapping = toComment(cssMapping);
+		var sourceURLs = cssMapping.sources.map(function (source) {
+			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
+		});
+
+		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+	}
+
+	return [content].join('\n');
+}
+
+// Adapted from convert-source-map (MIT)
+function toComment(sourceMap) {
+	// eslint-disable-next-line no-undef
+	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
+
+	return '/*# ' + data + ' */';
+}
+
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+  MIT License http://www.opensource.org/licenses/mit-license.php
+  Author Tobias Koppers @sokra
+  Modified by Evan You @yyx990803
+*/
+
+var hasDocument = typeof document !== 'undefined'
+
+if (typeof DEBUG !== 'undefined' && DEBUG) {
+  if (!hasDocument) {
+    throw new Error(
+    'vue-style-loader cannot be used in a non-browser environment. ' +
+    "Use { target: 'node' } in your Webpack config to indicate a server-rendering environment."
+  ) }
+}
+
+var listToStyles = __webpack_require__(38)
+
+/*
+type StyleObject = {
+  id: number;
+  parts: Array<StyleObjectPart>
+}
+
+type StyleObjectPart = {
+  css: string;
+  media: string;
+  sourceMap: ?string
+}
+*/
+
+var stylesInDom = {/*
+  [id: number]: {
+    id: number,
+    refs: number,
+    parts: Array<(obj?: StyleObjectPart) => void>
+  }
+*/}
+
+var head = hasDocument && (document.head || document.getElementsByTagName('head')[0])
+var singletonElement = null
+var singletonCounter = 0
+var isProduction = false
+var noop = function () {}
+
+// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+// tags it will allow on a page
+var isOldIE = typeof navigator !== 'undefined' && /msie [6-9]\b/.test(navigator.userAgent.toLowerCase())
+
+module.exports = function (parentId, list, _isProduction) {
+  isProduction = _isProduction
+
+  var styles = listToStyles(parentId, list)
+  addStylesToDom(styles)
+
+  return function update (newList) {
+    var mayRemove = []
+    for (var i = 0; i < styles.length; i++) {
+      var item = styles[i]
+      var domStyle = stylesInDom[item.id]
+      domStyle.refs--
+      mayRemove.push(domStyle)
+    }
+    if (newList) {
+      styles = listToStyles(parentId, newList)
+      addStylesToDom(styles)
+    } else {
+      styles = []
+    }
+    for (var i = 0; i < mayRemove.length; i++) {
+      var domStyle = mayRemove[i]
+      if (domStyle.refs === 0) {
+        for (var j = 0; j < domStyle.parts.length; j++) {
+          domStyle.parts[j]()
+        }
+        delete stylesInDom[domStyle.id]
+      }
+    }
+  }
+}
+
+function addStylesToDom (styles /* Array<StyleObject> */) {
+  for (var i = 0; i < styles.length; i++) {
+    var item = styles[i]
+    var domStyle = stylesInDom[item.id]
+    if (domStyle) {
+      domStyle.refs++
+      for (var j = 0; j < domStyle.parts.length; j++) {
+        domStyle.parts[j](item.parts[j])
+      }
+      for (; j < item.parts.length; j++) {
+        domStyle.parts.push(addStyle(item.parts[j]))
+      }
+      if (domStyle.parts.length > item.parts.length) {
+        domStyle.parts.length = item.parts.length
+      }
+    } else {
+      var parts = []
+      for (var j = 0; j < item.parts.length; j++) {
+        parts.push(addStyle(item.parts[j]))
+      }
+      stylesInDom[item.id] = { id: item.id, refs: 1, parts: parts }
+    }
+  }
+}
+
+function createStyleElement () {
+  var styleElement = document.createElement('style')
+  styleElement.type = 'text/css'
+  head.appendChild(styleElement)
+  return styleElement
+}
+
+function addStyle (obj /* StyleObjectPart */) {
+  var update, remove
+  var styleElement = document.querySelector('style[data-vue-ssr-id~="' + obj.id + '"]')
+
+  if (styleElement) {
+    if (isProduction) {
+      // has SSR styles and in production mode.
+      // simply do nothing.
+      return noop
+    } else {
+      // has SSR styles but in dev mode.
+      // for some reason Chrome can't handle source map in server-rendered
+      // style tags - source maps in <style> only works if the style tag is
+      // created and inserted dynamically. So we remove the server rendered
+      // styles and inject new ones.
+      styleElement.parentNode.removeChild(styleElement)
+    }
+  }
+
+  if (isOldIE) {
+    // use singleton mode for IE9.
+    var styleIndex = singletonCounter++
+    styleElement = singletonElement || (singletonElement = createStyleElement())
+    update = applyToSingletonTag.bind(null, styleElement, styleIndex, false)
+    remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true)
+  } else {
+    // use multi-style-tag mode in all other cases
+    styleElement = createStyleElement()
+    update = applyToTag.bind(null, styleElement)
+    remove = function () {
+      styleElement.parentNode.removeChild(styleElement)
+    }
+  }
+
+  update(obj)
+
+  return function updateStyle (newObj /* StyleObjectPart */) {
+    if (newObj) {
+      if (newObj.css === obj.css &&
+          newObj.media === obj.media &&
+          newObj.sourceMap === obj.sourceMap) {
+        return
+      }
+      update(obj = newObj)
+    } else {
+      remove()
+    }
+  }
+}
+
+var replaceText = (function () {
+  var textStore = []
+
+  return function (index, replacement) {
+    textStore[index] = replacement
+    return textStore.filter(Boolean).join('\n')
+  }
+})()
+
+function applyToSingletonTag (styleElement, index, remove, obj) {
+  var css = remove ? '' : obj.css
+
+  if (styleElement.styleSheet) {
+    styleElement.styleSheet.cssText = replaceText(index, css)
+  } else {
+    var cssNode = document.createTextNode(css)
+    var childNodes = styleElement.childNodes
+    if (childNodes[index]) styleElement.removeChild(childNodes[index])
+    if (childNodes.length) {
+      styleElement.insertBefore(cssNode, childNodes[index])
+    } else {
+      styleElement.appendChild(cssNode)
+    }
+  }
+}
+
+function applyToTag (styleElement, obj) {
+  var css = obj.css
+  var media = obj.media
+  var sourceMap = obj.sourceMap
+
+  if (media) {
+    styleElement.setAttribute('media', media)
+  }
+
+  if (sourceMap) {
+    // https://developer.chrome.com/devtools/docs/javascript-debugging
+    // this makes source maps inside style tags work properly in Chrome
+    css += '\n/*# sourceURL=' + sourceMap.sources[0] + ' */'
+    // http://stackoverflow.com/a/26603875
+    css += '\n/*# sourceMappingURL=data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + ' */'
+  }
+
+  if (styleElement.styleSheet) {
+    styleElement.styleSheet.cssText = css
+  } else {
+    while (styleElement.firstChild) {
+      styleElement.removeChild(styleElement.firstChild)
+    }
+    styleElement.appendChild(document.createTextNode(css))
+  }
+}
+
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports) {
+
+/**
+ * Translates the list format produced by css-loader into something
+ * easier to manipulate.
+ */
+module.exports = function listToStyles (parentId, list) {
+  var styles = []
+  var newStyles = {}
+  for (var i = 0; i < list.length; i++) {
+    var item = list[i]
+    var id = item[0]
+    var css = item[1]
+    var media = item[2]
+    var sourceMap = item[3]
+    var part = {
+      id: parentId + ':' + i,
+      css: css,
+      media: media,
+      sourceMap: sourceMap
+    }
+    if (!newStyles[id]) {
+      styles.push(newStyles[id] = { id: id, parts: [part] })
+    } else {
+      newStyles[id].parts.push(part)
+    }
+  }
+  return styles
+}
+
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports) {
+
+/* globals __VUE_SSR_CONTEXT__ */
+
+// IMPORTANT: Do NOT use ES2015 features in this file.
+// This module is a runtime utility for cleaner component module output and will
+// be included in the final webpack user bundle.
+
+module.exports = function normalizeComponent (
+  rawScriptExports,
+  compiledTemplate,
+  functionalTemplate,
+  injectStyles,
+  scopeId,
+  moduleIdentifier /* server only */
+) {
+  var esModule
+  var scriptExports = rawScriptExports = rawScriptExports || {}
+
+  // ES6 modules interop
+  var type = typeof rawScriptExports.default
+  if (type === 'object' || type === 'function') {
+    esModule = rawScriptExports
+    scriptExports = rawScriptExports.default
+  }
+
+  // Vue.extend constructor export interop
+  var options = typeof scriptExports === 'function'
+    ? scriptExports.options
+    : scriptExports
+
+  // render functions
+  if (compiledTemplate) {
+    options.render = compiledTemplate.render
+    options.staticRenderFns = compiledTemplate.staticRenderFns
+    options._compiled = true
+  }
+
+  // functional template
+  if (functionalTemplate) {
+    options.functional = true
+  }
+
+  // scopedId
+  if (scopeId) {
+    options._scopeId = scopeId
+  }
+
+  var hook
+  if (moduleIdentifier) { // server build
+    hook = function (context) {
+      // 2.3 injection
+      context =
+        context || // cached call
+        (this.$vnode && this.$vnode.ssrContext) || // stateful
+        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
+      // 2.2 with runInNewContext: true
+      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
+        context = __VUE_SSR_CONTEXT__
+      }
+      // inject component styles
+      if (injectStyles) {
+        injectStyles.call(this, context)
+      }
+      // register component module identifier for async chunk inferrence
+      if (context && context._registeredComponents) {
+        context._registeredComponents.add(moduleIdentifier)
+      }
+    }
+    // used by ssr in case component is cached and beforeCreate
+    // never gets called
+    options._ssrRegister = hook
+  } else if (injectStyles) {
+    hook = injectStyles
+  }
+
+  if (hook) {
+    var functional = options.functional
+    var existing = functional
+      ? options.render
+      : options.beforeCreate
+
+    if (!functional) {
+      // inject component registration as beforeCreate hook
+      options.beforeCreate = existing
+        ? [].concat(existing, hook)
+        : [hook]
+    } else {
+      // for template-only hot-reload because in that case the render fn doesn't
+      // go through the normalizer
+      options._injectStyles = hook
+      // register for functioal component in vue file
+      options.render = function renderWithStyleInjection (h, context) {
+        hook.call(context)
+        return existing(h, context)
+      }
+    }
+  }
+
+  return {
+    esModule: esModule,
+    exports: scriptExports,
+    options: options
+  }
+}
+
+
+/***/ }),
+/* 40 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+  name: 'Popup',
+  methods: {
+    openPanel() {
+      console.log('Opening a panel to show extended results');
+      this.$root.$modal.hide('popup');
+      this.$root.panel.open();
+    },
+
+    beforeOpen() {},
+
+    beforeClose() {},
+
+    opened(e) {
+      // e.ref should not be undefined here
+      console.log('opened', e);
+      console.log('ref', e.ref);
+    },
+
+    closed(e) {
+      console.log('closed', e);
+    }
+  },
+  mounted() {
+    console.log('Popup is mounted');
+  },
+  watch: {
+    popupContent: function (value) {
+      console.log('Popup content changed to ' + value);
+    }
+  }
+});
+
+/***/ }),
+/* 41 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "modal",
+    {
+      attrs: {
+        name: "popup",
+        transition: "nice-modal-fade",
+        classes: "popup",
+        "min-width": 200,
+        "min-height": 200,
+        "pivot-y": 0.5,
+        adaptive: true,
+        resizable: true,
+        draggable: true,
+        scrollable: false,
+        reset: true,
+        width: "60%",
+        height: "60%"
+      },
+      on: {
+        "before-open": _vm.beforeOpen,
+        opened: _vm.opened,
+        closed: _vm.closed,
+        "before-close": _vm.beforeClose
+      }
+    },
+    [
+      _c("div", { staticClass: "popup-content" }, [
+        _c("h2", [_vm._v(_vm._s(_vm.$root.popupTitle))]),
+        _vm._v(" "),
+        _c("div", { domProps: { innerHTML: _vm._s(_vm.$root.popupContent) } }),
+        _vm._v(" "),
+        _c("button", { on: { click: _vm.openPanel } }, [
+          _vm._v("Extended data ...")
+        ])
+      ])
+    ]
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+var esExports = { render: render, staticRenderFns: staticRenderFns }
+/* harmony default export */ __webpack_exports__["a"] = (esExports);
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-09f5ebdb", esExports)
+  }
+}
 
 /***/ })
 /******/ ]);
