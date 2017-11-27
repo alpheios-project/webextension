@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -153,6 +153,1966 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
+
+
+class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */] {
+  constructor (request, body, status = undefined) {
+    super(body)
+    this.role = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.RESPONSE)
+    this.requestID = request.ID // ID of the request to match request and response
+    if (status) {
+      if (typeof status === 'symbol') {
+        // If status is a symbol, store a symbol key instead of a symbol for serialization
+        this.status = Symbol.keyFor(status)
+      } else {
+        this.status = status
+      }
+    }
+  }
+
+  /**
+   * Checks if this message is a response (i.e. follows a response message format)
+   * @param message
+   */
+  static isResponse (message) {
+    return message.role &&
+    Symbol.for(message.role) === __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.RESPONSE && message.requestID
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = ResponseMessage;
+
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return constants; });
+/* unused harmony export Definition */
+/* unused harmony export Feature */
+/* unused harmony export FeatureType */
+/* unused harmony export FeatureList */
+/* unused harmony export FeatureImporter */
+/* unused harmony export Inflection */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return LanguageModelFactory; });
+/* unused harmony export Homonym */
+/* unused harmony export Lexeme */
+/* unused harmony export Lemma */
+/* unused harmony export LatinLanguageModel */
+/* unused harmony export GreekLanguageModel */
+/* unused harmony export ArabicLanguageModel */
+/* unused harmony export ResourceProvider */
+/* eslint-disable no-unused-vars */
+const LANG_UNIT_WORD = Symbol('word');
+const LANG_UNIT_CHAR = Symbol('char');
+const LANG_DIR_LTR = Symbol('ltr');
+const LANG_DIR_RTL = Symbol('rtl');
+const LANG_LATIN = Symbol('latin');
+const LANG_GREEK = Symbol('greek');
+const LANG_ARABIC = Symbol('arabic');
+const LANG_PERSIAN = Symbol('persian');
+const STR_LANG_CODE_LAT = 'lat';
+const STR_LANG_CODE_LA = 'la';
+const STR_LANG_CODE_GRC = 'grc';
+const STR_LANG_CODE_ARA = 'ara';
+const STR_LANG_CODE_AR = 'ar';
+const STR_LANG_CODE_FAR = 'far';
+const STR_LANG_CODE_PER = 'per';
+// parts of speech
+const POFS_ADJECTIVE = 'adjective';
+const POFS_ADVERB = 'adverb';
+const POFS_ADVERBIAL = 'adverbial';
+const POFS_ARTICLE = 'article';
+const POFS_CONJUNCTION = 'conjunction';
+const POFS_EXCLAMATION = 'exclamation';
+const POFS_INTERJECTION = 'interjection';
+const POFS_NOUN = 'noun';
+const POFS_NUMERAL = 'numeral';
+const POFS_PARTICLE = 'particle';
+const POFS_PREFIX = 'prefix';
+const POFS_PREPOSITION = 'preposition';
+const POFS_PRONOUN = 'pronoun';
+const POFS_SUFFIX = 'suffix';
+const POFS_SUPINE = 'supine';
+const POFS_VERB = 'verb';
+const POFS_VERB_PARTICIPLE = 'verb participle';
+// gender
+const GEND_MASCULINE = 'masculine';
+const GEND_FEMININE = 'feminine';
+const GEND_NEUTER = 'neuter';
+const GEND_COMMON = 'common';
+const GEND_ANIMATE = 'animate';
+const GEND_INANIMATE = 'inanimate';
+// Polish gender types
+const GEND_PERSONAL_MASCULINE = 'personal masculine';
+const GEND_ANIMATE_MASCULINE = 'animate masculine';
+const GEND_INANIMATE_MASCULINE = 'inanimate masculine';
+// comparative
+const COMP_POSITIVE = 'positive';
+const COMP_COMPARITIVE = 'comparative';
+const COMP_SUPERLATIVE = 'superlative';
+// case
+const CASE_ABESSIVE = 'abessive';
+const CASE_ABLATIVE = 'ablative';
+const CASE_ABSOLUTIVE = 'absolutive';
+const CASE_ACCUSATIVE = 'accusative';
+const CASE_ADDIRECTIVE = 'addirective';
+const CASE_ADELATIVE = 'adelative';
+const CASE_ADESSIVE = 'adessive';
+const CASE_ADVERBIAL = 'adverbial';
+const CASE_ALLATIVE = 'allative';
+const CASE_ANTESSIVE = 'antessive';
+const CASE_APUDESSIVE = 'apudessive';
+const CASE_AVERSIVE = 'aversive';
+const CASE_BENEFACTIVE = 'benefactive';
+const CASE_CARITIVE = 'caritive';
+const CASE_CAUSAL = 'causal';
+const CASE_CAUSAL_FINAL = 'causal-final';
+const CASE_COMITATIVE = 'comitative';
+const CASE_DATIVE = 'dative';
+const CASE_DELATIVE = 'delative';
+const CASE_DIRECT = 'direct';
+const CASE_DISTRIBUTIVE = 'distributive';
+const CASE_DISTRIBUTIVE_TEMPORAL = 'distributive-temporal';
+const CASE_ELATIVE = 'elative';
+const CASE_ERGATIVE = 'ergative';
+const CASE_ESSIVE = 'essive';
+const CASE_ESSIVE_FORMAL = 'essive-formal';
+const CASE_ESSIVE_MODAL = 'essive-modal';
+const CASE_EQUATIVE = 'equative';
+const CASE_EVITATIVE = 'evitative';
+const CASE_EXESSIVE = 'exessive';
+const CASE_FINAL = 'final';
+const CASE_FORMAL = 'formal';
+const CASE_GENITIVE = 'genitive';
+const CASE_ILLATIVE = 'illative';
+const CASE_INELATIVE = 'inelative';
+const CASE_INESSIVE = 'inessive';
+const CASE_INSTRUCTIVE = 'instructive';
+const CASE_INSTRUMENTAL = 'instrumental';
+const CASE_INSTRUMENTAL_COMITATIVE = 'instrumental-comitative';
+const CASE_INTRANSITIVE = 'intransitive';
+const CASE_LATIVE = 'lative';
+const CASE_LOCATIVE = 'locative';
+const CASE_MODAL = 'modal';
+const CASE_MULTIPLICATIVE = 'multiplicative';
+const CASE_NOMINATIVE = 'nominative';
+const CASE_PARTITIVE = 'partitive';
+const CASE_PEGATIVE = 'pegative';
+const CASE_PERLATIVE = 'perlative';
+const CASE_POSSESSIVE = 'possessive';
+const CASE_POSTELATIVE = 'postelative';
+const CASE_POSTDIRECTIVE = 'postdirective';
+const CASE_POSTESSIVE = 'postessive';
+const CASE_POSTPOSITIONAL = 'postpositional';
+const CASE_PREPOSITIONAL = 'prepositional';
+const CASE_PRIVATIVE = 'privative';
+const CASE_PROLATIVE = 'prolative';
+const CASE_PROSECUTIVE = 'prosecutive';
+const CASE_PROXIMATIVE = 'proximative';
+const CASE_SEPARATIVE = 'separative';
+const CASE_SOCIATIVE = 'sociative';
+const CASE_SUBDIRECTIVE = 'subdirective';
+const CASE_SUBESSIVE = 'subessive';
+const CASE_SUBELATIVE = 'subelative';
+const CASE_SUBLATIVE = 'sublative';
+const CASE_SUPERDIRECTIVE = 'superdirective';
+const CASE_SUPERESSIVE = 'superessive';
+const CASE_SUPERLATIVE = 'superlative';
+const CASE_SUPPRESSIVE = 'suppressive';
+const CASE_TEMPORAL = 'temporal';
+const CASE_TERMINATIVE = 'terminative';
+const CASE_TRANSLATIVE = 'translative';
+const CASE_VIALIS = 'vialis';
+const CASE_VOCATIVE = 'vocative';
+const MOOD_ADMIRATIVE = 'admirative';
+const MOOD_COHORTATIVE = 'cohortative';
+const MOOD_CONDITIONAL = 'conditional';
+const MOOD_DECLARATIVE = 'declarative';
+const MOOD_DUBITATIVE = 'dubitative';
+const MOOD_ENERGETIC = 'energetic';
+const MOOD_EVENTIVE = 'eventive';
+const MOOD_GENERIC = 'generic';
+const MOOD_GERUNDIVE = 'gerundive';
+const MOOD_HYPOTHETICAL = 'hypothetical';
+const MOOD_IMPERATIVE = 'imperative';
+const MOOD_INDICATIVE = 'indicative';
+const MOOD_INFERENTIAL = 'inferential';
+const MOOD_INFINITIVE = 'infinitive';
+const MOOD_INTERROGATIVE = 'interrogative';
+const MOOD_JUSSIVE = 'jussive';
+const MOOD_NEGATIVE = 'negative';
+const MOOD_OPTATIVE = 'optative';
+const MOOD_PARTICIPLE = 'participle';
+const MOOD_PRESUMPTIVE = 'presumptive';
+const MOOD_RENARRATIVE = 'renarrative';
+const MOOD_SUBJUNCTIVE = 'subjunctive';
+const MOOD_SUPINE = 'supine';
+const NUM_SINGULAR = 'singular';
+const NUM_PLURAL = 'plural';
+const NUM_DUAL = 'dual';
+const NUM_TRIAL = 'trial';
+const NUM_PAUCAL = 'paucal';
+const NUM_SINGULATIVE = 'singulative';
+const NUM_COLLECTIVE = 'collective';
+const NUM_DISTRIBUTIVE_PLURAL = 'distributive plural';
+const NRL_CARDINAL = 'cardinal';
+const NRL_ORDINAL = 'ordinal';
+const NRL_DISTRIBUTIVE = 'distributive';
+const NURL_NUMERAL_ADVERB = 'numeral adverb';
+const ORD_1ST = '1st';
+const ORD_2ND = '2nd';
+const ORD_3RD = '3rd';
+const ORD_4TH = '4th';
+const ORD_5TH = '5th';
+const ORD_6TH = '6th';
+const ORD_7TH = '7th';
+const ORD_8TH = '8th';
+const ORD_9TH = '9th';
+const TENSE_AORIST = 'aorist';
+const TENSE_FUTURE = 'future';
+const TENSE_FUTURE_PERFECT = 'future perfect';
+const TENSE_IMPERFECT = 'imperfect';
+const TENSE_PAST_ABSOLUTE = 'past absolute';
+const TENSE_PERFECT = 'perfect';
+const TENSE_PLUPERFECT = 'pluperfect';
+const TENSE_PRESENT = 'present';
+const VKIND_TO_BE = 'to be';
+const VKIND_COMPOUNDS_OF_TO_BE = 'compounds of to be';
+const VKIND_TAKING_ABLATIVE = 'taking ablative';
+const VKIND_TAKING_DATIVE = 'taking dative';
+const VKIND_TAKING_GENITIVE = 'taking genitive';
+const VKIND_TRANSITIVE = 'transitive';
+const VKIND_INTRANSITIVE = 'intransitive';
+const VKIND_IMPERSONAL = 'impersonal';
+const VKIND_DEPONENT = 'deponent';
+const VKIND_SEMIDEPONENT = 'semideponent';
+const VKIND_PERFECT_DEFINITE = 'perfect definite';
+const VOICE_ACTIVE = 'active';
+const VOICE_PASSIVE = 'passive';
+const VOICE_MEDIOPASSIVE = 'mediopassive';
+const VOICE_IMPERSONAL_PASSIVE = 'impersonal passive';
+const VOICE_MIDDLE = 'middle';
+const VOICE_ANTIPASSIVE = 'antipassive';
+const VOICE_REFLEXIVE = 'reflexive';
+const VOICE_RECIPROCAL = 'reciprocal';
+const VOICE_CAUSATIVE = 'causative';
+const VOICE_ADJUTATIVE = 'adjutative';
+const VOICE_APPLICATIVE = 'applicative';
+const VOICE_CIRCUMSTANTIAL = 'circumstantial';
+const VOICE_DEPONENT = 'deponent';
+const TYPE_IRREGULAR = 'irregular';
+const TYPE_REGULAR = 'regular';
+/* eslit-enable no-unused-vars */
+
+
+var constants = Object.freeze({
+	LANG_UNIT_WORD: LANG_UNIT_WORD,
+	LANG_UNIT_CHAR: LANG_UNIT_CHAR,
+	LANG_DIR_LTR: LANG_DIR_LTR,
+	LANG_DIR_RTL: LANG_DIR_RTL,
+	LANG_LATIN: LANG_LATIN,
+	LANG_GREEK: LANG_GREEK,
+	LANG_ARABIC: LANG_ARABIC,
+	LANG_PERSIAN: LANG_PERSIAN,
+	STR_LANG_CODE_LAT: STR_LANG_CODE_LAT,
+	STR_LANG_CODE_LA: STR_LANG_CODE_LA,
+	STR_LANG_CODE_GRC: STR_LANG_CODE_GRC,
+	STR_LANG_CODE_ARA: STR_LANG_CODE_ARA,
+	STR_LANG_CODE_AR: STR_LANG_CODE_AR,
+	STR_LANG_CODE_FAR: STR_LANG_CODE_FAR,
+	STR_LANG_CODE_PER: STR_LANG_CODE_PER,
+	POFS_ADJECTIVE: POFS_ADJECTIVE,
+	POFS_ADVERB: POFS_ADVERB,
+	POFS_ADVERBIAL: POFS_ADVERBIAL,
+	POFS_ARTICLE: POFS_ARTICLE,
+	POFS_CONJUNCTION: POFS_CONJUNCTION,
+	POFS_EXCLAMATION: POFS_EXCLAMATION,
+	POFS_INTERJECTION: POFS_INTERJECTION,
+	POFS_NOUN: POFS_NOUN,
+	POFS_NUMERAL: POFS_NUMERAL,
+	POFS_PARTICLE: POFS_PARTICLE,
+	POFS_PREFIX: POFS_PREFIX,
+	POFS_PREPOSITION: POFS_PREPOSITION,
+	POFS_PRONOUN: POFS_PRONOUN,
+	POFS_SUFFIX: POFS_SUFFIX,
+	POFS_SUPINE: POFS_SUPINE,
+	POFS_VERB: POFS_VERB,
+	POFS_VERB_PARTICIPLE: POFS_VERB_PARTICIPLE,
+	GEND_MASCULINE: GEND_MASCULINE,
+	GEND_FEMININE: GEND_FEMININE,
+	GEND_NEUTER: GEND_NEUTER,
+	GEND_COMMON: GEND_COMMON,
+	GEND_ANIMATE: GEND_ANIMATE,
+	GEND_INANIMATE: GEND_INANIMATE,
+	GEND_PERSONAL_MASCULINE: GEND_PERSONAL_MASCULINE,
+	GEND_ANIMATE_MASCULINE: GEND_ANIMATE_MASCULINE,
+	GEND_INANIMATE_MASCULINE: GEND_INANIMATE_MASCULINE,
+	COMP_POSITIVE: COMP_POSITIVE,
+	COMP_COMPARITIVE: COMP_COMPARITIVE,
+	COMP_SUPERLATIVE: COMP_SUPERLATIVE,
+	CASE_ABESSIVE: CASE_ABESSIVE,
+	CASE_ABLATIVE: CASE_ABLATIVE,
+	CASE_ABSOLUTIVE: CASE_ABSOLUTIVE,
+	CASE_ACCUSATIVE: CASE_ACCUSATIVE,
+	CASE_ADDIRECTIVE: CASE_ADDIRECTIVE,
+	CASE_ADELATIVE: CASE_ADELATIVE,
+	CASE_ADESSIVE: CASE_ADESSIVE,
+	CASE_ADVERBIAL: CASE_ADVERBIAL,
+	CASE_ALLATIVE: CASE_ALLATIVE,
+	CASE_ANTESSIVE: CASE_ANTESSIVE,
+	CASE_APUDESSIVE: CASE_APUDESSIVE,
+	CASE_AVERSIVE: CASE_AVERSIVE,
+	CASE_BENEFACTIVE: CASE_BENEFACTIVE,
+	CASE_CARITIVE: CASE_CARITIVE,
+	CASE_CAUSAL: CASE_CAUSAL,
+	CASE_CAUSAL_FINAL: CASE_CAUSAL_FINAL,
+	CASE_COMITATIVE: CASE_COMITATIVE,
+	CASE_DATIVE: CASE_DATIVE,
+	CASE_DELATIVE: CASE_DELATIVE,
+	CASE_DIRECT: CASE_DIRECT,
+	CASE_DISTRIBUTIVE: CASE_DISTRIBUTIVE,
+	CASE_DISTRIBUTIVE_TEMPORAL: CASE_DISTRIBUTIVE_TEMPORAL,
+	CASE_ELATIVE: CASE_ELATIVE,
+	CASE_ERGATIVE: CASE_ERGATIVE,
+	CASE_ESSIVE: CASE_ESSIVE,
+	CASE_ESSIVE_FORMAL: CASE_ESSIVE_FORMAL,
+	CASE_ESSIVE_MODAL: CASE_ESSIVE_MODAL,
+	CASE_EQUATIVE: CASE_EQUATIVE,
+	CASE_EVITATIVE: CASE_EVITATIVE,
+	CASE_EXESSIVE: CASE_EXESSIVE,
+	CASE_FINAL: CASE_FINAL,
+	CASE_FORMAL: CASE_FORMAL,
+	CASE_GENITIVE: CASE_GENITIVE,
+	CASE_ILLATIVE: CASE_ILLATIVE,
+	CASE_INELATIVE: CASE_INELATIVE,
+	CASE_INESSIVE: CASE_INESSIVE,
+	CASE_INSTRUCTIVE: CASE_INSTRUCTIVE,
+	CASE_INSTRUMENTAL: CASE_INSTRUMENTAL,
+	CASE_INSTRUMENTAL_COMITATIVE: CASE_INSTRUMENTAL_COMITATIVE,
+	CASE_INTRANSITIVE: CASE_INTRANSITIVE,
+	CASE_LATIVE: CASE_LATIVE,
+	CASE_LOCATIVE: CASE_LOCATIVE,
+	CASE_MODAL: CASE_MODAL,
+	CASE_MULTIPLICATIVE: CASE_MULTIPLICATIVE,
+	CASE_NOMINATIVE: CASE_NOMINATIVE,
+	CASE_PARTITIVE: CASE_PARTITIVE,
+	CASE_PEGATIVE: CASE_PEGATIVE,
+	CASE_PERLATIVE: CASE_PERLATIVE,
+	CASE_POSSESSIVE: CASE_POSSESSIVE,
+	CASE_POSTELATIVE: CASE_POSTELATIVE,
+	CASE_POSTDIRECTIVE: CASE_POSTDIRECTIVE,
+	CASE_POSTESSIVE: CASE_POSTESSIVE,
+	CASE_POSTPOSITIONAL: CASE_POSTPOSITIONAL,
+	CASE_PREPOSITIONAL: CASE_PREPOSITIONAL,
+	CASE_PRIVATIVE: CASE_PRIVATIVE,
+	CASE_PROLATIVE: CASE_PROLATIVE,
+	CASE_PROSECUTIVE: CASE_PROSECUTIVE,
+	CASE_PROXIMATIVE: CASE_PROXIMATIVE,
+	CASE_SEPARATIVE: CASE_SEPARATIVE,
+	CASE_SOCIATIVE: CASE_SOCIATIVE,
+	CASE_SUBDIRECTIVE: CASE_SUBDIRECTIVE,
+	CASE_SUBESSIVE: CASE_SUBESSIVE,
+	CASE_SUBELATIVE: CASE_SUBELATIVE,
+	CASE_SUBLATIVE: CASE_SUBLATIVE,
+	CASE_SUPERDIRECTIVE: CASE_SUPERDIRECTIVE,
+	CASE_SUPERESSIVE: CASE_SUPERESSIVE,
+	CASE_SUPERLATIVE: CASE_SUPERLATIVE,
+	CASE_SUPPRESSIVE: CASE_SUPPRESSIVE,
+	CASE_TEMPORAL: CASE_TEMPORAL,
+	CASE_TERMINATIVE: CASE_TERMINATIVE,
+	CASE_TRANSLATIVE: CASE_TRANSLATIVE,
+	CASE_VIALIS: CASE_VIALIS,
+	CASE_VOCATIVE: CASE_VOCATIVE,
+	MOOD_ADMIRATIVE: MOOD_ADMIRATIVE,
+	MOOD_COHORTATIVE: MOOD_COHORTATIVE,
+	MOOD_CONDITIONAL: MOOD_CONDITIONAL,
+	MOOD_DECLARATIVE: MOOD_DECLARATIVE,
+	MOOD_DUBITATIVE: MOOD_DUBITATIVE,
+	MOOD_ENERGETIC: MOOD_ENERGETIC,
+	MOOD_EVENTIVE: MOOD_EVENTIVE,
+	MOOD_GENERIC: MOOD_GENERIC,
+	MOOD_GERUNDIVE: MOOD_GERUNDIVE,
+	MOOD_HYPOTHETICAL: MOOD_HYPOTHETICAL,
+	MOOD_IMPERATIVE: MOOD_IMPERATIVE,
+	MOOD_INDICATIVE: MOOD_INDICATIVE,
+	MOOD_INFERENTIAL: MOOD_INFERENTIAL,
+	MOOD_INFINITIVE: MOOD_INFINITIVE,
+	MOOD_INTERROGATIVE: MOOD_INTERROGATIVE,
+	MOOD_JUSSIVE: MOOD_JUSSIVE,
+	MOOD_NEGATIVE: MOOD_NEGATIVE,
+	MOOD_OPTATIVE: MOOD_OPTATIVE,
+	MOOD_PARTICIPLE: MOOD_PARTICIPLE,
+	MOOD_PRESUMPTIVE: MOOD_PRESUMPTIVE,
+	MOOD_RENARRATIVE: MOOD_RENARRATIVE,
+	MOOD_SUBJUNCTIVE: MOOD_SUBJUNCTIVE,
+	MOOD_SUPINE: MOOD_SUPINE,
+	NUM_SINGULAR: NUM_SINGULAR,
+	NUM_PLURAL: NUM_PLURAL,
+	NUM_DUAL: NUM_DUAL,
+	NUM_TRIAL: NUM_TRIAL,
+	NUM_PAUCAL: NUM_PAUCAL,
+	NUM_SINGULATIVE: NUM_SINGULATIVE,
+	NUM_COLLECTIVE: NUM_COLLECTIVE,
+	NUM_DISTRIBUTIVE_PLURAL: NUM_DISTRIBUTIVE_PLURAL,
+	NRL_CARDINAL: NRL_CARDINAL,
+	NRL_ORDINAL: NRL_ORDINAL,
+	NRL_DISTRIBUTIVE: NRL_DISTRIBUTIVE,
+	NURL_NUMERAL_ADVERB: NURL_NUMERAL_ADVERB,
+	ORD_1ST: ORD_1ST,
+	ORD_2ND: ORD_2ND,
+	ORD_3RD: ORD_3RD,
+	ORD_4TH: ORD_4TH,
+	ORD_5TH: ORD_5TH,
+	ORD_6TH: ORD_6TH,
+	ORD_7TH: ORD_7TH,
+	ORD_8TH: ORD_8TH,
+	ORD_9TH: ORD_9TH,
+	TENSE_AORIST: TENSE_AORIST,
+	TENSE_FUTURE: TENSE_FUTURE,
+	TENSE_FUTURE_PERFECT: TENSE_FUTURE_PERFECT,
+	TENSE_IMPERFECT: TENSE_IMPERFECT,
+	TENSE_PAST_ABSOLUTE: TENSE_PAST_ABSOLUTE,
+	TENSE_PERFECT: TENSE_PERFECT,
+	TENSE_PLUPERFECT: TENSE_PLUPERFECT,
+	TENSE_PRESENT: TENSE_PRESENT,
+	VKIND_TO_BE: VKIND_TO_BE,
+	VKIND_COMPOUNDS_OF_TO_BE: VKIND_COMPOUNDS_OF_TO_BE,
+	VKIND_TAKING_ABLATIVE: VKIND_TAKING_ABLATIVE,
+	VKIND_TAKING_DATIVE: VKIND_TAKING_DATIVE,
+	VKIND_TAKING_GENITIVE: VKIND_TAKING_GENITIVE,
+	VKIND_TRANSITIVE: VKIND_TRANSITIVE,
+	VKIND_INTRANSITIVE: VKIND_INTRANSITIVE,
+	VKIND_IMPERSONAL: VKIND_IMPERSONAL,
+	VKIND_DEPONENT: VKIND_DEPONENT,
+	VKIND_SEMIDEPONENT: VKIND_SEMIDEPONENT,
+	VKIND_PERFECT_DEFINITE: VKIND_PERFECT_DEFINITE,
+	VOICE_ACTIVE: VOICE_ACTIVE,
+	VOICE_PASSIVE: VOICE_PASSIVE,
+	VOICE_MEDIOPASSIVE: VOICE_MEDIOPASSIVE,
+	VOICE_IMPERSONAL_PASSIVE: VOICE_IMPERSONAL_PASSIVE,
+	VOICE_MIDDLE: VOICE_MIDDLE,
+	VOICE_ANTIPASSIVE: VOICE_ANTIPASSIVE,
+	VOICE_REFLEXIVE: VOICE_REFLEXIVE,
+	VOICE_RECIPROCAL: VOICE_RECIPROCAL,
+	VOICE_CAUSATIVE: VOICE_CAUSATIVE,
+	VOICE_ADJUTATIVE: VOICE_ADJUTATIVE,
+	VOICE_APPLICATIVE: VOICE_APPLICATIVE,
+	VOICE_CIRCUMSTANTIAL: VOICE_CIRCUMSTANTIAL,
+	VOICE_DEPONENT: VOICE_DEPONENT,
+	TYPE_IRREGULAR: TYPE_IRREGULAR,
+	TYPE_REGULAR: TYPE_REGULAR
+});
+
+class Definition {
+  constructor (text, language, format) {
+    this.text = text;
+    this.language = language;
+    this.format = format;
+  }
+}
+
+/**
+ * Wrapper class for a (grammatical, usually) feature, such as part of speech or declension. Keeps both value and type information.
+ */
+class Feature {
+    /**
+     * Initializes a Feature object
+     * @param {string | string[]} value - A single feature value or, if this feature could have multiple
+     * values, an array of values.
+     * @param {string} type - A type of the feature, allowed values are specified in 'types' object.
+     * @param {string} language - A language of a feature, allowed values are specified in 'languages' object.
+     */
+  constructor (value, type, language) {
+    if (!Feature.types.isAllowed(type)) {
+      throw new Error('Features of "' + type + '" type are not supported.')
+    }
+    if (!value) {
+      throw new Error('Feature should have a non-empty value.')
+    }
+    if (!type) {
+      throw new Error('Feature should have a non-empty type.')
+    }
+    if (!language) {
+      throw new Error('Feature constructor requires a language')
+    }
+    this.value = value;
+    this.type = type;
+    this.language = language;
+  };
+
+  isEqual (feature) {
+    if (Array.isArray(feature.value)) {
+      if (!Array.isArray(this.value) || this.value.length !== feature.value.length) {
+        return false
+      }
+      let equal = this.type === feature.type && this.language === feature.language;
+      equal = equal && this.value.every(function (element, index) {
+        return element === feature.value[index]
+      });
+      return equal
+    } else {
+      return this.value === feature.value && this.type === feature.type && this.language === feature.language
+    }
+  }
+}
+// Should have no spaces in values in order to be used in HTML templates
+Feature.types = {
+  word: 'word',
+  part: 'part of speech', // Part of speech
+  number: 'number',
+  grmCase: 'case',
+  declension: 'declension',
+  gender: 'gender',
+  type: 'type',
+  conjugation: 'conjugation',
+  comparison: 'comparison',
+  tense: 'tense',
+  voice: 'voice',
+  mood: 'mood',
+  person: 'person',
+  frequency: 'frequency', // How frequent this word is
+  meaning: 'meaning', // Meaning of a word
+  source: 'source', // Source of word definition
+  footnote: 'footnote', // A footnote for a word's ending
+  dialect: 'dialect', // a dialect iderntifier
+  note: 'note', // a general note
+  pronunciation: 'pronunciation',
+  area: 'area',
+  geo: 'geo', // geographical data
+  kind: 'kind', // verb kind informatin
+  derivtype: 'derivtype',
+  stemtype: 'stemtype',
+  morph: 'morph', // general morphological information
+  var: 'var', // variance?
+  isAllowed (value) {
+    let v = `${value}`;
+    return Object.values(this).includes(v)
+  }
+};
+
+class FeatureImporter {
+  constructor (defaults = []) {
+    this.hash = {};
+    for (let value of defaults) {
+      this.map(value, value);
+    }
+    return this
+  }
+
+    /**
+     * Sets mapping between external imported value and one or more library standard values. If an importedValue
+     * is already in a hash table, old libraryValue will be overwritten with the new one.
+     * @param {string} importedValue - External value
+     * @param {Object | Object[] | string | string[]} libraryValue - Library standard value
+     */
+  map (importedValue, libraryValue) {
+    if (!importedValue) {
+      throw new Error('Imported value should not be empty.')
+    }
+
+    if (!libraryValue) {
+      throw new Error('Library value should not be empty.')
+    }
+
+    this.hash[importedValue] = libraryValue;
+    return this
+  }
+
+    /**
+     * Checks if value is in a map.
+     * @param {string} importedValue - A value to test.
+     * @returns {boolean} - Tru if value is in a map, false otherwise.
+     */
+  has (importedValue) {
+    return this.hash.hasOwnProperty(importedValue)
+  }
+
+    /**
+     * Returns one or more library standard values that match an external value
+     * @param {string} importedValue - External value
+     * @returns {Object | string} One or more of library standard values
+     */
+  get (importedValue) {
+    if (this.has(importedValue)) {
+      return this.hash[importedValue]
+    } else {
+      throw new Error('A value "' + importedValue + '" is not found in the importer.')
+    }
+  }
+}
+
+/**
+ * Definition class for a (grammatical) feature. Stores type information and (optionally) all possible values of the feature.
+ * It serves as a feature generator. If list of possible values is provided, it can generate a Feature object
+ * each time a property that corresponds to a feature value is accessed. If no list of possible values provided,
+ * a Feature object can be generated with get(value) method.
+ *
+ * An order of values determines a default sort and grouping order. If two values should have the same order,
+ * they should be grouped within an array: value1, [value2, value3], value4. Here 'value2' and 'value3' have
+ * the same priority for sorting and grouping.
+ */
+class FeatureType {
+    // TODO: value checking
+    /**
+     * Creates and initializes a Feature Type object.
+     * @param {string} type - A type of the feature, allowed values are specified in 'types' object.
+     * @param {string[] | string[][]} values - A list of allowed values for this feature type.
+     * If an empty array is provided, there will be no
+     * allowed values as well as no ordering (can be used for items that do not need or have a simple order,
+     * such as footnotes).
+     * @param {string} language - A language of a feature, allowed values are specified in 'languages' object.
+     */
+  constructor (type, values, language) {
+    if (!Feature.types.isAllowed(type)) {
+      throw new Error('Features of "' + type + '" type are not supported.')
+    }
+    if (!values || !Array.isArray(values)) {
+      throw new Error('Values should be an array (or an empty array) of values.')
+    }
+    if (!language) {
+      throw new Error('FeatureType constructor requires a language')
+    }
+
+    this.type = type;
+    this.language = language;
+
+        /*
+         This is a sort order index for a grammatical feature values. It is determined by the order of values in
+         a 'values' array.
+         */
+    this._orderIndex = [];
+    this._orderLookup = {};
+
+    for (const [index, value] of values.entries()) {
+      this._orderIndex.push(value);
+      if (Array.isArray(value)) {
+        for (let element of value) {
+          this[element] = new Feature(element, this.type, this.language);
+          this._orderLookup[element] = index;
+        }
+      } else {
+        this[value] = new Feature(value, this.type, this.language);
+        this._orderLookup[value] = index;
+      }
+    }
+  };
+
+    /**
+     * Return a Feature with an arbitrary value. This value would not be necessarily present among FeatureType values.
+     * This can be especially useful for features that do not set: a list of predefined values, such as footnotes.
+     * @param value
+     * @returns {Feature}
+     */
+  get (value) {
+    if (value) {
+      return new Feature(value, this.type, this.language)
+    } else {
+      throw new Error('A non-empty value should be provided.')
+    }
+  }
+
+  getFromImporter (importerName, value) {
+    let mapped;
+    try {
+      mapped = this.importer[importerName].get(value);
+    } catch (e) {
+      // quietly catch not found and replace with default
+      mapped = this.get(value);
+    }
+    return mapped
+  }
+
+    /**
+     * Creates and returns a new importer with a specific name. If an importer with this name already exists,
+     * an existing Importer object will be returned.
+     * @param {string} name - A name of an importer object
+     * @returns {Importer} A new or existing Importer object that matches a name provided
+     */
+  addImporter (name) {
+    if (!name) {
+      throw new Error('Importer should have a non-empty name.')
+    }
+    this.importer = this.importer || {};
+    this.importer[name] = this.importer[name] || new FeatureImporter();
+    return this.importer[name]
+  }
+
+    /**
+     * Return copies of all feature values as Feature objects in a sorted array, according to feature type's sort order.
+     * For a similar function that returns strings instead of Feature objects see orderedValues().
+     * @returns {Feature[] | Feature[][]} Array of feature values sorted according to orderIndex.
+     * If particular feature contains multiple feature values (i.e. `masculine` and `feminine` values combined),
+     * an array of Feature objects will be returned instead of a single Feature object, as for single feature values.
+     */
+  get orderedFeatures () {
+    return this.orderedValues.map((value) => new Feature(value, this.type, this.language))
+  }
+
+    /**
+     * Return all feature values as strings in a sorted array, according to feature type's sort order.
+     * This is a main method that specifies a sort order of the feature type. orderedFeatures() relies
+     * on this method in providing a sorted array of feature values. If you want to create
+     * a custom sort order for a particular feature type that will depend on some options that are not type-related,
+     * create a wrapper around this function providing it with options arguments so it will be able to decide
+     * in what order those features will be based on those arguments.
+     * For a similar function that returns Feature objects instead of strings see orderedValues().
+     * @returns {string[]} Array of feature values sorted according to orderIndex.
+     * If particular feature contains multiple feature values (i.e. `masculine` and `feminine` values combined),
+     * an array of strings will be returned instead of a single strings, as for single feature values.
+     */
+  get orderedValues () {
+    return this._orderIndex
+  }
+
+    /**
+     * Returns a lookup table for type values as:
+     *  {value1: order1, value2: order2}, where order is a sort order of an item. If two items have the same sort order,
+     *  their order value will be the same.
+     * @returns {object}
+     */
+  get orderLookup () {
+    return this._orderLookup
+  }
+
+    /**
+     * Sets an order of grammatical feature values for a grammatical feature. Used mostly for sorting, filtering,
+     * and displaying.
+     *
+     * @param {Feature[] | Feature[][]} values - a list of grammatical features that specify their order for
+     * sorting and filtering. Some features can be grouped as [[genders.masculine, genders.feminine], LibLatin.genders.neuter].
+     * It means that genders.masculine and genders.feminine belong to the same group. They will have the same index
+     * and will be stored inside an _orderIndex as an array. genders.masculine and genders.feminine will be grouped together
+     * during filtering and will be in the same bin during sorting.
+     *
+     */
+  set order (values) {
+    if (!values || (Array.isArray(values) && values.length === 0)) {
+      throw new Error('A non-empty list of values should be provided.')
+    }
+
+        // If a single value is provided, convert it into an array
+    if (!Array.isArray(values)) {
+      values = [values];
+    }
+
+    for (let value of values) {
+      if (Array.isArray(value)) {
+        for (let element of value) {
+          if (!this.hasOwnProperty(element.value)) {
+            throw new Error('Trying to order an element with "' + element.value + '" value that is not stored in a "' + this.type + '" type.')
+          }
+
+          if (element.type !== this.type) {
+            throw new Error('Trying to order an element with type "' + element.type + '" that is different from "' + this.type + '".')
+          }
+
+          if (element.language !== this.language) {
+            throw new Error('Trying to order an element with language "' + element.language + '" that is different from "' + this.language + '".')
+          }
+        }
+      } else {
+        if (!this.hasOwnProperty(value.value)) {
+          throw new Error('Trying to order an element with "' + value.value + '" value that is not stored in a "' + this.type + '" type.')
+        }
+
+        if (value.type !== this.type) {
+          throw new Error('Trying to order an element with type "' + value.type + '" that is different from "' + this.type + '".')
+        }
+
+        if (value.language !== this.language) {
+          throw new Error('Trying to order an element with language "' + value.language + '" that is different from "' + this.language + '".')
+        }
+      }
+    }
+
+        // Erase whatever sort order was set previously
+    this._orderLookup = {};
+    this._orderIndex = [];
+
+        // Define a new sort order
+    for (const [index, element] of values.entries()) {
+      if (Array.isArray(element)) {
+                // If it is an array, all values should have the same order
+        let elements = [];
+        for (const subElement of element) {
+          this._orderLookup[subElement.value] = index;
+          elements.push(subElement.value);
+        }
+        this._orderIndex[index] = elements;
+      } else {
+                // If is a single value
+        this._orderLookup[element.value] = index;
+        this._orderIndex[index] = element.value;
+      }
+    }
+  }
+}
+
+/**
+ * A list of grammatical features that characterizes a language unit. Has some additional service methods,
+ * compared with standard storage objects.
+ */
+class FeatureList {
+    /**
+     * Initializes a feature list.
+     * @param {FeatureType[]} features - Features that build the list (optional, can be set later).
+     */
+  constructor (features = []) {
+    this._features = [];
+    this._types = {};
+    this.add(features);
+  }
+
+  add (features) {
+    if (!features || !Array.isArray(features)) {
+      throw new Error('Features must be defined and must come in an array.')
+    }
+
+    for (let feature of features) {
+      this._features.push(feature);
+      this._types[feature.type] = feature;
+    }
+  }
+
+    /**
+     * Returns an array of grouping features.
+     * @returns {FeatureType[]} - An array of grouping features.
+     */
+  get items () {
+    return this._features
+  }
+
+  forEach (callback) {
+    this._features.forEach(callback);
+  }
+
+    /**
+     * Returns a feature of a particular type. If such feature does not exist in a list, returns undefined.
+     * @param {string} type - Feature type as defined in `types` object.
+     * @return {FeatureType | undefined} A feature if a particular type if contains it. Undefined otherwise.
+     */
+  ofType (type) {
+    if (this.hasType(type)) {
+      return this._types[type]
+    }
+  }
+
+    /**
+     * Checks whether a feature list has a feature of a specific type.
+     * @param {string} type - Feature type as defined in `types` object.
+     * @return {boolean} Whether a feature list has a feature of a particular type.
+     */
+  hasType (type) {
+    return this._types.hasOwnProperty(type)
+  }
+}
+
+/**
+ * @class  LanguageModel is the base class for language-specific behavior
+ */
+class LanguageModel {
+   /**
+   */
+  constructor () {
+    this.sourceLanguage = null;
+    this.contextForward = 0;
+    this.context_backward = 0;
+    this.direction = LANG_DIR_LTR;
+    this.baseUnit = LANG_UNIT_WORD;
+    this.codes = [];
+  }
+
+  _initializeFeatures () {
+    let features = {};
+    let code = this.toCode();
+    features[Feature.types.part] = new FeatureType(Feature.types.part,
+      [ POFS_ADVERB,
+        POFS_ADVERBIAL,
+        POFS_ADJECTIVE,
+        POFS_ARTICLE,
+        POFS_CONJUNCTION,
+        POFS_EXCLAMATION,
+        POFS_INTERJECTION,
+        POFS_NOUN,
+        POFS_NUMERAL,
+        POFS_PARTICLE,
+        POFS_PREFIX,
+        POFS_PREPOSITION,
+        POFS_PRONOUN,
+        POFS_SUFFIX,
+        POFS_SUPINE,
+        POFS_VERB,
+        POFS_VERB_PARTICIPLE ], code);
+    features[Feature.types.gender] = new FeatureType(Feature.types.gender,
+      [ GEND_MASCULINE, GEND_FEMININE, GEND_NEUTER ], code);
+    features[Feature.types.type] = new FeatureType(Feature.types.type,
+      [TYPE_REGULAR, TYPE_IRREGULAR], code);
+    features[Feature.types.person] = new FeatureType(Feature.types.person,
+      [ORD_1ST, ORD_2ND, ORD_3RD], code);
+    return features
+  }
+
+  /**
+   * Handler which can be used as the contextHander.
+   * It uses language-specific configuration to identify
+   * the elements from the alph-text popup which should produce links
+   * to the language-specific grammar.
+   * @see #contextHandler
+   */
+  grammarContext (doc) {
+      // used to bind a click handler on the .alph-entry items in the
+      // popup which retrieved the context attribute from the clicked
+      // term and used that to construct a link and open the grammar
+      // at the apporopriate place.
+      // var links = this.getGrammarLinks();
+
+      // for (var link_name in links)
+      // {
+      //   if (links.hasOwnProperty(link_name))
+      //    {
+              // Alph.$(".alph-entry ." + link_name,a_doc).bind('click',link_name,
+              //   function(a_e)
+              //    {
+                        // build target inside grammar
+                        // var target = a_e.data;
+                        // var rngContext = Alph.$(this).attr("context");
+                        // if (rngContext != null)
+                        // {
+                        //  target += "-" + rngContext.split(/-/)[0];
+                        // }
+                        // myobj.openGrammar(a_e.originaEvent,this,target);
+               //   }
+              // );
+       //   }
+      // }
+  }
+
+  /**
+   * Check to see if this language tool can produce an inflection table display
+   * for the current node
+   */
+  canInflect (node) {
+    return false
+  }
+
+  /**
+   * Check to see if the supplied language code is supported by this tool
+   * @param {string} code the language code
+   * @returns true if supported false if not
+   * @type Boolean
+   */
+  static supportsLanguage (code) {
+    return this.codes.includes[code]
+  }
+
+  /**
+   * Return a normalized version of a word which can be used to compare the word for equality
+   * @param {string} word the source word
+   * @returns the normalized form of the word (default version just returns the same word,
+   *          override in language-specific subclass)
+   * @type String
+   */
+  normalizeWord (word) {
+    return word
+  }
+
+  /**
+   * Get a list of valid puncutation for this language
+   * @returns {String} a string containing valid puncutation symbols
+   */
+  getPunctuation () {
+    return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
+  }
+
+  toString () {
+    return String(this.sourceLanguage)
+  }
+
+  isEqual (model) {
+    return this.sourceLanguage === model.sourceLanguage
+  }
+
+  toCode () {
+    return null
+  }
+}
+
+/**
+ * @class  LatinLanguageModel is the lass for Latin specific behavior
+ */
+class LatinLanguageModel extends LanguageModel {
+   /**
+   */
+  constructor () {
+    super();
+    this.sourceLanguage = LANG_LATIN;
+    this.contextForward = 0;
+    this.contextBackward = 0;
+    this.direction = LANG_DIR_LTR;
+    this.baseUnit = LANG_UNIT_WORD;
+    this.codes = [STR_LANG_CODE_LA, STR_LANG_CODE_LAT];
+    this.features = this._initializeFeatures();
+  }
+
+  _initializeFeatures () {
+    let features = super._initializeFeatures();
+    let code = this.toCode();
+    features[Feature.types.number] = new FeatureType(Feature.types.number, [NUM_SINGULAR, NUM_PLURAL], code);
+    features[Feature.types.grmCase] = new FeatureType(Feature.types.grmCase,
+      [ CASE_NOMINATIVE,
+        CASE_GENITIVE,
+        CASE_DATIVE,
+        CASE_ACCUSATIVE,
+        CASE_ABLATIVE,
+        CASE_LOCATIVE,
+        CASE_VOCATIVE
+      ], code);
+    features[Feature.types.declension] = new FeatureType(Feature.types.declension,
+      [ ORD_1ST, ORD_2ND, ORD_3RD, ORD_4TH, ORD_5TH ], code);
+    features[Feature.types.tense] = new FeatureType(Feature.types.tense,
+      [ TENSE_PRESENT,
+        TENSE_IMPERFECT,
+        TENSE_FUTURE,
+        TENSE_PERFECT,
+        TENSE_PLUPERFECT,
+        TENSE_FUTURE_PERFECT
+      ], code);
+    features[Feature.types.voice] = new FeatureType(Feature.types.voice, [VOICE_PASSIVE, VOICE_ACTIVE], code);
+    features[Feature.types.mood] = new FeatureType(Feature.types.mood, [MOOD_INDICATIVE, MOOD_SUBJUNCTIVE], code);
+    features[Feature.types.conjugation] = new FeatureType(Feature.types.conjugation,
+      [ ORD_1ST,
+        ORD_2ND,
+        ORD_3RD,
+        ORD_4TH
+      ], code);
+    return features
+  }
+
+  /**
+   * Check to see if this language tool can produce an inflection table display
+   * for the current node
+   */
+  canInflect (node) {
+    return true
+  }
+
+  /**
+   * Return a normalized version of a word which can be used to compare the word for equality
+   * @param {String} word the source word
+   * @returns the normalized form of the word (default version just returns the same word,
+   *          override in language-specific subclass)
+   * @type String
+   */
+  normalizeWord (word) {
+    return word
+  }
+
+  /**
+   * Get a list of valid puncutation for this language
+   * @returns {String} a string containing valid puncutation symbols
+   */
+  getPunctuation () {
+    return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
+  }
+
+  toCode () {
+    return STR_LANG_CODE_LAT
+  }
+}
+
+/**
+ * @class  LatinLanguageModel is the lass for Latin specific behavior
+ */
+class GreekLanguageModel extends LanguageModel {
+   /**
+   * @constructor
+   */
+  constructor () {
+    super();
+    this.sourceLanguage = LANG_GREEK;
+    this.contextForward = 0;
+    this.contextBackward = 0;
+    this.direction = LANG_DIR_LTR;
+    this.baseUnit = LANG_UNIT_WORD;
+    this.languageCodes = [STR_LANG_CODE_GRC];
+    this.features = this._initializeFeatures();
+  }
+
+  _initializeFeatures () {
+    let features = super._initializeFeatures();
+    let code = this.toCode();
+    features[Feature.types.number] = new FeatureType(Feature.types.number, [NUM_SINGULAR, NUM_PLURAL, NUM_DUAL], code);
+    features[Feature.types.grmCase] = new FeatureType(Feature.types.grmCase,
+      [ CASE_NOMINATIVE,
+        CASE_GENITIVE,
+        CASE_DATIVE,
+        CASE_ACCUSATIVE,
+        CASE_VOCATIVE
+      ], code);
+    features[Feature.types.declension] = new FeatureType(Feature.types.declension,
+      [ ORD_1ST, ORD_2ND, ORD_3RD ], code);
+    features[Feature.types.tense] = new FeatureType(Feature.types.tense,
+      [ TENSE_PRESENT,
+        TENSE_IMPERFECT,
+        TENSE_FUTURE,
+        TENSE_PERFECT,
+        TENSE_PLUPERFECT,
+        TENSE_FUTURE_PERFECT,
+        TENSE_AORIST
+      ], code);
+    features[Feature.types.voice] = new FeatureType(Feature.types.voice,
+      [ VOICE_PASSIVE,
+        VOICE_ACTIVE,
+        VOICE_MEDIOPASSIVE,
+        VOICE_MIDDLE
+      ], code);
+    features[Feature.types.mood] = new FeatureType(Feature.types.mood,
+      [ MOOD_INDICATIVE,
+        MOOD_SUBJUNCTIVE,
+        MOOD_OPTATIVE,
+        MOOD_IMPERATIVE
+      ], code);
+    // TODO full list of greek dialects
+    features[Feature.types.dialect] = new FeatureType(Feature.types.dialect, ['attic', 'epic', 'doric'], code);
+    return features
+  }
+
+  toCode () {
+    return STR_LANG_CODE_GRC
+  }
+
+  /**
+   * Check to see if this language tool can produce an inflection table display
+   * for the current node
+   */
+  canInflect (node) {
+    return true
+  }
+
+  /**
+   * Return a normalized version of a word which can be used to compare the word for equality
+   * @param {String} word the source word
+   * @returns the normalized form of the word (default version just returns the same word,
+   *          override in language-specific subclass)
+   * @type String
+   */
+  normalizeWord (word) {
+    return word
+  }
+
+  /**
+   * Get a list of valid puncutation for this language
+   * @returns {String} a string containing valid puncutation symbols
+   */
+  getPunctuation () {
+    return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
+  }
+}
+
+/**
+ * @class  LatinLanguageModel is the lass for Latin specific behavior
+ */
+class ArabicLanguageModel extends LanguageModel {
+   /**
+   * @constructor
+   */
+  constructor () {
+    super();
+    this.sourceLanguage = LANG_ARABIC;
+    this.contextForward = 0;
+    this.contextBackward = 0;
+    this.direction = LANG_DIR_RTL;
+    this.baseUnit = LANG_UNIT_WORD;
+    this.languageCodes = [STR_LANG_CODE_ARA, STR_LANG_CODE_AR];
+    this._initializeFeatures();
+  }
+
+  _initializeFeatures () {
+    this.features = super._initializeFeatures();
+  }
+
+  toCode () {
+    return STR_LANG_CODE_ARA
+  }
+
+  /**
+   * Check to see if this language tool can produce an inflection table display
+   * for the current node
+   */
+  canInflect (node) {
+    return false
+  }
+
+  /**
+   * Return a normalized version of a word which can be used to compare the word for equality
+   * @param {String} word the source word
+   * @returns the normalized form of the word (default version just returns the same word,
+   *          override in language-specific subclass)
+   * @type String
+   */
+  normalizeWord (word) {
+    // TODO
+    return word
+  }
+
+  /**
+   * Get a list of valid puncutation for this language
+   * @returns {String} a string containing valid puncutation symbols
+   */
+  getPunctuation () {
+    return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
+  }
+}
+
+const MODELS = new Map([
+  [ STR_LANG_CODE_LA, LatinLanguageModel ],
+  [ STR_LANG_CODE_LAT, LatinLanguageModel ],
+  [ STR_LANG_CODE_GRC, GreekLanguageModel ],
+  [ STR_LANG_CODE_ARA, ArabicLanguageModel ],
+  [ STR_LANG_CODE_AR, ArabicLanguageModel ]
+]);
+
+class LanguageModelFactory {
+  static supportsLanguage (code) {
+    return MODELS.has(code)
+  }
+
+  static getLanguageForCode (code = null) {
+    let Model = MODELS.get(code);
+    if (Model) {
+      return new Model()
+    }
+    // for now return a default Model
+    // TODO may want to throw an error
+    return new LanguageModel()
+  }
+}
+
+/**
+ * Lemma, a canonical form of a word.
+ */
+class Lemma {
+    /**
+     * Initializes a Lemma object.
+     * @param {string} word - A word.
+     * @param {string} language - A language of a word.
+     * @param {Array[string]} principalParts - the principalParts of a lemma
+     */
+  constructor (word, language, principalParts = []) {
+    if (!word) {
+      throw new Error('Word should not be empty.')
+    }
+
+    if (!language) {
+      throw new Error('Language should not be empty.')
+    }
+
+        // if (!languages.isAllowed(language)) {
+        //    throw new Error('Language "' + language + '" is not supported.');
+        // }
+
+    this.word = word;
+    this.language = language;
+    this.principalParts = principalParts;
+  }
+
+  static readObject (jsonObject) {
+    return new Lemma(jsonObject.word, jsonObject.language)
+  }
+}
+
+/*
+ Hierarchical structure of return value of a morphological analyzer:
+
+ Homonym (a group of words that are written the same way, https://en.wikipedia.org/wiki/Homonym)
+    Lexeme 1 (a unit of lexical meaning, https://en.wikipedia.org/wiki/Lexeme)
+        Have a lemma and one or more inflections
+        Lemma (also called a headword, a canonical form of a group of words https://en.wikipedia.org/wiki/Lemma_(morphology) )
+        Inflection 1
+            Stem
+            Suffix (also called ending)
+        Inflection 2
+            Stem
+            Suffix
+    Lexeme 2
+        Lemma
+        Inflection 1
+            Stem
+            Suffix
+ */
+
+/**
+ * Represents an inflection of a word
+ */
+class Inflection {
+    /**
+     * Initializes an Inflection object.
+     * @param {string} stem - A stem of a word.
+     * @param {string} language - A word's language.
+     */
+  constructor (stem, language) {
+    if (!stem) {
+      throw new Error('Stem should not be empty.')
+    }
+
+    if (!language) {
+      throw new Error('Langauge should not be empty.')
+    }
+
+    if (!LanguageModelFactory.supportsLanguage(language)) {
+      throw new Error(`language ${language} not supported.`)
+    }
+
+    this.stem = stem;
+    this.language = language;
+
+    // Suffix may not be present in every word. If missing, it will set to null.
+    this.suffix = null;
+
+    // Prefix may not be present in every word. If missing, it will set to null.
+    this.prefix = null;
+
+    // Example may not be provided
+    this.example = null;
+  }
+
+  static readObject (jsonObject) {
+    let inflection = new Inflection(jsonObject.stem, jsonObject.language);
+    if (jsonObject.suffix) {
+      inflection.suffix = jsonObject.suffix;
+    }
+    if (jsonObject.prefix) {
+      inflection.prefix = jsonObject.prefix;
+    }
+    if (jsonObject.example) {
+      inflection.example = jsonObject.example;
+    }
+    return inflection
+  }
+
+    /**
+     * Sets a grammatical feature in an inflection. Some features can have multiple values, In this case
+     * an array of Feature objects will be provided.
+     * Values are taken from features and stored in a 'feature.type' property as an array of values.
+     * @param {Feature | Feature[]} data
+     */
+  set feature (data) {
+    if (!data) {
+      throw new Error('Inflection feature data cannot be empty.')
+    }
+    if (!Array.isArray(data)) {
+      data = [data];
+    }
+
+    let type = data[0].type;
+    this[type] = [];
+    for (let element of data) {
+      if (!(element instanceof Feature)) {
+        throw new Error('Inflection feature data must be a Feature object.')
+      }
+
+      if (element.language !== this.language) {
+        throw new Error('Language "' + element.language + '" of a feature does not match a language "' +
+                this.language + '" of an Inflection object.')
+      }
+
+      this[type].push(element.value);
+    }
+  }
+}
+
+/**
+ * A basic unit of lexical meaning. Contains a primary Lemma object, one or more Inflection objects
+ * and optional alternate Lemmas
+ */
+class Lexeme {
+    /**
+     * Initializes a Lexeme object.
+     * @param {Lemma} lemma - A lemma object.
+     * @param {Inflection[]} inflections - An array of inflections.
+     * @param {Definition} meaning - a short definition
+     */
+  constructor (lemma, inflections, meaning = null) {
+    if (!lemma) {
+      throw new Error('Lemma should not be empty.')
+    }
+
+    if (!(lemma instanceof Lemma)) {
+      throw new Error('Lemma should be of Lemma object type.')
+    }
+
+    if (!inflections) {
+      throw new Error('Inflections data should not be empty.')
+    }
+
+    if (!Array.isArray(inflections)) {
+      throw new Error('Inflection data should be provided in an array.')
+    }
+
+    for (let inflection of inflections) {
+      if (!(inflection instanceof Inflection)) {
+        throw new Error('All inflection data should be of Inflection object type.')
+      }
+    }
+
+    this.lemma = lemma;
+    this.inflections = inflections;
+    this.meaning = meaning;
+  }
+
+  static readObject (jsonObject) {
+    let lemma = Lemma.readObject(jsonObject.lemma);
+    let inflections = [];
+    for (let inflection of jsonObject.inflections) {
+      inflections.push(Inflection.readObject(inflection));
+    }
+    return new Lexeme(lemma, inflections)
+  }
+}
+
+class Homonym {
+    /**
+     * Initializes a Homonym object.
+     * @param {Lexeme[]} lexemes - An array of Lexeme objects.
+     * @param {string} form - the form which produces the homonyms
+     */
+  constructor (lexemes, form) {
+    if (!lexemes) {
+      throw new Error('Lexemes data should not be empty.')
+    }
+
+    if (!Array.isArray(lexemes)) {
+      throw new Error('Lexeme data should be provided in an array.')
+    }
+
+    for (let lexeme of lexemes) {
+      if (!(lexeme instanceof Lexeme)) {
+        throw new Error('All lexeme data should be of Lexeme object type.')
+      }
+    }
+
+    this.lexemes = lexemes;
+    this.targetWord = form;
+  }
+
+  static readObject (jsonObject) {
+    let lexemes = [];
+    if (jsonObject.lexemes) {
+      for (let lexeme of jsonObject.lexemes) {
+        lexemes.push(Lexeme.readObject(lexeme));
+      }
+    }
+    let homonym = new Homonym(lexemes);
+    if (jsonObject.targetWord) {
+      homonym.targetWord = jsonObject.targetWord;
+    }
+    return homonym
+  }
+
+    /**
+     * Returns language of a homonym.
+     * Homonym does not have a language property, only lemmas and inflections do. We assume that all lemmas
+     * and inflections within the same homonym will have the same language, and we can determine a language
+     * by using language property of the first lemma. We chan change this logic in the future if we'll need to.
+     * @returns {string} A language code, as defined in the `languages` object.
+     */
+  get language () {
+    if (this.lexemes && this.lexemes[0] && this.lexemes[0].lemma && this.lexemes[0].lemma.language) {
+      return this.lexemes[0].lemma.language
+    } else {
+      throw new Error('Homonym has not been initialized properly. Unable to obtain language information.')
+    }
+  }
+}
+
+/**
+ * An abstraction of an Alpheios resource provider
+ */
+class ResourceProvider {
+  /**
+   * @constructor
+   * @param {string} uri - a unique resource identifier for this provider
+   * @param {string} rights - rights text
+   * @param {Map} rightsTranslations - optional map of translated rights text - keys should be language of text, values the text
+   */
+  constructor (uri = '', rights = '', rightsTranslations = new Map([['default', rights]])) {
+    this.uri = uri;
+    this.rights = rightsTranslations;
+    if (!this.rights.has('default')) {
+      this.rights.set('default', rights);
+    }
+  }
+
+  /**
+   * @return a string representation of the resource provider, in the default language
+   */
+  toString () {
+    return this.rights.get('default')
+  }
+
+  /**
+   * Produce a string representation of the resource provider, in the requested locale if available
+   * @param {string} languageCode
+   * @return a string representation of the resource provider, in the requested locale if available
+   */
+  toLocaleString (languageCode) {
+    return this.rights.get(languageCode) || this.rights.get('default')
+  }
+
+  static getProxy (provider = null, target = {}) {
+    return new Proxy(target, {
+      get: function (target, name) {
+        return name === 'provider' ? provider : target[name]
+      }
+    })
+  }
+}
+
+
+//# sourceMappingURL=alpheios-data-models.js.map
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__vue_components_popup_vue__ = __webpack_require__(33);
+
+
+ // For whatever reason it cannot be imported in content-process.js
+
+var contentProcess = __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].track(new __WEBPACK_IMPORTED_MODULE_0__content_process__["a" /* default */](), [{
+  monitoredFunction: 'getWordDataStatefully',
+  experience: 'Get word data',
+  asyncWrapper: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].recordExperience
+}, {
+  monitoredFunction: 'sendRequestToBgStatefully',
+  asyncWrapper: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].attachToMessage
+}]);
+
+// load options, then render
+contentProcess.loadData().then(function () {
+  console.log('Activated');
+  contentProcess.status = __WEBPACK_IMPORTED_MODULE_0__content_process__["a" /* default */].statuses.ACTIVE;
+  contentProcess.initialize().then(function () {
+    contentProcess.createVueInstance({ popup: __WEBPACK_IMPORTED_MODULE_2__vue_components_popup_vue__["a" /* default */] });
+    console.log('Content process has been initialized successfully');
+  }, function (error) {
+    console.log('Content process has not been initialized due to the following error: ' + error);
+  });
+}, function (error) {
+  console.error('Cannot load content process data because of the following error: ' + error);
+});
+
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__panel__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_options__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_state__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_vue_js_modal__);
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+/* global browser */
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // Vue in a runtime + compiler configuration
+
+// import Popup from './vue-components/popup.vue' TODO: This does not work - why?
+
+var ContentProcess = function () {
+  function ContentProcess() {
+    _classCallCheck(this, ContentProcess);
+
+    this.status = ContentProcess.statuses.PENDING;
+    this.settings = ContentProcess.settingValues;
+    this.options = new __WEBPACK_IMPORTED_MODULE_6__lib_options__["a" /* default */]();
+    this.vueInstance = undefined;
+
+    this.modal = undefined;
+
+    this.messagingService = new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__["a" /* default */]();
+  }
+
+  _createClass(ContentProcess, [{
+    key: 'loadData',
+
+
+    /**
+     * Loads any asynchronous data that there might be.
+     * @return {Promise}
+     */
+    value: async function loadData() {
+      return this.options.loadStoredData();
+    }
+  }, {
+    key: 'createVueInstance',
+    value: function createVueInstance(components) {
+      // Register a modal plugin
+      __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_14_vue_js_modal___default.a, {
+        dialog: false
+      });
+
+      var options = {
+        el: '#popup',
+        // template: '<app/>',
+        components: components,
+        data: {
+          popupTitle: '',
+          popupContent: '',
+          panel: undefined
+        },
+        mounted: function mounted() {
+          console.log('Root instance is mounted');
+        }
+      };
+
+      this.vueInstance = new __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default.a(options);
+      this.modal = this.vueInstance.$modal;
+    }
+  }, {
+    key: 'deactivate',
+    value: function deactivate() {
+      console.log('Content has been deactivated.');
+      this.panel.close();
+      this.pageControl.classList.add(this.settings.hiddenClassName);
+      this.status = ContentProcess.statuses.DEACTIVATED;
+    }
+  }, {
+    key: 'reactivate',
+    value: function reactivate() {
+      console.log('Content has been reactivated.');
+      this.pageControl.classList.remove(this.settings.hiddenClassName);
+      this.status = ContentProcess.statuses.ACTIVE;
+    }
+  }, {
+    key: 'initialize',
+    value: async function initialize() {
+      // Inject HTML code of a plugin. Should go in reverse order.
+      document.body.classList.add('alpheios');
+      ContentProcess.loadPanel();
+      ContentProcess.loadPageControls();
+      ContentProcess.loadSymbols();
+
+      this.panel = new __WEBPACK_IMPORTED_MODULE_5__panel__["a" /* default */](this.options);
+      this.panelToggleBtn = document.querySelector('#alpheios-panel-toggle');
+      this.renderOptions();
+
+      this.pageControl = document.querySelector(this.settings.pageControlSel);
+
+      // Add a message listener
+      this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.STATUS_REQUEST, this.handleStatusRequest, this);
+      this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this);
+      this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this);
+      browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService));
+
+      this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this));
+      document.body.addEventListener('dblclick', this.getSelectedText.bind(this));
+    }
+  }, {
+    key: 'showMessage',
+    value: function showMessage(messageHTML) {
+      if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+        this.panel.clear();
+        this.panel.definitionContainer.innerHTML = messageHTML;
+        this.panel.open().changeActiveTabTo(this.panel.tabs[0]);
+      } else {
+        this.vueInstance.panel = this.panel;
+        this.vueInstance.popupTitle = '';
+        this.vueInstance.popupContent = messageHTML;
+        this.vueInstance.$modal.show('popup');
+      }
+    }
+  }, {
+    key: 'sendRequestToBgStatefully',
+    value: async function sendRequestToBgStatefully(request, timeout) {
+      var state = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
+
+      try {
+        var result = await this.messagingService.sendRequestToBg(request, timeout);
+        return __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, result);
+      } catch (error) {
+        // Wrap error te same way we wrap value
+        console.log('Statefull request to a background failed: ' + error);
+        throw __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, error);
+      }
+    }
+  }, {
+    key: 'getWordDataStatefully',
+    value: async function getWordDataStatefully(textSelector) {
+      var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+
+      try {
+        var messageObject = await this.sendRequestToBgStatefully(new __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__["a" /* default */](textSelector), this.settings.requestTimeout, state);
+        var message = messageObject.value;
+
+        if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND)) {
+          var wordData = __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* WordData */].readObject(message.body);
+          console.log('Word data is: ', wordData);
+
+          // Populate a panel
+          this.panel.clear();
+          this.updateDefinition(wordData);
+          this.updateInflectionTable(wordData);
+
+          // Pouplate a popup
+          this.vueInstance.panel = this.panel;
+          this.vueInstance.popupTitle = '' + wordData.homonym.targetWord;
+          this.vueInstance.popupContent = '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.\n                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.\n                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,\n                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.\n                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>\n\n                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.\n                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.\n                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,\n                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.\n                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>';
+
+          if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+            this.panel.open();
+          } else {
+            this.vueInstance.$modal.show('popup');
+          }
+        } else if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND)) {
+          this.showMessage('<p>Sorry, the word you requested was not found.</p>');
+        }
+        return messageObject;
+      } catch (error) {
+        console.error('Word data request failed: ' + error.value);
+        this.showMessage('<p>Sorry, your word you requested failed:<br><strong>' + error.value + '</strong></p>');
+      }
+    }
+  }, {
+    key: 'handleStatusRequest',
+    value: function handleStatusRequest(request, sender) {
+      // Send a status response
+      console.log('Status request received. Sending a response back.');
+      this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(function (error) {
+        console.error('Unable to send a response to activation request: ' + error);
+      });
+    }
+  }, {
+    key: 'handleActivationRequest',
+    value: function handleActivationRequest(request, sender) {
+      // Send a status response
+      console.log('Activate request received. Sending a response back.');
+      if (!this.isActive) {
+        this.reactivate();
+      }
+      this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(function (error) {
+        console.error('Unable to send a response to activation request: ' + error);
+      });
+    }
+  }, {
+    key: 'handleDeactivationRequest',
+    value: function handleDeactivationRequest(request, sender) {
+      // Send a status response
+      console.log('Deactivate request received. Sending a response back.');
+      if (this.isActive) {
+        this.deactivate();
+      }
+      this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(function (error) {
+        console.error('Unable to send a response to activation request: ' + error);
+      });
+    }
+  }, {
+    key: 'togglePanel',
+    value: function togglePanel() {
+      this.panel.toggle();
+    }
+  }, {
+    key: 'updateDefinition',
+    value: function updateDefinition(wordData) {
+      this.panel.definitionContainer.innerHTML = decodeURIComponent(wordData.definition);
+    }
+  }, {
+    key: 'updateInflectionTable',
+    value: function updateInflectionTable(wordData) {
+      this.presenter = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* Presenter */](this.panel.inflTableContainer, this.panel.viewSelectorContainer, this.panel.localeSwitcherContainer, wordData, this.options.items.locale.currentValue).render();
+    }
+  }, {
+    key: 'renderOptions',
+    value: function renderOptions() {
+      this.panel.optionsPage = __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf___default.a;
+      var optionEntries = Object.entries(this.options.items);
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = optionEntries[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var _step$value = _slicedToArray(_step.value, 2),
+              optionName = _step$value[0],
+              option = _step$value[1];
+
+          var localeSelector = this.panel.optionsPage.querySelector(option.inputSelector);
+          var _iteratorNormalCompletion2 = true;
+          var _didIteratorError2 = false;
+          var _iteratorError2 = undefined;
+
+          try {
+            for (var _iterator2 = option.values[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+              var optionValue = _step2.value;
+
+              var optionElement = document.createElement('option');
+              optionElement.value = optionValue.value;
+              optionElement.text = optionValue.text;
+              if (optionValue.value === option.currentValue) {
+                optionElement.setAttribute('selected', 'selected');
+              }
+              localeSelector.appendChild(optionElement);
+            }
+          } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                _iterator2.return();
+              }
+            } finally {
+              if (_didIteratorError2) {
+                throw _iteratorError2;
+              }
+            }
+          }
+
+          localeSelector.addEventListener('change', this.optionChangeListener.bind(this, optionName));
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    }
+  }, {
+    key: 'optionChangeListener',
+    value: function optionChangeListener(option, event) {
+      this.options.update(option, event.target.value);
+      if (option === 'locale' && this.presenter) {
+        this.presenter.setLocale(event.target.value);
+      }
+      if (option === 'panelPosition') {
+        if (event.target.value === 'right') {
+          this.panel.setPoistionToRight();
+        } else {
+          this.panel.setPoistionToLeft();
+        }
+      }
+    }
+  }, {
+    key: 'getSelectedText',
+    value: function getSelectedText(event) {
+      if (this.isActive) {
+        var selection = __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, 'grc');
+        // HTMLSelector.getExtendedTextQuoteSelector()
+        if (selection.selectedText) {
+          this.getWordDataStatefully(selection);
+        }
+      }
+    }
+  }, {
+    key: 'isActive',
+    get: function get() {
+      return this.status === ContentProcess.statuses.ACTIVE;
+    }
+  }], [{
+    key: 'loadSymbols',
+    value: function loadSymbols() {
+      ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf___default.a);
+    }
+  }, {
+    key: 'loadPageControls',
+    value: function loadPageControls() {
+      ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf___default.a);
+    }
+  }, {
+    key: 'loadPanel',
+    value: function loadPanel() {
+      ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf___default.a);
+    }
+  }, {
+    key: 'loadHTMLFragment',
+    value: function loadHTMLFragment(html) {
+      var container = document.createElement('div');
+      container.innerHTML = html;
+      document.body.insertBefore(container.firstChild, document.body.firstChild);
+    }
+  }, {
+    key: 'settingValues',
+    get: function get() {
+      return {
+        hiddenClassName: 'hidden',
+        pageControlSel: '#alpheios-panel-toggle',
+        requestTimeout: 4000,
+        uiTypePanel: 'panel',
+        uiTypePopup: 'popup'
+      };
+    }
+  }, {
+    key: 'statuses',
+    get: function get() {
+      return {
+        PENDING: Symbol.for('Pending'), // Content script has not been fully initialized yet
+        ACTIVE: Symbol.for('Active'), // Content script is loaded and active
+        DEACTIVATED: Symbol.for('Deactivated') // Content script has been loaded, but is deactivated
+      };
+    }
+  }]);
+
+  return ContentProcess;
+}();
+
+/* harmony default export */ __webpack_exports__["a"] = (ContentProcess);
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* unused harmony export LatinDataSet */
 /* unused harmony export GreekDataSet */
 /* unused harmony export languages */
@@ -163,9 +2123,9 @@ module.exports = g;
 /* unused harmony export MatchData */
 /* unused harmony export ExtendedLanguageData */
 /* unused harmony export ExtendedGreekData */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return WordData; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return WordData; });
 /* unused harmony export loadData */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return SelectedWord; });
+/* unused harmony export SelectedWord */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Presenter; });
 /* eslint-disable no-unused-vars */
 const LANG_UNIT_WORD = Symbol('word');
@@ -8629,1967 +10589,6 @@ class Presenter {
 
 
 /***/ }),
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
-
-
-class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */] {
-  constructor (request, body, status = undefined) {
-    super(body)
-    this.role = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.RESPONSE)
-    this.requestID = request.ID // ID of the request to match request and response
-    if (status) {
-      if (typeof status === 'symbol') {
-        // If status is a symbol, store a symbol key instead of a symbol for serialization
-        this.status = Symbol.keyFor(status)
-      } else {
-        this.status = status
-      }
-    }
-  }
-
-  /**
-   * Checks if this message is a response (i.e. follows a response message format)
-   * @param message
-   */
-  static isResponse (message) {
-    return message.role &&
-    Symbol.for(message.role) === __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.RESPONSE && message.requestID
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = ResponseMessage;
-
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return constants; });
-/* unused harmony export Definition */
-/* unused harmony export Feature */
-/* unused harmony export FeatureType */
-/* unused harmony export FeatureList */
-/* unused harmony export FeatureImporter */
-/* unused harmony export Inflection */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return LanguageModelFactory; });
-/* unused harmony export Homonym */
-/* unused harmony export Lexeme */
-/* unused harmony export Lemma */
-/* unused harmony export LatinLanguageModel */
-/* unused harmony export GreekLanguageModel */
-/* unused harmony export ArabicLanguageModel */
-/* unused harmony export ResourceProvider */
-/* eslint-disable no-unused-vars */
-const LANG_UNIT_WORD = Symbol('word');
-const LANG_UNIT_CHAR = Symbol('char');
-const LANG_DIR_LTR = Symbol('ltr');
-const LANG_DIR_RTL = Symbol('rtl');
-const LANG_LATIN = Symbol('latin');
-const LANG_GREEK = Symbol('greek');
-const LANG_ARABIC = Symbol('arabic');
-const LANG_PERSIAN = Symbol('persian');
-const STR_LANG_CODE_LAT = 'lat';
-const STR_LANG_CODE_LA = 'la';
-const STR_LANG_CODE_GRC = 'grc';
-const STR_LANG_CODE_ARA = 'ara';
-const STR_LANG_CODE_AR = 'ar';
-const STR_LANG_CODE_FAR = 'far';
-const STR_LANG_CODE_PER = 'per';
-// parts of speech
-const POFS_ADJECTIVE = 'adjective';
-const POFS_ADVERB = 'adverb';
-const POFS_ADVERBIAL = 'adverbial';
-const POFS_ARTICLE = 'article';
-const POFS_CONJUNCTION = 'conjunction';
-const POFS_EXCLAMATION = 'exclamation';
-const POFS_INTERJECTION = 'interjection';
-const POFS_NOUN = 'noun';
-const POFS_NUMERAL = 'numeral';
-const POFS_PARTICLE = 'particle';
-const POFS_PREFIX = 'prefix';
-const POFS_PREPOSITION = 'preposition';
-const POFS_PRONOUN = 'pronoun';
-const POFS_SUFFIX = 'suffix';
-const POFS_SUPINE = 'supine';
-const POFS_VERB = 'verb';
-const POFS_VERB_PARTICIPLE = 'verb participle';
-// gender
-const GEND_MASCULINE = 'masculine';
-const GEND_FEMININE = 'feminine';
-const GEND_NEUTER = 'neuter';
-const GEND_COMMON = 'common';
-const GEND_ANIMATE = 'animate';
-const GEND_INANIMATE = 'inanimate';
-// Polish gender types
-const GEND_PERSONAL_MASCULINE = 'personal masculine';
-const GEND_ANIMATE_MASCULINE = 'animate masculine';
-const GEND_INANIMATE_MASCULINE = 'inanimate masculine';
-// comparative
-const COMP_POSITIVE = 'positive';
-const COMP_COMPARITIVE = 'comparative';
-const COMP_SUPERLATIVE = 'superlative';
-// case
-const CASE_ABESSIVE = 'abessive';
-const CASE_ABLATIVE = 'ablative';
-const CASE_ABSOLUTIVE = 'absolutive';
-const CASE_ACCUSATIVE = 'accusative';
-const CASE_ADDIRECTIVE = 'addirective';
-const CASE_ADELATIVE = 'adelative';
-const CASE_ADESSIVE = 'adessive';
-const CASE_ADVERBIAL = 'adverbial';
-const CASE_ALLATIVE = 'allative';
-const CASE_ANTESSIVE = 'antessive';
-const CASE_APUDESSIVE = 'apudessive';
-const CASE_AVERSIVE = 'aversive';
-const CASE_BENEFACTIVE = 'benefactive';
-const CASE_CARITIVE = 'caritive';
-const CASE_CAUSAL = 'causal';
-const CASE_CAUSAL_FINAL = 'causal-final';
-const CASE_COMITATIVE = 'comitative';
-const CASE_DATIVE = 'dative';
-const CASE_DELATIVE = 'delative';
-const CASE_DIRECT = 'direct';
-const CASE_DISTRIBUTIVE = 'distributive';
-const CASE_DISTRIBUTIVE_TEMPORAL = 'distributive-temporal';
-const CASE_ELATIVE = 'elative';
-const CASE_ERGATIVE = 'ergative';
-const CASE_ESSIVE = 'essive';
-const CASE_ESSIVE_FORMAL = 'essive-formal';
-const CASE_ESSIVE_MODAL = 'essive-modal';
-const CASE_EQUATIVE = 'equative';
-const CASE_EVITATIVE = 'evitative';
-const CASE_EXESSIVE = 'exessive';
-const CASE_FINAL = 'final';
-const CASE_FORMAL = 'formal';
-const CASE_GENITIVE = 'genitive';
-const CASE_ILLATIVE = 'illative';
-const CASE_INELATIVE = 'inelative';
-const CASE_INESSIVE = 'inessive';
-const CASE_INSTRUCTIVE = 'instructive';
-const CASE_INSTRUMENTAL = 'instrumental';
-const CASE_INSTRUMENTAL_COMITATIVE = 'instrumental-comitative';
-const CASE_INTRANSITIVE = 'intransitive';
-const CASE_LATIVE = 'lative';
-const CASE_LOCATIVE = 'locative';
-const CASE_MODAL = 'modal';
-const CASE_MULTIPLICATIVE = 'multiplicative';
-const CASE_NOMINATIVE = 'nominative';
-const CASE_PARTITIVE = 'partitive';
-const CASE_PEGATIVE = 'pegative';
-const CASE_PERLATIVE = 'perlative';
-const CASE_POSSESSIVE = 'possessive';
-const CASE_POSTELATIVE = 'postelative';
-const CASE_POSTDIRECTIVE = 'postdirective';
-const CASE_POSTESSIVE = 'postessive';
-const CASE_POSTPOSITIONAL = 'postpositional';
-const CASE_PREPOSITIONAL = 'prepositional';
-const CASE_PRIVATIVE = 'privative';
-const CASE_PROLATIVE = 'prolative';
-const CASE_PROSECUTIVE = 'prosecutive';
-const CASE_PROXIMATIVE = 'proximative';
-const CASE_SEPARATIVE = 'separative';
-const CASE_SOCIATIVE = 'sociative';
-const CASE_SUBDIRECTIVE = 'subdirective';
-const CASE_SUBESSIVE = 'subessive';
-const CASE_SUBELATIVE = 'subelative';
-const CASE_SUBLATIVE = 'sublative';
-const CASE_SUPERDIRECTIVE = 'superdirective';
-const CASE_SUPERESSIVE = 'superessive';
-const CASE_SUPERLATIVE = 'superlative';
-const CASE_SUPPRESSIVE = 'suppressive';
-const CASE_TEMPORAL = 'temporal';
-const CASE_TERMINATIVE = 'terminative';
-const CASE_TRANSLATIVE = 'translative';
-const CASE_VIALIS = 'vialis';
-const CASE_VOCATIVE = 'vocative';
-const MOOD_ADMIRATIVE = 'admirative';
-const MOOD_COHORTATIVE = 'cohortative';
-const MOOD_CONDITIONAL = 'conditional';
-const MOOD_DECLARATIVE = 'declarative';
-const MOOD_DUBITATIVE = 'dubitative';
-const MOOD_ENERGETIC = 'energetic';
-const MOOD_EVENTIVE = 'eventive';
-const MOOD_GENERIC = 'generic';
-const MOOD_GERUNDIVE = 'gerundive';
-const MOOD_HYPOTHETICAL = 'hypothetical';
-const MOOD_IMPERATIVE = 'imperative';
-const MOOD_INDICATIVE = 'indicative';
-const MOOD_INFERENTIAL = 'inferential';
-const MOOD_INFINITIVE = 'infinitive';
-const MOOD_INTERROGATIVE = 'interrogative';
-const MOOD_JUSSIVE = 'jussive';
-const MOOD_NEGATIVE = 'negative';
-const MOOD_OPTATIVE = 'optative';
-const MOOD_PARTICIPLE = 'participle';
-const MOOD_PRESUMPTIVE = 'presumptive';
-const MOOD_RENARRATIVE = 'renarrative';
-const MOOD_SUBJUNCTIVE = 'subjunctive';
-const MOOD_SUPINE = 'supine';
-const NUM_SINGULAR = 'singular';
-const NUM_PLURAL = 'plural';
-const NUM_DUAL = 'dual';
-const NUM_TRIAL = 'trial';
-const NUM_PAUCAL = 'paucal';
-const NUM_SINGULATIVE = 'singulative';
-const NUM_COLLECTIVE = 'collective';
-const NUM_DISTRIBUTIVE_PLURAL = 'distributive plural';
-const NRL_CARDINAL = 'cardinal';
-const NRL_ORDINAL = 'ordinal';
-const NRL_DISTRIBUTIVE = 'distributive';
-const NURL_NUMERAL_ADVERB = 'numeral adverb';
-const ORD_1ST = '1st';
-const ORD_2ND = '2nd';
-const ORD_3RD = '3rd';
-const ORD_4TH = '4th';
-const ORD_5TH = '5th';
-const ORD_6TH = '6th';
-const ORD_7TH = '7th';
-const ORD_8TH = '8th';
-const ORD_9TH = '9th';
-const TENSE_AORIST = 'aorist';
-const TENSE_FUTURE = 'future';
-const TENSE_FUTURE_PERFECT = 'future perfect';
-const TENSE_IMPERFECT = 'imperfect';
-const TENSE_PAST_ABSOLUTE = 'past absolute';
-const TENSE_PERFECT = 'perfect';
-const TENSE_PLUPERFECT = 'pluperfect';
-const TENSE_PRESENT = 'present';
-const VKIND_TO_BE = 'to be';
-const VKIND_COMPOUNDS_OF_TO_BE = 'compounds of to be';
-const VKIND_TAKING_ABLATIVE = 'taking ablative';
-const VKIND_TAKING_DATIVE = 'taking dative';
-const VKIND_TAKING_GENITIVE = 'taking genitive';
-const VKIND_TRANSITIVE = 'transitive';
-const VKIND_INTRANSITIVE = 'intransitive';
-const VKIND_IMPERSONAL = 'impersonal';
-const VKIND_DEPONENT = 'deponent';
-const VKIND_SEMIDEPONENT = 'semideponent';
-const VKIND_PERFECT_DEFINITE = 'perfect definite';
-const VOICE_ACTIVE = 'active';
-const VOICE_PASSIVE = 'passive';
-const VOICE_MEDIOPASSIVE = 'mediopassive';
-const VOICE_IMPERSONAL_PASSIVE = 'impersonal passive';
-const VOICE_MIDDLE = 'middle';
-const VOICE_ANTIPASSIVE = 'antipassive';
-const VOICE_REFLEXIVE = 'reflexive';
-const VOICE_RECIPROCAL = 'reciprocal';
-const VOICE_CAUSATIVE = 'causative';
-const VOICE_ADJUTATIVE = 'adjutative';
-const VOICE_APPLICATIVE = 'applicative';
-const VOICE_CIRCUMSTANTIAL = 'circumstantial';
-const VOICE_DEPONENT = 'deponent';
-const TYPE_IRREGULAR = 'irregular';
-const TYPE_REGULAR = 'regular';
-/* eslit-enable no-unused-vars */
-
-
-var constants = Object.freeze({
-	LANG_UNIT_WORD: LANG_UNIT_WORD,
-	LANG_UNIT_CHAR: LANG_UNIT_CHAR,
-	LANG_DIR_LTR: LANG_DIR_LTR,
-	LANG_DIR_RTL: LANG_DIR_RTL,
-	LANG_LATIN: LANG_LATIN,
-	LANG_GREEK: LANG_GREEK,
-	LANG_ARABIC: LANG_ARABIC,
-	LANG_PERSIAN: LANG_PERSIAN,
-	STR_LANG_CODE_LAT: STR_LANG_CODE_LAT,
-	STR_LANG_CODE_LA: STR_LANG_CODE_LA,
-	STR_LANG_CODE_GRC: STR_LANG_CODE_GRC,
-	STR_LANG_CODE_ARA: STR_LANG_CODE_ARA,
-	STR_LANG_CODE_AR: STR_LANG_CODE_AR,
-	STR_LANG_CODE_FAR: STR_LANG_CODE_FAR,
-	STR_LANG_CODE_PER: STR_LANG_CODE_PER,
-	POFS_ADJECTIVE: POFS_ADJECTIVE,
-	POFS_ADVERB: POFS_ADVERB,
-	POFS_ADVERBIAL: POFS_ADVERBIAL,
-	POFS_ARTICLE: POFS_ARTICLE,
-	POFS_CONJUNCTION: POFS_CONJUNCTION,
-	POFS_EXCLAMATION: POFS_EXCLAMATION,
-	POFS_INTERJECTION: POFS_INTERJECTION,
-	POFS_NOUN: POFS_NOUN,
-	POFS_NUMERAL: POFS_NUMERAL,
-	POFS_PARTICLE: POFS_PARTICLE,
-	POFS_PREFIX: POFS_PREFIX,
-	POFS_PREPOSITION: POFS_PREPOSITION,
-	POFS_PRONOUN: POFS_PRONOUN,
-	POFS_SUFFIX: POFS_SUFFIX,
-	POFS_SUPINE: POFS_SUPINE,
-	POFS_VERB: POFS_VERB,
-	POFS_VERB_PARTICIPLE: POFS_VERB_PARTICIPLE,
-	GEND_MASCULINE: GEND_MASCULINE,
-	GEND_FEMININE: GEND_FEMININE,
-	GEND_NEUTER: GEND_NEUTER,
-	GEND_COMMON: GEND_COMMON,
-	GEND_ANIMATE: GEND_ANIMATE,
-	GEND_INANIMATE: GEND_INANIMATE,
-	GEND_PERSONAL_MASCULINE: GEND_PERSONAL_MASCULINE,
-	GEND_ANIMATE_MASCULINE: GEND_ANIMATE_MASCULINE,
-	GEND_INANIMATE_MASCULINE: GEND_INANIMATE_MASCULINE,
-	COMP_POSITIVE: COMP_POSITIVE,
-	COMP_COMPARITIVE: COMP_COMPARITIVE,
-	COMP_SUPERLATIVE: COMP_SUPERLATIVE,
-	CASE_ABESSIVE: CASE_ABESSIVE,
-	CASE_ABLATIVE: CASE_ABLATIVE,
-	CASE_ABSOLUTIVE: CASE_ABSOLUTIVE,
-	CASE_ACCUSATIVE: CASE_ACCUSATIVE,
-	CASE_ADDIRECTIVE: CASE_ADDIRECTIVE,
-	CASE_ADELATIVE: CASE_ADELATIVE,
-	CASE_ADESSIVE: CASE_ADESSIVE,
-	CASE_ADVERBIAL: CASE_ADVERBIAL,
-	CASE_ALLATIVE: CASE_ALLATIVE,
-	CASE_ANTESSIVE: CASE_ANTESSIVE,
-	CASE_APUDESSIVE: CASE_APUDESSIVE,
-	CASE_AVERSIVE: CASE_AVERSIVE,
-	CASE_BENEFACTIVE: CASE_BENEFACTIVE,
-	CASE_CARITIVE: CASE_CARITIVE,
-	CASE_CAUSAL: CASE_CAUSAL,
-	CASE_CAUSAL_FINAL: CASE_CAUSAL_FINAL,
-	CASE_COMITATIVE: CASE_COMITATIVE,
-	CASE_DATIVE: CASE_DATIVE,
-	CASE_DELATIVE: CASE_DELATIVE,
-	CASE_DIRECT: CASE_DIRECT,
-	CASE_DISTRIBUTIVE: CASE_DISTRIBUTIVE,
-	CASE_DISTRIBUTIVE_TEMPORAL: CASE_DISTRIBUTIVE_TEMPORAL,
-	CASE_ELATIVE: CASE_ELATIVE,
-	CASE_ERGATIVE: CASE_ERGATIVE,
-	CASE_ESSIVE: CASE_ESSIVE,
-	CASE_ESSIVE_FORMAL: CASE_ESSIVE_FORMAL,
-	CASE_ESSIVE_MODAL: CASE_ESSIVE_MODAL,
-	CASE_EQUATIVE: CASE_EQUATIVE,
-	CASE_EVITATIVE: CASE_EVITATIVE,
-	CASE_EXESSIVE: CASE_EXESSIVE,
-	CASE_FINAL: CASE_FINAL,
-	CASE_FORMAL: CASE_FORMAL,
-	CASE_GENITIVE: CASE_GENITIVE,
-	CASE_ILLATIVE: CASE_ILLATIVE,
-	CASE_INELATIVE: CASE_INELATIVE,
-	CASE_INESSIVE: CASE_INESSIVE,
-	CASE_INSTRUCTIVE: CASE_INSTRUCTIVE,
-	CASE_INSTRUMENTAL: CASE_INSTRUMENTAL,
-	CASE_INSTRUMENTAL_COMITATIVE: CASE_INSTRUMENTAL_COMITATIVE,
-	CASE_INTRANSITIVE: CASE_INTRANSITIVE,
-	CASE_LATIVE: CASE_LATIVE,
-	CASE_LOCATIVE: CASE_LOCATIVE,
-	CASE_MODAL: CASE_MODAL,
-	CASE_MULTIPLICATIVE: CASE_MULTIPLICATIVE,
-	CASE_NOMINATIVE: CASE_NOMINATIVE,
-	CASE_PARTITIVE: CASE_PARTITIVE,
-	CASE_PEGATIVE: CASE_PEGATIVE,
-	CASE_PERLATIVE: CASE_PERLATIVE,
-	CASE_POSSESSIVE: CASE_POSSESSIVE,
-	CASE_POSTELATIVE: CASE_POSTELATIVE,
-	CASE_POSTDIRECTIVE: CASE_POSTDIRECTIVE,
-	CASE_POSTESSIVE: CASE_POSTESSIVE,
-	CASE_POSTPOSITIONAL: CASE_POSTPOSITIONAL,
-	CASE_PREPOSITIONAL: CASE_PREPOSITIONAL,
-	CASE_PRIVATIVE: CASE_PRIVATIVE,
-	CASE_PROLATIVE: CASE_PROLATIVE,
-	CASE_PROSECUTIVE: CASE_PROSECUTIVE,
-	CASE_PROXIMATIVE: CASE_PROXIMATIVE,
-	CASE_SEPARATIVE: CASE_SEPARATIVE,
-	CASE_SOCIATIVE: CASE_SOCIATIVE,
-	CASE_SUBDIRECTIVE: CASE_SUBDIRECTIVE,
-	CASE_SUBESSIVE: CASE_SUBESSIVE,
-	CASE_SUBELATIVE: CASE_SUBELATIVE,
-	CASE_SUBLATIVE: CASE_SUBLATIVE,
-	CASE_SUPERDIRECTIVE: CASE_SUPERDIRECTIVE,
-	CASE_SUPERESSIVE: CASE_SUPERESSIVE,
-	CASE_SUPERLATIVE: CASE_SUPERLATIVE,
-	CASE_SUPPRESSIVE: CASE_SUPPRESSIVE,
-	CASE_TEMPORAL: CASE_TEMPORAL,
-	CASE_TERMINATIVE: CASE_TERMINATIVE,
-	CASE_TRANSLATIVE: CASE_TRANSLATIVE,
-	CASE_VIALIS: CASE_VIALIS,
-	CASE_VOCATIVE: CASE_VOCATIVE,
-	MOOD_ADMIRATIVE: MOOD_ADMIRATIVE,
-	MOOD_COHORTATIVE: MOOD_COHORTATIVE,
-	MOOD_CONDITIONAL: MOOD_CONDITIONAL,
-	MOOD_DECLARATIVE: MOOD_DECLARATIVE,
-	MOOD_DUBITATIVE: MOOD_DUBITATIVE,
-	MOOD_ENERGETIC: MOOD_ENERGETIC,
-	MOOD_EVENTIVE: MOOD_EVENTIVE,
-	MOOD_GENERIC: MOOD_GENERIC,
-	MOOD_GERUNDIVE: MOOD_GERUNDIVE,
-	MOOD_HYPOTHETICAL: MOOD_HYPOTHETICAL,
-	MOOD_IMPERATIVE: MOOD_IMPERATIVE,
-	MOOD_INDICATIVE: MOOD_INDICATIVE,
-	MOOD_INFERENTIAL: MOOD_INFERENTIAL,
-	MOOD_INFINITIVE: MOOD_INFINITIVE,
-	MOOD_INTERROGATIVE: MOOD_INTERROGATIVE,
-	MOOD_JUSSIVE: MOOD_JUSSIVE,
-	MOOD_NEGATIVE: MOOD_NEGATIVE,
-	MOOD_OPTATIVE: MOOD_OPTATIVE,
-	MOOD_PARTICIPLE: MOOD_PARTICIPLE,
-	MOOD_PRESUMPTIVE: MOOD_PRESUMPTIVE,
-	MOOD_RENARRATIVE: MOOD_RENARRATIVE,
-	MOOD_SUBJUNCTIVE: MOOD_SUBJUNCTIVE,
-	MOOD_SUPINE: MOOD_SUPINE,
-	NUM_SINGULAR: NUM_SINGULAR,
-	NUM_PLURAL: NUM_PLURAL,
-	NUM_DUAL: NUM_DUAL,
-	NUM_TRIAL: NUM_TRIAL,
-	NUM_PAUCAL: NUM_PAUCAL,
-	NUM_SINGULATIVE: NUM_SINGULATIVE,
-	NUM_COLLECTIVE: NUM_COLLECTIVE,
-	NUM_DISTRIBUTIVE_PLURAL: NUM_DISTRIBUTIVE_PLURAL,
-	NRL_CARDINAL: NRL_CARDINAL,
-	NRL_ORDINAL: NRL_ORDINAL,
-	NRL_DISTRIBUTIVE: NRL_DISTRIBUTIVE,
-	NURL_NUMERAL_ADVERB: NURL_NUMERAL_ADVERB,
-	ORD_1ST: ORD_1ST,
-	ORD_2ND: ORD_2ND,
-	ORD_3RD: ORD_3RD,
-	ORD_4TH: ORD_4TH,
-	ORD_5TH: ORD_5TH,
-	ORD_6TH: ORD_6TH,
-	ORD_7TH: ORD_7TH,
-	ORD_8TH: ORD_8TH,
-	ORD_9TH: ORD_9TH,
-	TENSE_AORIST: TENSE_AORIST,
-	TENSE_FUTURE: TENSE_FUTURE,
-	TENSE_FUTURE_PERFECT: TENSE_FUTURE_PERFECT,
-	TENSE_IMPERFECT: TENSE_IMPERFECT,
-	TENSE_PAST_ABSOLUTE: TENSE_PAST_ABSOLUTE,
-	TENSE_PERFECT: TENSE_PERFECT,
-	TENSE_PLUPERFECT: TENSE_PLUPERFECT,
-	TENSE_PRESENT: TENSE_PRESENT,
-	VKIND_TO_BE: VKIND_TO_BE,
-	VKIND_COMPOUNDS_OF_TO_BE: VKIND_COMPOUNDS_OF_TO_BE,
-	VKIND_TAKING_ABLATIVE: VKIND_TAKING_ABLATIVE,
-	VKIND_TAKING_DATIVE: VKIND_TAKING_DATIVE,
-	VKIND_TAKING_GENITIVE: VKIND_TAKING_GENITIVE,
-	VKIND_TRANSITIVE: VKIND_TRANSITIVE,
-	VKIND_INTRANSITIVE: VKIND_INTRANSITIVE,
-	VKIND_IMPERSONAL: VKIND_IMPERSONAL,
-	VKIND_DEPONENT: VKIND_DEPONENT,
-	VKIND_SEMIDEPONENT: VKIND_SEMIDEPONENT,
-	VKIND_PERFECT_DEFINITE: VKIND_PERFECT_DEFINITE,
-	VOICE_ACTIVE: VOICE_ACTIVE,
-	VOICE_PASSIVE: VOICE_PASSIVE,
-	VOICE_MEDIOPASSIVE: VOICE_MEDIOPASSIVE,
-	VOICE_IMPERSONAL_PASSIVE: VOICE_IMPERSONAL_PASSIVE,
-	VOICE_MIDDLE: VOICE_MIDDLE,
-	VOICE_ANTIPASSIVE: VOICE_ANTIPASSIVE,
-	VOICE_REFLEXIVE: VOICE_REFLEXIVE,
-	VOICE_RECIPROCAL: VOICE_RECIPROCAL,
-	VOICE_CAUSATIVE: VOICE_CAUSATIVE,
-	VOICE_ADJUTATIVE: VOICE_ADJUTATIVE,
-	VOICE_APPLICATIVE: VOICE_APPLICATIVE,
-	VOICE_CIRCUMSTANTIAL: VOICE_CIRCUMSTANTIAL,
-	VOICE_DEPONENT: VOICE_DEPONENT,
-	TYPE_IRREGULAR: TYPE_IRREGULAR,
-	TYPE_REGULAR: TYPE_REGULAR
-});
-
-class Definition {
-  constructor (text, language, format) {
-    this.text = text;
-    this.language = language;
-    this.format = format;
-  }
-}
-
-/**
- * Wrapper class for a (grammatical, usually) feature, such as part of speech or declension. Keeps both value and type information.
- */
-class Feature {
-    /**
-     * Initializes a Feature object
-     * @param {string | string[]} value - A single feature value or, if this feature could have multiple
-     * values, an array of values.
-     * @param {string} type - A type of the feature, allowed values are specified in 'types' object.
-     * @param {string} language - A language of a feature, allowed values are specified in 'languages' object.
-     */
-  constructor (value, type, language) {
-    if (!Feature.types.isAllowed(type)) {
-      throw new Error('Features of "' + type + '" type are not supported.')
-    }
-    if (!value) {
-      throw new Error('Feature should have a non-empty value.')
-    }
-    if (!type) {
-      throw new Error('Feature should have a non-empty type.')
-    }
-    if (!language) {
-      throw new Error('Feature constructor requires a language')
-    }
-    this.value = value;
-    this.type = type;
-    this.language = language;
-  };
-
-  isEqual (feature) {
-    if (Array.isArray(feature.value)) {
-      if (!Array.isArray(this.value) || this.value.length !== feature.value.length) {
-        return false
-      }
-      let equal = this.type === feature.type && this.language === feature.language;
-      equal = equal && this.value.every(function (element, index) {
-        return element === feature.value[index]
-      });
-      return equal
-    } else {
-      return this.value === feature.value && this.type === feature.type && this.language === feature.language
-    }
-  }
-}
-// Should have no spaces in values in order to be used in HTML templates
-Feature.types = {
-  word: 'word',
-  part: 'part of speech', // Part of speech
-  number: 'number',
-  grmCase: 'case',
-  declension: 'declension',
-  gender: 'gender',
-  type: 'type',
-  conjugation: 'conjugation',
-  comparison: 'comparison',
-  tense: 'tense',
-  voice: 'voice',
-  mood: 'mood',
-  person: 'person',
-  frequency: 'frequency', // How frequent this word is
-  meaning: 'meaning', // Meaning of a word
-  source: 'source', // Source of word definition
-  footnote: 'footnote', // A footnote for a word's ending
-  dialect: 'dialect', // a dialect iderntifier
-  note: 'note', // a general note
-  pronunciation: 'pronunciation',
-  area: 'area',
-  geo: 'geo', // geographical data
-  kind: 'kind', // verb kind informatin
-  derivtype: 'derivtype',
-  stemtype: 'stemtype',
-  morph: 'morph', // general morphological information
-  var: 'var', // variance?
-  isAllowed (value) {
-    let v = `${value}`;
-    return Object.values(this).includes(v)
-  }
-};
-
-class FeatureImporter {
-  constructor (defaults = []) {
-    this.hash = {};
-    for (let value of defaults) {
-      this.map(value, value);
-    }
-    return this
-  }
-
-    /**
-     * Sets mapping between external imported value and one or more library standard values. If an importedValue
-     * is already in a hash table, old libraryValue will be overwritten with the new one.
-     * @param {string} importedValue - External value
-     * @param {Object | Object[] | string | string[]} libraryValue - Library standard value
-     */
-  map (importedValue, libraryValue) {
-    if (!importedValue) {
-      throw new Error('Imported value should not be empty.')
-    }
-
-    if (!libraryValue) {
-      throw new Error('Library value should not be empty.')
-    }
-
-    this.hash[importedValue] = libraryValue;
-    return this
-  }
-
-    /**
-     * Checks if value is in a map.
-     * @param {string} importedValue - A value to test.
-     * @returns {boolean} - Tru if value is in a map, false otherwise.
-     */
-  has (importedValue) {
-    return this.hash.hasOwnProperty(importedValue)
-  }
-
-    /**
-     * Returns one or more library standard values that match an external value
-     * @param {string} importedValue - External value
-     * @returns {Object | string} One or more of library standard values
-     */
-  get (importedValue) {
-    if (this.has(importedValue)) {
-      return this.hash[importedValue]
-    } else {
-      throw new Error('A value "' + importedValue + '" is not found in the importer.')
-    }
-  }
-}
-
-/**
- * Definition class for a (grammatical) feature. Stores type information and (optionally) all possible values of the feature.
- * It serves as a feature generator. If list of possible values is provided, it can generate a Feature object
- * each time a property that corresponds to a feature value is accessed. If no list of possible values provided,
- * a Feature object can be generated with get(value) method.
- *
- * An order of values determines a default sort and grouping order. If two values should have the same order,
- * they should be grouped within an array: value1, [value2, value3], value4. Here 'value2' and 'value3' have
- * the same priority for sorting and grouping.
- */
-class FeatureType {
-    // TODO: value checking
-    /**
-     * Creates and initializes a Feature Type object.
-     * @param {string} type - A type of the feature, allowed values are specified in 'types' object.
-     * @param {string[] | string[][]} values - A list of allowed values for this feature type.
-     * If an empty array is provided, there will be no
-     * allowed values as well as no ordering (can be used for items that do not need or have a simple order,
-     * such as footnotes).
-     * @param {string} language - A language of a feature, allowed values are specified in 'languages' object.
-     */
-  constructor (type, values, language) {
-    if (!Feature.types.isAllowed(type)) {
-      throw new Error('Features of "' + type + '" type are not supported.')
-    }
-    if (!values || !Array.isArray(values)) {
-      throw new Error('Values should be an array (or an empty array) of values.')
-    }
-    if (!language) {
-      throw new Error('FeatureType constructor requires a language')
-    }
-
-    this.type = type;
-    this.language = language;
-
-        /*
-         This is a sort order index for a grammatical feature values. It is determined by the order of values in
-         a 'values' array.
-         */
-    this._orderIndex = [];
-    this._orderLookup = {};
-
-    for (const [index, value] of values.entries()) {
-      this._orderIndex.push(value);
-      if (Array.isArray(value)) {
-        for (let element of value) {
-          this[element] = new Feature(element, this.type, this.language);
-          this._orderLookup[element] = index;
-        }
-      } else {
-        this[value] = new Feature(value, this.type, this.language);
-        this._orderLookup[value] = index;
-      }
-    }
-  };
-
-    /**
-     * Return a Feature with an arbitrary value. This value would not be necessarily present among FeatureType values.
-     * This can be especially useful for features that do not set: a list of predefined values, such as footnotes.
-     * @param value
-     * @returns {Feature}
-     */
-  get (value) {
-    if (value) {
-      return new Feature(value, this.type, this.language)
-    } else {
-      throw new Error('A non-empty value should be provided.')
-    }
-  }
-
-  getFromImporter (importerName, value) {
-    let mapped;
-    try {
-      mapped = this.importer[importerName].get(value);
-    } catch (e) {
-      // quietly catch not found and replace with default
-      mapped = this.get(value);
-    }
-    return mapped
-  }
-
-    /**
-     * Creates and returns a new importer with a specific name. If an importer with this name already exists,
-     * an existing Importer object will be returned.
-     * @param {string} name - A name of an importer object
-     * @returns {Importer} A new or existing Importer object that matches a name provided
-     */
-  addImporter (name) {
-    if (!name) {
-      throw new Error('Importer should have a non-empty name.')
-    }
-    this.importer = this.importer || {};
-    this.importer[name] = this.importer[name] || new FeatureImporter();
-    return this.importer[name]
-  }
-
-    /**
-     * Return copies of all feature values as Feature objects in a sorted array, according to feature type's sort order.
-     * For a similar function that returns strings instead of Feature objects see orderedValues().
-     * @returns {Feature[] | Feature[][]} Array of feature values sorted according to orderIndex.
-     * If particular feature contains multiple feature values (i.e. `masculine` and `feminine` values combined),
-     * an array of Feature objects will be returned instead of a single Feature object, as for single feature values.
-     */
-  get orderedFeatures () {
-    return this.orderedValues.map((value) => new Feature(value, this.type, this.language))
-  }
-
-    /**
-     * Return all feature values as strings in a sorted array, according to feature type's sort order.
-     * This is a main method that specifies a sort order of the feature type. orderedFeatures() relies
-     * on this method in providing a sorted array of feature values. If you want to create
-     * a custom sort order for a particular feature type that will depend on some options that are not type-related,
-     * create a wrapper around this function providing it with options arguments so it will be able to decide
-     * in what order those features will be based on those arguments.
-     * For a similar function that returns Feature objects instead of strings see orderedValues().
-     * @returns {string[]} Array of feature values sorted according to orderIndex.
-     * If particular feature contains multiple feature values (i.e. `masculine` and `feminine` values combined),
-     * an array of strings will be returned instead of a single strings, as for single feature values.
-     */
-  get orderedValues () {
-    return this._orderIndex
-  }
-
-    /**
-     * Returns a lookup table for type values as:
-     *  {value1: order1, value2: order2}, where order is a sort order of an item. If two items have the same sort order,
-     *  their order value will be the same.
-     * @returns {object}
-     */
-  get orderLookup () {
-    return this._orderLookup
-  }
-
-    /**
-     * Sets an order of grammatical feature values for a grammatical feature. Used mostly for sorting, filtering,
-     * and displaying.
-     *
-     * @param {Feature[] | Feature[][]} values - a list of grammatical features that specify their order for
-     * sorting and filtering. Some features can be grouped as [[genders.masculine, genders.feminine], LibLatin.genders.neuter].
-     * It means that genders.masculine and genders.feminine belong to the same group. They will have the same index
-     * and will be stored inside an _orderIndex as an array. genders.masculine and genders.feminine will be grouped together
-     * during filtering and will be in the same bin during sorting.
-     *
-     */
-  set order (values) {
-    if (!values || (Array.isArray(values) && values.length === 0)) {
-      throw new Error('A non-empty list of values should be provided.')
-    }
-
-        // If a single value is provided, convert it into an array
-    if (!Array.isArray(values)) {
-      values = [values];
-    }
-
-    for (let value of values) {
-      if (Array.isArray(value)) {
-        for (let element of value) {
-          if (!this.hasOwnProperty(element.value)) {
-            throw new Error('Trying to order an element with "' + element.value + '" value that is not stored in a "' + this.type + '" type.')
-          }
-
-          if (element.type !== this.type) {
-            throw new Error('Trying to order an element with type "' + element.type + '" that is different from "' + this.type + '".')
-          }
-
-          if (element.language !== this.language) {
-            throw new Error('Trying to order an element with language "' + element.language + '" that is different from "' + this.language + '".')
-          }
-        }
-      } else {
-        if (!this.hasOwnProperty(value.value)) {
-          throw new Error('Trying to order an element with "' + value.value + '" value that is not stored in a "' + this.type + '" type.')
-        }
-
-        if (value.type !== this.type) {
-          throw new Error('Trying to order an element with type "' + value.type + '" that is different from "' + this.type + '".')
-        }
-
-        if (value.language !== this.language) {
-          throw new Error('Trying to order an element with language "' + value.language + '" that is different from "' + this.language + '".')
-        }
-      }
-    }
-
-        // Erase whatever sort order was set previously
-    this._orderLookup = {};
-    this._orderIndex = [];
-
-        // Define a new sort order
-    for (const [index, element] of values.entries()) {
-      if (Array.isArray(element)) {
-                // If it is an array, all values should have the same order
-        let elements = [];
-        for (const subElement of element) {
-          this._orderLookup[subElement.value] = index;
-          elements.push(subElement.value);
-        }
-        this._orderIndex[index] = elements;
-      } else {
-                // If is a single value
-        this._orderLookup[element.value] = index;
-        this._orderIndex[index] = element.value;
-      }
-    }
-  }
-}
-
-/**
- * A list of grammatical features that characterizes a language unit. Has some additional service methods,
- * compared with standard storage objects.
- */
-class FeatureList {
-    /**
-     * Initializes a feature list.
-     * @param {FeatureType[]} features - Features that build the list (optional, can be set later).
-     */
-  constructor (features = []) {
-    this._features = [];
-    this._types = {};
-    this.add(features);
-  }
-
-  add (features) {
-    if (!features || !Array.isArray(features)) {
-      throw new Error('Features must be defined and must come in an array.')
-    }
-
-    for (let feature of features) {
-      this._features.push(feature);
-      this._types[feature.type] = feature;
-    }
-  }
-
-    /**
-     * Returns an array of grouping features.
-     * @returns {FeatureType[]} - An array of grouping features.
-     */
-  get items () {
-    return this._features
-  }
-
-  forEach (callback) {
-    this._features.forEach(callback);
-  }
-
-    /**
-     * Returns a feature of a particular type. If such feature does not exist in a list, returns undefined.
-     * @param {string} type - Feature type as defined in `types` object.
-     * @return {FeatureType | undefined} A feature if a particular type if contains it. Undefined otherwise.
-     */
-  ofType (type) {
-    if (this.hasType(type)) {
-      return this._types[type]
-    }
-  }
-
-    /**
-     * Checks whether a feature list has a feature of a specific type.
-     * @param {string} type - Feature type as defined in `types` object.
-     * @return {boolean} Whether a feature list has a feature of a particular type.
-     */
-  hasType (type) {
-    return this._types.hasOwnProperty(type)
-  }
-}
-
-/**
- * @class  LanguageModel is the base class for language-specific behavior
- */
-class LanguageModel {
-   /**
-   */
-  constructor () {
-    this.sourceLanguage = null;
-    this.contextForward = 0;
-    this.context_backward = 0;
-    this.direction = LANG_DIR_LTR;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.codes = [];
-  }
-
-  _initializeFeatures () {
-    let features = {};
-    let code = this.toCode();
-    features[Feature.types.part] = new FeatureType(Feature.types.part,
-      [ POFS_ADVERB,
-        POFS_ADVERBIAL,
-        POFS_ADJECTIVE,
-        POFS_ARTICLE,
-        POFS_CONJUNCTION,
-        POFS_EXCLAMATION,
-        POFS_INTERJECTION,
-        POFS_NOUN,
-        POFS_NUMERAL,
-        POFS_PARTICLE,
-        POFS_PREFIX,
-        POFS_PREPOSITION,
-        POFS_PRONOUN,
-        POFS_SUFFIX,
-        POFS_SUPINE,
-        POFS_VERB,
-        POFS_VERB_PARTICIPLE ], code);
-    features[Feature.types.gender] = new FeatureType(Feature.types.gender,
-      [ GEND_MASCULINE, GEND_FEMININE, GEND_NEUTER ], code);
-    features[Feature.types.type] = new FeatureType(Feature.types.type,
-      [TYPE_REGULAR, TYPE_IRREGULAR], code);
-    features[Feature.types.person] = new FeatureType(Feature.types.person,
-      [ORD_1ST, ORD_2ND, ORD_3RD], code);
-    return features
-  }
-
-  /**
-   * Handler which can be used as the contextHander.
-   * It uses language-specific configuration to identify
-   * the elements from the alph-text popup which should produce links
-   * to the language-specific grammar.
-   * @see #contextHandler
-   */
-  grammarContext (doc) {
-      // used to bind a click handler on the .alph-entry items in the
-      // popup which retrieved the context attribute from the clicked
-      // term and used that to construct a link and open the grammar
-      // at the apporopriate place.
-      // var links = this.getGrammarLinks();
-
-      // for (var link_name in links)
-      // {
-      //   if (links.hasOwnProperty(link_name))
-      //    {
-              // Alph.$(".alph-entry ." + link_name,a_doc).bind('click',link_name,
-              //   function(a_e)
-              //    {
-                        // build target inside grammar
-                        // var target = a_e.data;
-                        // var rngContext = Alph.$(this).attr("context");
-                        // if (rngContext != null)
-                        // {
-                        //  target += "-" + rngContext.split(/-/)[0];
-                        // }
-                        // myobj.openGrammar(a_e.originaEvent,this,target);
-               //   }
-              // );
-       //   }
-      // }
-  }
-
-  /**
-   * Check to see if this language tool can produce an inflection table display
-   * for the current node
-   */
-  canInflect (node) {
-    return false
-  }
-
-  /**
-   * Check to see if the supplied language code is supported by this tool
-   * @param {string} code the language code
-   * @returns true if supported false if not
-   * @type Boolean
-   */
-  static supportsLanguage (code) {
-    return this.codes.includes[code]
-  }
-
-  /**
-   * Return a normalized version of a word which can be used to compare the word for equality
-   * @param {string} word the source word
-   * @returns the normalized form of the word (default version just returns the same word,
-   *          override in language-specific subclass)
-   * @type String
-   */
-  normalizeWord (word) {
-    return word
-  }
-
-  /**
-   * Get a list of valid puncutation for this language
-   * @returns {String} a string containing valid puncutation symbols
-   */
-  getPunctuation () {
-    return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
-  }
-
-  toString () {
-    return String(this.sourceLanguage)
-  }
-
-  isEqual (model) {
-    return this.sourceLanguage === model.sourceLanguage
-  }
-
-  toCode () {
-    return null
-  }
-}
-
-/**
- * @class  LatinLanguageModel is the lass for Latin specific behavior
- */
-class LatinLanguageModel extends LanguageModel {
-   /**
-   */
-  constructor () {
-    super();
-    this.sourceLanguage = LANG_LATIN;
-    this.contextForward = 0;
-    this.contextBackward = 0;
-    this.direction = LANG_DIR_LTR;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.codes = [STR_LANG_CODE_LA, STR_LANG_CODE_LAT];
-    this.features = this._initializeFeatures();
-  }
-
-  _initializeFeatures () {
-    let features = super._initializeFeatures();
-    let code = this.toCode();
-    features[Feature.types.number] = new FeatureType(Feature.types.number, [NUM_SINGULAR, NUM_PLURAL], code);
-    features[Feature.types.grmCase] = new FeatureType(Feature.types.grmCase,
-      [ CASE_NOMINATIVE,
-        CASE_GENITIVE,
-        CASE_DATIVE,
-        CASE_ACCUSATIVE,
-        CASE_ABLATIVE,
-        CASE_LOCATIVE,
-        CASE_VOCATIVE
-      ], code);
-    features[Feature.types.declension] = new FeatureType(Feature.types.declension,
-      [ ORD_1ST, ORD_2ND, ORD_3RD, ORD_4TH, ORD_5TH ], code);
-    features[Feature.types.tense] = new FeatureType(Feature.types.tense,
-      [ TENSE_PRESENT,
-        TENSE_IMPERFECT,
-        TENSE_FUTURE,
-        TENSE_PERFECT,
-        TENSE_PLUPERFECT,
-        TENSE_FUTURE_PERFECT
-      ], code);
-    features[Feature.types.voice] = new FeatureType(Feature.types.voice, [VOICE_PASSIVE, VOICE_ACTIVE], code);
-    features[Feature.types.mood] = new FeatureType(Feature.types.mood, [MOOD_INDICATIVE, MOOD_SUBJUNCTIVE], code);
-    features[Feature.types.conjugation] = new FeatureType(Feature.types.conjugation,
-      [ ORD_1ST,
-        ORD_2ND,
-        ORD_3RD,
-        ORD_4TH
-      ], code);
-    return features
-  }
-
-  /**
-   * Check to see if this language tool can produce an inflection table display
-   * for the current node
-   */
-  canInflect (node) {
-    return true
-  }
-
-  /**
-   * Return a normalized version of a word which can be used to compare the word for equality
-   * @param {String} word the source word
-   * @returns the normalized form of the word (default version just returns the same word,
-   *          override in language-specific subclass)
-   * @type String
-   */
-  normalizeWord (word) {
-    return word
-  }
-
-  /**
-   * Get a list of valid puncutation for this language
-   * @returns {String} a string containing valid puncutation symbols
-   */
-  getPunctuation () {
-    return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
-  }
-
-  toCode () {
-    return STR_LANG_CODE_LAT
-  }
-}
-
-/**
- * @class  LatinLanguageModel is the lass for Latin specific behavior
- */
-class GreekLanguageModel extends LanguageModel {
-   /**
-   * @constructor
-   */
-  constructor () {
-    super();
-    this.sourceLanguage = LANG_GREEK;
-    this.contextForward = 0;
-    this.contextBackward = 0;
-    this.direction = LANG_DIR_LTR;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.languageCodes = [STR_LANG_CODE_GRC];
-    this.features = this._initializeFeatures();
-  }
-
-  _initializeFeatures () {
-    let features = super._initializeFeatures();
-    let code = this.toCode();
-    features[Feature.types.number] = new FeatureType(Feature.types.number, [NUM_SINGULAR, NUM_PLURAL, NUM_DUAL], code);
-    features[Feature.types.grmCase] = new FeatureType(Feature.types.grmCase,
-      [ CASE_NOMINATIVE,
-        CASE_GENITIVE,
-        CASE_DATIVE,
-        CASE_ACCUSATIVE,
-        CASE_VOCATIVE
-      ], code);
-    features[Feature.types.declension] = new FeatureType(Feature.types.declension,
-      [ ORD_1ST, ORD_2ND, ORD_3RD ], code);
-    features[Feature.types.tense] = new FeatureType(Feature.types.tense,
-      [ TENSE_PRESENT,
-        TENSE_IMPERFECT,
-        TENSE_FUTURE,
-        TENSE_PERFECT,
-        TENSE_PLUPERFECT,
-        TENSE_FUTURE_PERFECT,
-        TENSE_AORIST
-      ], code);
-    features[Feature.types.voice] = new FeatureType(Feature.types.voice,
-      [ VOICE_PASSIVE,
-        VOICE_ACTIVE,
-        VOICE_MEDIOPASSIVE,
-        VOICE_MIDDLE
-      ], code);
-    features[Feature.types.mood] = new FeatureType(Feature.types.mood,
-      [ MOOD_INDICATIVE,
-        MOOD_SUBJUNCTIVE,
-        MOOD_OPTATIVE,
-        MOOD_IMPERATIVE
-      ], code);
-    // TODO full list of greek dialects
-    features[Feature.types.dialect] = new FeatureType(Feature.types.dialect, ['attic', 'epic', 'doric'], code);
-    return features
-  }
-
-  toCode () {
-    return STR_LANG_CODE_GRC
-  }
-
-  /**
-   * Check to see if this language tool can produce an inflection table display
-   * for the current node
-   */
-  canInflect (node) {
-    return true
-  }
-
-  /**
-   * Return a normalized version of a word which can be used to compare the word for equality
-   * @param {String} word the source word
-   * @returns the normalized form of the word (default version just returns the same word,
-   *          override in language-specific subclass)
-   * @type String
-   */
-  normalizeWord (word) {
-    return word
-  }
-
-  /**
-   * Get a list of valid puncutation for this language
-   * @returns {String} a string containing valid puncutation symbols
-   */
-  getPunctuation () {
-    return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
-  }
-}
-
-/**
- * @class  LatinLanguageModel is the lass for Latin specific behavior
- */
-class ArabicLanguageModel extends LanguageModel {
-   /**
-   * @constructor
-   */
-  constructor () {
-    super();
-    this.sourceLanguage = LANG_ARABIC;
-    this.contextForward = 0;
-    this.contextBackward = 0;
-    this.direction = LANG_DIR_RTL;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.languageCodes = [STR_LANG_CODE_ARA, STR_LANG_CODE_AR];
-    this._initializeFeatures();
-  }
-
-  _initializeFeatures () {
-    this.features = super._initializeFeatures();
-  }
-
-  toCode () {
-    return STR_LANG_CODE_ARA
-  }
-
-  /**
-   * Check to see if this language tool can produce an inflection table display
-   * for the current node
-   */
-  canInflect (node) {
-    return false
-  }
-
-  /**
-   * Return a normalized version of a word which can be used to compare the word for equality
-   * @param {String} word the source word
-   * @returns the normalized form of the word (default version just returns the same word,
-   *          override in language-specific subclass)
-   * @type String
-   */
-  normalizeWord (word) {
-    // TODO
-    return word
-  }
-
-  /**
-   * Get a list of valid puncutation for this language
-   * @returns {String} a string containing valid puncutation symbols
-   */
-  getPunctuation () {
-    return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
-  }
-}
-
-const MODELS = new Map([
-  [ STR_LANG_CODE_LA, LatinLanguageModel ],
-  [ STR_LANG_CODE_LAT, LatinLanguageModel ],
-  [ STR_LANG_CODE_GRC, GreekLanguageModel ],
-  [ STR_LANG_CODE_ARA, ArabicLanguageModel ],
-  [ STR_LANG_CODE_AR, ArabicLanguageModel ]
-]);
-
-class LanguageModelFactory {
-  static supportsLanguage (code) {
-    return MODELS.has(code)
-  }
-
-  static getLanguageForCode (code = null) {
-    let Model = MODELS.get(code);
-    if (Model) {
-      return new Model()
-    }
-    // for now return a default Model
-    // TODO may want to throw an error
-    return new LanguageModel()
-  }
-}
-
-/**
- * Lemma, a canonical form of a word.
- */
-class Lemma {
-    /**
-     * Initializes a Lemma object.
-     * @param {string} word - A word.
-     * @param {string} language - A language of a word.
-     * @param {Array[string]} principalParts - the principalParts of a lemma
-     */
-  constructor (word, language, principalParts = []) {
-    if (!word) {
-      throw new Error('Word should not be empty.')
-    }
-
-    if (!language) {
-      throw new Error('Language should not be empty.')
-    }
-
-        // if (!languages.isAllowed(language)) {
-        //    throw new Error('Language "' + language + '" is not supported.');
-        // }
-
-    this.word = word;
-    this.language = language;
-    this.principalParts = principalParts;
-  }
-
-  static readObject (jsonObject) {
-    return new Lemma(jsonObject.word, jsonObject.language)
-  }
-}
-
-/*
- Hierarchical structure of return value of a morphological analyzer:
-
- Homonym (a group of words that are written the same way, https://en.wikipedia.org/wiki/Homonym)
-    Lexeme 1 (a unit of lexical meaning, https://en.wikipedia.org/wiki/Lexeme)
-        Have a lemma and one or more inflections
-        Lemma (also called a headword, a canonical form of a group of words https://en.wikipedia.org/wiki/Lemma_(morphology) )
-        Inflection 1
-            Stem
-            Suffix (also called ending)
-        Inflection 2
-            Stem
-            Suffix
-    Lexeme 2
-        Lemma
-        Inflection 1
-            Stem
-            Suffix
- */
-
-/**
- * Represents an inflection of a word
- */
-class Inflection {
-    /**
-     * Initializes an Inflection object.
-     * @param {string} stem - A stem of a word.
-     * @param {string} language - A word's language.
-     */
-  constructor (stem, language) {
-    if (!stem) {
-      throw new Error('Stem should not be empty.')
-    }
-
-    if (!language) {
-      throw new Error('Langauge should not be empty.')
-    }
-
-    if (!LanguageModelFactory.supportsLanguage(language)) {
-      throw new Error(`language ${language} not supported.`)
-    }
-
-    this.stem = stem;
-    this.language = language;
-
-    // Suffix may not be present in every word. If missing, it will set to null.
-    this.suffix = null;
-
-    // Prefix may not be present in every word. If missing, it will set to null.
-    this.prefix = null;
-
-    // Example may not be provided
-    this.example = null;
-  }
-
-  static readObject (jsonObject) {
-    let inflection = new Inflection(jsonObject.stem, jsonObject.language);
-    if (jsonObject.suffix) {
-      inflection.suffix = jsonObject.suffix;
-    }
-    if (jsonObject.prefix) {
-      inflection.prefix = jsonObject.prefix;
-    }
-    if (jsonObject.example) {
-      inflection.example = jsonObject.example;
-    }
-    return inflection
-  }
-
-    /**
-     * Sets a grammatical feature in an inflection. Some features can have multiple values, In this case
-     * an array of Feature objects will be provided.
-     * Values are taken from features and stored in a 'feature.type' property as an array of values.
-     * @param {Feature | Feature[]} data
-     */
-  set feature (data) {
-    if (!data) {
-      throw new Error('Inflection feature data cannot be empty.')
-    }
-    if (!Array.isArray(data)) {
-      data = [data];
-    }
-
-    let type = data[0].type;
-    this[type] = [];
-    for (let element of data) {
-      if (!(element instanceof Feature)) {
-        throw new Error('Inflection feature data must be a Feature object.')
-      }
-
-      if (element.language !== this.language) {
-        throw new Error('Language "' + element.language + '" of a feature does not match a language "' +
-                this.language + '" of an Inflection object.')
-      }
-
-      this[type].push(element.value);
-    }
-  }
-}
-
-/**
- * A basic unit of lexical meaning. Contains a primary Lemma object, one or more Inflection objects
- * and optional alternate Lemmas
- */
-class Lexeme {
-    /**
-     * Initializes a Lexeme object.
-     * @param {Lemma} lemma - A lemma object.
-     * @param {Inflection[]} inflections - An array of inflections.
-     * @param {Definition} meaning - a short definition
-     */
-  constructor (lemma, inflections, meaning = null) {
-    if (!lemma) {
-      throw new Error('Lemma should not be empty.')
-    }
-
-    if (!(lemma instanceof Lemma)) {
-      throw new Error('Lemma should be of Lemma object type.')
-    }
-
-    if (!inflections) {
-      throw new Error('Inflections data should not be empty.')
-    }
-
-    if (!Array.isArray(inflections)) {
-      throw new Error('Inflection data should be provided in an array.')
-    }
-
-    for (let inflection of inflections) {
-      if (!(inflection instanceof Inflection)) {
-        throw new Error('All inflection data should be of Inflection object type.')
-      }
-    }
-
-    this.lemma = lemma;
-    this.inflections = inflections;
-    this.meaning = meaning;
-  }
-
-  static readObject (jsonObject) {
-    let lemma = Lemma.readObject(jsonObject.lemma);
-    let inflections = [];
-    for (let inflection of jsonObject.inflections) {
-      inflections.push(Inflection.readObject(inflection));
-    }
-    return new Lexeme(lemma, inflections)
-  }
-}
-
-class Homonym {
-    /**
-     * Initializes a Homonym object.
-     * @param {Lexeme[]} lexemes - An array of Lexeme objects.
-     * @param {string} form - the form which produces the homonyms
-     */
-  constructor (lexemes, form) {
-    if (!lexemes) {
-      throw new Error('Lexemes data should not be empty.')
-    }
-
-    if (!Array.isArray(lexemes)) {
-      throw new Error('Lexeme data should be provided in an array.')
-    }
-
-    for (let lexeme of lexemes) {
-      if (!(lexeme instanceof Lexeme)) {
-        throw new Error('All lexeme data should be of Lexeme object type.')
-      }
-    }
-
-    this.lexemes = lexemes;
-    this.targetWord = form;
-  }
-
-  static readObject (jsonObject) {
-    let lexemes = [];
-    if (jsonObject.lexemes) {
-      for (let lexeme of jsonObject.lexemes) {
-        lexemes.push(Lexeme.readObject(lexeme));
-      }
-    }
-    let homonym = new Homonym(lexemes);
-    if (jsonObject.targetWord) {
-      homonym.targetWord = jsonObject.targetWord;
-    }
-    return homonym
-  }
-
-    /**
-     * Returns language of a homonym.
-     * Homonym does not have a language property, only lemmas and inflections do. We assume that all lemmas
-     * and inflections within the same homonym will have the same language, and we can determine a language
-     * by using language property of the first lemma. We chan change this logic in the future if we'll need to.
-     * @returns {string} A language code, as defined in the `languages` object.
-     */
-  get language () {
-    if (this.lexemes && this.lexemes[0] && this.lexemes[0].lemma && this.lexemes[0].lemma.language) {
-      return this.lexemes[0].lemma.language
-    } else {
-      throw new Error('Homonym has not been initialized properly. Unable to obtain language information.')
-    }
-  }
-}
-
-/**
- * An abstraction of an Alpheios resource provider
- */
-class ResourceProvider {
-  /**
-   * @constructor
-   * @param {string} uri - a unique resource identifier for this provider
-   * @param {string} rights - rights text
-   * @param {Map} rightsTranslations - optional map of translated rights text - keys should be language of text, values the text
-   */
-  constructor (uri = '', rights = '', rightsTranslations = new Map([['default', rights]])) {
-    this.uri = uri;
-    this.rights = rightsTranslations;
-    if (!this.rights.has('default')) {
-      this.rights.set('default', rights);
-    }
-  }
-
-  /**
-   * @return a string representation of the resource provider, in the default language
-   */
-  toString () {
-    return this.rights.get('default')
-  }
-
-  /**
-   * Produce a string representation of the resource provider, in the requested locale if available
-   * @param {string} languageCode
-   * @return a string representation of the resource provider, in the requested locale if available
-   */
-  toLocaleString (languageCode) {
-    return this.rights.get(languageCode) || this.rights.get('default')
-  }
-
-  static getProxy (provider = null, target = {}) {
-    return new Proxy(target, {
-      get: function (target, name) {
-        return name === 'provider' ? provider : target[name]
-      }
-    })
-  }
-}
-
-
-//# sourceMappingURL=alpheios-data-models.js.map
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(32);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__vue_components_popup_vue__ = __webpack_require__(33);
-
-
- // For whatever reason it cannot be imported in content-process.js
-
-var contentProcess = __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].track(new __WEBPACK_IMPORTED_MODULE_0__content_process__["a" /* default */](), [{
-  monitoredFunction: 'getWordDataStatefully',
-  experience: 'Get word data',
-  asyncWrapper: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].recordExperience
-}, {
-  monitoredFunction: 'sendRequestToBgStatefully',
-  asyncWrapper: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].attachToMessage
-}]);
-
-// load options, then render
-contentProcess.loadData().then(function () {
-  console.log('Activated');
-  contentProcess.status = __WEBPACK_IMPORTED_MODULE_0__content_process__["a" /* default */].statuses.ACTIVE;
-  contentProcess.initialize().then(function () {
-    contentProcess.createVueInstance({ popup: __WEBPACK_IMPORTED_MODULE_2__vue_components_popup_vue__["a" /* default */] });
-    console.log('Content process has been initialized successfully');
-  }, function (error) {
-    console.log('Content process has not been initialized due to the following error: ' + error);
-  });
-}, function (error) {
-  console.error('Cannot load content process data because of the following error: ' + error);
-});
-
-/***/ }),
-/* 6 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__panel__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_options__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_state__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_vue_js_modal__);
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/* global browser */
-
-
-
-
-
-
-
-
-
-
-
-
-
- // Vue in a runtime + compiler configuration
-
-// import Popup from './vue-components/popup.vue' TODO: This does not work - why?
-
-var ContentProcess = function () {
-  function ContentProcess() {
-    _classCallCheck(this, ContentProcess);
-
-    this.status = ContentProcess.statuses.PENDING;
-    this.settings = ContentProcess.settingValues;
-    this.options = new __WEBPACK_IMPORTED_MODULE_6__lib_options__["a" /* default */]();
-    this.vueInstance = undefined;
-
-    this.modal = undefined;
-
-    this.messagingService = new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__["a" /* default */]();
-  }
-
-  _createClass(ContentProcess, [{
-    key: 'loadData',
-
-
-    /**
-     * Loads any asynchronous data that there might be.
-     * @return {Promise}
-     */
-    value: async function loadData() {
-      return this.options.loadStoredData();
-    }
-  }, {
-    key: 'createVueInstance',
-    value: function createVueInstance(components) {
-      // Register a modal plugin
-      __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_14_vue_js_modal___default.a, {
-        dialog: false
-      });
-
-      var options = {
-        el: '#popup',
-        // template: '<app/>',
-        components: components,
-        data: {
-          popupTitle: '',
-          popupContent: '',
-          panel: undefined
-        },
-        mounted: function mounted() {
-          console.log('Root instance is mounted');
-        }
-      };
-
-      this.vueInstance = new __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default.a(options);
-      this.modal = this.vueInstance.$modal;
-    }
-  }, {
-    key: 'deactivate',
-    value: function deactivate() {
-      console.log('Content has been deactivated.');
-      this.panel.close();
-      this.pageControl.classList.add(this.settings.hiddenClassName);
-      this.status = ContentProcess.statuses.DEACTIVATED;
-    }
-  }, {
-    key: 'reactivate',
-    value: function reactivate() {
-      console.log('Content has been reactivated.');
-      this.pageControl.classList.remove(this.settings.hiddenClassName);
-      this.status = ContentProcess.statuses.ACTIVE;
-    }
-  }, {
-    key: 'initialize',
-    value: async function initialize() {
-      // Inject HTML code of a plugin. Should go in reverse order.
-      document.body.classList.add('alpheios');
-      ContentProcess.loadPanel();
-      ContentProcess.loadPageControls();
-      ContentProcess.loadSymbols();
-
-      this.panel = new __WEBPACK_IMPORTED_MODULE_5__panel__["a" /* default */](this.options);
-      this.panelToggleBtn = document.querySelector('#alpheios-panel-toggle');
-      this.renderOptions();
-
-      this.pageControl = document.querySelector(this.settings.pageControlSel);
-
-      // Add a message listener
-      this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.STATUS_REQUEST, this.handleStatusRequest, this);
-      this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this);
-      this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this);
-      browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService));
-
-      this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this));
-      document.body.addEventListener('dblclick', this.getSelectedText.bind(this));
-    }
-  }, {
-    key: 'showMessage',
-    value: function showMessage(messageHTML) {
-      if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-        this.panel.clear();
-        this.panel.definitionContainer.innerHTML = messageHTML;
-        this.panel.open().changeActiveTabTo(this.panel.tabs[0]);
-      } else {
-        this.vueInstance.panel = this.panel;
-        this.vueInstance.popupTitle = '';
-        this.vueInstance.popupContent = messageHTML;
-        this.vueInstance.$modal.show('popup');
-      }
-    }
-  }, {
-    key: 'sendRequestToBgStatefully',
-    value: async function sendRequestToBgStatefully(request, timeout) {
-      var state = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
-
-      try {
-        var result = await this.messagingService.sendRequestToBg(request, timeout);
-        return __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, result);
-      } catch (error) {
-        // Wrap error te same way we wrap value
-        console.log('Statefull request to a background failed: ' + error);
-        throw __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, error);
-      }
-    }
-  }, {
-    key: 'getWordDataStatefully',
-    value: async function getWordDataStatefully(language, word) {
-      var state = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
-
-      try {
-        var messageObject = await this.sendRequestToBgStatefully(new __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__["a" /* default */](language, word), this.settings.requestTimeout, state);
-        var message = messageObject.value;
-
-        if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND)) {
-          var wordData = __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["c" /* WordData */].readObject(message.body);
-          console.log('Word data is: ', wordData);
-
-          // Populate a panel
-          this.panel.clear();
-          this.updateDefinition(wordData);
-          this.updateInflectionTable(wordData);
-
-          // Pouplate a popup
-          this.vueInstance.panel = this.panel;
-          this.vueInstance.popupTitle = '' + wordData.homonym.targetWord;
-          this.vueInstance.popupContent = '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.\n                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.\n                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,\n                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.\n                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>\n\n                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.\n                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.\n                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,\n                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.\n                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>';
-
-          if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-            this.panel.open();
-          } else {
-            this.vueInstance.$modal.show('popup');
-          }
-        } else if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND)) {
-          this.showMessage('<p>Sorry, the word you requested was not found.</p>');
-        }
-        return messageObject;
-      } catch (error) {
-        console.error('Word data request failed: ' + error.value);
-        this.showMessage('<p>Sorry, your word you requested failed:<br><strong>' + error.value + '</strong></p>');
-      }
-    }
-  }, {
-    key: 'handleStatusRequest',
-    value: function handleStatusRequest(request, sender) {
-      // Send a status response
-      console.log('Status request received. Sending a response back.');
-      this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(function (error) {
-        console.error('Unable to send a response to activation request: ' + error);
-      });
-    }
-  }, {
-    key: 'handleActivationRequest',
-    value: function handleActivationRequest(request, sender) {
-      // Send a status response
-      console.log('Activate request received. Sending a response back.');
-      if (!this.isActive) {
-        this.reactivate();
-      }
-      this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(function (error) {
-        console.error('Unable to send a response to activation request: ' + error);
-      });
-    }
-  }, {
-    key: 'handleDeactivationRequest',
-    value: function handleDeactivationRequest(request, sender) {
-      // Send a status response
-      console.log('Deactivate request received. Sending a response back.');
-      if (this.isActive) {
-        this.deactivate();
-      }
-      this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(function (error) {
-        console.error('Unable to send a response to activation request: ' + error);
-      });
-    }
-  }, {
-    key: 'togglePanel',
-    value: function togglePanel() {
-      this.panel.toggle();
-    }
-  }, {
-    key: 'updateDefinition',
-    value: function updateDefinition(wordData) {
-      this.panel.definitionContainer.innerHTML = decodeURIComponent(wordData.definition);
-    }
-  }, {
-    key: 'updateInflectionTable',
-    value: function updateInflectionTable(wordData) {
-      this.presenter = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* Presenter */](this.panel.inflTableContainer, this.panel.viewSelectorContainer, this.panel.localeSwitcherContainer, wordData, this.options.items.locale.currentValue).render();
-    }
-  }, {
-    key: 'renderOptions',
-    value: function renderOptions() {
-      this.panel.optionsPage = __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf___default.a;
-      var optionEntries = Object.entries(this.options.items);
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = optionEntries[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var _step$value = _slicedToArray(_step.value, 2),
-              optionName = _step$value[0],
-              option = _step$value[1];
-
-          var localeSelector = this.panel.optionsPage.querySelector(option.inputSelector);
-          var _iteratorNormalCompletion2 = true;
-          var _didIteratorError2 = false;
-          var _iteratorError2 = undefined;
-
-          try {
-            for (var _iterator2 = option.values[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-              var optionValue = _step2.value;
-
-              var optionElement = document.createElement('option');
-              optionElement.value = optionValue.value;
-              optionElement.text = optionValue.text;
-              if (optionValue.value === option.currentValue) {
-                optionElement.setAttribute('selected', 'selected');
-              }
-              localeSelector.appendChild(optionElement);
-            }
-          } catch (err) {
-            _didIteratorError2 = true;
-            _iteratorError2 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                _iterator2.return();
-              }
-            } finally {
-              if (_didIteratorError2) {
-                throw _iteratorError2;
-              }
-            }
-          }
-
-          localeSelector.addEventListener('change', this.optionChangeListener.bind(this, optionName));
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-    }
-  }, {
-    key: 'optionChangeListener',
-    value: function optionChangeListener(option, event) {
-      this.options.update(option, event.target.value);
-      if (option === 'locale' && this.presenter) {
-        this.presenter.setLocale(event.target.value);
-      }
-      if (option === 'panelPosition') {
-        if (event.target.value === 'right') {
-          this.panel.setPoistionToRight();
-        } else {
-          this.panel.setPoistionToLeft();
-        }
-      }
-    }
-  }, {
-    key: 'getSelectedText',
-    value: function getSelectedText(event) {
-      if (this.isActive) {
-        var selection = __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, 'grc');
-        // HTMLSelector.getExtendedTextQuoteSelector()
-        if (selection.word) {
-          var language = selection.language.toCode();
-          this.getWordDataStatefully(language, selection.word);
-        }
-      }
-    }
-  }, {
-    key: 'isActive',
-    get: function get() {
-      return this.status === ContentProcess.statuses.ACTIVE;
-    }
-  }], [{
-    key: 'loadSymbols',
-    value: function loadSymbols() {
-      ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf___default.a);
-    }
-  }, {
-    key: 'loadPageControls',
-    value: function loadPageControls() {
-      ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf___default.a);
-    }
-  }, {
-    key: 'loadPanel',
-    value: function loadPanel() {
-      ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf___default.a);
-    }
-  }, {
-    key: 'loadHTMLFragment',
-    value: function loadHTMLFragment(html) {
-      var container = document.createElement('div');
-      container.innerHTML = html;
-      document.body.insertBefore(container.firstChild, document.body.firstChild);
-    }
-  }, {
-    key: 'settingValues',
-    get: function get() {
-      return {
-        hiddenClassName: 'hidden',
-        pageControlSel: '#alpheios-panel-toggle',
-        requestTimeout: 4000,
-        uiTypePanel: 'panel',
-        uiTypePopup: 'popup'
-      };
-    }
-  }, {
-    key: 'statuses',
-    get: function get() {
-      return {
-        PENDING: Symbol.for('Pending'), // Content script has not been fully initialized yet
-        ACTIVE: Symbol.for('Active'), // Content script is loaded and active
-        DEACTIVATED: Symbol.for('Deactivated') // Content script has been loaded, but is deactivated
-      };
-    }
-  }]);
-
-  return ContentProcess;
-}();
-
-/* harmony default export */ __webpack_exports__["a"] = (ContentProcess);
-
-/***/ }),
 /* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -10698,7 +10697,7 @@ module.exports = bytesToUuid;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(11);
 /* global browser */
 
@@ -10860,17 +10859,15 @@ class StoredRequest {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__request_message__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(13);
 
 
 
-
-class WordDataRequest extends __WEBPACK_IMPORTED_MODULE_2__request_message__["a" /* default */] {
-  constructor (language, word) {
-    super(new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* SelectedWord */](language, word))
-    this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_1__message__["a" /* default */].types.WORD_DATA_REQUEST)
+class WordDataRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["a" /* default */] {
+  constructor (textSelector) {
+    super(textSelector)
+    this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].types.WORD_DATA_REQUEST)
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = WordDataRequest;
@@ -10901,7 +10898,7 @@ class RequestMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* defau
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(2);
 
 
 
@@ -11285,8 +11282,8 @@ module.exports = "<h4>Options</h4>\r\n\r\n<div id=\"alpheios-locale-switcher\" c
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__selector__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(26);
  // To polyfill Element.closest() if required
 
@@ -11304,12 +11301,13 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
   }
 
   static getSelector (target, defaultLanguageCode) {
-    return new HTMLSelector(target, defaultLanguageCode).createSelector()
+    return new HTMLSelector(target, defaultLanguageCode).createTextSelector()
   }
 
-  createSelector () {
-    let wordSelector = new __WEBPACK_IMPORTED_MODULE_2__selector__["a" /* default */]()
-    wordSelector.language = this.getLanguage(this.defaultLanguageCode)
+  createTextSelector () {
+    let wordSelector = new __WEBPACK_IMPORTED_MODULE_2__text_selector__["a" /* default */]()
+    wordSelector.languageCode = this.getLanguageCode(this.defaultLanguageCode)
+    wordSelector.language = this.getLanguage(wordSelector.languageCode)
 
     if (this.wordSeparator.has(wordSelector.language.baseUnit)) {
       wordSelector = this.wordSeparator.get(wordSelector.language.baseUnit)(wordSelector)
@@ -11361,7 +11359,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
     anchorText = anchorText.replace(new RegExp('[' + textSelector.language.getPunctuation() + ']', 'g'), ' ')
 
     // find word
-    let wordStart = anchorText.lastIndexOf(' ', ro)
+    let wordStart = anchorText.lastIndexOf(' ', ro) + 1
     let wordEnd = anchorText.indexOf(' ', wordStart + 1)
 
     if (wordStart === -1) {
@@ -11374,11 +11372,11 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
     // if empty, nothing to do
     if (wordStart === wordEnd) {
-      return {}
+      return textSelector
     }
 
     // extract word
-    let word = anchorText.substring(wordStart, wordEnd)
+    let word = anchorText.substring(wordStart, wordEnd).trim()
 
     /* Identify the words preceeding and following the focus word
     * TODO - query the type of node in the selection to see if we are
@@ -11417,8 +11415,8 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
       contextPos = preWordlist.length - 1
     }
 
-    textSelector.word = word
-    textSelector.normalized_word = textSelector.language.normalizeWord(word).trim()
+    textSelector.selectedText = word
+    textSelector.normalizedSelectedText = textSelector.language.normalizeWord(word)
     textSelector.start = wordStart
     textSelector.end = wordEnd
     textSelector.context = contextStr
@@ -11493,21 +11491,37 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(25);
 
 
-class Selector {
+/**
+ * This is a general-purpose, media abstract selector that
+ * @property {string} selectedText - Selected text (usually a single word)
+ * @property {string] normalizedSelectedText - Selected text after normalization
+ * @property {string} languageCode - A language code of a selection
+ */
+class TextSelector {
   constructor () {
-    this.word = null
-    this.normalized_word = null
+    this.selectedText = ''
+    this.normalizedSelectedText = ''
+    this.languageCode = ''
+
     this.start = 0
     this.end = 0
     this.context = null
     this.position = 0
   }
 
+  static readObject (jsonObject) {
+    let textSelector = new TextSelector()
+    textSelector.selectedText = jsonObject.selectedText
+    textSelector.normalizedSelectedText = jsonObject.normalizedSelectedText
+    textSelector.languageCode = jsonObject.languageCode
+    return textSelector
+  }
+
   get textQuoteSelector () {
     return new __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__["a" /* default */]()
   }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = Selector;
+/* harmony export (immutable) */ __webpack_exports__["a"] = TextSelector;
 
 
 
@@ -11530,7 +11544,7 @@ class TextQuoteSelector {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(3);
 
 
 class MediaSelector {
@@ -11559,12 +11573,20 @@ class MediaSelector {
   }
 
   /**
-   * Returns a language of a selection target. If language cannot be determined, defaultLanguageCode will be used instead.
+   * Returns a language code of a selection target. If language cannot be determined, defaultLanguageCode will be used instead.
    * @param {string} defaultLanguageCode - A default language code that will be used if language cannot be determined.
+   * @return {string} A language code of a selection
+   */
+  getLanguageCode (defaultLanguageCode) {
+    return this.getLanguageCodeFromSource() || defaultLanguageCode
+  }
+
+  /**
+   * Returns a language of a selection target. If language cannot be determined, defaultLanguageCode will be used instead.
+   * @param {string} languageCode - A default language code that will be used if language cannot be determined.
    * @return {Symbol} Language of a selection
    */
-  getLanguage (defaultLanguageCode) {
-    let languageCode = this.getLanguageCodeFromSource() || defaultLanguageCode
+  getLanguage (languageCode) {
     return __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* LanguageModelFactory */].getLanguageForCode(languageCode)
   }
 }

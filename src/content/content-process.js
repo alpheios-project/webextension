@@ -160,10 +160,12 @@ export default class ContentProcess {
     }
   }
 
-  async getWordDataStatefully (language, word, state = undefined) {
+  async getWordDataStatefully (textSelector, state = undefined) {
     try {
       let messageObject = await this.sendRequestToBgStatefully(
-        new WordDataRequest(language, word), this.settings.requestTimeout, state
+        new WordDataRequest(textSelector),
+        this.settings.requestTimeout,
+        state
       )
       let message = messageObject.value
 
@@ -291,9 +293,8 @@ export default class ContentProcess {
     if (this.isActive) {
       let selection = HTMLSelector.getSelector(event.target, 'grc')
       // HTMLSelector.getExtendedTextQuoteSelector()
-      if (selection.word) {
-        let language = selection.language.toCode()
-        this.getWordDataStatefully(language, selection.word)
+      if (selection.selectedText) {
+        this.getWordDataStatefully(selection)
       }
     }
   }

@@ -9,6 +9,7 @@ import WordDataResponse from '../lib/messaging/response/word-data-response'
 import Content from '../content/content-process'
 import ContentTab from './content-tab'
 import State from '../lib/state'
+import TextSelector from '../lib/selection/text-selector'
 import TestDefinitionService from '../../test/stubs/definitions/test'
 import {
   Transporter,
@@ -168,19 +169,18 @@ export default class BackgroundProcess {
   }
 
   async handleWordDataRequestStatefully (request, sender, state = undefined) {
-    let selectedWord = InflectionTables.SelectedWord.readObjects(request.body)
-    console.log(`Request for a "${selectedWord.word}" word`)
+    let textSelector = TextSelector.readObject(request.body)
+    console.log(`Request for a "${textSelector.normalizedSelectedText}" word`)
     let tabID = sender.tab.id
 
     try {
-      // homonymObject is a state object, where 'value' proparty has homonym, and 'state' - a state
-      let homonym
-      let wordData
-      ({ value: homonym, state } = await this.getHomonymStatefully(selectedWord.language, selectedWord.word, state))
+      // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
+      let homonym, wordData
+      ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedSelectedText, state))
       if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
 
       wordData = this.langData.getSuffixes(homonym, state)
-      wordData.definition = await TestDefinitionService.getDefinition(selectedWord.language, selectedWord.word)
+      wordData.definition = await TestDefinitionService.getDefinition(textSelector.language, textSelector.word)
       wordData.definition = encodeURIComponent(wordData.definition)
       console.log(wordData)
 

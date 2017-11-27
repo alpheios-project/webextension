@@ -26,12 +26,20 @@ export default class MediaSelector {
   }
 
   /**
-   * Returns a language of a selection target. If language cannot be determined, defaultLanguageCode will be used instead.
+   * Returns a language code of a selection target. If language cannot be determined, defaultLanguageCode will be used instead.
    * @param {string} defaultLanguageCode - A default language code that will be used if language cannot be determined.
+   * @return {string} A language code of a selection
+   */
+  getLanguageCode (defaultLanguageCode) {
+    return this.getLanguageCodeFromSource() || defaultLanguageCode
+  }
+
+  /**
+   * Returns a language of a selection target. If language cannot be determined, defaultLanguageCode will be used instead.
+   * @param {string} languageCode - A default language code that will be used if language cannot be determined.
    * @return {Symbol} Language of a selection
    */
-  getLanguage (defaultLanguageCode) {
-    let languageCode = this.getLanguageCodeFromSource() || defaultLanguageCode
+  getLanguage (languageCode) {
     return Models.LanguageModelFactory.getLanguageForCode(languageCode)
   }
 }

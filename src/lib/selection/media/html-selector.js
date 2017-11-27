@@ -1,6 +1,6 @@
 import 'element-closest' // To polyfill Element.closest() if required
 import * as Models from 'alpheios-data-models'
-import TextSelector from '../selector'
+import TextSelector from '../text-selector'
 import MediaSelector from './media-selector'
 
 export default class HTMLSelector extends MediaSelector {
@@ -14,12 +14,13 @@ export default class HTMLSelector extends MediaSelector {
   }
 
   static getSelector (target, defaultLanguageCode) {
-    return new HTMLSelector(target, defaultLanguageCode).createSelector()
+    return new HTMLSelector(target, defaultLanguageCode).createTextSelector()
   }
 
-  createSelector () {
+  createTextSelector () {
     let wordSelector = new TextSelector()
-    wordSelector.language = this.getLanguage(this.defaultLanguageCode)
+    wordSelector.languageCode = this.getLanguageCode(this.defaultLanguageCode)
+    wordSelector.language = this.getLanguage(wordSelector.languageCode)
 
     if (this.wordSeparator.has(wordSelector.language.baseUnit)) {
       wordSelector = this.wordSeparator.get(wordSelector.language.baseUnit)(wordSelector)
@@ -71,7 +72,7 @@ export default class HTMLSelector extends MediaSelector {
     anchorText = anchorText.replace(new RegExp('[' + textSelector.language.getPunctuation() + ']', 'g'), ' ')
 
     // find word
-    let wordStart = anchorText.lastIndexOf(' ', ro)
+    let wordStart = anchorText.lastIndexOf(' ', ro) + 1
     let wordEnd = anchorText.indexOf(' ', wordStart + 1)
 
     if (wordStart === -1) {
@@ -84,11 +85,11 @@ export default class HTMLSelector extends MediaSelector {
 
     // if empty, nothing to do
     if (wordStart === wordEnd) {
-      return {}
+      return textSelector
     }
 
     // extract word
-    let word = anchorText.substring(wordStart, wordEnd)
+    let word = anchorText.substring(wordStart, wordEnd).trim()
 
     /* Identify the words preceeding and following the focus word
     * TODO - query the type of node in the selection to see if we are
@@ -127,8 +128,8 @@ export default class HTMLSelector extends MediaSelector {
       contextPos = preWordlist.length - 1
     }
 
-    textSelector.word = word
-    textSelector.normalized_word = textSelector.language.normalizeWord(word).trim()
+    textSelector.selectedText = word
+    textSelector.normalizedSelectedText = textSelector.language.normalizeWord(word)
     textSelector.start = wordStart
     textSelector.end = wordEnd
     textSelector.context = contextStr
