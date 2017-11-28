@@ -79,7 +79,7 @@ export default class Options {
         console.log('Option value was stored successfully.')
       },
       (errorMessage) => {
-        console.err(`Storage of an option value failed: ${errorMessage}`)
+        console.error(`Storage of an option value failed: ${errorMessage}`)
       }
     )
   }

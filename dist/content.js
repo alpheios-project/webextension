@@ -1760,7 +1760,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
  // Vue in a runtime + compiler configuration
 
-// import Popup from './vue-components/popup.vue' TODO: This does not work - why?
+// import Popup from './vue-components/popup.vue' TODO: This generates a Webpack error - why?
 
 var ContentProcess = function () {
   function ContentProcess() {
@@ -2047,10 +2047,11 @@ var ContentProcess = function () {
     key: 'getSelectedText',
     value: function getSelectedText(event) {
       if (this.isActive) {
-        var selection = __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, 'grc');
+        var textSelector = __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, 'grc');
+
         // HTMLSelector.getExtendedTextQuoteSelector()
-        if (selection.selectedText) {
-          this.getWordDataStatefully(selection);
+        if (!textSelector.isEmpty()) {
+          this.getWordDataStatefully(textSelector);
         }
       }
     }
@@ -11206,7 +11207,7 @@ class Options {
         console.log('Option value was stored successfully.')
       },
       (errorMessage) => {
-        console.err(`Storage of an option value failed: ${errorMessage}`)
+        console.error(`Storage of an option value failed: ${errorMessage}`)
       }
     )
   }
@@ -11305,16 +11306,16 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
   }
 
   createTextSelector () {
-    let wordSelector = new __WEBPACK_IMPORTED_MODULE_2__text_selector__["a" /* default */]()
-    wordSelector.languageCode = this.getLanguageCode(this.defaultLanguageCode)
-    wordSelector.language = this.getLanguage(wordSelector.languageCode)
+    let textSelector = new __WEBPACK_IMPORTED_MODULE_2__text_selector__["a" /* default */]()
+    textSelector.languageCode = this.getLanguageCode(this.defaultLanguageCode)
+    textSelector.language = __WEBPACK_IMPORTED_MODULE_2__text_selector__["a" /* default */].getLanguage(textSelector.languageCode)
 
-    if (this.wordSeparator.has(wordSelector.language.baseUnit)) {
-      wordSelector = this.wordSeparator.get(wordSelector.language.baseUnit)(wordSelector)
+    if (this.wordSeparator.has(textSelector.language.baseUnit)) {
+      textSelector = this.wordSeparator.get(textSelector.language.baseUnit)(textSelector)
     } else {
-      console.warn(`No word separator function found for a "${wordSelector.language.baseUnit}" base unit`)
+      console.warn(`No word separator function found for a "${textSelector.language.baseUnit}" base unit`)
     }
-    return wordSelector
+    return textSelector
   }
 
   /**
@@ -11359,7 +11360,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
     anchorText = anchorText.replace(new RegExp('[' + textSelector.language.getPunctuation() + ']', 'g'), ' ')
 
     // find word
-    let wordStart = anchorText.lastIndexOf(' ', ro) + 1
+    let wordStart = anchorText.lastIndexOf(' ', ro)
     let wordEnd = anchorText.indexOf(' ', wordStart + 1)
 
     if (wordStart === -1) {
@@ -11415,17 +11416,16 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
       contextPos = preWordlist.length - 1
     }
 
-    textSelector.selectedText = word
-    textSelector.normalizedSelectedText = textSelector.language.normalizeWord(word)
+    textSelector.text = word
     textSelector.start = wordStart
     textSelector.end = wordEnd
     textSelector.context = contextStr
     textSelector.position = contextPos
 
-    if (textSelector.word) {
+    /* if (!textSelector.isEmpty()) {
       // Reset a selection
       selection.setBaseAndExtent(anchor, wordStart, focus, wordEnd)
-    }
+    } */
     return textSelector
   }
 
@@ -11489,6 +11489,8 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(3);
+
 
 
 /**
@@ -11496,12 +11498,13 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
  * @property {string} selectedText - Selected text (usually a single word)
  * @property {string] normalizedSelectedText - Selected text after normalization
  * @property {string} languageCode - A language code of a selection
+ * @property {LanguageModel} language - A language model object
  */
 class TextSelector {
   constructor () {
-    this.selectedText = ''
-    this.normalizedSelectedText = ''
+    this.text = '' // Calculated?
     this.languageCode = ''
+    this.language = undefined
 
     this.start = 0
     this.end = 0
@@ -11509,12 +11512,54 @@ class TextSelector {
     this.position = 0
   }
 
+  // language
+  // selectedText
+  // selection fragment Fragments
+  // {[selection, language]}
+  // languages -> [language]
+  // fragmentsForLanguage()
+  // isMultilingual
+  // textLanguage or fragmentLanguages
+  // selectedText or selectedFragments
+
+  // language or languages
+  // selectedText or selectedFragments
+  //
+
+  // Support language per word in selectedText. Keep character index?
+  // What if same word is there twice?
+  // Maybe words with corresponding languages? [word, boundaries, language]. Selected text consists of words.
+
+  // textLanguage  - fragmentsLanguages
+  // text - fragments
+  // textLanguage
+  // fragments[i].language
+  // languages
+  // languageCodes
+
   static readObject (jsonObject) {
     let textSelector = new TextSelector()
-    textSelector.selectedText = jsonObject.selectedText
-    textSelector.normalizedSelectedText = jsonObject.normalizedSelectedText
+    textSelector.text = jsonObject.text
     textSelector.languageCode = jsonObject.languageCode
+    textSelector.language = TextSelector.getLanguage(textSelector.languageCode)
     return textSelector
+  }
+
+  isEmpty () {
+    return this.text === ''
+  }
+
+  get normalizedText () {
+    return this.language.normalizeWord(this.text)
+  }
+
+  /**
+   * Returns a language of a selection target. If language cannot be determined, defaultLanguageCode will be used instead.
+   * @param {string} languageCode - A default language code that will be used if language cannot be determined.
+   * @return {LanguageModel} Language model of a selection's language
+   */
+  static getLanguage (languageCode) {
+    return __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["b" /* LanguageModelFactory */].getLanguageForCode(languageCode)
   }
 
   get textQuoteSelector () {
@@ -11544,9 +11589,6 @@ class TextQuoteSelector {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(3);
-
-
 class MediaSelector {
   constructor (target) {
     this.target = target // A selected text area in a document
@@ -11579,15 +11621,6 @@ class MediaSelector {
    */
   getLanguageCode (defaultLanguageCode) {
     return this.getLanguageCodeFromSource() || defaultLanguageCode
-  }
-
-  /**
-   * Returns a language of a selection target. If language cannot be determined, defaultLanguageCode will be used instead.
-   * @param {string} languageCode - A default language code that will be used if language cannot be determined.
-   * @return {Symbol} Language of a selection
-   */
-  getLanguage (languageCode) {
-    return __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* LanguageModelFactory */].getLanguageForCode(languageCode)
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = MediaSelector;
@@ -24169,7 +24202,7 @@ exports = module.exports = __webpack_require__(36)(true);
 
 
 // module
-exports.push([module.i, "\n.popup {\n    border-radius: 5px;\n    background: #F7F7F7;\n    box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n}\n.popup-content {\n    padding: 20px;\n    font-size: 14px;\n}\n.v--modal-overlay[data-modal=\"popup\"] {\n    background: rgba(0, 0, 0, 0.5);\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?29c61269"],"names":[],"mappings":";AA4DA;IACA,mBAAA;IACA,oBAAA;IACA,iDAAA;CACA;AAEA;IACA,cAAA;IACA,gBAAA;CACA;AAEA;IACA,+BAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <modal name=\"popup\"\r\n           transition=\"nice-modal-fade\"\r\n           classes=\"popup\"\r\n           :min-width=\"200\"\r\n           :min-height=\"200\"\r\n           :pivot-y=\"0.5\"\r\n           :adaptive=\"true\"\r\n           :resizable=\"true\"\r\n           :draggable=\"true\"\r\n           :scrollable=\"false\"\r\n           :reset=\"true\"\r\n           width=\"60%\"\r\n           height=\"60%\"\r\n           @before-open=\"beforeOpen\"\r\n           @opened=\"opened\"\r\n           @closed=\"closed\"\r\n           @before-close=\"beforeClose\">\r\n        <div class=\"popup-content\">\r\n            <h2>{{ $root.popupTitle }}</h2>\r\n            <div v-html=\"$root.popupContent\"></div>\r\n            <button v-on:click=\"openPanel\">Extended data ...</button>\r\n        </div>\r\n    </modal>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'Popup',\r\n    methods: {\r\n      openPanel () {\r\n        console.log('Opening a panel to show extended results')\r\n        this.$root.$modal.hide('popup')\r\n        this.$root.panel.open()\r\n      },\r\n\r\n      beforeOpen () { },\r\n\r\n      beforeClose () { },\r\n\r\n      opened (e) {\r\n        // e.ref should not be undefined here\r\n        console.log('opened', e)\r\n        console.log('ref', e.ref)\r\n      },\r\n\r\n      closed (e) {\r\n        console.log('closed', e)\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Popup is mounted')\r\n    },\r\n    watch: {\r\n      popupContent: function (value) {\r\n        console.log('Popup content changed to ' + value)\r\n      }\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .popup {\r\n        border-radius: 5px;\r\n        background: #F7F7F7;\r\n        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\r\n    }\r\n\r\n    .popup-content {\r\n        padding: 20px;\r\n        font-size: 14px;\r\n    }\r\n\r\n    .v--modal-overlay[data-modal=\"popup\"] {\r\n        background: rgba(0, 0, 0, 0.5);\r\n    }\r\n</style>\r\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n.popup {\n    border-radius: 5px;\n    background: #F7F7F7;\n    box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n}\n.popup-content {\n    padding: 20px;\n    font-size: 14px;\n}\n.v--modal-overlay[data-modal=\"popup\"] {\n    background: rgba(0, 0, 0, 0.0);\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?084fb786"],"names":[],"mappings":";AAkEA;IACA,mBAAA;IACA,oBAAA;IACA,iDAAA;CACA;AAEA;IACA,cAAA;IACA,gBAAA;CACA;AAEA;IACA,+BAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <modal name=\"popup\"\r\n           transition=\"nice-modal-fade\"\r\n           classes=\"popup\"\r\n           :min-width=\"200\"\r\n           :min-height=\"200\"\r\n           :pivot-y=\"0.5\"\r\n           :adaptive=\"true\"\r\n           :resizable=\"true\"\r\n           :draggable=\"true\"\r\n           :scrollable=\"false\"\r\n           :reset=\"true\"\r\n           :clickToClose=\"false\"\r\n           width=\"60%\"\r\n           height=\"60%\"\r\n           @before-open=\"beforeOpen\"\r\n           @opened=\"opened\"\r\n           @closed=\"closed\"\r\n           @before-close=\"beforeClose\">\r\n        <div class=\"popup-content\">\r\n            <button v-on:click=\"closePopup\">Close</button>\r\n            <h2>{{ $root.popupTitle }}</h2>\r\n            <div v-html=\"$root.popupContent\"></div>\r\n            <button v-on:click=\"openPanel\">Extended data ...</button>\r\n        </div>\r\n    </modal>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'Popup',\r\n    methods: {\r\n      openPanel () {\r\n        console.log('Opening a panel to show extended results')\r\n        this.$root.$modal.hide('popup')\r\n        this.$root.panel.open()\r\n      },\r\n\r\n      closePopup () {\r\n        this.$root.$modal.hide('popup')\r\n      },\r\n\r\n      beforeOpen () { },\r\n\r\n      beforeClose () { },\r\n\r\n      opened (e) {\r\n        // e.ref should not be undefined here\r\n        console.log('opened', e)\r\n        console.log('ref', e.ref)\r\n      },\r\n\r\n      closed (e) {\r\n        console.log('closed', e)\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Popup is mounted')\r\n    },\r\n    watch: {\r\n      popupContent: function (value) {\r\n        console.log('Popup content changed to ' + value)\r\n      }\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .popup {\r\n        border-radius: 5px;\r\n        background: #F7F7F7;\r\n        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\r\n    }\r\n\r\n    .popup-content {\r\n        padding: 20px;\r\n        font-size: 14px;\r\n    }\r\n\r\n    .v--modal-overlay[data-modal=\"popup\"] {\r\n        background: rgba(0, 0, 0, 0.0);\r\n    }\r\n</style>\r\n"],"sourceRoot":""}]);
 
 // exports
 
@@ -24649,6 +24682,8 @@ module.exports = function normalizeComponent (
 //
 //
 //
+//
+//
 
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: 'Popup',
@@ -24657,6 +24692,10 @@ module.exports = function normalizeComponent (
       console.log('Opening a panel to show extended results');
       this.$root.$modal.hide('popup');
       this.$root.panel.open();
+    },
+
+    closePopup() {
+      this.$root.$modal.hide('popup');
     },
 
     beforeOpen() {},
@@ -24707,6 +24746,7 @@ var render = function() {
         draggable: true,
         scrollable: false,
         reset: true,
+        clickToClose: false,
         width: "60%",
         height: "60%"
       },
@@ -24719,6 +24759,8 @@ var render = function() {
     },
     [
       _c("div", { staticClass: "popup-content" }, [
+        _c("button", { on: { click: _vm.closePopup } }, [_vm._v("Close")]),
+        _vm._v(" "),
         _c("h2", [_vm._v(_vm._s(_vm.$root.popupTitle))]),
         _vm._v(" "),
         _c("div", { domProps: { innerHTML: _vm._s(_vm.$root.popupContent) } }),

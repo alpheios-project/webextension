@@ -170,17 +170,17 @@ export default class BackgroundProcess {
 
   async handleWordDataRequestStatefully (request, sender, state = undefined) {
     let textSelector = TextSelector.readObject(request.body)
-    console.log(`Request for a "${textSelector.normalizedSelectedText}" word`)
+    console.log(`Request for a "${textSelector.normalizedText}" word`)
     let tabID = sender.tab.id
 
     try {
       // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
       let homonym, wordData
-      ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedSelectedText, state))
+      ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
       if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
 
       wordData = this.langData.getSuffixes(homonym, state)
-      wordData.definition = await TestDefinitionService.getDefinition(textSelector.language, textSelector.word)
+      wordData.definition = await TestDefinitionService.getDefinition(textSelector.language, textSelector.normalizedText)
       wordData.definition = encodeURIComponent(wordData.definition)
       console.log(wordData)
 

@@ -10,6 +10,7 @@
            :draggable="true"
            :scrollable="false"
            :reset="true"
+           :clickToClose="false"
            width="60%"
            height="60%"
            @before-open="beforeOpen"
@@ -17,6 +18,7 @@
            @closed="closed"
            @before-close="beforeClose">
         <div class="popup-content">
+            <button v-on:click="closePopup">Close</button>
             <h2>{{ $root.popupTitle }}</h2>
             <div v-html="$root.popupContent"></div>
             <button v-on:click="openPanel">Extended data ...</button>
@@ -31,6 +33,10 @@
         console.log('Opening a panel to show extended results')
         this.$root.$modal.hide('popup')
         this.$root.panel.open()
+      },
+
+      closePopup () {
+        this.$root.$modal.hide('popup')
       },
 
       beforeOpen () { },
@@ -70,6 +76,6 @@
     }
 
     .v--modal-overlay[data-modal="popup"] {
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.0);
     }
 </style>

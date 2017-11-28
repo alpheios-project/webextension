@@ -10355,6 +10355,8 @@ class ResourceProvider {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(7);
+
 
 
 /**
@@ -10362,12 +10364,13 @@ class ResourceProvider {
  * @property {string} selectedText - Selected text (usually a single word)
  * @property {string] normalizedSelectedText - Selected text after normalization
  * @property {string} languageCode - A language code of a selection
+ * @property {LanguageModel} language - A language model object
  */
 class TextSelector {
   constructor () {
-    this.selectedText = ''
-    this.normalizedSelectedText = ''
+    this.text = '' // Calculated?
     this.languageCode = ''
+    this.language = undefined
 
     this.start = 0
     this.end = 0
@@ -10375,12 +10378,54 @@ class TextSelector {
     this.position = 0
   }
 
+  // language
+  // selectedText
+  // selection fragment Fragments
+  // {[selection, language]}
+  // languages -> [language]
+  // fragmentsForLanguage()
+  // isMultilingual
+  // textLanguage or fragmentLanguages
+  // selectedText or selectedFragments
+
+  // language or languages
+  // selectedText or selectedFragments
+  //
+
+  // Support language per word in selectedText. Keep character index?
+  // What if same word is there twice?
+  // Maybe words with corresponding languages? [word, boundaries, language]. Selected text consists of words.
+
+  // textLanguage  - fragmentsLanguages
+  // text - fragments
+  // textLanguage
+  // fragments[i].language
+  // languages
+  // languageCodes
+
   static readObject (jsonObject) {
     let textSelector = new TextSelector()
-    textSelector.selectedText = jsonObject.selectedText
-    textSelector.normalizedSelectedText = jsonObject.normalizedSelectedText
+    textSelector.text = jsonObject.text
     textSelector.languageCode = jsonObject.languageCode
+    textSelector.language = TextSelector.getLanguage(textSelector.languageCode)
     return textSelector
+  }
+
+  isEmpty () {
+    return this.text === ''
+  }
+
+  get normalizedText () {
+    return this.language.normalizeWord(this.text)
+  }
+
+  /**
+   * Returns a language of a selection target. If language cannot be determined, defaultLanguageCode will be used instead.
+   * @param {string} languageCode - A default language code that will be used if language cannot be determined.
+   * @return {LanguageModel} Language model of a selection's language
+   */
+  static getLanguage (languageCode) {
+    return __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["b" /* LanguageModelFactory */].getLanguageForCode(languageCode)
   }
 
   get textQuoteSelector () {
@@ -11102,7 +11147,7 @@ var BackgroundProcess = function () {
       var state = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
 
       var textSelector = __WEBPACK_IMPORTED_MODULE_10__lib_selection_text_selector__["a" /* default */].readObject(request.body);
-      console.log('Request for a "' + textSelector.normalizedSelectedText + '" word');
+      console.log('Request for a "' + textSelector.normalizedText + '" word');
       var tabID = sender.tab.id;
 
       try {
@@ -11110,7 +11155,7 @@ var BackgroundProcess = function () {
         var homonym = void 0,
             wordData = void 0;
 
-        var _ref = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedSelectedText, state);
+        var _ref = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state);
 
         homonym = _ref.value;
         state = _ref.state;
@@ -11120,7 +11165,7 @@ var BackgroundProcess = function () {
         }
 
         wordData = this.langData.getSuffixes(homonym, state);
-        wordData.definition = await __WEBPACK_IMPORTED_MODULE_11__test_stubs_definitions_test__["a" /* default */].getDefinition(textSelector.language, textSelector.word);
+        wordData.definition = await __WEBPACK_IMPORTED_MODULE_11__test_stubs_definitions_test__["a" /* default */].getDefinition(textSelector.language, textSelector.normalizedText);
         wordData.definition = encodeURIComponent(wordData.definition);
         console.log(wordData);
 
@@ -13241,7 +13286,7 @@ class WordDataResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["
 
  // Vue in a runtime + compiler configuration
 
-// import Popup from './vue-components/popup.vue' TODO: This does not work - why?
+// import Popup from './vue-components/popup.vue' TODO: This generates a Webpack error - why?
 
 class ContentProcess {
   constructor () {
@@ -13518,10 +13563,11 @@ class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let selection = __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, 'grc')
+      let textSelector = __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, 'grc')
+
       // HTMLSelector.getExtendedTextQuoteSelector()
-      if (selection.selectedText) {
-        this.getWordDataStatefully(selection)
+      if (!textSelector.isEmpty()) {
+        this.getWordDataStatefully(textSelector)
       }
     }
   }
@@ -13823,7 +13869,7 @@ class Options {
         console.log('Option value was stored successfully.')
       },
       (errorMessage) => {
-        console.err(`Storage of an option value failed: ${errorMessage}`)
+        console.error(`Storage of an option value failed: ${errorMessage}`)
       }
     )
   }
@@ -13886,16 +13932,16 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
   }
 
   createTextSelector () {
-    let wordSelector = new __WEBPACK_IMPORTED_MODULE_2__text_selector__["a" /* default */]()
-    wordSelector.languageCode = this.getLanguageCode(this.defaultLanguageCode)
-    wordSelector.language = this.getLanguage(wordSelector.languageCode)
+    let textSelector = new __WEBPACK_IMPORTED_MODULE_2__text_selector__["a" /* default */]()
+    textSelector.languageCode = this.getLanguageCode(this.defaultLanguageCode)
+    textSelector.language = __WEBPACK_IMPORTED_MODULE_2__text_selector__["a" /* default */].getLanguage(textSelector.languageCode)
 
-    if (this.wordSeparator.has(wordSelector.language.baseUnit)) {
-      wordSelector = this.wordSeparator.get(wordSelector.language.baseUnit)(wordSelector)
+    if (this.wordSeparator.has(textSelector.language.baseUnit)) {
+      textSelector = this.wordSeparator.get(textSelector.language.baseUnit)(textSelector)
     } else {
-      console.warn(`No word separator function found for a "${wordSelector.language.baseUnit}" base unit`)
+      console.warn(`No word separator function found for a "${textSelector.language.baseUnit}" base unit`)
     }
-    return wordSelector
+    return textSelector
   }
 
   /**
@@ -13940,7 +13986,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
     anchorText = anchorText.replace(new RegExp('[' + textSelector.language.getPunctuation() + ']', 'g'), ' ')
 
     // find word
-    let wordStart = anchorText.lastIndexOf(' ', ro) + 1
+    let wordStart = anchorText.lastIndexOf(' ', ro)
     let wordEnd = anchorText.indexOf(' ', wordStart + 1)
 
     if (wordStart === -1) {
@@ -13996,17 +14042,16 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
       contextPos = preWordlist.length - 1
     }
 
-    textSelector.selectedText = word
-    textSelector.normalizedSelectedText = textSelector.language.normalizeWord(word)
+    textSelector.text = word
     textSelector.start = wordStart
     textSelector.end = wordEnd
     textSelector.context = contextStr
     textSelector.position = contextPos
 
-    if (textSelector.word) {
+    /* if (!textSelector.isEmpty()) {
       // Reset a selection
       selection.setBaseAndExtent(anchor, wordStart, focus, wordEnd)
-    }
+    } */
     return textSelector
   }
 
@@ -14083,9 +14128,6 @@ class TextQuoteSelector {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(7);
-
-
 class MediaSelector {
   constructor (target) {
     this.target = target // A selected text area in a document
@@ -14118,15 +14160,6 @@ class MediaSelector {
    */
   getLanguageCode (defaultLanguageCode) {
     return this.getLanguageCodeFromSource() || defaultLanguageCode
-  }
-
-  /**
-   * Returns a language of a selection target. If language cannot be determined, defaultLanguageCode will be used instead.
-   * @param {string} languageCode - A default language code that will be used if language cannot be determined.
-   * @return {Symbol} Language of a selection
-   */
-  getLanguage (languageCode) {
-    return __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* LanguageModelFactory */].getLanguageForCode(languageCode)
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = MediaSelector;

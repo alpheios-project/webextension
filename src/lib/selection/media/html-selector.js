@@ -18,16 +18,16 @@ export default class HTMLSelector extends MediaSelector {
   }
 
   createTextSelector () {
-    let wordSelector = new TextSelector()
-    wordSelector.languageCode = this.getLanguageCode(this.defaultLanguageCode)
-    wordSelector.language = this.getLanguage(wordSelector.languageCode)
+    let textSelector = new TextSelector()
+    textSelector.languageCode = this.getLanguageCode(this.defaultLanguageCode)
+    textSelector.language = TextSelector.getLanguage(textSelector.languageCode)
 
-    if (this.wordSeparator.has(wordSelector.language.baseUnit)) {
-      wordSelector = this.wordSeparator.get(wordSelector.language.baseUnit)(wordSelector)
+    if (this.wordSeparator.has(textSelector.language.baseUnit)) {
+      textSelector = this.wordSeparator.get(textSelector.language.baseUnit)(textSelector)
     } else {
-      console.warn(`No word separator function found for a "${wordSelector.language.baseUnit}" base unit`)
+      console.warn(`No word separator function found for a "${textSelector.language.baseUnit}" base unit`)
     }
-    return wordSelector
+    return textSelector
   }
 
   /**
@@ -72,7 +72,7 @@ export default class HTMLSelector extends MediaSelector {
     anchorText = anchorText.replace(new RegExp('[' + textSelector.language.getPunctuation() + ']', 'g'), ' ')
 
     // find word
-    let wordStart = anchorText.lastIndexOf(' ', ro) + 1
+    let wordStart = anchorText.lastIndexOf(' ', ro)
     let wordEnd = anchorText.indexOf(' ', wordStart + 1)
 
     if (wordStart === -1) {
@@ -128,17 +128,16 @@ export default class HTMLSelector extends MediaSelector {
       contextPos = preWordlist.length - 1
     }
 
-    textSelector.selectedText = word
-    textSelector.normalizedSelectedText = textSelector.language.normalizeWord(word)
+    textSelector.text = word
     textSelector.start = wordStart
     textSelector.end = wordEnd
     textSelector.context = contextStr
     textSelector.position = contextPos
 
-    if (textSelector.word) {
+    /* if (!textSelector.isEmpty()) {
       // Reset a selection
       selection.setBaseAndExtent(anchor, wordStart, focus, wordEnd)
-    }
+    } */
     return textSelector
   }
 

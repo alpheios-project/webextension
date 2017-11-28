@@ -14,7 +14,7 @@ import OptionsTemplate from './templates/options.htmlf'
 import HTMLSelector from '../lib/selection/media/html-selector'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import VueJsModal from 'vue-js-modal'
-// import Popup from './vue-components/popup.vue' TODO: This does not work - why?
+// import Popup from './vue-components/popup.vue' TODO: This generates a Webpack error - why?
 
 export default class ContentProcess {
   constructor () {
@@ -291,10 +291,11 @@ export default class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let selection = HTMLSelector.getSelector(event.target, 'grc')
+      let textSelector = HTMLSelector.getSelector(event.target, 'grc')
+
       // HTMLSelector.getExtendedTextQuoteSelector()
-      if (selection.selectedText) {
-        this.getWordDataStatefully(selection)
+      if (!textSelector.isEmpty()) {
+        this.getWordDataStatefully(textSelector)
       }
     }
   }
