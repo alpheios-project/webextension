@@ -25,7 +25,19 @@ const webpackContentConfig = {
       },
       {
         test: /\.scss$/,
-        use: [ 'style-loader', 'css-loader?sourceMap', 'sass-loader?sourceMap' ]
+        use: [{
+          loader: 'style-loader'
+        }, {
+          loader: 'css-loader',
+          options: {
+            sourceMap: true
+          }
+        }, {
+          loader: 'sass-loader',
+          options: {
+            sourceMap: true
+          }
+        }]
       },
       {
         test: /\.vue$/,
@@ -76,7 +88,7 @@ const webpackBackgroundConfig = {
       },
       {
         test: /\.js$/,
-        include: path.resolve(__dirname, '../../../src/background'),
+        include: path.resolve(__dirname, '../../src/background'),
         use: [{
           loader: 'babel-loader',
           options: {

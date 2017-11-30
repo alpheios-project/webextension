@@ -4,45 +4,75 @@ import Message from '../lib/messaging/message'
 import MessagingService from '../lib/messaging/service'
 import WordDataRequest from '../lib/messaging/request/word-data-request'
 import StatusResponse from '../lib/messaging/response/status-response'
-import Panel from './panel'
-import Options from '../lib/options'
+import Panel from './components/panel/component'
+import Options from './components/options/component'
 import State from '../lib/state'
-import SymbolsTemplate from './templates/symbols.htmlf'
-import PageControlsTemplate from './templates/page-controls.htmlf'
-import PanelTemplate from './templates/panel.htmlf'
-import OptionsTemplate from './templates/options.htmlf'
+import Statuses from './statuses'
+import Template from './template.htmlf'
+import PageControls from './components/page-controls/component'
+import PanelTemplate from './components/panel/template.htmlf'
 import HTMLSelector from '../lib/selection/media/html-selector'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import VueJsModal from 'vue-js-modal'
-// import Popup from './vue-components/popup.vue' TODO: This generates a Webpack error - why?
+import Popup from './vue-components/popup.vue'
 
 export default class ContentProcess {
   constructor () {
-    this.status = ContentProcess.statuses.PENDING
+    this.status = Statuses.PENDING
     this.settings = ContentProcess.settingValues
-    this.options = new Options()
     this.vueInstance = undefined
 
     this.modal = undefined
 
     this.messagingService = new MessagingService()
+
+    this.loadUI()
+  }
+
+  loadUI () {
+    // Inject HTML code of a plugin. Should go in reverse order.
+    document.body.classList.add('alpheios')
+    ContentProcess.loadTemplate(Template)
+
+    // Initialize components
+    this.pageControls = new PageControls({
+      methods: {
+        onPanelToggle: this.togglePanel.bind(this)
+      }
+    })
+    this.panel = new Panel({})
+    // Should be loaded after Panel because they are inserted into a panel
+    this.options = new Options({})
+
+    // Register a Vue.js modal plugin
+    Vue.use(VueJsModal, {
+      dialog: false
+    })
+
+    // Create a Vue instance for a popup
+    this.vueInstance = new Vue({
+      el: '#popup',
+      // template: '<app/>',
+      components: { popup: Popup },
+      data: {
+        popupTitle: '',
+        popupContent: '',
+        panel: undefined
+      },
+      mounted: function () {
+        console.log('Root instance is mounted')
+      }
+    })
+    this.modal = this.vueInstance.$modal
   }
 
   static get settingValues () {
     return {
       hiddenClassName: 'hidden',
-      pageControlSel: '#alpheios-panel-toggle',
+      pageControlsID: 'alpheios-page-controls',
       requestTimeout: 4000,
       uiTypePanel: 'panel',
       uiTypePopup: 'popup'
-    }
-  }
-
-  static get statuses () {
-    return {
-      PENDING: Symbol.for('Pending'), // Content script has not been fully initialized yet
-      ACTIVE: Symbol.for('Active'), // Content script is loaded and active
-      DEACTIVATED: Symbol.for('Deactivated') // Content script has been loaded, but is deactivated
     }
   }
 
@@ -54,57 +84,26 @@ export default class ContentProcess {
     return this.options.loadStoredData()
   }
 
-  createVueInstance (components) {
-    // Register a modal plugin
-    Vue.use(VueJsModal, {
-      dialog: false
-    })
-
-    let options = {
-      el: '#popup',
-      // template: '<app/>',
-      components: components,
-      data: {
-        popupTitle: '',
-        popupContent: '',
-        panel: undefined
-      },
-      mounted: function () {
-        console.log('Root instance is mounted')
-      }
-    }
-
-    this.vueInstance = new Vue(options)
-    this.modal = this.vueInstance.$modal
-  }
-
   get isActive () {
-    return this.status === ContentProcess.statuses.ACTIVE
+    return this.status === Statuses.ACTIVE
   }
 
   deactivate () {
     console.log('Content has been deactivated.')
     this.panel.close()
     this.pageControl.classList.add(this.settings.hiddenClassName)
-    this.status = ContentProcess.statuses.DEACTIVATED
+    this.status = Statuses.DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
     this.pageControl.classList.remove(this.settings.hiddenClassName)
-    this.status = ContentProcess.statuses.ACTIVE
+    this.status = Statuses.ACTIVE
   }
 
   async initialize () {
-    // Inject HTML code of a plugin. Should go in reverse order.
-    document.body.classList.add('alpheios')
-    ContentProcess.loadPanel()
-    ContentProcess.loadPageControls()
-    ContentProcess.loadSymbols()
-
-    this.panel = new Panel(this.options)
-    this.panelToggleBtn = document.querySelector('#alpheios-panel-toggle')
-    this.renderOptions()
+    // this.panelToggleBtn = document.querySelector('#alpheios-panel-toggle')
+    // this.renderOptions()
 
     this.pageControl = document.querySelector(this.settings.pageControlSel)
 
@@ -114,8 +113,14 @@ export default class ContentProcess {
     this.messagingService.addHandler(Message.types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
-    this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
+    // this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
+  }
+
+  static loadTemplate (template) {
+    let container = document.createElement('div')
+    document.body.insertBefore(container, document.body.firstChild)
+    container.outerHTML = template
   }
 
   static loadSymbols () {
@@ -147,6 +152,10 @@ export default class ContentProcess {
       this.vueInstance.popupContent = messageHTML
       this.vueInstance.$modal.show('popup')
     }
+  }
+
+  pageControlsClicked () {
+    console.log('Page controls clicked')
   }
 
   async sendRequestToBgStatefully (request, timeout, state = undefined) {
@@ -258,7 +267,7 @@ export default class ContentProcess {
   }
 
   renderOptions () {
-    this.panel.optionsPage = OptionsTemplate
+    /* this.panel.optionsPage = OptionsTemplate
     let optionEntries = Object.entries(this.options.items)
     for (let [optionName, option] of optionEntries) {
       let localeSelector = this.panel.optionsPage.querySelector(option.inputSelector)
@@ -272,7 +281,7 @@ export default class ContentProcess {
         localeSelector.appendChild(optionElement)
       }
       localeSelector.addEventListener('change', this.optionChangeListener.bind(this, optionName))
-    }
+    } */
   }
 
   optionChangeListener (option, event) {

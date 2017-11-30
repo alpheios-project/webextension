@@ -1,6 +1,6 @@
 import ContentProcess from './content-process'
 import {Monitor as ExperienceMonitor} from 'alpheios-experience'
-import Popup from './vue-components/popup.vue' // For whatever reason it cannot be imported in content-process.js
+import Statuses from './statuses'
 
 let contentProcess = ExperienceMonitor.track(
   new ContentProcess(),
@@ -21,10 +21,9 @@ let contentProcess = ExperienceMonitor.track(
 contentProcess.loadData().then(
   () => {
     console.log('Activated')
-    contentProcess.status = ContentProcess.statuses.ACTIVE
+    contentProcess.status = Statuses.ACTIVE
     contentProcess.initialize().then(
       () => {
-        contentProcess.createVueInstance({ popup: Popup })
         console.log(`Content process has been initialized successfully`)
       },
       (error) => { console.log(`Content process has not been initialized due to the following error: ${error}`) }

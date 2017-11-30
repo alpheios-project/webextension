@@ -1,7 +1,0 @@
-<div>
-    <svg id="alpheios-panel-toggle" class="alpheios-panel-show-btn">
-        <use xlink:href="#alf-icon-circle-o-notch"/>
-    </svg>
-    <div id="popup"><popup></popup></div>
-
-</div>

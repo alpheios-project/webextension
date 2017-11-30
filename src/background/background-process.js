@@ -6,7 +6,7 @@ import MessagingService from '../lib/messaging/service'
 import ActivationRequest from '../lib/messaging/request/activation-request'
 import DeactivationRequest from '../lib/messaging/request/deactivation-request'
 import WordDataResponse from '../lib/messaging/response/word-data-response'
-import Content from '../content/content-process'
+import Statuses from '../content/statuses'
 import ContentTab from './content-tab'
 import State from '../lib/state'
 import TextSelector from '../lib/selection/text-selector'
@@ -73,7 +73,7 @@ export default class BackgroundProcess {
   }
 
   isContentActive (tabID) {
-    return this.isContentLoaded(tabID) && this.tabs.get(tabID).status === Content.statuses.ACTIVE
+    return this.isContentLoaded(tabID) && this.tabs.get(tabID).status === Statuses.ACTIVE
   }
 
   activateContent (tabID) {
@@ -143,7 +143,7 @@ export default class BackgroundProcess {
     let contentCSS = this.loadContentCSS(tabID)
     Promise.all([polyfillScript, contentScript, contentCSS]).then(() => {
       console.log('Content script(s) has been loaded successfully or already present')
-      this.tabs.set(tabID, new ContentTab(tabID, Content.statuses.ACTIVE))
+      this.tabs.set(tabID, new ContentTab(tabID, Statuses.ACTIVE))
       BackgroundProcess.defaults.contentScriptLoaded = true
     }, (error) => {
       throw new Error('Content script loading failed', error)

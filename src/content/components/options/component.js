@@ -1,7 +1,17 @@
 /* global browser */
+import Component from '../component'
+import template from './template.htmlf'
+import './style.css'
 
-export default class Options {
-  constructor () {
+export default class Options extends Component {
+  constructor (options) {
+    super(Object.assign(options, {
+      template: template,
+      selectors: {
+        self: '[data-component="alpheios-panel-options"]'
+      }
+    }))
+
     this._values = Options.defaults
     for (let key in this._values) {
       if (this._values.hasOwnProperty(key)) {
