@@ -10,7 +10,6 @@
            :draggable="true"
            :scrollable="false"
            :reset="true"
-           :clickToClose="false"
            width="60%"
            height="60%"
            @before-open="beforeOpen"

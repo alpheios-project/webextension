@@ -11226,7 +11226,7 @@ var BackgroundProcess = function () {
         deactivateMenuItemText: 'Deactivate',
         sendExperiencesMenuItemId: 'send-experiences',
         sendExperiencesMenuItemText: 'Send Experiences to a remote server',
-        contentCSSFileName: 'styles/style.css',
+        contentCSSFileName: 'styles/style.min.css',
         contentScriptFileName: 'content.js',
         browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
         experienceStorageCheckInterval: 10000,

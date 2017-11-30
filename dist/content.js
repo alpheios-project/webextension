@@ -1689,28 +1689,39 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
  // For whatever reason it cannot be imported in content-process.js
 
-var contentProcess = __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].track(new __WEBPACK_IMPORTED_MODULE_0__content_process__["a" /* default */](), [{
-  monitoredFunction: 'getWordDataStatefully',
-  experience: 'Get word data',
-  asyncWrapper: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].recordExperience
-}, {
-  monitoredFunction: 'sendRequestToBgStatefully',
-  asyncWrapper: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].attachToMessage
-}]);
+let contentProcess = __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].track(
+  new __WEBPACK_IMPORTED_MODULE_0__content_process__["a" /* default */](),
+  [
+    {
+      monitoredFunction: 'getWordDataStatefully',
+      experience: 'Get word data',
+      asyncWrapper: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].recordExperience
+    },
+    {
+      monitoredFunction: 'sendRequestToBgStatefully',
+      asyncWrapper: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["Monitor"].attachToMessage
+    }
+  ]
+)
 
 // load options, then render
-contentProcess.loadData().then(function () {
-  console.log('Activated');
-  contentProcess.status = __WEBPACK_IMPORTED_MODULE_0__content_process__["a" /* default */].statuses.ACTIVE;
-  contentProcess.initialize().then(function () {
-    contentProcess.createVueInstance({ popup: __WEBPACK_IMPORTED_MODULE_2__vue_components_popup_vue__["a" /* default */] });
-    console.log('Content process has been initialized successfully');
-  }, function (error) {
-    console.log('Content process has not been initialized due to the following error: ' + error);
-  });
-}, function (error) {
-  console.error('Cannot load content process data because of the following error: ' + error);
-});
+contentProcess.loadData().then(
+  () => {
+    console.log('Activated')
+    contentProcess.status = __WEBPACK_IMPORTED_MODULE_0__content_process__["a" /* default */].statuses.ACTIVE
+    contentProcess.initialize().then(
+      () => {
+        contentProcess.createVueInstance({ popup: __WEBPACK_IMPORTED_MODULE_2__vue_components_popup_vue__["a" /* default */] })
+        console.log(`Content process has been initialized successfully`)
+      },
+      (error) => { console.log(`Content process has not been initialized due to the following error: ${error}`) }
+    )
+  },
+  (error) => {
+    console.error(`Cannot load content process data because of the following error: ${error}`)
+  }
+)
+
 
 /***/ }),
 /* 5 */
@@ -1738,12 +1749,6 @@ contentProcess.loadData().then(function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_vue_dist_vue__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal__ = __webpack_require__(31);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_vue_js_modal__);
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 /* global browser */
 
 
@@ -1762,352 +1767,293 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 // import Popup from './vue-components/popup.vue' TODO: This generates a Webpack error - why?
 
-var ContentProcess = function () {
-  function ContentProcess() {
-    _classCallCheck(this, ContentProcess);
+class ContentProcess {
+  constructor () {
+    this.status = ContentProcess.statuses.PENDING
+    this.settings = ContentProcess.settingValues
+    this.options = new __WEBPACK_IMPORTED_MODULE_6__lib_options__["a" /* default */]()
+    this.vueInstance = undefined
 
-    this.status = ContentProcess.statuses.PENDING;
-    this.settings = ContentProcess.settingValues;
-    this.options = new __WEBPACK_IMPORTED_MODULE_6__lib_options__["a" /* default */]();
-    this.vueInstance = undefined;
+    this.modal = undefined
 
-    this.modal = undefined;
-
-    this.messagingService = new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__["a" /* default */]();
+    this.messagingService = new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__["a" /* default */]()
   }
 
-  _createClass(ContentProcess, [{
-    key: 'loadData',
-
-
-    /**
-     * Loads any asynchronous data that there might be.
-     * @return {Promise}
-     */
-    value: async function loadData() {
-      return this.options.loadStoredData();
+  static get settingValues () {
+    return {
+      hiddenClassName: 'hidden',
+      pageControlSel: '#alpheios-panel-toggle',
+      requestTimeout: 4000,
+      uiTypePanel: 'panel',
+      uiTypePopup: 'popup'
     }
-  }, {
-    key: 'createVueInstance',
-    value: function createVueInstance(components) {
-      // Register a modal plugin
-      __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_14_vue_js_modal___default.a, {
-        dialog: false
-      });
+  }
 
-      var options = {
-        el: '#popup',
-        // template: '<app/>',
-        components: components,
-        data: {
-          popupTitle: '',
-          popupContent: '',
-          panel: undefined
-        },
-        mounted: function mounted() {
-          console.log('Root instance is mounted');
-        }
-      };
-
-      this.vueInstance = new __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default.a(options);
-      this.modal = this.vueInstance.$modal;
+  static get statuses () {
+    return {
+      PENDING: Symbol.for('Pending'), // Content script has not been fully initialized yet
+      ACTIVE: Symbol.for('Active'), // Content script is loaded and active
+      DEACTIVATED: Symbol.for('Deactivated') // Content script has been loaded, but is deactivated
     }
-  }, {
-    key: 'deactivate',
-    value: function deactivate() {
-      console.log('Content has been deactivated.');
-      this.panel.close();
-      this.pageControl.classList.add(this.settings.hiddenClassName);
-      this.status = ContentProcess.statuses.DEACTIVATED;
-    }
-  }, {
-    key: 'reactivate',
-    value: function reactivate() {
-      console.log('Content has been reactivated.');
-      this.pageControl.classList.remove(this.settings.hiddenClassName);
-      this.status = ContentProcess.statuses.ACTIVE;
-    }
-  }, {
-    key: 'initialize',
-    value: async function initialize() {
-      // Inject HTML code of a plugin. Should go in reverse order.
-      document.body.classList.add('alpheios');
-      ContentProcess.loadPanel();
-      ContentProcess.loadPageControls();
-      ContentProcess.loadSymbols();
+  }
 
-      this.panel = new __WEBPACK_IMPORTED_MODULE_5__panel__["a" /* default */](this.options);
-      this.panelToggleBtn = document.querySelector('#alpheios-panel-toggle');
-      this.renderOptions();
+  /**
+   * Loads any asynchronous data that there might be.
+   * @return {Promise}
+   */
+  async loadData () {
+    return this.options.loadStoredData()
+  }
 
-      this.pageControl = document.querySelector(this.settings.pageControlSel);
+  createVueInstance (components) {
+    // Register a modal plugin
+    __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_14_vue_js_modal___default.a, {
+      dialog: false
+    })
 
-      // Add a message listener
-      this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.STATUS_REQUEST, this.handleStatusRequest, this);
-      this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this);
-      this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this);
-      browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService));
-
-      this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this));
-      document.body.addEventListener('dblclick', this.getSelectedText.bind(this));
-    }
-  }, {
-    key: 'showMessage',
-    value: function showMessage(messageHTML) {
-      if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-        this.panel.clear();
-        this.panel.definitionContainer.innerHTML = messageHTML;
-        this.panel.open().changeActiveTabTo(this.panel.tabs[0]);
-      } else {
-        this.vueInstance.panel = this.panel;
-        this.vueInstance.popupTitle = '';
-        this.vueInstance.popupContent = messageHTML;
-        this.vueInstance.$modal.show('popup');
+    let options = {
+      el: '#popup',
+      // template: '<app/>',
+      components: components,
+      data: {
+        popupTitle: '',
+        popupContent: '',
+        panel: undefined
+      },
+      mounted: function () {
+        console.log('Root instance is mounted')
       }
     }
-  }, {
-    key: 'sendRequestToBgStatefully',
-    value: async function sendRequestToBgStatefully(request, timeout) {
-      var state = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : undefined;
 
-      try {
-        var result = await this.messagingService.sendRequestToBg(request, timeout);
-        return __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, result);
-      } catch (error) {
-        // Wrap error te same way we wrap value
-        console.log('Statefull request to a background failed: ' + error);
-        throw __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, error);
-      }
+    this.vueInstance = new __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default.a(options)
+    this.modal = this.vueInstance.$modal
+  }
+
+  get isActive () {
+    return this.status === ContentProcess.statuses.ACTIVE
+  }
+
+  deactivate () {
+    console.log('Content has been deactivated.')
+    this.panel.close()
+    this.pageControl.classList.add(this.settings.hiddenClassName)
+    this.status = ContentProcess.statuses.DEACTIVATED
+  }
+
+  reactivate () {
+    console.log('Content has been reactivated.')
+    this.pageControl.classList.remove(this.settings.hiddenClassName)
+    this.status = ContentProcess.statuses.ACTIVE
+  }
+
+  async initialize () {
+    // Inject HTML code of a plugin. Should go in reverse order.
+    document.body.classList.add('alpheios')
+    ContentProcess.loadPanel()
+    ContentProcess.loadPageControls()
+    ContentProcess.loadSymbols()
+
+    this.panel = new __WEBPACK_IMPORTED_MODULE_5__panel__["a" /* default */](this.options)
+    this.panelToggleBtn = document.querySelector('#alpheios-panel-toggle')
+    this.renderOptions()
+
+    this.pageControl = document.querySelector(this.settings.pageControlSel)
+
+    // Add a message listener
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.STATUS_REQUEST, this.handleStatusRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
+    browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
+
+    this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
+    document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
+  }
+
+  static loadSymbols () {
+    ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf___default.a)
+  }
+
+  static loadPageControls () {
+    ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf___default.a)
+  }
+
+  static loadPanel () {
+    ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf___default.a)
+  }
+
+  static loadHTMLFragment (html) {
+    let container = document.createElement('div')
+    container.innerHTML = html
+    document.body.insertBefore(container.firstChild, document.body.firstChild)
+  }
+
+  showMessage (messageHTML) {
+    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+      this.panel.clear()
+      this.panel.definitionContainer.innerHTML = messageHTML
+      this.panel.open().changeActiveTabTo(this.panel.tabs[0])
+    } else {
+      this.vueInstance.panel = this.panel
+      this.vueInstance.popupTitle = ''
+      this.vueInstance.popupContent = messageHTML
+      this.vueInstance.$modal.show('popup')
     }
-  }, {
-    key: 'getWordDataStatefully',
-    value: async function getWordDataStatefully(textSelector) {
-      var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : undefined;
+  }
 
-      try {
-        var messageObject = await this.sendRequestToBgStatefully(new __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__["a" /* default */](textSelector), this.settings.requestTimeout, state);
-        var message = messageObject.value;
-
-        if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND)) {
-          var wordData = __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* WordData */].readObject(message.body);
-          console.log('Word data is: ', wordData);
-
-          // Populate a panel
-          this.panel.clear();
-          this.updateDefinition(wordData);
-          this.updateInflectionTable(wordData);
-
-          // Pouplate a popup
-          this.vueInstance.panel = this.panel;
-          this.vueInstance.popupTitle = '' + wordData.homonym.targetWord;
-          this.vueInstance.popupContent = '<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.\n                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.\n                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,\n                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.\n                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>\n\n                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.\n                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.\n                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,\n                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.\n                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>';
-
-          if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-            this.panel.open();
-          } else {
-            this.vueInstance.$modal.show('popup');
-          }
-        } else if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND)) {
-          this.showMessage('<p>Sorry, the word you requested was not found.</p>');
-        }
-        return messageObject;
-      } catch (error) {
-        console.error('Word data request failed: ' + error.value);
-        this.showMessage('<p>Sorry, your word you requested failed:<br><strong>' + error.value + '</strong></p>');
-      }
+  async sendRequestToBgStatefully (request, timeout, state = undefined) {
+    try {
+      let result = await this.messagingService.sendRequestToBg(request, timeout)
+      return __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, result)
+    } catch (error) {
+      // Wrap error te same way we wrap value
+      console.log(`Statefull request to a background failed: ${error}`)
+      throw __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, error)
     }
-  }, {
-    key: 'handleStatusRequest',
-    value: function handleStatusRequest(request, sender) {
-      // Send a status response
-      console.log('Status request received. Sending a response back.');
-      this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(function (error) {
-        console.error('Unable to send a response to activation request: ' + error);
-      });
-    }
-  }, {
-    key: 'handleActivationRequest',
-    value: function handleActivationRequest(request, sender) {
-      // Send a status response
-      console.log('Activate request received. Sending a response back.');
-      if (!this.isActive) {
-        this.reactivate();
-      }
-      this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(function (error) {
-        console.error('Unable to send a response to activation request: ' + error);
-      });
-    }
-  }, {
-    key: 'handleDeactivationRequest',
-    value: function handleDeactivationRequest(request, sender) {
-      // Send a status response
-      console.log('Deactivate request received. Sending a response back.');
-      if (this.isActive) {
-        this.deactivate();
-      }
-      this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(function (error) {
-        console.error('Unable to send a response to activation request: ' + error);
-      });
-    }
-  }, {
-    key: 'togglePanel',
-    value: function togglePanel() {
-      this.panel.toggle();
-    }
-  }, {
-    key: 'updateDefinition',
-    value: function updateDefinition(wordData) {
-      this.panel.definitionContainer.innerHTML = decodeURIComponent(wordData.definition);
-    }
-  }, {
-    key: 'updateInflectionTable',
-    value: function updateInflectionTable(wordData) {
-      this.presenter = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* Presenter */](this.panel.inflTableContainer, this.panel.viewSelectorContainer, this.panel.localeSwitcherContainer, wordData, this.options.items.locale.currentValue).render();
-    }
-  }, {
-    key: 'renderOptions',
-    value: function renderOptions() {
-      this.panel.optionsPage = __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf___default.a;
-      var optionEntries = Object.entries(this.options.items);
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+  }
 
-      try {
-        for (var _iterator = optionEntries[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var _step$value = _slicedToArray(_step.value, 2),
-              optionName = _step$value[0],
-              option = _step$value[1];
+  async getWordDataStatefully (textSelector, state = undefined) {
+    try {
+      let messageObject = await this.sendRequestToBgStatefully(
+        new __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__["a" /* default */](textSelector),
+        this.settings.requestTimeout,
+        state
+      )
+      let message = messageObject.value
 
-          var localeSelector = this.panel.optionsPage.querySelector(option.inputSelector);
-          var _iteratorNormalCompletion2 = true;
-          var _didIteratorError2 = false;
-          var _iteratorError2 = undefined;
+      if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND)) {
+        let wordData = __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* WordData */].readObject(message.body)
+        console.log('Word data is: ', wordData)
 
-          try {
-            for (var _iterator2 = option.values[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-              var optionValue = _step2.value;
+        // Populate a panel
+        this.panel.clear()
+        this.updateDefinition(wordData)
+        this.updateInflectionTable(wordData)
 
-              var optionElement = document.createElement('option');
-              optionElement.value = optionValue.value;
-              optionElement.text = optionValue.text;
-              if (optionValue.value === option.currentValue) {
-                optionElement.setAttribute('selected', 'selected');
-              }
-              localeSelector.appendChild(optionElement);
-            }
-          } catch (err) {
-            _didIteratorError2 = true;
-            _iteratorError2 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                _iterator2.return();
-              }
-            } finally {
-              if (_didIteratorError2) {
-                throw _iteratorError2;
-              }
-            }
-          }
+        // Pouplate a popup
+        this.vueInstance.panel = this.panel
+        this.vueInstance.popupTitle = `${wordData.homonym.targetWord}`
+        this.vueInstance.popupContent = `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.
+                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.
+                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,
+                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.
+                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>
 
-          localeSelector.addEventListener('change', this.optionChangeListener.bind(this, optionName));
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-    }
-  }, {
-    key: 'optionChangeListener',
-    value: function optionChangeListener(option, event) {
-      this.options.update(option, event.target.value);
-      if (option === 'locale' && this.presenter) {
-        this.presenter.setLocale(event.target.value);
-      }
-      if (option === 'panelPosition') {
-        if (event.target.value === 'right') {
-          this.panel.setPoistionToRight();
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.
+                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.
+                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,
+                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.
+                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>`
+
+        if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+          this.panel.open()
         } else {
-          this.panel.setPoistionToLeft();
+          this.vueInstance.$modal.show('popup')
         }
+      } else if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND)) {
+        this.showMessage('<p>Sorry, the word you requested was not found.</p>')
+      }
+      return messageObject
+    } catch (error) {
+      console.error(`Word data request failed: ${error.value}`)
+      this.showMessage(`<p>Sorry, your word you requested failed:<br><strong>${error.value}</strong></p>`)
+    }
+  }
+
+  handleStatusRequest (request, sender) {
+    // Send a status response
+    console.log(`Status request received. Sending a response back.`)
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
+      (error) => {
+        console.error(`Unable to send a response to activation request: ${error}`)
+      }
+    )
+  }
+
+  handleActivationRequest (request, sender) {
+    // Send a status response
+    console.log(`Activate request received. Sending a response back.`)
+    if (!this.isActive) {
+      this.reactivate()
+    }
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
+      (error) => {
+        console.error(`Unable to send a response to activation request: ${error}`)
+      }
+    )
+  }
+
+  handleDeactivationRequest (request, sender) {
+    // Send a status response
+    console.log(`Deactivate request received. Sending a response back.`)
+    if (this.isActive) {
+      this.deactivate()
+    }
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
+      (error) => {
+        console.error(`Unable to send a response to activation request: ${error}`)
+      }
+    )
+  }
+
+  togglePanel () {
+    this.panel.toggle()
+  }
+
+  updateDefinition (wordData) {
+    this.panel.definitionContainer.innerHTML = decodeURIComponent(wordData.definition)
+  }
+
+  updateInflectionTable (wordData) {
+    this.presenter = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* Presenter */](this.panel.inflTableContainer, this.panel.viewSelectorContainer,
+      this.panel.localeSwitcherContainer, wordData, this.options.items.locale.currentValue).render()
+  }
+
+  renderOptions () {
+    this.panel.optionsPage = __WEBPACK_IMPORTED_MODULE_11__templates_options_htmlf___default.a
+    let optionEntries = Object.entries(this.options.items)
+    for (let [optionName, option] of optionEntries) {
+      let localeSelector = this.panel.optionsPage.querySelector(option.inputSelector)
+      for (let optionValue of option.values) {
+        let optionElement = document.createElement('option')
+        optionElement.value = optionValue.value
+        optionElement.text = optionValue.text
+        if (optionValue.value === option.currentValue) {
+          optionElement.setAttribute('selected', 'selected')
+        }
+        localeSelector.appendChild(optionElement)
+      }
+      localeSelector.addEventListener('change', this.optionChangeListener.bind(this, optionName))
+    }
+  }
+
+  optionChangeListener (option, event) {
+    this.options.update(option, event.target.value)
+    if (option === 'locale' && this.presenter) {
+      this.presenter.setLocale(event.target.value)
+    }
+    if (option === 'panelPosition') {
+      if (event.target.value === 'right') {
+        this.panel.setPoistionToRight()
+      } else {
+        this.panel.setPoistionToLeft()
       }
     }
-  }, {
-    key: 'getSelectedText',
-    value: function getSelectedText(event) {
-      if (this.isActive) {
-        var textSelector = __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, 'grc');
+  }
 
-        // HTMLSelector.getExtendedTextQuoteSelector()
-        if (!textSelector.isEmpty()) {
-          this.getWordDataStatefully(textSelector);
-        }
+  getSelectedText (event) {
+    if (this.isActive) {
+      let textSelector = __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, 'grc')
+
+      // HTMLSelector.getExtendedTextQuoteSelector()
+      if (!textSelector.isEmpty()) {
+        this.getWordDataStatefully(textSelector)
       }
     }
-  }, {
-    key: 'isActive',
-    get: function get() {
-      return this.status === ContentProcess.statuses.ACTIVE;
-    }
-  }], [{
-    key: 'loadSymbols',
-    value: function loadSymbols() {
-      ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_8__templates_symbols_htmlf___default.a);
-    }
-  }, {
-    key: 'loadPageControls',
-    value: function loadPageControls() {
-      ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_9__templates_page_controls_htmlf___default.a);
-    }
-  }, {
-    key: 'loadPanel',
-    value: function loadPanel() {
-      ContentProcess.loadHTMLFragment(__WEBPACK_IMPORTED_MODULE_10__templates_panel_htmlf___default.a);
-    }
-  }, {
-    key: 'loadHTMLFragment',
-    value: function loadHTMLFragment(html) {
-      var container = document.createElement('div');
-      container.innerHTML = html;
-      document.body.insertBefore(container.firstChild, document.body.firstChild);
-    }
-  }, {
-    key: 'settingValues',
-    get: function get() {
-      return {
-        hiddenClassName: 'hidden',
-        pageControlSel: '#alpheios-panel-toggle',
-        requestTimeout: 4000,
-        uiTypePanel: 'panel',
-        uiTypePopup: 'popup'
-      };
-    }
-  }, {
-    key: 'statuses',
-    get: function get() {
-      return {
-        PENDING: Symbol.for('Pending'), // Content script has not been fully initialized yet
-        ACTIVE: Symbol.for('Active'), // Content script is loaded and active
-        DEACTIVATED: Symbol.for('Deactivated') // Content script has been loaded, but is deactivated
-      };
-    }
-  }]);
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = ContentProcess;
 
-  return ContentProcess;
-}();
 
-/* harmony default export */ __webpack_exports__["a"] = (ContentProcess);
 
 /***/ }),
 /* 6 */
@@ -10923,203 +10869,162 @@ class StatusResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a"
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+class Panel {
+  constructor (options) {
+    this.options = options
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+    this.pageBody = document.body
+    this.body = document.querySelector('#alpheios-panel')
+    this.definitionContainer = document.querySelector('#alpheios-panel-content-definition')
+    this.inflTableContainer = document.querySelector('#alpheios-panel-content-infl-table-body')
+    this.viewSelectorContainer = document.querySelector('#alpheios-panel-content-infl-table-view-selector')
+    this.localeSwitcherContainer = document.querySelector('#alpheios-panel-content-infl-table-locale-switcher')
+    this.optionsContainer = document.querySelector('#alpheios-panel-content-options')
 
-var Panel = function () {
-  function Panel(options) {
-    _classCallCheck(this, Panel);
+    this.showOpenBtn = document.querySelector('#alpheios-panel-show-open')
+    this.showFWBtn = document.querySelector('#alpheios-panel-show-fw')
+    this.hideBtn = document.querySelector('#alpheios-panel-hide')
 
-    this.options = options;
+    this.tabs = document.querySelectorAll('#alpheios-panel__nav .alpheios-panel__nav-btn')
+    this.activeTab = document.querySelector('#alpheios-panel__nav .alpheios-panel__nav-btn')
+    this.activeClassName = 'active'
 
-    this.pageBody = document.body;
-    this.body = document.querySelector('#alpheios-panel');
-    this.definitionContainer = document.querySelector('#alpheios-panel-content-definition');
-    this.inflTableContainer = document.querySelector('#alpheios-panel-content-infl-table-body');
-    this.viewSelectorContainer = document.querySelector('#alpheios-panel-content-infl-table-view-selector');
-    this.localeSwitcherContainer = document.querySelector('#alpheios-panel-content-infl-table-locale-switcher');
-    this.optionsContainer = document.querySelector('#alpheios-panel-content-options');
-
-    this.showOpenBtn = document.querySelector('#alpheios-panel-show-open');
-    this.showFWBtn = document.querySelector('#alpheios-panel-show-fw');
-    this.hideBtn = document.querySelector('#alpheios-panel-hide');
-
-    this.tabs = document.querySelectorAll('#alpheios-panel__nav .alpheios-panel__nav-btn');
-    this.activeTab = document.querySelector('#alpheios-panel__nav .alpheios-panel__nav-btn');
-    this.activeClassName = 'active';
-
-    this.panelOpenClassName = 'open';
-    this.hiddenClassName = 'hidden';
-    this.panelOpenFWClassName = 'open-fw';
-    this.bodyOpenClassName = 'alpheios-panel-open';
-    this.bodyPositionClassName = Panel.positions.left;
+    this.panelOpenClassName = 'open'
+    this.hiddenClassName = 'hidden'
+    this.panelOpenFWClassName = 'open-fw'
+    this.bodyOpenClassName = 'alpheios-panel-open'
+    this.bodyPositionClassName = Panel.positions.left
     if (this.options.items.panelPosition.currentValue === 'right') {
-      this.bodyPositionClassName = Panel.positions.right;
+      this.bodyPositionClassName = Panel.positions.right
     }
 
-    this.isOpen = false;
-    this.isOpenFW = false;
+    this.isOpen = false
+    this.isOpenFW = false
 
-    this.pageBody.classList.add(this.bodyPositionClassName);
+    this.pageBody.classList.add(this.bodyPositionClassName)
 
-    this.showOpenBtn.addEventListener('click', this.open.bind(this));
-    this.showFWBtn.addEventListener('click', this.openFullWidth.bind(this));
-    this.hideBtn.addEventListener('click', this.close.bind(this));
+    this.showOpenBtn.addEventListener('click', this.open.bind(this))
+    this.showFWBtn.addEventListener('click', this.openFullWidth.bind(this))
+    this.hideBtn.addEventListener('click', this.close.bind(this))
 
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
-
-    try {
-      for (var _iterator = this.tabs[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var tab = _step.value;
-
-        var target = tab.dataset.target;
-        document.getElementById(target).classList.add(this.hiddenClassName);
-        tab.addEventListener('click', this.switchTab.bind(this));
-      }
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator.return) {
-          _iterator.return();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
-      }
+    for (let tab of this.tabs) {
+      let target = tab.dataset.target
+      document.getElementById(target).classList.add(this.hiddenClassName)
+      tab.addEventListener('click', this.switchTab.bind(this))
     }
-
-    this.changeActiveTabTo(this.tabs[0]);
+    this.changeActiveTabTo(this.tabs[0])
   }
 
-  _createClass(Panel, [{
-    key: 'setPoistionToLeft',
-    value: function setPoistionToLeft() {
-      if (this.bodyPositionClassName !== Panel.positions.left) {
-        this.pageBody.classList.replace(this.bodyPositionClassName, Panel.positions.left);
-        this.bodyPositionClassName = Panel.positions.left;
-      }
+  static get positions () {
+    return {
+      left: 'alpheios-panel-left',
+      right: 'alpheios-panel-right'
     }
-  }, {
-    key: 'setPoistionToRight',
-    value: function setPoistionToRight() {
-      if (this.bodyPositionClassName !== Panel.positions.right) {
-        this.pageBody.classList.replace(this.bodyPositionClassName, Panel.positions.right);
-        this.bodyPositionClassName = Panel.positions.right;
-      }
-    }
-  }, {
-    key: 'open',
-    value: function open() {
-      if (this.isOpenFW) {
-        this.body.classList.remove(this.panelOpenFWClassName);
-        this.isOpenFW = false;
-      }
-      if (!this.isOpen) {
-        this.body.classList.add(this.panelOpenClassName);
-        this.pageBody.classList.add(this.bodyOpenClassName);
-        this.isOpen = true;
-      }
-      this.showOpenBtn.classList.add(this.hiddenClassName);
-      return this;
-    }
-  }, {
-    key: 'openFullWidth',
-    value: function openFullWidth() {
-      if (this.isOpen) {
-        this.body.classList.remove(this.panelOpenClassName);
-        this.pageBody.classList.remove(this.bodyOpenClassName);
-        this.isOpen = false;
-      }
-      if (!this.isOpenFW) {
-        this.body.classList.add(this.panelOpenFWClassName);
-        this.isOpenFW = true;
-      }
-      this.showOpenBtn.classList.remove(this.hiddenClassName);
-      return this;
-    }
-  }, {
-    key: 'close',
-    value: function close() {
-      if (this.isOpen) {
-        this.body.classList.remove(this.panelOpenClassName);
-        this.pageBody.classList.remove(this.bodyOpenClassName);
-        this.isOpen = false;
-      }
-      if (this.isOpenFW) {
-        this.body.classList.remove(this.panelOpenFWClassName);
-        this.isOpenFW = false;
-      }
-      return this;
-    }
-  }, {
-    key: 'toggle',
-    value: function toggle() {
-      if (this.isOpen || this.isOpenFW) {
-        this.close();
-      } else {
-        this.open();
-      }
-      return this;
-    }
-  }, {
-    key: 'clear',
-    value: function clear() {
-      this.definitionContainer.innerHTML = '';
-      this.inflTableContainer.innerHTML = '';
-      this.viewSelectorContainer.innerHTML = '';
-      this.localeSwitcherContainer.innerHTML = '';
-      return this;
-    }
-  }, {
-    key: 'switchTab',
-    value: function switchTab(event) {
-      this.changeActiveTabTo(event.currentTarget);
-      return this;
-    }
-  }, {
-    key: 'changeActiveTabTo',
-    value: function changeActiveTabTo(activeTab) {
-      if (this.activeTab) {
-        var _target = this.activeTab.dataset.target;
-        document.getElementById(_target).classList.add(this.hiddenClassName);
-        this.activeTab.classList.remove(this.activeClassName);
-      }
+  }
 
-      activeTab.classList.add(this.activeClassName);
-      var target = activeTab.dataset.target;
-      document.getElementById(target).classList.remove(this.hiddenClassName);
-      this.activeTab = activeTab;
-      return this;
+  setPoistionToLeft () {
+    if (this.bodyPositionClassName !== Panel.positions.left) {
+      this.pageBody.classList.replace(this.bodyPositionClassName, Panel.positions.left)
+      this.bodyPositionClassName = Panel.positions.left
     }
-  }, {
-    key: 'optionsPage',
-    get: function get() {
-      return this.optionsContainer;
-    },
-    set: function set(htmlContent) {
-      this.optionsContainer.innerHTML = htmlContent;
-      return this.optionsContainer.innerHTML;
-    }
-  }], [{
-    key: 'positions',
-    get: function get() {
-      return {
-        left: 'alpheios-panel-left',
-        right: 'alpheios-panel-right'
-      };
-    }
-  }]);
+  }
 
-  return Panel;
-}();
+  setPoistionToRight () {
+    if (this.bodyPositionClassName !== Panel.positions.right) {
+      this.pageBody.classList.replace(this.bodyPositionClassName, Panel.positions.right)
+      this.bodyPositionClassName = Panel.positions.right
+    }
+  }
 
-/* harmony default export */ __webpack_exports__["a"] = (Panel);
+  open () {
+    if (this.isOpenFW) {
+      this.body.classList.remove(this.panelOpenFWClassName)
+      this.isOpenFW = false
+    }
+    if (!this.isOpen) {
+      this.body.classList.add(this.panelOpenClassName)
+      this.pageBody.classList.add(this.bodyOpenClassName)
+      this.isOpen = true
+    }
+    this.showOpenBtn.classList.add(this.hiddenClassName)
+    return this
+  }
+
+  openFullWidth () {
+    if (this.isOpen) {
+      this.body.classList.remove(this.panelOpenClassName)
+      this.pageBody.classList.remove(this.bodyOpenClassName)
+      this.isOpen = false
+    }
+    if (!this.isOpenFW) {
+      this.body.classList.add(this.panelOpenFWClassName)
+      this.isOpenFW = true
+    }
+    this.showOpenBtn.classList.remove(this.hiddenClassName)
+    return this
+  }
+
+  close () {
+    if (this.isOpen) {
+      this.body.classList.remove(this.panelOpenClassName)
+      this.pageBody.classList.remove(this.bodyOpenClassName)
+      this.isOpen = false
+    }
+    if (this.isOpenFW) {
+      this.body.classList.remove(this.panelOpenFWClassName)
+      this.isOpenFW = false
+    }
+    return this
+  }
+
+  toggle () {
+    if (this.isOpen || this.isOpenFW) {
+      this.close()
+    } else {
+      this.open()
+    }
+    return this
+  }
+
+  clear () {
+    this.definitionContainer.innerHTML = ''
+    this.inflTableContainer.innerHTML = ''
+    this.viewSelectorContainer.innerHTML = ''
+    this.localeSwitcherContainer.innerHTML = ''
+    return this
+  }
+
+  switchTab (event) {
+    this.changeActiveTabTo(event.currentTarget)
+    return this
+  }
+
+  changeActiveTabTo (activeTab) {
+    if (this.activeTab) {
+      let target = this.activeTab.dataset.target
+      document.getElementById(target).classList.add(this.hiddenClassName)
+      this.activeTab.classList.remove(this.activeClassName)
+    }
+
+    activeTab.classList.add(this.activeClassName)
+    let target = activeTab.dataset.target
+    document.getElementById(target).classList.remove(this.hiddenClassName)
+    this.activeTab = activeTab
+    return this
+  }
+
+  get optionsPage () {
+    return this.optionsContainer
+  }
+
+  set optionsPage (htmlContent) {
+    this.optionsContainer.innerHTML = htmlContent
+    return this.optionsContainer.innerHTML
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Panel;
+
+
 
 /***/ }),
 /* 16 */
@@ -24202,7 +24107,7 @@ exports = module.exports = __webpack_require__(36)(true);
 
 
 // module
-exports.push([module.i, "\n.popup {\n    border-radius: 5px;\n    background: #F7F7F7;\n    box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n}\n.popup-content {\n    padding: 20px;\n    font-size: 14px;\n}\n.v--modal-overlay[data-modal=\"popup\"] {\n    background: rgba(0, 0, 0, 0.0);\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?084fb786"],"names":[],"mappings":";AAkEA;IACA,mBAAA;IACA,oBAAA;IACA,iDAAA;CACA;AAEA;IACA,cAAA;IACA,gBAAA;CACA;AAEA;IACA,+BAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <modal name=\"popup\"\r\n           transition=\"nice-modal-fade\"\r\n           classes=\"popup\"\r\n           :min-width=\"200\"\r\n           :min-height=\"200\"\r\n           :pivot-y=\"0.5\"\r\n           :adaptive=\"true\"\r\n           :resizable=\"true\"\r\n           :draggable=\"true\"\r\n           :scrollable=\"false\"\r\n           :reset=\"true\"\r\n           :clickToClose=\"false\"\r\n           width=\"60%\"\r\n           height=\"60%\"\r\n           @before-open=\"beforeOpen\"\r\n           @opened=\"opened\"\r\n           @closed=\"closed\"\r\n           @before-close=\"beforeClose\">\r\n        <div class=\"popup-content\">\r\n            <button v-on:click=\"closePopup\">Close</button>\r\n            <h2>{{ $root.popupTitle }}</h2>\r\n            <div v-html=\"$root.popupContent\"></div>\r\n            <button v-on:click=\"openPanel\">Extended data ...</button>\r\n        </div>\r\n    </modal>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'Popup',\r\n    methods: {\r\n      openPanel () {\r\n        console.log('Opening a panel to show extended results')\r\n        this.$root.$modal.hide('popup')\r\n        this.$root.panel.open()\r\n      },\r\n\r\n      closePopup () {\r\n        this.$root.$modal.hide('popup')\r\n      },\r\n\r\n      beforeOpen () { },\r\n\r\n      beforeClose () { },\r\n\r\n      opened (e) {\r\n        // e.ref should not be undefined here\r\n        console.log('opened', e)\r\n        console.log('ref', e.ref)\r\n      },\r\n\r\n      closed (e) {\r\n        console.log('closed', e)\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Popup is mounted')\r\n    },\r\n    watch: {\r\n      popupContent: function (value) {\r\n        console.log('Popup content changed to ' + value)\r\n      }\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .popup {\r\n        border-radius: 5px;\r\n        background: #F7F7F7;\r\n        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\r\n    }\r\n\r\n    .popup-content {\r\n        padding: 20px;\r\n        font-size: 14px;\r\n    }\r\n\r\n    .v--modal-overlay[data-modal=\"popup\"] {\r\n        background: rgba(0, 0, 0, 0.0);\r\n    }\r\n</style>\r\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n.popup {\n    border-radius: 5px;\n    background: #F7F7F7;\n    box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n}\n.popup-content {\n    padding: 20px;\n    font-size: 14px;\n}\n.v--modal-overlay[data-modal=\"popup\"] {\n    background: rgba(0, 0, 0, 0.0);\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?820a9c14"],"names":[],"mappings":";AAiEA;IACA,mBAAA;IACA,oBAAA;IACA,iDAAA;CACA;AAEA;IACA,cAAA;IACA,gBAAA;CACA;AAEA;IACA,+BAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <modal name=\"popup\"\r\n           transition=\"nice-modal-fade\"\r\n           classes=\"popup\"\r\n           :min-width=\"200\"\r\n           :min-height=\"200\"\r\n           :pivot-y=\"0.5\"\r\n           :adaptive=\"true\"\r\n           :resizable=\"true\"\r\n           :draggable=\"true\"\r\n           :scrollable=\"false\"\r\n           :reset=\"true\"\r\n           width=\"60%\"\r\n           height=\"60%\"\r\n           @before-open=\"beforeOpen\"\r\n           @opened=\"opened\"\r\n           @closed=\"closed\"\r\n           @before-close=\"beforeClose\">\r\n        <div class=\"popup-content\">\r\n            <button v-on:click=\"closePopup\">Close</button>\r\n            <h2>{{ $root.popupTitle }}</h2>\r\n            <div v-html=\"$root.popupContent\"></div>\r\n            <button v-on:click=\"openPanel\">Extended data ...</button>\r\n        </div>\r\n    </modal>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'Popup',\r\n    methods: {\r\n      openPanel () {\r\n        console.log('Opening a panel to show extended results')\r\n        this.$root.$modal.hide('popup')\r\n        this.$root.panel.open()\r\n      },\r\n\r\n      closePopup () {\r\n        this.$root.$modal.hide('popup')\r\n      },\r\n\r\n      beforeOpen () { },\r\n\r\n      beforeClose () { },\r\n\r\n      opened (e) {\r\n        // e.ref should not be undefined here\r\n        console.log('opened', e)\r\n        console.log('ref', e.ref)\r\n      },\r\n\r\n      closed (e) {\r\n        console.log('closed', e)\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Popup is mounted')\r\n    },\r\n    watch: {\r\n      popupContent: function (value) {\r\n        console.log('Popup content changed to ' + value)\r\n      }\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .popup {\r\n        border-radius: 5px;\r\n        background: #F7F7F7;\r\n        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\r\n    }\r\n\r\n    .popup-content {\r\n        padding: 20px;\r\n        font-size: 14px;\r\n    }\r\n\r\n    .v--modal-overlay[data-modal=\"popup\"] {\r\n        background: rgba(0, 0, 0, 0.0);\r\n    }\r\n</style>\r\n"],"sourceRoot":""}]);
 
 // exports
 
@@ -24683,7 +24588,6 @@ module.exports = function normalizeComponent (
 //
 //
 //
-//
 
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: 'Popup',
@@ -24746,7 +24650,6 @@ var render = function() {
         draggable: true,
         scrollable: false,
         reset: true,
-        clickToClose: false,
         width: "60%",
         height: "60%"
       },
