@@ -1,28 +1,4 @@
 /* region Panel styles */
-.alpheios-ui-form-group {
-    margin-bottom: 1rem;
-    font-family: Tahoma, Verdana, Segoe, sans-serif;
-}
-
-.alpheios-ui-form-group label {
-    display: inline-block;
-    margin-bottom: .5rem;
-}
-
-.alpheios-ui-form-control {
-    display: block;
-    width: 100%;
-    padding: .15rem .5rem;
-    font-size: 1rem;
-    line-height: 1.25;
-    background-color: #FFF;
-    background-image: none;
-    -webkit-background-clip: padding-box;
-    background-clip: padding-box;
-    border: 1px solid #464A4C;
-    height: calc(1.55rem + 2px);
-}
-
 .alpheios-panel-open.alpheios-panel-left {
     padding-left: 70%;
 }

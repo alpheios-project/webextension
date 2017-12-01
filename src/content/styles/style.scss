@@ -14,5 +14,6 @@
 .uikit {
     @import "../../../node_modules/uikit/src/scss/uikit.scss";
 }
+@import "uikit/compatibility";
 
 @import "theme";

@@ -19,7 +19,7 @@
     </symbol>
 </svg>
 
-<div class="alpheios-panel" data-component="alpheios-panel">
+<div class="alpheios-panel uikit" data-component="alpheios-panel">
     <div class="alpheios-panel__header">
         <h3 class="alpheios-panel__header-title">Alpheios</h3>
         <svg id="alpheios-panel-hide" class="alpheios-panel__header-action-btn">
