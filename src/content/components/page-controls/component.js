@@ -1,19 +1,19 @@
 import Component from '../component'
 import template from './template.htmlf'
-import './style.scss'
 
 /**
  * This is a singleton component.
  */
 export default class PageControls extends Component {
   constructor (options) {
-    super(Object.assign(options, {
+    super(Object.assign({
       template: template,
       selectors: {
         self: '[data-component="page-controls"]',
         toggle: '[data-action="toggle-panel"]'
       }
-    }))
+    },
+    options))
   }
 
   /**

@@ -17,19 +17,4 @@ let contentProcess = ExperienceMonitor.track(
   ]
 )
 
-// load options, then render
-contentProcess.loadData().then(
-  () => {
-    console.log('Activated')
-    contentProcess.status = Statuses.ACTIVE
-    contentProcess.initialize().then(
-      () => {
-        console.log(`Content process has been initialized successfully`)
-      },
-      (error) => { console.log(`Content process has not been initialized due to the following error: ${error}`) }
-    )
-  },
-  (error) => {
-    console.error(`Cannot load content process data because of the following error: ${error}`)
-  }
-)
+contentProcess.initialize()

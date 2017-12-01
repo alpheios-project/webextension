@@ -10,7 +10,6 @@ import State from '../lib/state'
 import Statuses from './statuses'
 import Template from './template.htmlf'
 import PageControls from './components/page-controls/component'
-import PanelTemplate from './components/panel/template.htmlf'
 import HTMLSelector from '../lib/selection/media/html-selector'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import VueJsModal from 'vue-js-modal'
@@ -25,8 +24,19 @@ export default class ContentProcess {
     this.modal = undefined
 
     this.messagingService = new MessagingService()
+  }
 
+  initialize () {
     this.loadUI()
+
+    // Adds message listeners
+    this.messagingService.addHandler(Message.types.STATUS_REQUEST, this.handleStatusRequest, this)
+    this.messagingService.addHandler(Message.types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
+    this.messagingService.addHandler(Message.types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
+    browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
+
+    // this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
+    document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
   }
 
   loadUI () {
@@ -41,8 +51,16 @@ export default class ContentProcess {
       }
     })
     this.panel = new Panel({})
-    // Should be loaded after Panel because they are inserted into a panel
-    this.options = new Options({})
+    // Should be loaded after Panel because options are inserted into a panel
+    this.options = new Options({
+      methods: {
+        ready: () => {
+          this.status = Statuses.ACTIVE
+          console.log('Content script is set to active')
+        },
+        onChange: this.optionChangeListener.bind(this)
+      }
+    })
 
     // Register a Vue.js modal plugin
     Vue.use(VueJsModal, {
@@ -81,7 +99,7 @@ export default class ContentProcess {
    * @return {Promise}
    */
   async loadData () {
-    return this.options.loadStoredData()
+    return this.options.load()
   }
 
   get isActive () {
@@ -101,61 +119,22 @@ export default class ContentProcess {
     this.status = Statuses.ACTIVE
   }
 
-  async initialize () {
-    // this.panelToggleBtn = document.querySelector('#alpheios-panel-toggle')
-    // this.renderOptions()
-
-    this.pageControl = document.querySelector(this.settings.pageControlSel)
-
-    // Add a message listener
-    this.messagingService.addHandler(Message.types.STATUS_REQUEST, this.handleStatusRequest, this)
-    this.messagingService.addHandler(Message.types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
-    this.messagingService.addHandler(Message.types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
-    browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
-
-    // this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
-    document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
-  }
-
   static loadTemplate (template) {
     let container = document.createElement('div')
     document.body.insertBefore(container, document.body.firstChild)
     container.outerHTML = template
   }
 
-  static loadSymbols () {
-    ContentProcess.loadHTMLFragment(SymbolsTemplate)
-  }
-
-  static loadPageControls () {
-    ContentProcess.loadHTMLFragment(PageControlsTemplate)
-  }
-
-  static loadPanel () {
-    ContentProcess.loadHTMLFragment(PanelTemplate)
-  }
-
-  static loadHTMLFragment (html) {
-    let container = document.createElement('div')
-    container.innerHTML = html
-    document.body.insertBefore(container.firstChild, document.body.firstChild)
-  }
-
   showMessage (messageHTML) {
     if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-      this.panel.clear()
-      this.panel.definitionContainer.innerHTML = messageHTML
-      this.panel.open().changeActiveTabTo(this.panel.tabs[0])
+      this.panel.showMessage(messageHTML)
     } else {
-      this.vueInstance.panel = this.panel
+      this.panel.close()
+      this.vueInstance.panel = this.panel // For being able to open a panel from within a popup
       this.vueInstance.popupTitle = ''
       this.vueInstance.popupContent = messageHTML
       this.vueInstance.$modal.show('popup')
     }
-  }
-
-  pageControlsClicked () {
-    console.log('Page controls clicked')
   }
 
   async sendRequestToBgStatefully (request, timeout, state = undefined) {
@@ -258,39 +237,25 @@ export default class ContentProcess {
   }
 
   updateDefinition (wordData) {
-    this.panel.definitionContainer.innerHTML = decodeURIComponent(wordData.definition)
+    this.panel.options.elements.definitionContainer.innerHTML = decodeURIComponent(wordData.definition)
   }
 
   updateInflectionTable (wordData) {
-    this.presenter = new Lib.Presenter(this.panel.inflTableContainer, this.panel.viewSelectorContainer,
-      this.panel.localeSwitcherContainer, wordData, this.options.items.locale.currentValue).render()
+    this.presenter = new Lib.Presenter(
+      this.panel.options.elements.inflTableContainer,
+      this.panel.options.elements.viewSelectorContainer,
+      this.panel.options.elements.localeSwitcherContainer,
+      wordData,
+      this.options.items.locale.currentValue
+    ).render()
   }
 
-  renderOptions () {
-    /* this.panel.optionsPage = OptionsTemplate
-    let optionEntries = Object.entries(this.options.items)
-    for (let [optionName, option] of optionEntries) {
-      let localeSelector = this.panel.optionsPage.querySelector(option.inputSelector)
-      for (let optionValue of option.values) {
-        let optionElement = document.createElement('option')
-        optionElement.value = optionValue.value
-        optionElement.text = optionValue.text
-        if (optionValue.value === option.currentValue) {
-          optionElement.setAttribute('selected', 'selected')
-        }
-        localeSelector.appendChild(optionElement)
-      }
-      localeSelector.addEventListener('change', this.optionChangeListener.bind(this, optionName))
-    } */
-  }
-
-  optionChangeListener (option, event) {
-    this.options.update(option, event.target.value)
-    if (option === 'locale' && this.presenter) {
-      this.presenter.setLocale(event.target.value)
+  optionChangeListener (optionName, optionValue) {
+    if (optionName === 'locale' && this.presenter) {
+      this.presenter.setLocale(optionValue)
     }
-    if (option === 'panelPosition') {
-      if (event.target.value === 'right') {
+    if (optionName === 'panelPosition') {
+      if (optionValue === 'right') {
         this.panel.setPoistionToRight()
       } else {
         this.panel.setPoistionToLeft()

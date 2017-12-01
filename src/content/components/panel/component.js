@@ -1,13 +1,12 @@
 import Component from '../component'
 import template from './template.htmlf'
-import './style.scss'
 
 /**
  * This is a singleton component.
  */
 export default class Panel extends Component {
   constructor (options) {
-    super(Object.assign(options, {
+    super(Object.assign({
       template: template,
       selectors: {
         self: '[data-component="alpheios-panel"]',
@@ -23,29 +22,18 @@ export default class Panel extends Component {
         tabs: '#alpheios-panel__nav .alpheios-panel__nav-btn',
         activeTab: '#alpheios-panel__nav .alpheios-panel__nav-btn.active'
       }
-    }))
+    },
+    options))
 
-    /*this.inflTableContainer = document.querySelector('#alpheios-panel-content-infl-table-body')
-    this.viewSelectorContainer = document.querySelector('#alpheios-panel-content-infl-table-view-selector')
-    this.localeSwitcherContainer = document.querySelector('#alpheios-panel-content-infl-table-locale-switcher')
-    this.optionsContainer = document.querySelector('#alpheios-panel-content-options')
-
-    this.showOpenBtn = document.querySelector('#alpheios-panel-show-open')
-    this.showFWBtn = document.querySelector('#alpheios-panel-show-fw')
-    this.hideBtn = document.querySelector('#alpheios-panel-hide')
-
-    this.tabs = document.querySelectorAll('#alpheios-panel__nav .alpheios-panel__nav-btn')
-    this.activeTab = document.querySelector('#alpheios-panel__nav .alpheios-panel__nav-btn')*/
     this.activeClassName = 'active'
-
     this.panelOpenClassName = 'open'
     this.hiddenClassName = 'hidden'
     this.panelOpenFWClassName = 'open-fw'
     this.bodyOpenClassName = 'alpheios-panel-open'
     this.bodyPositionClassName = Panel.positions.left
-    /*if (this.options.items.panelPosition.currentValue === 'right') {
+    /* if (this.options.items.panelPosition.currentValue === 'right') {
       this.bodyPositionClassName = Panel.positions.right
-    }*/
+    } */
 
     this.isOpen = false
     this.isOpenFW = false
@@ -169,5 +157,11 @@ export default class Panel extends Component {
   set optionsPage (htmlContent) {
     this.options.elements.optionsContainer.innerHTML = htmlContent
     return this.options.elements.optionsContainer.innerHTML
+  }
+
+  showMessage (messageHTML) {
+    this.clear()
+    this.options.elements.definitionContainer.innerHTML = messageHTML
+    this.open().changeActiveTabTo(this.options.elements.tabs[0])
   }
 }
