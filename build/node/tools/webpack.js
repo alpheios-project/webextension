@@ -20,8 +20,19 @@ const webpackContentConfig = {
         use: 'raw-loader'
       },
       {
-        test: /\.htmlf$/,
-        use: 'raw-loader'
+        test: /\.(jpg|png)$/,
+        use: [{
+          loader: 'url-loader',
+          options: {
+            limit: 25000
+          }
+        }]
+      },
+      {
+        test: /\.(htmlf)$/,
+        use: {
+          loader: 'html-loader'
+        }
       },
       {
         test: /\.scss$/,

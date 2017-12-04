@@ -14,6 +14,9 @@ import HTMLSelector from '../lib/selection/media/html-selector'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import VueJsModal from 'vue-js-modal'
 import Popup from './vue-components/popup.vue'
+// UIKit
+import UIkit from '../../node_modules/uikit/dist/js/uikit'
+import UIkITIconts from '../../node_modules/uikit/dist/js/uikit-icons'
 
 export default class ContentProcess {
   constructor () {
@@ -82,6 +85,12 @@ export default class ContentProcess {
       }
     })
     this.modal = this.vueInstance.$modal
+
+    // Initialize a UIKit
+    UIkit.use(UIkITIconts)
+
+// components can be called from the imported UIkit reference
+    UIkit.notification('Hello world.')
   }
 
   static get settingValues () {

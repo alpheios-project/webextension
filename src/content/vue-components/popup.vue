@@ -1,7 +1,7 @@
 <template>
     <modal name="popup"
            transition="nice-modal-fade"
-           classes="popup"
+           classes="alpheios-popup auk"
            :min-width="200"
            :min-height="200"
            :pivot-y="0.5"
@@ -9,6 +9,7 @@
            :resizable="true"
            :draggable="true"
            :scrollable="false"
+           :clickToClose="false"
            :reset="true"
            width="60%"
            height="60%"
@@ -16,11 +17,11 @@
            @opened="opened"
            @closed="closed"
            @before-close="beforeClose">
-        <div class="popup-content">
-            <button v-on:click="closePopup">Close</button>
+        <div class="alpheios-popup__content">
+            <button v-on:click="closePopup" class="alpheios-popup__close-btn"><span uk-icon="icon: close"></span></button>
             <h2>{{ $root.popupTitle }}</h2>
             <div v-html="$root.popupContent"></div>
-            <button v-on:click="openPanel">Extended data ...</button>
+            <button v-on:click="openPanel" class="uk-button uk-button-default alpheios-popup__more-btn">Extended data ...</button>
         </div>
     </modal>
 </template>
@@ -63,15 +64,29 @@
   }
 </script>
 <style>
-    .popup {
-        border-radius: 5px;
-        background: #F7F7F7;
+    .alpheios-popup {
+        border-radius: 0;
         box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);
     }
 
-    .popup-content {
+    .alpheios-popup__content {
         padding: 20px;
         font-size: 14px;
+        position: relative;
+    }
+
+    .alpheios-popup__close-btn {
+        border: none;
+        background: transparent;
+        right: 1rem;
+        top: 1rem;
+        position: absolute;
+        cursor: pointer;
+    }
+
+    .auk .uk-button.alpheios-popup__more-btn {
+        margin-top: 2rem;
+        float: right;
     }
 
     .v--modal-overlay[data-modal="popup"] {

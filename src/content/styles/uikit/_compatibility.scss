@@ -1,11 +1,14 @@
 // Transferred UIKit `html` rules
-.uikit {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    font-size: 16px;
-    font-weight: normal;
-    line-height: 1.5;
+.auk {
+    font-family: $base-body-font-family;
+    font-size: $base-body-font-size;
+    font-weight: $base-body-font-weight;
+    line-height: $base-body-line-height;
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
-    background: #fff;
-    color: #666
+    background: $base-body-background;
+    color: $base-body-color;
+    @if(mixin-exists(hook-base-body)) {@include hook-base-body();}
+
+    margin: 0;
 }

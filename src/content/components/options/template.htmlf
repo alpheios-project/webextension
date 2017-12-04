@@ -1,22 +1,17 @@
-<div class="uikit" data-component="alpheios-panel-options">
+<div class="auk" data-component="alpheios-panel-options">
     <h4>Options</h4>
-
-    <div class="uk-margin">
-        <input class="uk-input" type="text" placeholder="Input">
-    </div>
-
     <div id="alpheios-locale-switcher" class="uk-margin">
-        <label for="alpheios-locale-selector-list">Locale:</label>
+        <label for="alpheios-locale-selector-list" class="uk-form-label">Locale:</label>
         <select id="alpheios-locale-selector-list" class="uk-select"></select>
     </div>
 
     <div id="alpheios-ui-type-switcher" class="uk-margin">
-        <label for="alpheios-ui-type-selector-list">Panel position:</label>
+        <label for="alpheios-ui-type-selector-list" class="uk-form-label">Panel position:</label>
         <select id="alpheios-ui-type-selector-list" class="uk-select"></select>
     </div>
 
     <div id="alpheios-position-switcher" class="uk-margin">
-        <label for="alpheios-position-selector-list">Panel position:</label>
+        <label for="alpheios-position-selector-list" class="uk-form-label">Panel position:</label>
         <select id="alpheios-position-selector-list" class="uk-select"></select>
     </div>
 </div>

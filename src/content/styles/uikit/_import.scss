@@ -1,0 +1,12 @@
+// Custom variables and UKKIt variable overwrites.
+@import "variables";
+// Import default variables and available mixins.
+@import "../../../../node_modules/uikit/src/scss/variables.scss";
+@import "../../../../node_modules/uikit/src/scss/mixins.scss";
+// Custom mixin overwrites.
+@import "mixins";
+// UIkit.
+.auk {
+    @import "components";
+}
+@import "compatibility";

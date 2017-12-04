@@ -1,6 +1,5 @@
 import ContentProcess from './content-process'
 import {Monitor as ExperienceMonitor} from 'alpheios-experience'
-import Statuses from './statuses'
 
 let contentProcess = ExperienceMonitor.track(
   new ContentProcess(),
