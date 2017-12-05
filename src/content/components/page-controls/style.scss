@@ -1,12 +1,12 @@
-.alpheios-panel-show-btn {
-    width: 30px;
-    height: 30px;
-    fill: #73CDDE;
+.auk .uk-icon-button.alpheios-page-controls__panel-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     cursor: pointer;
     display: block;
     margin: 20px;
 }
 
-.alpheios-panel-show-btn.hidden {
+.auk .uk-icon-button.alpheios-page-controls__panel-toggle.hidden {
     display: none;
 }

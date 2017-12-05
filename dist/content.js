@@ -2003,32 +2003,7 @@ class ContentProcess {
       if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND)) {
         let wordData = __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* WordData */].readObject(message.body)
         console.log('Word data is: ', wordData)
-
-        // Populate a panel
-        this.panel.clear()
-        this.updateDefinition(wordData)
-        this.updateInflectionTable(wordData)
-
-        // Pouplate a popup
-        this.vueInstance.panel = this.panel
-        this.vueInstance.popupTitle = `${wordData.homonym.targetWord}`
-        this.vueInstance.popupContent = `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.
-                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.
-                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,
-                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.
-                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.
-                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.
-                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,
-                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.
-                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>`
-
-        if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-          this.panel.open()
-        } else {
-          this.vueInstance.$modal.show('popup')
-        }
+        this.displayWordData(wordData)
       } else if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND)) {
         this.showMessage('<p>Sorry, the word you requested was not found.</p>')
       }
@@ -2036,6 +2011,25 @@ class ContentProcess {
     } catch (error) {
       console.error(`Word data request failed: ${error.value}`)
       this.showMessage(`<p>Sorry, your word you requested failed:<br><strong>${error.value}</strong></p>`)
+    }
+  }
+
+  displayWordData (wordData) {
+    // Populate a panel
+    this.panel.clear()
+    this.updateDefinition(wordData)
+    this.updateInflectionTable(wordData)
+
+    // Pouplate a popup
+    this.vueInstance.panel = this.panel
+    this.vueInstance.popupTitle = `${wordData.homonym.targetWord}`
+    this.vueInstance.popupContent = decodeURIComponent(wordData.definition)
+
+    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+      this.panel.open()
+    } else {
+      if (this.panel.isOpened) { this.panel.close() }
+      this.vueInstance.$modal.show('popup')
     }
   }
 
@@ -11060,35 +11054,6 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
     return !(this.width === Panel.widths.zero)
   }
 
-  displayInNormalWidth () {
-    if (this.isOpenFW) {
-      this.options.elements.self.classList.remove(this.panelFullWidthClassName)
-      this.isOpenFW = false
-    }
-    if (!this.isOpen) {
-      this.options.elements.self.classList.add(this.panelOpenedClassName)
-      this.options.elements.page.classList.add(this.bodyNormalWidthClassName)
-      this.isOpen = true
-    }
-    this.options.elements.normalWidthButton.classList.add(this.hiddenClassName)
-    return this
-  }
-
-  displayInFullWidth () {
-    if (this.isOpen) {
-      this.options.elements.self.classList.remove(this.panelOpenedClassName)
-      this.options.elements.page.classList.remove(this.bodyNormalWidthClassName)
-      this.isOpen = false
-    }
-    if (!this.isOpenFW) {
-      this.options.elements.self.classList.add(this.panelFullWidthClassName)
-      this.options.elements.normalWidthButton.classList.add(this.hiddenClassName)
-      this.options.elements.fullWidthButton.classList.remove(this.hiddenClassName)
-      this.isOpenFW = true
-    }
-    return this
-  }
-
   resetWidth () {
     this.options.elements.self.classList.remove(this.panelOpenedClassName)
     this.options.elements.page.classList.remove(this.bodyNormalWidthClassName)
@@ -11416,7 +11381,7 @@ class PageControls extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* defau
 /* 26 */
 /***/ (function(module, exports) {
 
-module.exports = "<svg xmlns=\"http://www.w3.org/2000/svg\" style=\"display: none;\">\r\n    <symbol id=\"page-controls-toggle-icon\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1760 896q0 176-68.5 336t-184 275.5-275.5 184-336 68.5-336-68.5-275.5-184-184-275.5-68.5-336q0-213 97-398.5t265-305.5 374-151v228q-221 45-366.5 221t-145.5 406q0 130 51 248.5t136.5 204 204 136.5 248.5 51 248.5-51 204-136.5 136.5-204 51-248.5q0-230-145.5-406t-366.5-221v-228q206 31 374 151t265 305.5 97 398.5z\"/>\r\n    </symbol>\r\n</svg>\r\n<div data-component=\"page-controls\">\r\n    <svg class=\"alpheios-panel-show-btn\" data-action=\"toggle-panel\">\r\n        <use xlink:href=\"#page-controls-toggle-icon\"/>\r\n    </svg>\r\n</div>";
+module.exports = "<div class=\"auk\" data-component=\"page-controls\">\r\n    <span class=\"uk-icon-button alpheios-page-controls__panel-toggle\" uk-icon=\"icon: info; ratio: 2\" data-action=\"toggle-panel\"></span>\r\n</div>";
 
 /***/ }),
 /* 27 */

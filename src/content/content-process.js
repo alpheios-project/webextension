@@ -170,32 +170,7 @@ export default class ContentProcess {
       if (Message.statusSymIs(message, Message.statuses.DATA_FOUND)) {
         let wordData = Lib.WordData.readObject(message.body)
         console.log('Word data is: ', wordData)
-
-        // Populate a panel
-        this.panel.clear()
-        this.updateDefinition(wordData)
-        this.updateInflectionTable(wordData)
-
-        // Pouplate a popup
-        this.vueInstance.panel = this.panel
-        this.vueInstance.popupTitle = `${wordData.homonym.targetWord}`
-        this.vueInstance.popupContent = `<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.
-                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.
-                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,
-                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.
-                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla dictum purus egestas libero ornare venenatis.
-                Maecenas pharetra tortor eu tortor imperdiet, a faucibus quam finibus. Nulla id lacinia quam.
-                Praesent imperdiet sed magna non finibus. Aenean blandit, mauris vitae lacinia rutrum,
-                nunc mi scelerisque sem, in laoreet sem lectus ut orci. Ut egestas nulla in vehicula feugiat.
-                Vivamus tincidunt nisi vel risus dictum suscipit. Nulla id blandit mi, vulputate aliquam enim.</p>`
-
-        if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-          this.panel.open()
-        } else {
-          this.vueInstance.$modal.show('popup')
-        }
+        this.displayWordData(wordData)
       } else if (Message.statusSymIs(message, Message.statuses.NO_DATA_FOUND)) {
         this.showMessage('<p>Sorry, the word you requested was not found.</p>')
       }
@@ -203,6 +178,25 @@ export default class ContentProcess {
     } catch (error) {
       console.error(`Word data request failed: ${error.value}`)
       this.showMessage(`<p>Sorry, your word you requested failed:<br><strong>${error.value}</strong></p>`)
+    }
+  }
+
+  displayWordData (wordData) {
+    // Populate a panel
+    this.panel.clear()
+    this.updateDefinition(wordData)
+    this.updateInflectionTable(wordData)
+
+    // Pouplate a popup
+    this.vueInstance.panel = this.panel
+    this.vueInstance.popupTitle = `${wordData.homonym.targetWord}`
+    this.vueInstance.popupContent = decodeURIComponent(wordData.definition)
+
+    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+      this.panel.open()
+    } else {
+      if (this.panel.isOpened) { this.panel.close() }
+      this.vueInstance.$modal.show('popup')
     }
   }
 

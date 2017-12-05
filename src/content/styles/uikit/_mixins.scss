@@ -1,1 +1,6 @@
 @mixin hook-button() { border: 1px solid $global-color }
+
+@mixin hook-form-single-line() { border: 1px solid $global-color }
+@mixin hook-form-multi-line() { border: 1px solid $global-color }
+@mixin hook-form-focus() { border: 1px solid $global-color }
+@mixin hook-form-disabled() { border: 1px solid $global-color }
