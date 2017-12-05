@@ -77,9 +77,9 @@ export default class Options extends Component {
         this.options.data[key].currentValue = values[key]
       }
     }
-    console.log('Data is loaded', this.options.data)
+    console.log('Options are loaded successfully', this.options.data)
     if (this.options.methods.ready) {
-      this.options.methods.ready()
+      this.options.methods.ready(this.options.data)
     }
   }
 

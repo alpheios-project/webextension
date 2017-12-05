@@ -57,8 +57,9 @@ export default class ContentProcess {
     // Should be loaded after Panel because options are inserted into a panel
     this.options = new Options({
       methods: {
-        ready: () => {
+        ready: (options) => {
           this.status = Statuses.ACTIVE
+          this.setPanelPositionTo(options.panelPosition.currentValue)
           console.log('Content script is set to active')
         },
         onChange: this.optionChangeListener.bind(this)
@@ -260,15 +261,15 @@ export default class ContentProcess {
   }
 
   optionChangeListener (optionName, optionValue) {
-    if (optionName === 'locale' && this.presenter) {
-      this.presenter.setLocale(optionValue)
-    }
-    if (optionName === 'panelPosition') {
-      if (optionValue === 'right') {
-        this.panel.setPoistionToRight()
-      } else {
-        this.panel.setPoistionToLeft()
-      }
+    if (optionName === 'locale' && this.presenter) { this.presenter.setLocale(optionValue) }
+    if (optionName === 'panelPosition') { this.setPanelPositionTo(optionValue) }
+  }
+
+  setPanelPositionTo (position) {
+    if (position === 'right') {
+      this.panel.positionToRight()
+    } else {
+      this.panel.positionToLeft()
     }
   }
 

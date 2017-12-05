@@ -1890,8 +1890,9 @@ class ContentProcess {
     // Should be loaded after Panel because options are inserted into a panel
     this.options = new __WEBPACK_IMPORTED_MODULE_6__components_options_component__["a" /* default */]({
       methods: {
-        ready: () => {
+        ready: (options) => {
           this.status = __WEBPACK_IMPORTED_MODULE_8__statuses__["a" /* default */].ACTIVE
+          this.setPanelPositionTo(options.panelPosition.currentValue)
           console.log('Content script is set to active')
         },
         onChange: this.optionChangeListener.bind(this)
@@ -2093,15 +2094,15 @@ class ContentProcess {
   }
 
   optionChangeListener (optionName, optionValue) {
-    if (optionName === 'locale' && this.presenter) {
-      this.presenter.setLocale(optionValue)
-    }
-    if (optionName === 'panelPosition') {
-      if (optionValue === 'right') {
-        this.panel.setPoistionToRight()
-      } else {
-        this.panel.setPoistionToLeft()
-      }
+    if (optionName === 'locale' && this.presenter) { this.presenter.setLocale(optionValue) }
+    if (optionName === 'panelPosition') { this.setPanelPositionTo(optionValue) }
+  }
+
+  setPanelPositionTo (position) {
+    if (position === 'right') {
+      this.panel.positionToRight()
+    } else {
+      this.panel.positionToLeft()
     }
   }
 
@@ -10955,33 +10956,29 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
         viewSelectorContainer: '#alpheios-panel-content-infl-table-view-selector',
         localeSwitcherContainer: '#alpheios-panel-content-infl-table-locale-switcher',
         optionsContainer: '#alpheios-panel-content-options',
-        showOpenBtn: '#alpheios-panel-show-open',
-        showFWBtn: '#alpheios-panel-show-fw',
-        hideBtn: '#alpheios-panel-hide',
+        normalWidthButton: '#alpheios-panel-show-open',
+        fullWidthButton: '#alpheios-panel-show-fw',
+        closeButton: '#alpheios-panel-hide',
         tabs: '#alpheios-panel__nav .alpheios-panel__nav-btn',
         activeTab: '#alpheios-panel__nav .alpheios-panel__nav-btn.active'
-      }
+      },
+      position: Panel.positions.default
     },
     options))
 
     this.activeClassName = 'active'
-    this.panelOpenClassName = 'open'
     this.hiddenClassName = 'hidden'
-    this.panelOpenFWClassName = 'open-fw'
-    this.bodyOpenClassName = 'alpheios-panel-open'
-    this.bodyPositionClassName = Panel.positions.left
-    /* if (this.options.items.panelPosition.currentValue === 'right') {
-      this.bodyPositionClassName = Panel.positions.right
-    } */
+    this.panelOpenedClassName = 'opened'
+    this.panelFullWidthClassName = 'full-width'
+    this.bodyNormalWidthClassName = 'alpheios-panel-opened'
 
-    this.isOpen = false
-    this.isOpenFW = false
+    this.setPositionTo(this.options.position)
+    this.width = Panel.widths.zero // Sets initial width to zero because panel is closed initially
 
-    this.options.elements.page.classList.add(this.bodyPositionClassName)
-
-    this.options.elements.showOpenBtn.addEventListener('click', this.open.bind(this))
-    this.options.elements.showFWBtn.addEventListener('click', this.openFullWidth.bind(this))
-    this.options.elements.hideBtn.addEventListener('click', this.close.bind(this))
+    // Set panel controls event handlers
+    this.options.elements.normalWidthButton.addEventListener('click', this.open.bind(this, Panel.widths.normal))
+    this.options.elements.fullWidthButton.addEventListener('click', this.open.bind(this, Panel.widths.full))
+    this.options.elements.closeButton.addEventListener('click', this.close.bind(this))
 
     for (let tab of this.options.elements.tabs) {
       let target = tab.dataset.target
@@ -10993,68 +10990,120 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
 
   static get positions () {
     return {
+      default: 'alpheios-panel-left',
       left: 'alpheios-panel-left',
       right: 'alpheios-panel-right'
     }
   }
 
-  setPoistionToLeft () {
-    if (this.bodyPositionClassName !== Panel.positions.left) {
-      this.options.elements.page.classList.replace(this.bodyPositionClassName, Panel.positions.left)
-      this.bodyPositionClassName = Panel.positions.left
+  static get widths () {
+    return {
+      default: 'alpheios-panel-opened',
+      zero: 'alpheios-panel-zero-width',
+      normal: 'alpheios-panel-opened',
+      full: 'alpheios-panel-full-width'
     }
   }
 
-  setPoistionToRight () {
-    if (this.bodyPositionClassName !== Panel.positions.right) {
-      this.options.elements.page.classList.replace(this.bodyPositionClassName, Panel.positions.right)
-      this.bodyPositionClassName = Panel.positions.right
+  setPositionTo (position = Panel.positions.default) {
+    if (this.bodyPositionClassName !== position) {
+      this.bodyPositionClassName = position
+      if (position === Panel.positions.right) {
+        // Panel is at the right
+        this.options.elements.page.classList.remove(Panel.positions.left)
+        this.options.elements.page.classList.add(Panel.positions.right)
+      } else {
+        // Default: Panel is at the left
+        this.options.elements.page.classList.remove(Panel.positions.right)
+        this.options.elements.page.classList.add(Panel.positions.left)
+      }
     }
   }
 
-  open () {
+  positionToLeft () {
+    this.setPositionTo(Panel.positions.left)
+  }
+
+  positionToRight () {
+    this.setPositionTo(Panel.positions.right)
+  }
+
+  open (width = Panel.widths.normal) {
+    this.resetWidth()
+    this.width = width
+
+    if (this.width === Panel.widths.full) {
+      // Panel will to be shown in full width
+      this.options.elements.self.classList.add(this.panelOpenedClassName)
+      this.options.elements.page.classList.add(this.bodyPositionClassName)
+
+      this.options.elements.self.classList.add(this.panelOpenedClassName)
+      this.options.elements.self.classList.add(this.panelFullWidthClassName)
+      this.options.elements.normalWidthButton.classList.remove(this.hiddenClassName)
+    } else {
+      // Default: panel will to be shown in normal width
+      this.options.elements.self.classList.add(this.panelOpenedClassName)
+      this.options.elements.page.classList.add(this.bodyNormalWidthClassName)
+      this.options.elements.page.classList.add(this.bodyPositionClassName)
+      this.options.elements.self.classList.add(this.panelOpenedClassName)
+      this.options.elements.fullWidthButton.classList.remove(this.hiddenClassName)
+    }
+  }
+  close () {
+    if (this.isOpened) {
+      this.resetWidth()
+    }
+    return this
+  }
+
+  get isOpened () {
+    return !(this.width === Panel.widths.zero)
+  }
+
+  displayInNormalWidth () {
     if (this.isOpenFW) {
-      this.options.elements.self.classList.remove(this.panelOpenFWClassName)
+      this.options.elements.self.classList.remove(this.panelFullWidthClassName)
       this.isOpenFW = false
     }
     if (!this.isOpen) {
-      this.options.elements.self.classList.add(this.panelOpenClassName)
-      this.options.elements.page.classList.add(this.bodyOpenClassName)
+      this.options.elements.self.classList.add(this.panelOpenedClassName)
+      this.options.elements.page.classList.add(this.bodyNormalWidthClassName)
       this.isOpen = true
     }
-    this.options.elements.showOpenBtn.classList.add(this.hiddenClassName)
+    this.options.elements.normalWidthButton.classList.add(this.hiddenClassName)
     return this
   }
 
-  openFullWidth () {
+  displayInFullWidth () {
     if (this.isOpen) {
-      this.options.elements.self.classList.remove(this.panelOpenClassName)
-      this.options.elements.page.classList.remove(this.bodyOpenClassName)
+      this.options.elements.self.classList.remove(this.panelOpenedClassName)
+      this.options.elements.page.classList.remove(this.bodyNormalWidthClassName)
       this.isOpen = false
     }
     if (!this.isOpenFW) {
-      this.options.elements.self.classList.add(this.panelOpenFWClassName)
+      this.options.elements.self.classList.add(this.panelFullWidthClassName)
+      this.options.elements.normalWidthButton.classList.add(this.hiddenClassName)
+      this.options.elements.fullWidthButton.classList.remove(this.hiddenClassName)
       this.isOpenFW = true
     }
-    this.options.elements.showOpenBtn.classList.remove(this.hiddenClassName)
     return this
   }
 
-  close () {
-    if (this.isOpen) {
-      this.options.elements.self.classList.remove(this.panelOpenClassName)
-      this.options.elements.page.classList.remove(this.bodyOpenClassName)
-      this.isOpen = false
-    }
-    if (this.isOpenFW) {
-      this.options.elements.self.classList.remove(this.panelOpenFWClassName)
-      this.isOpenFW = false
-    }
-    return this
+  resetWidth () {
+    this.options.elements.self.classList.remove(this.panelOpenedClassName)
+    this.options.elements.page.classList.remove(this.bodyNormalWidthClassName)
+    this.options.elements.page.classList.remove(this.bodyPositionClassName)
+
+    this.options.elements.self.classList.remove(this.panelOpenedClassName)
+    this.options.elements.self.classList.remove(this.panelFullWidthClassName)
+    this.options.elements.normalWidthButton.classList.add(this.hiddenClassName)
+    this.options.elements.fullWidthButton.classList.add(this.hiddenClassName)
+
+    this.width = Panel.widths.zero
   }
 
   toggle () {
-    if (this.isOpen || this.isOpenFW) {
+    if (this.isOpened) {
       this.close()
     } else {
       this.open()
@@ -11112,7 +11161,7 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
 /* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "<svg xmlns=\"http://www.w3.org/2000/svg\" style=\"display: none;\">\r\n    <symbol id=\"alf-icon-chevron-left\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1427 301l-531 531 531 531q19 19 19 45t-19 45l-166 166q-19 19-45 19t-45-19l-742-742q-19-19-19-45t19-45l742-742q19-19 45-19t45 19l166 166q19 19 19 45t-19 45z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-chevron-right\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1363 877l-742 742q-19 19-45 19t-45-19l-166-166q-19-19-19-45t19-45l531-531-531-531q-19-19-19-45t19-45l166-166q19-19 45-19t45 19l742 742q19 19 19 45t-19 45z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-arrow-left\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1664 896v128q0 53-32.5 90.5t-84.5 37.5h-704l293 294q38 36 38 90t-38 90l-75 76q-37 37-90 37-52 0-91-37l-651-652q-37-37-37-90 0-52 37-91l651-650q38-38 91-38 52 0 90 38l75 74q38 38 38 91t-38 91l-293 293h704q52 0 84.5 37.5t32.5 90.5z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-commenting\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M640 896q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0 174-120 321.5t-326 233-450 85.5q-110 0-211-18-173 173-435 229-52 10-86 13-12 1-22-6t-13-18q-4-15 20-37 5-5 23.5-21.5t25.5-23.5 23.5-25.5 24-31.5 20.5-37 20-48 14.5-57.5 12.5-72.5q-146-90-229.5-216.5t-83.5-269.5q0-174 120-321.5t326-233 450-85.5 450 85.5 326 233 120 321.5z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-table\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M576 1376v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm0-384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm-512-768v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm-512-768v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm0-384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm128-320v1088q0 66-47 113t-113 47h-1344q-66 0-113-47t-47-113v-1088q0-66 47-113t113-47h1344q66 0 113 47t47 113z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-wrench\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M448 1472q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm644-420l-682 682q-37 37-90 37-52 0-91-37l-106-108q-38-36-38-90 0-53 38-91l681-681q39 98 114.5 173.5t173.5 114.5zm634-435q0 39-23 106-47 134-164.5 217.5t-258.5 83.5q-185 0-316.5-131.5t-131.5-316.5 131.5-316.5 316.5-131.5q58 0 121.5 16.5t107.5 46.5q16 11 16 28t-16 28l-293 169v224l193 107q5-3 79-48.5t135.5-81 70.5-35.5q15 0 23.5 10t8.5 25z\"/>\r\n    </symbol>\r\n</svg>\r\n\r\n<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img src=\"" + __webpack_require__(19) + "\" data-src=\"logo.png\"></div>\r\n        <span id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div id=\"alpheios-panel-content-definition\"></div>\r\n            <div id=\"alpheios-panel-content-infl-table\">\r\n                <div id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-options\"><div data-component=\"alpheios-panel-options\"></div></div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn active\"\r\n                  data-target=\"alpheios-panel-content-definition\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\r\n                  data-target=\"alpheios-panel-content-infl-table\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\r\n                  uk-icon=\"icon: cog; ratio: 2\" data-target=\"alpheios-panel-content-options\"></span>\r\n        </div>\r\n    </div>\r\n</div>";
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(19) + "\"></div>\r\n        <span id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div id=\"alpheios-panel-content-definition\"></div>\r\n            <div id=\"alpheios-panel-content-infl-table\">\r\n                <div id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-options\"><div data-component=\"alpheios-panel-options\"></div></div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn active\"\r\n                  data-target=\"alpheios-panel-content-definition\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\r\n                  data-target=\"alpheios-panel-content-infl-table\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\r\n                  uk-icon=\"icon: cog; ratio: 2\" data-target=\"alpheios-panel-content-options\"></span>\r\n        </div>\r\n    </div>\r\n</div>";
 
 /***/ }),
 /* 19 */
@@ -11207,9 +11256,9 @@ class Options extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */
         this.options.data[key].currentValue = values[key]
       }
     }
-    console.log('Data is loaded', this.options.data)
+    console.log('Options are loaded successfully', this.options.data)
     if (this.options.methods.ready) {
-      this.options.methods.ready()
+      this.options.methods.ready(this.options.data)
     }
   }
 
@@ -23780,7 +23829,7 @@ exports = module.exports = __webpack_require__(39)(true);
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n    border-radius: 0;\n    box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n}\n.alpheios-popup__content {\n    padding: 20px;\n    font-size: 14px;\n    position: relative;\n}\n.alpheios-popup__close-btn {\n    border: none;\n    background: transparent;\n    right: 1rem;\n    top: 1rem;\n    position: absolute;\n    cursor: pointer;\n}\n.auk .uk-button.alpheios-popup__more-btn {\n    margin-top: 2rem;\n    float: right;\n}\n.v--modal-overlay[data-modal=\"popup\"] {\n    background: rgba(0, 0, 0, 0.0);\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?471e8e7e"],"names":[],"mappings":";AAkEA;IACA,iBAAA;IACA,iDAAA;CACA;AAEA;IACA,cAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,aAAA;IACA,wBAAA;IACA,YAAA;IACA,UAAA;IACA,mBAAA;IACA,gBAAA;CACA;AAEA;IACA,iBAAA;IACA,aAAA;CACA;AAEA;IACA,+BAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <modal name=\"popup\"\r\n           transition=\"nice-modal-fade\"\r\n           classes=\"alpheios-popup auk\"\r\n           :min-width=\"200\"\r\n           :min-height=\"200\"\r\n           :pivot-y=\"0.5\"\r\n           :adaptive=\"true\"\r\n           :resizable=\"true\"\r\n           :draggable=\"true\"\r\n           :scrollable=\"false\"\r\n           :clickToClose=\"false\"\r\n           :reset=\"true\"\r\n           width=\"60%\"\r\n           height=\"60%\"\r\n           @before-open=\"beforeOpen\"\r\n           @opened=\"opened\"\r\n           @closed=\"closed\"\r\n           @before-close=\"beforeClose\">\r\n        <div class=\"alpheios-popup__content\">\r\n            <button v-on:click=\"closePopup\" class=\"alpheios-popup__close-btn\"><span uk-icon=\"icon: close\"></span></button>\r\n            <h2>{{ $root.popupTitle }}</h2>\r\n            <div v-html=\"$root.popupContent\"></div>\r\n            <button v-on:click=\"openPanel\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Extended data ...</button>\r\n        </div>\r\n    </modal>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'Popup',\r\n    methods: {\r\n      openPanel () {\r\n        console.log('Opening a panel to show extended results')\r\n        this.$root.$modal.hide('popup')\r\n        this.$root.panel.open()\r\n      },\r\n\r\n      closePopup () {\r\n        this.$root.$modal.hide('popup')\r\n      },\r\n\r\n      beforeOpen () { },\r\n\r\n      beforeClose () { },\r\n\r\n      opened (e) {\r\n        // e.ref should not be undefined here\r\n        console.log('opened', e)\r\n        console.log('ref', e.ref)\r\n      },\r\n\r\n      closed (e) {\r\n        console.log('closed', e)\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Popup is mounted')\r\n    },\r\n    watch: {\r\n      popupContent: function (value) {\r\n        console.log('Popup content changed to ' + value)\r\n      }\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .alpheios-popup {\r\n        border-radius: 0;\r\n        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\r\n    }\r\n\r\n    .alpheios-popup__content {\r\n        padding: 20px;\r\n        font-size: 14px;\r\n        position: relative;\r\n    }\r\n\r\n    .alpheios-popup__close-btn {\r\n        border: none;\r\n        background: transparent;\r\n        right: 1rem;\r\n        top: 1rem;\r\n        position: absolute;\r\n        cursor: pointer;\r\n    }\r\n\r\n    .auk .uk-button.alpheios-popup__more-btn {\r\n        margin-top: 2rem;\r\n        float: right;\r\n    }\r\n\r\n    .v--modal-overlay[data-modal=\"popup\"] {\r\n        background: rgba(0, 0, 0, 0.0);\r\n    }\r\n</style>\r\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n.alpheios-popup {\n    border-radius: 0;\n    box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n}\n.alpheios-popup__content {\n    padding: 20px;\n    font-size: 14px;\n    position: relative;\n}\n.alpheios-popup__close-btn {\n    border: none;\n    background: transparent;\n    right: 1rem;\n    top: 1rem;\n    position: absolute;\n    cursor: pointer;\n}\n.auk .uk-button.alpheios-popup__more-btn {\n    margin-top: 30px;\n    float: right;\n}\n.v--modal-overlay[data-modal=\"popup\"] {\n    background: rgba(0, 0, 0, 0.0);\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?b35cb78a"],"names":[],"mappings":";AAkEA;IACA,iBAAA;IACA,iDAAA;CACA;AAEA;IACA,cAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,aAAA;IACA,wBAAA;IACA,YAAA;IACA,UAAA;IACA,mBAAA;IACA,gBAAA;CACA;AAEA;IACA,iBAAA;IACA,aAAA;CACA;AAEA;IACA,+BAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <modal name=\"popup\"\r\n           transition=\"nice-modal-fade\"\r\n           classes=\"alpheios-popup auk\"\r\n           :min-width=\"200\"\r\n           :min-height=\"200\"\r\n           :pivot-y=\"0.5\"\r\n           :adaptive=\"true\"\r\n           :resizable=\"true\"\r\n           :draggable=\"true\"\r\n           :scrollable=\"false\"\r\n           :clickToClose=\"false\"\r\n           :reset=\"true\"\r\n           width=\"60%\"\r\n           height=\"60%\"\r\n           @before-open=\"beforeOpen\"\r\n           @opened=\"opened\"\r\n           @closed=\"closed\"\r\n           @before-close=\"beforeClose\">\r\n        <div class=\"alpheios-popup__content\">\r\n            <button v-on:click=\"closePopup\" class=\"alpheios-popup__close-btn\"><span uk-icon=\"icon: close\"></span></button>\r\n            <h2>{{ $root.popupTitle }}</h2>\r\n            <div v-html=\"$root.popupContent\"></div>\r\n            <button v-on:click=\"openPanel\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Extended data ...</button>\r\n        </div>\r\n    </modal>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'Popup',\r\n    methods: {\r\n      openPanel () {\r\n        console.log('Opening a panel to show extended results')\r\n        this.$root.$modal.hide('popup')\r\n        this.$root.panel.open()\r\n      },\r\n\r\n      closePopup () {\r\n        this.$root.$modal.hide('popup')\r\n      },\r\n\r\n      beforeOpen () { },\r\n\r\n      beforeClose () { },\r\n\r\n      opened (e) {\r\n        // e.ref should not be undefined here\r\n        console.log('opened', e)\r\n        console.log('ref', e.ref)\r\n      },\r\n\r\n      closed (e) {\r\n        console.log('closed', e)\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Popup is mounted')\r\n    },\r\n    watch: {\r\n      popupContent: function (value) {\r\n        console.log('Popup content changed to ' + value)\r\n      }\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .alpheios-popup {\r\n        border-radius: 0;\r\n        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\r\n    }\r\n\r\n    .alpheios-popup__content {\r\n        padding: 20px;\r\n        font-size: 14px;\r\n        position: relative;\r\n    }\r\n\r\n    .alpheios-popup__close-btn {\r\n        border: none;\r\n        background: transparent;\r\n        right: 1rem;\r\n        top: 1rem;\r\n        position: absolute;\r\n        cursor: pointer;\r\n    }\r\n\r\n    .auk .uk-button.alpheios-popup__more-btn {\r\n        margin-top: 30px;\r\n        float: right;\r\n    }\r\n\r\n    .v--modal-overlay[data-modal=\"popup\"] {\r\n        background: rgba(0, 0, 0, 0.0);\r\n    }\r\n</style>\r\n"],"sourceRoot":""}]);
 
 // exports
 

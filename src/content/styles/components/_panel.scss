@@ -1,9 +1,27 @@
 .auk .uk-icon.alpheios-panel__header-action-btn {
+    color: $alpheios-link-color-dark-bg;
+}
+
+.auk .uk-icon.alpheios-panel__header-action-btn:hover,
+.auk .uk-icon.alpheios-panel__header-action-btn:focus {
+    color: $alpheios-link-hover-color;
 }
 
 .alpheios-panel__header {
-    background-color: $alpheios-toolbar-active-color;
+    background-color: $alpheios-toolbar-color;
 }
 .alpheios-panel__nav {
     background: $alpheios-toolbar-active-color;
+}
+
+.auk .uk-icon.alpheios-panel__nav-btn,
+.auk .uk-icon.alpheios-panel__nav-btn.active:hover,
+.auk .uk-icon.alpheios-panel__nav-btn.active:focus {
+    color: $alpheios-link-color-dark-bg;
+}
+
+.auk .uk-icon.alpheios-panel__nav-btn:hover,
+.auk .uk-icon.alpheios-panel__nav-btn:focus,
+.auk .uk-icon.alpheios-panel__nav-btn.active {
+    color: $alpheios-link-hover-color;
 }

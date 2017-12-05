@@ -85,7 +85,7 @@
     }
 
     .auk .uk-button.alpheios-popup__more-btn {
-        margin-top: 2rem;
+        margin-top: 30px;
         float: right;
     }
 

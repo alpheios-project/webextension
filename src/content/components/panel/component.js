@@ -16,33 +16,29 @@ export default class Panel extends Component {
         viewSelectorContainer: '#alpheios-panel-content-infl-table-view-selector',
         localeSwitcherContainer: '#alpheios-panel-content-infl-table-locale-switcher',
         optionsContainer: '#alpheios-panel-content-options',
-        showOpenBtn: '#alpheios-panel-show-open',
-        showFWBtn: '#alpheios-panel-show-fw',
-        hideBtn: '#alpheios-panel-hide',
+        normalWidthButton: '#alpheios-panel-show-open',
+        fullWidthButton: '#alpheios-panel-show-fw',
+        closeButton: '#alpheios-panel-hide',
         tabs: '#alpheios-panel__nav .alpheios-panel__nav-btn',
         activeTab: '#alpheios-panel__nav .alpheios-panel__nav-btn.active'
-      }
+      },
+      position: Panel.positions.default
     },
     options))
 
     this.activeClassName = 'active'
-    this.panelOpenClassName = 'open'
     this.hiddenClassName = 'hidden'
-    this.panelOpenFWClassName = 'open-fw'
-    this.bodyOpenClassName = 'alpheios-panel-open'
-    this.bodyPositionClassName = Panel.positions.left
-    /* if (this.options.items.panelPosition.currentValue === 'right') {
-      this.bodyPositionClassName = Panel.positions.right
-    } */
+    this.panelOpenedClassName = 'opened'
+    this.panelFullWidthClassName = 'full-width'
+    this.bodyNormalWidthClassName = 'alpheios-panel-opened'
 
-    this.isOpen = false
-    this.isOpenFW = false
+    this.setPositionTo(this.options.position)
+    this.width = Panel.widths.zero // Sets initial width to zero because panel is closed initially
 
-    this.options.elements.page.classList.add(this.bodyPositionClassName)
-
-    this.options.elements.showOpenBtn.addEventListener('click', this.open.bind(this))
-    this.options.elements.showFWBtn.addEventListener('click', this.openFullWidth.bind(this))
-    this.options.elements.hideBtn.addEventListener('click', this.close.bind(this))
+    // Set panel controls event handlers
+    this.options.elements.normalWidthButton.addEventListener('click', this.open.bind(this, Panel.widths.normal))
+    this.options.elements.fullWidthButton.addEventListener('click', this.open.bind(this, Panel.widths.full))
+    this.options.elements.closeButton.addEventListener('click', this.close.bind(this))
 
     for (let tab of this.options.elements.tabs) {
       let target = tab.dataset.target
@@ -54,68 +50,91 @@ export default class Panel extends Component {
 
   static get positions () {
     return {
+      default: 'alpheios-panel-left',
       left: 'alpheios-panel-left',
       right: 'alpheios-panel-right'
     }
   }
 
-  setPoistionToLeft () {
-    if (this.bodyPositionClassName !== Panel.positions.left) {
-      this.options.elements.page.classList.replace(this.bodyPositionClassName, Panel.positions.left)
-      this.bodyPositionClassName = Panel.positions.left
+  static get widths () {
+    return {
+      default: 'alpheios-panel-opened',
+      zero: 'alpheios-panel-zero-width',
+      normal: 'alpheios-panel-opened',
+      full: 'alpheios-panel-full-width'
     }
   }
 
-  setPoistionToRight () {
-    if (this.bodyPositionClassName !== Panel.positions.right) {
-      this.options.elements.page.classList.replace(this.bodyPositionClassName, Panel.positions.right)
-      this.bodyPositionClassName = Panel.positions.right
+  setPositionTo (position = Panel.positions.default) {
+    if (this.bodyPositionClassName !== position) {
+      this.bodyPositionClassName = position
+      if (position === Panel.positions.right) {
+        // Panel is at the right
+        this.options.elements.page.classList.remove(Panel.positions.left)
+        this.options.elements.page.classList.add(Panel.positions.right)
+      } else {
+        // Default: Panel is at the left
+        this.options.elements.page.classList.remove(Panel.positions.right)
+        this.options.elements.page.classList.add(Panel.positions.left)
+      }
     }
   }
 
-  open () {
-    if (this.isOpenFW) {
-      this.options.elements.self.classList.remove(this.panelOpenFWClassName)
-      this.isOpenFW = false
-    }
-    if (!this.isOpen) {
-      this.options.elements.self.classList.add(this.panelOpenClassName)
-      this.options.elements.page.classList.add(this.bodyOpenClassName)
-      this.isOpen = true
-    }
-    this.options.elements.showOpenBtn.classList.add(this.hiddenClassName)
-    return this
+  positionToLeft () {
+    this.setPositionTo(Panel.positions.left)
   }
 
-  openFullWidth () {
-    if (this.isOpen) {
-      this.options.elements.self.classList.remove(this.panelOpenClassName)
-      this.options.elements.page.classList.remove(this.bodyOpenClassName)
-      this.isOpen = false
-    }
-    if (!this.isOpenFW) {
-      this.options.elements.self.classList.add(this.panelOpenFWClassName)
-      this.isOpenFW = true
-    }
-    this.options.elements.showOpenBtn.classList.remove(this.hiddenClassName)
-    return this
+  positionToRight () {
+    this.setPositionTo(Panel.positions.right)
   }
 
+  open (width = Panel.widths.normal) {
+    this.resetWidth()
+    this.width = width
+
+    if (this.width === Panel.widths.full) {
+      // Panel will to be shown in full width
+      this.options.elements.self.classList.add(this.panelOpenedClassName)
+      this.options.elements.page.classList.add(this.bodyPositionClassName)
+
+      this.options.elements.self.classList.add(this.panelOpenedClassName)
+      this.options.elements.self.classList.add(this.panelFullWidthClassName)
+      this.options.elements.normalWidthButton.classList.remove(this.hiddenClassName)
+    } else {
+      // Default: panel will to be shown in normal width
+      this.options.elements.self.classList.add(this.panelOpenedClassName)
+      this.options.elements.page.classList.add(this.bodyNormalWidthClassName)
+      this.options.elements.page.classList.add(this.bodyPositionClassName)
+      this.options.elements.self.classList.add(this.panelOpenedClassName)
+      this.options.elements.fullWidthButton.classList.remove(this.hiddenClassName)
+    }
+  }
   close () {
-    if (this.isOpen) {
-      this.options.elements.self.classList.remove(this.panelOpenClassName)
-      this.options.elements.page.classList.remove(this.bodyOpenClassName)
-      this.isOpen = false
-    }
-    if (this.isOpenFW) {
-      this.options.elements.self.classList.remove(this.panelOpenFWClassName)
-      this.isOpenFW = false
+    if (this.isOpened) {
+      this.resetWidth()
     }
     return this
+  }
+
+  get isOpened () {
+    return !(this.width === Panel.widths.zero)
+  }
+
+  resetWidth () {
+    this.options.elements.self.classList.remove(this.panelOpenedClassName)
+    this.options.elements.page.classList.remove(this.bodyNormalWidthClassName)
+    this.options.elements.page.classList.remove(this.bodyPositionClassName)
+
+    this.options.elements.self.classList.remove(this.panelOpenedClassName)
+    this.options.elements.self.classList.remove(this.panelFullWidthClassName)
+    this.options.elements.normalWidthButton.classList.add(this.hiddenClassName)
+    this.options.elements.fullWidthButton.classList.add(this.hiddenClassName)
+
+    this.width = Panel.widths.zero
   }
 
   toggle () {
-    if (this.isOpen || this.isOpenFW) {
+    if (this.isOpened) {
       this.close()
     } else {
       this.open()

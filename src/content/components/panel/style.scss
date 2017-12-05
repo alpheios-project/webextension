@@ -1,14 +1,13 @@
-/* region Panel styles */
-.alpheios-panel-open.alpheios-panel-left {
+.alpheios-panel-opened.alpheios-panel-left {
     padding-left: 70%;
 }
 
-.alpheios-panel-open.alpheios-panel-right {
+.alpheios-panel-opened.alpheios-panel-right {
     padding-right: 70%;
 }
 
 .alpheios-panel {
-    display: block;
+    display: none;
     width: 70%;
     height: 100%;
     top: 0;
@@ -25,15 +24,18 @@
     right: -70%;
 }
 
-.alpheios-panel-left .alpheios-panel.open {
+.alpheios-panel-left .alpheios-panel.opened {
+    display: block;
     left: 0;
 }
 
-.alpheios-panel-right .alpheios-panel.open {
+.alpheios-panel-right .alpheios-panel.opened {
+    display: block;
     right: 0;
 }
 
-.alpheios-panel.open-fw {
+.alpheios-panel.full-width {
+    display: block;
     width: 100%;
     left: 0;
 }
@@ -42,21 +44,22 @@
     position: relative;
     display: flex;
     flex-wrap: nowrap;
-    padding: 10px 20px;
-    height: 65px;
+    padding: 10px 0 10px 20px;
 }
 
 .alpheios-panel__header-title {
     flex-grow: 1;
 }
 
-.alpheios-panel__header-buttons-cont {
-
+.alpheios-panel__header-logo {
+    margin-top: -1px;
 }
 
 .auk .uk-icon.alpheios-panel__header-action-btn {
     display: block;
-    margin: 20px;
+    width: 40px;
+    height: 40px;
+    margin: 0 10px;
     cursor: pointer;
 }
 
@@ -78,19 +81,21 @@
 }
 
 .alpheios-panel__content {
-    width: calc(100% - 80px);
+    flex-grow: 1;
     overflow-x: scroll;
-    overflow-y: scroll;
+    overflow-y: auto;
     padding: 10px 20px 100px;
 }
 
 .alpheios-panel__nav {
-    width: 80px;
+    width: 60px;
 }
 
 .auk .uk-icon.alpheios-panel__nav-btn {
     cursor: pointer;
-    margin: 20px;
+    margin: 20px 10px;
 }
 
-/* endregion Panel styles */
+.auk .uk-icon.alpheios-panel__header-action-btn.hidden {
+    display: none;
+}
