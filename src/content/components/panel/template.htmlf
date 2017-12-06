@@ -1,4 +1,5 @@
 <div class="alpheios-panel auk" data-component="alpheios-panel">
+  <div class="alpheios-panel__wrapper">
     <div class="alpheios-panel__header">
         <div class="alpheios-panel__header-title"><img class="alpheios-panel__header-logo" src="logo.png"></div>
         <span id="alpheios-panel-show-open" class="alpheios-panel__header-action-btn" uk-icon="icon: shrink; ratio: 2"></span>
@@ -27,4 +28,5 @@
                   uk-icon="icon: cog; ratio: 2" data-target="alpheios-panel-content-options"></span>
         </div>
     </div>
+  </wrapper>
 </div>

@@ -1,35 +1,40 @@
 .alpheios-panel-opened.alpheios-panel-left {
-    padding-left: 70%;
 }
 
 .alpheios-panel-opened.alpheios-panel-right {
-    padding-right: 70%;
+}
+
+.alpheios-panel__wrapper {
+  direction: ltr;
+  height: 100%;
 }
 
 .alpheios-panel {
     display: none;
-    width: 70%;
+    width: 30%;
     height: 100%;
     top: 0;
     z-index: 1000;
     position: fixed;
     background: #FFF;
+    resize: both;
+    overflow: scroll;
 }
 
 .alpheios-panel-left .alpheios-panel {
-    left: -70%;
 }
 
 .alpheios-panel-right .alpheios-panel {
-    right: -70%;
 }
 
 .alpheios-panel-left .alpheios-panel.opened {
+    direction: ltr;
     display: block;
     left: 0;
 }
 
 .alpheios-panel-right .alpheios-panel.opened {
+    direction: rtl;
     display: block;
     right: 0;
 }
