@@ -40,6 +40,7 @@ export default class ContentProcess {
 
     // this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
+    this.reactivate()
   }
 
   loadUI () {
@@ -48,11 +49,6 @@ export default class ContentProcess {
     ContentProcess.loadTemplate(Template)
 
     // Initialize components
-    this.pageControls = new PageControls({
-      methods: {
-        onPanelToggle: this.togglePanel.bind(this)
-      }
-    })
     this.panel = new Panel({})
     // Should be loaded after Panel because options are inserted into a panel
     this.options = new Options({
@@ -97,7 +93,6 @@ export default class ContentProcess {
   static get settingValues () {
     return {
       hiddenClassName: 'hidden',
-      pageControlsID: 'alpheios-page-controls',
       requestTimeout: 60000,
       uiTypePanel: 'panel',
       uiTypePopup: 'popup'
@@ -119,13 +114,12 @@ export default class ContentProcess {
   deactivate () {
     console.log('Content has been deactivated.')
     this.panel.close()
-    this.pageControl.classList.add(this.settings.hiddenClassName)
     this.status = Statuses.DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
-    this.pageControl.classList.remove(this.settings.hiddenClassName)
+    this.panel.open()
     this.status = Statuses.ACTIVE
   }
 

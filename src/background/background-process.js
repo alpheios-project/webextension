@@ -222,7 +222,11 @@ export default class BackgroundProcess {
   }
 
   async browserActionListener (tab) {
-    this.activateContent(tab.id)
+    if (!this.isContentActive(tab.id)) {
+      this.activateContent(tab.id)
+    } else {
+      this.deactivateContent(tab.id)
+    }
   }
 
   static createMenuItem () {
