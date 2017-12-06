@@ -1931,7 +1931,7 @@ class ContentProcess {
     return {
       hiddenClassName: 'hidden',
       pageControlsID: 'alpheios-page-controls',
-      requestTimeout: 4000,
+      requestTimeout: 60000,
       uiTypePanel: 'panel',
       uiTypePopup: 'popup'
     }
@@ -2015,15 +2015,23 @@ class ContentProcess {
   }
 
   displayWordData (wordData) {
+    /* let definitions = ''
+    if (wordData.definitions) {
+      for (let definition of wordData.definitions) {
+        definition.text = decodeURIComponent(definition.text)
+        definitions += definition.text
+      }
+    } */
+
     // Populate a panel
     this.panel.clear()
-    this.updateDefinition(wordData)
+    // this.updateDefinition(wordData)
     this.updateInflectionTable(wordData)
 
     // Pouplate a popup
     this.vueInstance.panel = this.panel
     this.vueInstance.popupTitle = `${wordData.homonym.targetWord}`
-    this.vueInstance.popupContent = decodeURIComponent(wordData.definition)
+    // this.vueInstance.popupContent = decodeURIComponent(definitions)
 
     if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
       this.panel.open()

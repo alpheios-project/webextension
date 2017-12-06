@@ -1,6 +1,8 @@
 /* global browser */
+import {Constants as LDMConstants, Definition} from 'alpheios-data-models'
 import * as InflectionTables from 'alpheios-inflection-tables'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
+import Lexicons from './lexicons'
 import Message from '../lib/messaging/message'
 import MessagingService from '../lib/messaging/service'
 import ActivationRequest from '../lib/messaging/request/activation-request'
@@ -22,12 +24,8 @@ export default class BackgroundProcess {
     this.browserFeatures = browserFeatures
     this.settings = BackgroundProcess.defaults
 
-    let adapterArgs = {
-      engine: {lat: 'whitakerLat'},
-      url: 'http://morph.alpheios.net/api/v1/analysis/word?word=r_WORD&engine=r_ENGINE&lang=r_LANG'
-    }
-    this.maAdapter = new AlpheiosTuftsAdapter(adapterArgs) // Morphological analyzer adapter
-    this.maAdapter.fetch = this.maAdapter.fetchTestData // Switch adapter to a test mode
+    this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
+    // this.maAdapter.fetch = this.maAdapter.fetchTestData // Switch adapter to a test mode
 
     this.tabs = new Map() // A list of tabs that have content script loaded
 
@@ -55,6 +53,8 @@ export default class BackgroundProcess {
     console.log('initialize')
 
     this.langData = new InflectionTables.LanguageData([InflectionTables.LatinDataSet, InflectionTables.GreekDataSet]).loadData()
+    // this.lexiconID = 'https://github.com/alpheios-project/lsj'
+    this.lexicons = new Lexicons(LDMConstants.LANG_LATIN)
 
     this.messagingService.addHandler(Message.types.WORD_DATA_REQUEST, this.handleWordDataRequestStatefully, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
@@ -154,9 +154,9 @@ export default class BackgroundProcess {
     return State.value(state, this.messagingService.sendResponseToTab(request, tabID))
   }
 
-  async getHomonymStatefully (language, word, state) {
+  async getHomonymStatefully (languageCode, word, state) {
     try {
-      let result = await this.maAdapter.getHomonym(language, word, state)
+      let result = await this.maAdapter.getHomonym(languageCode, word, state)
       // If no valid homonym data found should always throw an error to be caught in a calling function
       return State.value(state, result)
     } catch (error) {
@@ -180,8 +180,19 @@ export default class BackgroundProcess {
       if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
 
       wordData = this.langData.getSuffixes(homonym, state)
-      wordData.definition = await TestDefinitionService.getDefinition(textSelector.language, textSelector.normalizedText)
-      wordData.definition = encodeURIComponent(wordData.definition)
+      /* wordData.definitions = []
+      for (let lexeme of homonym.lexemes) {
+        // Will return an array of Definition objects
+        // This returns a proxy, not a definition object
+        let definitions = await this.lexicons[LDMConstants.LANG_LATIN].lookupFullDef(lexeme.lemma)
+        for (let definition of definitions) {
+          definition.text = encodeURIComponent(definition.text)
+          console.log(`Word definition is: `, definition)
+          wordData.definitions.push(new Definition(definition.text, definition.language, definition.format))
+        }
+      } */
+//      wordData.definition = await TestDefinitionService.getDefinition(textSelector.language, textSelector.normalizedText)
+//      wordData.definition = encodeURIComponent(wordData.definition)
       console.log(wordData)
 
       let returnObject = this.sendResponseToTabStatefully(new WordDataResponse(request, wordData, Message.statuses.DATA_FOUND), tabID, state)
@@ -194,10 +205,6 @@ export default class BackgroundProcess {
       )
       return State.emptyValue(returnObject.state)
     }
-  }
-
-  newExperienceInStorageEvent () {
-    console.log('A new experience has been saved to a local storage:')
   }
 
   static async getActiveTabID () {
