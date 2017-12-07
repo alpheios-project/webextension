@@ -40,12 +40,19 @@ export default class Panel extends Component {
     this.options.elements.fullWidthButton.addEventListener('click', this.open.bind(this, Panel.widths.full))
     this.options.elements.closeButton.addEventListener('click', this.close.bind(this))
 
+    let activeTab = this.options.elements.tabs[0]
     for (let tab of this.options.elements.tabs) {
       let target = tab.dataset.target
-      document.getElementById(target).classList.add(this.hiddenClassName)
+      let targetElem = document.getElementById(target)
+      if( targetElem.classList.contains(this.activeClassName)) {
+        activeTab = tab
+      } else {
+        document.getElementById(target).classList.add(this.hiddenClassName)
+      }
       tab.addEventListener('click', this.switchTab.bind(this))
     }
-    this.changeActiveTabTo(this.options.elements.tabs[0])
+    debugger;
+    this.changeActiveTabTo(activeTab)
   }
 
   static get positions () {

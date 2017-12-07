@@ -56,6 +56,7 @@ export default class ContentProcess {
         ready: (options) => {
           this.status = Statuses.ACTIVE
           this.setPanelPositionTo(options.panelPosition.currentValue)
+          this.setDefaultLanguageTo(options.defaultLanguage.currentValue)
           console.log('Content script is set to active')
         },
         onChange: this.optionChangeListener.bind(this)
@@ -186,7 +187,7 @@ export default class ContentProcess {
 
     // Populate a panel
     this.panel.clear()
-    // this.updateDefinition(wordData)
+    //this.updateDefinition(wordData)
     this.updateInflectionTable(wordData)
 
     // Pouplate a popup
@@ -259,6 +260,11 @@ export default class ContentProcess {
   optionChangeListener (optionName, optionValue) {
     if (optionName === 'locale' && this.presenter) { this.presenter.setLocale(optionValue) }
     if (optionName === 'panelPosition') { this.setPanelPositionTo(optionValue) }
+    if (optionName === 'defaulLanguage') { this.setDefaultLanguageTo(optionValue)}
+  }
+
+  setDefaultLanguageTo (language) {
+    this.defaultLanguage = language
   }
 
   setPanelPositionTo (position) {
@@ -271,7 +277,7 @@ export default class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = HTMLSelector.getSelector(event.target, 'grc')
+      let textSelector = HTMLSelector.getSelector(event.target, this.defaultLanguage)
 
       // HTMLSelector.getExtendedTextQuoteSelector()
       if (!textSelector.isEmpty()) {

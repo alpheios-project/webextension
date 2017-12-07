@@ -2014,6 +2014,7 @@ class ContentProcess {
         ready: (options) => {
           this.status = __WEBPACK_IMPORTED_MODULE_8__statuses__["a" /* default */].ACTIVE
           this.setPanelPositionTo(options.panelPosition.currentValue)
+          this.setDefaultLanguageTo(options.defaultLanguage.currentValue)
           console.log('Content script is set to active')
         },
         onChange: this.optionChangeListener.bind(this)
@@ -2144,7 +2145,7 @@ class ContentProcess {
 
     // Populate a panel
     this.panel.clear()
-    // this.updateDefinition(wordData)
+    //this.updateDefinition(wordData)
     this.updateInflectionTable(wordData)
 
     // Pouplate a popup
@@ -2217,6 +2218,11 @@ class ContentProcess {
   optionChangeListener (optionName, optionValue) {
     if (optionName === 'locale' && this.presenter) { this.presenter.setLocale(optionValue) }
     if (optionName === 'panelPosition') { this.setPanelPositionTo(optionValue) }
+    if (optionName === 'defaulLanguage') { this.setDefaultLanguageTo(optionValue)}
+  }
+
+  setDefaultLanguageTo (language) {
+    this.defaultLanguage = language
   }
 
   setPanelPositionTo (position) {
@@ -2229,7 +2235,7 @@ class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = __WEBPACK_IMPORTED_MODULE_11__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, 'grc')
+      let textSelector = __WEBPACK_IMPORTED_MODULE_11__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.defaultLanguage)
 
       // HTMLSelector.getExtendedTextQuoteSelector()
       if (!textSelector.isEmpty()) {
@@ -11101,12 +11107,19 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
     this.options.elements.fullWidthButton.addEventListener('click', this.open.bind(this, Panel.widths.full))
     this.options.elements.closeButton.addEventListener('click', this.close.bind(this))
 
+    let activeTab = this.options.elements.tabs[0]
     for (let tab of this.options.elements.tabs) {
       let target = tab.dataset.target
-      document.getElementById(target).classList.add(this.hiddenClassName)
+      let targetElem = document.getElementById(target)
+      if( targetElem.classList.contains(this.activeClassName)) {
+        activeTab = tab
+      } else {
+        document.getElementById(target).classList.add(this.hiddenClassName)
+      }
       tab.addEventListener('click', this.switchTab.bind(this))
     }
-    this.changeActiveTabTo(this.options.elements.tabs[0])
+    debugger;
+    this.changeActiveTabTo(activeTab)
   }
 
   static get positions () {
@@ -11253,7 +11266,7 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
 /* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\">\n  <div class=\"alpheios-panel__wrapper\">\n    <div class=\"alpheios-panel__header\">\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(19) + "\"></div>\n        <span id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\n        <span id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\n        <span id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\n    </div>\n\n    <div class=\"alpheios-panel__body\">\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\n            <div id=\"alpheios-panel-content-definition\"></div>\n            <div id=\"alpheios-panel-content-infl-table\">\n                <div id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\n                <div id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\n                <div id=\"alpheios-panel-content-infl-table-body\"></div>\n            </div>\n            <div id=\"alpheios-panel-content-options\"><div data-component=\"alpheios-panel-options\"></div></div>\n        </div>\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\n            <span id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn active\"\n                  data-target=\"alpheios-panel-content-definition\" uk-icon=\"icon: comment; ratio: 2\"></span>\n\n            <span id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\n                  data-target=\"alpheios-panel-content-infl-table\" uk-icon=\"icon: table; ratio: 2\"></span>\n\n            <span id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\n                  uk-icon=\"icon: cog; ratio: 2\" data-target=\"alpheios-panel-content-options\"></span>\n        </div>\n    </div>\n  </wrapper>\n</div>\n";
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\">\n  <div class=\"alpheios-panel__wrapper\">\n    <div class=\"alpheios-panel__header\">\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(19) + "\"></div>\n        <span id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\n        <span id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\n        <span id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\n    </div>\n\n    <div class=\"alpheios-panel__body\">\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\n            <div id=\"alpheios-panel-content-definition\"></div>\n            <div id=\"alpheios-panel-content-infl-table\">\n                <div id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\n                <div id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\n                <div id=\"alpheios-panel-content-infl-table-body\"></div>\n            </div>\n            <div id=\"alpheios-panel-content-options\" class=\"active\"><div data-component=\"alpheios-panel-options\"></div></div>\n        </div>\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\n            <span id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn\"\n                  data-target=\"alpheios-panel-content-definition\" uk-icon=\"icon: comment; ratio: 2\"></span>\n\n            <span id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\n                  data-target=\"alpheios-panel-content-infl-table\" uk-icon=\"icon: table; ratio: 2\"></span>\n\n            <span id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\n                  uk-icon=\"icon: cog; ratio: 2\" data-target=\"alpheios-panel-content-options\"></span>\n        </div>\n    </div>\n  </wrapper>\n</div>\n";
 
 /***/ }),
 /* 19 */
@@ -11298,12 +11311,22 @@ class Options extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */
           selector: '#alpheios-position-selector-list'
         },
         uiType: {
-          defaultValue: 'popup',
+          defaultValue: 'panel',
           values: [
             {value: 'popup', text: 'Pop-up'},
             {value: 'panel', text: 'Panel'}
           ],
           selector: '#alpheios-ui-type-selector-list'
+        },
+        defaultLanguage: {
+          defaultValue: 'lat',
+          values: [
+            {value: 'lat', text: 'Latin'},
+            {value: 'grc', text: 'Greek'},
+            {value: 'ara', text: 'Arabic'},
+            {value: 'per', text: 'Persian'}
+          ],
+          selector: '#alpheios-language-selector-list'
         }
       }
     },
@@ -11405,7 +11428,7 @@ class Options extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */
 /* 21 */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"auk\" data-component=\"alpheios-panel-options\">\n    <h4>Options</h4>\n    <div id=\"alpheios-locale-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-locale-selector-list\" class=\"uk-form-label\">Locale:</label>\n        <select id=\"alpheios-locale-selector-list\" class=\"uk-select\"></select>\n    </div>\n\n    <div id=\"alpheios-ui-type-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-ui-type-selector-list\" class=\"uk-form-label\">Panel position:</label>\n        <select id=\"alpheios-ui-type-selector-list\" class=\"uk-select\"></select>\n    </div>\n\n    <div id=\"alpheios-position-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-position-selector-list\" class=\"uk-form-label\">Panel position:</label>\n        <select id=\"alpheios-position-selector-list\" class=\"uk-select\"></select>\n    </div>\n</div>";
+module.exports = "<div class=\"auk\" data-component=\"alpheios-panel-options\">\n    <h4>Options</h4>\n    <div id=\"alpheios-language-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-language-selector-list\" class=\"uk-form-label\">Preferred Language:</label>\n        <select id=\"alpheios-language-selector-list\" class=\"uk-select\"></select>\n    </div>\n\n    <div id=\"alpheios-locale-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-locale-selector-list\" class=\"uk-form-label\">Locale:</label>\n        <select id=\"alpheios-locale-selector-list\" class=\"uk-select\"></select>\n    </div>\n\n    <div id=\"alpheios-ui-type-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-ui-type-selector-list\" class=\"uk-form-label\">UI Type:</label>\n        <select id=\"alpheios-ui-type-selector-list\" class=\"uk-select\"></select>\n    </div>\n\n    <div id=\"alpheios-position-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-position-selector-list\" class=\"uk-form-label\">Panel position:</label>\n        <select id=\"alpheios-position-selector-list\" class=\"uk-select\"></select>\n    </div>\n</div>\n";
 
 /***/ }),
 /* 22 */
