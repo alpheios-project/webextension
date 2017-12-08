@@ -89,7 +89,8 @@ class Message {
       STATUS_REQUEST: Symbol.for('Alpheios_StatusRequest'),
       STATUS_RESPONSE: Symbol.for('Alpheios_StatusResponse'),
       ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
-      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest')
+      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
+      OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest')
     }
   }
 
@@ -1994,6 +1995,7 @@ class ContentProcess {
     this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.STATUS_REQUEST, this.handleStatusRequest, this)
     this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
     this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.OPEN_PANEL_REQUEST, this.handleOpenPanelRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     // this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
@@ -2193,6 +2195,17 @@ class ContentProcess {
     this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
+      }
+    )
+  }
+
+  handleOpenPanelRequest (request, sender) {
+    console.log(`Open panel request received. Sending a response back.`)
+    this.panel.open()
+    this.status = Status.PANEL_OPEN
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
+      (error) => {
+        console.error(`Unable to send a response to panel open request: ${error}`)
       }
     )
   }
@@ -11477,7 +11490,8 @@ class State {
 /* harmony default export */ __webpack_exports__["a"] = ({
   PENDING: Symbol.for('Pending'), // Content script has not been fully initialized yet
   ACTIVE: Symbol.for('Active'), // Content script is loaded and active
-  DEACTIVATED: Symbol.for('Deactivated') // Content script has been loaded, but is deactivated
+  DEACTIVATED: Symbol.for('Deactivated'), // Content script has been loaded, but is deactivated
+  PANEL_OPEN: Symbol.for('PanelOpened') // Panel has been opened
 });
 
 

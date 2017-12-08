@@ -7,6 +7,7 @@ import Message from '../lib/messaging/message'
 import MessagingService from '../lib/messaging/service'
 import ActivationRequest from '../lib/messaging/request/activation-request'
 import DeactivationRequest from '../lib/messaging/request/deactivation-request'
+import OpenPanelRequest from '../lib/messaging/request/open-panel-request'
 import WordDataResponse from '../lib/messaging/response/word-data-response'
 import Statuses from '../content/statuses'
 import ContentTab from './content-tab'
@@ -38,6 +39,8 @@ export default class BackgroundProcess {
       activateMenuItemText: 'Activate',
       deactivateMenuItemId: 'deactivate-alpheios-content',
       deactivateMenuItemText: 'Deactivate',
+      openPanelMenuItemId: 'open-alpheios-panel',
+      openPanelMenuItemText: 'Open Panel',
       sendExperiencesMenuItemId: 'send-experiences',
       sendExperiencesMenuItemText: 'Send Experiences to a remote server',
       contentCSSFileName: 'styles/style.min.css',
@@ -218,7 +221,17 @@ export default class BackgroundProcess {
       this.activateContent(tab.id)
     } else if (info.menuItemId === this.settings.deactivateMenuItemId) {
       this.deactivateContent(tab.id)
+    } else if (info.menuItemId === this.settings.openPanelMenuItemId) {
+      this.activateContent(tab.id)
+      this.messagingService.sendRequestToTab(new OpenPanelRequest(), 10000, tab.id).then(
+        (message) => {
+        },
+        (error) => {
+          console.log(`Error opening panel ${error}`)
+        }
+      );
     }
+
   }
 
   async browserActionListener (tab) {
@@ -237,6 +250,10 @@ export default class BackgroundProcess {
     browser.contextMenus.create({
       id: BackgroundProcess.defaults.deactivateMenuItemId,
       title: BackgroundProcess.defaults.deactivateMenuItemText
+    })
+    browser.contextMenus.create({
+      id: BackgroundProcess.defaults.openPanelMenuItemId,
+      title: BackgroundProcess.defaults.openPanelMenuItemText
     })
   }
 }

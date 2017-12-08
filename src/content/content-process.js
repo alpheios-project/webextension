@@ -36,6 +36,7 @@ export default class ContentProcess {
     this.messagingService.addHandler(Message.types.STATUS_REQUEST, this.handleStatusRequest, this)
     this.messagingService.addHandler(Message.types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
     this.messagingService.addHandler(Message.types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
+    this.messagingService.addHandler(Message.types.OPEN_PANEL_REQUEST, this.handleOpenPanelRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     // this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
@@ -235,6 +236,17 @@ export default class ContentProcess {
     this.messagingService.sendResponseToBg(new StatusResponse(request, this.status)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
+      }
+    )
+  }
+
+  handleOpenPanelRequest (request, sender) {
+    console.log(`Open panel request received. Sending a response back.`)
+    this.panel.open()
+    this.status = Status.PANEL_OPEN
+    this.messagingService.sendResponseToBg(new StatusResponse(request, this.status)).catch(
+      (error) => {
+        console.error(`Unable to send a response to panel open request: ${error}`)
       }
     )
   }

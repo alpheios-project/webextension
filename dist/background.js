@@ -89,7 +89,8 @@ class Message {
       STATUS_REQUEST: Symbol.for('Alpheios_StatusRequest'),
       STATUS_RESPONSE: Symbol.for('Alpheios_StatusResponse'),
       ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
-      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest')
+      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
+      OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest')
     }
   }
 
@@ -1739,6 +1740,24 @@ class ResourceProvider {
 
 /***/ }),
 /* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
+
+
+class RequestMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */] {
+  constructor (body) {
+    super(body)
+    this.role = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.REQUEST)
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = RequestMessage;
+
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4801,7 +4820,7 @@ class AlpheiosLexAdapter extends BaseLexiconAdapter {
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports) {
 
 var g;
@@ -4828,7 +4847,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -4860,24 +4879,6 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* defa
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = ResponseMessage;
-
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
-
-
-class RequestMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */] {
-  constructor (body) {
-    super(body)
-    this.role = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.REQUEST)
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = RequestMessage;
 
 
 
@@ -5338,7 +5339,7 @@ exports.Transporter = Transporter;
 exports.StorageAdapter = LocalStorageAdapter;
 exports.TestAdapter = TestAdapter;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 7 */
@@ -5359,7 +5360,7 @@ let browserFeatures = new __WEBPACK_IMPORTED_MODULE_0__lib_browser__["a" /* defa
 console.log(`Support of a "browser" namespace: ${browserFeatures.browserNamespace}`)
 if (!browserFeatures.browserNamespace) {
   console.log('"browser" namespace is not supported, will load a WebExtensions polyfill into the background script')
-  window.browser = __webpack_require__(29)
+  window.browser = __webpack_require__(30)
 }
 
 let monitoredBackgroundProcess = __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].track(
@@ -5426,15 +5427,17 @@ class Browser {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__ = __webpack_require__(18);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_request_activation_request__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_request_deactivation_request__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_messaging_response_word_data_response__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__content_statuses__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__content_tab__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_state__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lib_selection_text_selector__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__test_stubs_definitions_test__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_alpheios_experience__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_alpheios_experience__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_messaging_request_open_panel_request__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_messaging_response_word_data_response__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__content_statuses__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__content_tab__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lib_state__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__lib_selection_text_selector__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__test_stubs_definitions_test__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_alpheios_experience__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15_alpheios_experience__);
 /* global browser */
+
 
 
 
@@ -5470,6 +5473,8 @@ class BackgroundProcess {
       activateMenuItemText: 'Activate',
       deactivateMenuItemId: 'deactivate-alpheios-content',
       deactivateMenuItemText: 'Deactivate',
+      openPanelMenuItemId: 'open-alpheios-panel',
+      openPanelMenuItemText: 'Open Panel',
       sendExperiencesMenuItemId: 'send-experiences',
       sendExperiencesMenuItemText: 'Send Experiences to a remote server',
       contentCSSFileName: 'styles/style.min.css',
@@ -5496,7 +5501,7 @@ class BackgroundProcess {
     browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
     browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
 
-    this.transporter = new __WEBPACK_IMPORTED_MODULE_14_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_14_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_14_alpheios_experience__["TestAdapter"],
+    this.transporter = new __WEBPACK_IMPORTED_MODULE_15_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_15_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_15_alpheios_experience__["TestAdapter"],
       BackgroundProcess.defaults.experienceStorageThreshold, BackgroundProcess.defaults.experienceStorageCheckInterval)
   }
 
@@ -5505,7 +5510,7 @@ class BackgroundProcess {
   }
 
   isContentActive (tabID) {
-    return this.isContentLoaded(tabID) && this.tabs.get(tabID).status === __WEBPACK_IMPORTED_MODULE_9__content_statuses__["a" /* default */].ACTIVE
+    return this.isContentLoaded(tabID) && this.tabs.get(tabID).status === __WEBPACK_IMPORTED_MODULE_10__content_statuses__["a" /* default */].ACTIVE
   }
 
   activateContent (tabID) {
@@ -5575,7 +5580,7 @@ class BackgroundProcess {
     let contentCSS = this.loadContentCSS(tabID)
     Promise.all([polyfillScript, contentScript, contentCSS]).then(() => {
       console.log('Content script(s) has been loaded successfully or already present')
-      this.tabs.set(tabID, new __WEBPACK_IMPORTED_MODULE_10__content_tab__["a" /* default */](tabID, __WEBPACK_IMPORTED_MODULE_9__content_statuses__["a" /* default */].ACTIVE))
+      this.tabs.set(tabID, new __WEBPACK_IMPORTED_MODULE_11__content_tab__["a" /* default */](tabID, __WEBPACK_IMPORTED_MODULE_10__content_statuses__["a" /* default */].ACTIVE))
       BackgroundProcess.defaults.contentScriptLoaded = true
     }, (error) => {
       throw new Error('Content script loading failed', error)
@@ -5583,25 +5588,25 @@ class BackgroundProcess {
   }
 
   sendResponseToTabStatefully (request, tabID, state = undefined) {
-    return __WEBPACK_IMPORTED_MODULE_11__lib_state__["a" /* default */].value(state, this.messagingService.sendResponseToTab(request, tabID))
+    return __WEBPACK_IMPORTED_MODULE_12__lib_state__["a" /* default */].value(state, this.messagingService.sendResponseToTab(request, tabID))
   }
 
   async getHomonymStatefully (languageCode, word, state) {
     try {
       let result = await this.maAdapter.getHomonym(languageCode, word, state)
       // If no valid homonym data found should always throw an error to be caught in a calling function
-      return __WEBPACK_IMPORTED_MODULE_11__lib_state__["a" /* default */].value(state, result)
+      return __WEBPACK_IMPORTED_MODULE_12__lib_state__["a" /* default */].value(state, result)
     } catch (error) {
       /*
       getHomonym is non-statefull function. If it throws an error, we should catch it here, attach state
       information, and rethrow
       */
-      throw (__WEBPACK_IMPORTED_MODULE_11__lib_state__["a" /* default */].value(state, error))
+      throw (__WEBPACK_IMPORTED_MODULE_12__lib_state__["a" /* default */].value(state, error))
     }
   }
 
   async handleWordDataRequestStatefully (request, sender, state = undefined) {
-    let textSelector = __WEBPACK_IMPORTED_MODULE_12__lib_selection_text_selector__["a" /* default */].readObject(request.body)
+    let textSelector = __WEBPACK_IMPORTED_MODULE_13__lib_selection_text_selector__["a" /* default */].readObject(request.body)
     console.log(`Request for a "${textSelector.normalizedText}" word`)
     let tabID = sender.tab.id
 
@@ -5609,7 +5614,7 @@ class BackgroundProcess {
       // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
       let homonym, wordData
       ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
-      if (!homonym) { throw __WEBPACK_IMPORTED_MODULE_11__lib_state__["a" /* default */].value(state, new Error(`Homonym data is empty`)) }
+      if (!homonym) { throw __WEBPACK_IMPORTED_MODULE_12__lib_state__["a" /* default */].value(state, new Error(`Homonym data is empty`)) }
 
       wordData = this.langData.getSuffixes(homonym, state)
       /* wordData.definitions = []
@@ -5627,15 +5632,15 @@ class BackgroundProcess {
 //      wordData.definition = encodeURIComponent(wordData.definition)
       console.log(wordData)
 
-      let returnObject = this.sendResponseToTabStatefully(new __WEBPACK_IMPORTED_MODULE_8__lib_messaging_response_word_data_response__["a" /* default */](request, wordData, __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND), tabID, state)
-      return __WEBPACK_IMPORTED_MODULE_11__lib_state__["a" /* default */].emptyValue(returnObject.state)
+      let returnObject = this.sendResponseToTabStatefully(new __WEBPACK_IMPORTED_MODULE_9__lib_messaging_response_word_data_response__["a" /* default */](request, wordData, __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND), tabID, state)
+      return __WEBPACK_IMPORTED_MODULE_12__lib_state__["a" /* default */].emptyValue(returnObject.state)
     } catch (error) {
-      let errorValue = __WEBPACK_IMPORTED_MODULE_11__lib_state__["a" /* default */].getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
+      let errorValue = __WEBPACK_IMPORTED_MODULE_12__lib_state__["a" /* default */].getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
       console.error(`Word data retrieval failed: ${errorValue}`)
       let returnObject = this.sendResponseToTabStatefully(
-        new __WEBPACK_IMPORTED_MODULE_8__lib_messaging_response_word_data_response__["a" /* default */](request, undefined, __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND), tabID, __WEBPACK_IMPORTED_MODULE_11__lib_state__["a" /* default */].getState(error)
+        new __WEBPACK_IMPORTED_MODULE_9__lib_messaging_response_word_data_response__["a" /* default */](request, undefined, __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND), tabID, __WEBPACK_IMPORTED_MODULE_12__lib_state__["a" /* default */].getState(error)
       )
-      return __WEBPACK_IMPORTED_MODULE_11__lib_state__["a" /* default */].emptyValue(returnObject.state)
+      return __WEBPACK_IMPORTED_MODULE_12__lib_state__["a" /* default */].emptyValue(returnObject.state)
     }
   }
 
@@ -5650,7 +5655,17 @@ class BackgroundProcess {
       this.activateContent(tab.id)
     } else if (info.menuItemId === this.settings.deactivateMenuItemId) {
       this.deactivateContent(tab.id)
+    } else if (info.menuItemId === this.settings.openPanelMenuItemId) {
+      this.activateContent(tab.id)
+      this.messagingService.sendRequestToTab(new __WEBPACK_IMPORTED_MODULE_8__lib_messaging_request_open_panel_request__["a" /* default */](), 10000, tab.id).then(
+        (message) => {
+        },
+        (error) => {
+          console.log(`Error opening panel ${error}`)
+        }
+      );
     }
+
   }
 
   async browserActionListener (tab) {
@@ -5669,6 +5684,10 @@ class BackgroundProcess {
     browser.contextMenus.create({
       id: BackgroundProcess.defaults.deactivateMenuItemId,
       title: BackgroundProcess.defaults.deactivateMenuItemText
+    })
+    browser.contextMenus.create({
+      id: BackgroundProcess.defaults.openPanelMenuItemId,
+      title: BackgroundProcess.defaults.openPanelMenuItemText
     })
   }
 }
@@ -16016,7 +16035,7 @@ class Lexicons {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_lexicon_client__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_lexicon_client__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lexicon__ = __webpack_require__(14);
 
 
@@ -16071,7 +16090,7 @@ class LanguageLexicons {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_lexicon_client__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_lexicon_client__ = __webpack_require__(3);
 
 
 class Lexicon {
@@ -16173,7 +16192,7 @@ if (!rng) {
 
 module.exports = rng;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
 /* 17 */
@@ -16209,7 +16228,7 @@ module.exports = bytesToUuid;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(19);
 /* global browser */
 
@@ -16372,7 +16391,7 @@ class StoredRequest {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(2);
 
 
 
@@ -16392,7 +16411,7 @@ class ActivationRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(2);
 
 
 
@@ -16412,7 +16431,27 @@ class DeactivationRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(2);
+
+
+
+class OpenPanelRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["a" /* default */] {
+  constructor () {
+    super(undefined)
+    this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].types.OPEN_PANEL_REQUEST)
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = OpenPanelRequest;
+
+
+
+/***/ }),
+/* 23 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(5);
 
 
 
@@ -16427,7 +16466,7 @@ class WordDataResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -16437,12 +16476,13 @@ class WordDataResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["
 /* harmony default export */ __webpack_exports__["a"] = ({
   PENDING: Symbol.for('Pending'), // Content script has not been fully initialized yet
   ACTIVE: Symbol.for('Active'), // Content script is loaded and active
-  DEACTIVATED: Symbol.for('Deactivated') // Content script has been loaded, but is deactivated
+  DEACTIVATED: Symbol.for('Deactivated'), // Content script has been loaded, but is deactivated
+  PANEL_OPEN: Symbol.for('PanelOpened') // Panel has been opened
 });
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -16457,7 +16497,7 @@ class ContentTab {
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -16493,11 +16533,11 @@ class State {
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(1);
 
 
@@ -16580,7 +16620,7 @@ class TextSelector {
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -16594,7 +16634,7 @@ class TextQuoteSelector {
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -16627,7 +16667,7 @@ class TestDefinitionsService {
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
