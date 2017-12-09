@@ -27,12 +27,22 @@ export default class Options extends Component {
           selector: '#alpheios-position-selector-list'
         },
         uiType: {
-          defaultValue: 'popup',
+          defaultValue: 'panel',
           values: [
             {value: 'popup', text: 'Pop-up'},
             {value: 'panel', text: 'Panel'}
           ],
           selector: '#alpheios-ui-type-selector-list'
+        },
+        defaultLanguage: {
+          defaultValue: 'lat',
+          values: [
+            {value: 'lat', text: 'Latin'},
+            {value: 'grc', text: 'Greek'},
+            {value: 'ara', text: 'Arabic'},
+            {value: 'per', text: 'Persian'}
+          ],
+          selector: '#alpheios-language-selector-list'
         }
       }
     },

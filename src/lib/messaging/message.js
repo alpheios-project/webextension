@@ -17,7 +17,8 @@ export default class Message {
       STATUS_REQUEST: Symbol.for('Alpheios_StatusRequest'),
       STATUS_RESPONSE: Symbol.for('Alpheios_StatusResponse'),
       ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
-      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest')
+      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
+      OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest')
     }
   }
 

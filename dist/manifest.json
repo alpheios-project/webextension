@@ -13,8 +13,8 @@
     "storage"
   ],
   "browser_action": {
-    "default_icon": "icons/circle-o-notch.svg",
-    "default_title": "Load Alpheios",
+    "default_icon": "icons/alpheios_32.png",
+    "default_title": "Activate Alpheios",
     "browser_style": true
   },
   "background": {

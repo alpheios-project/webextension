@@ -36,10 +36,12 @@ export default class ContentProcess {
     this.messagingService.addHandler(Message.types.STATUS_REQUEST, this.handleStatusRequest, this)
     this.messagingService.addHandler(Message.types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
     this.messagingService.addHandler(Message.types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
+    this.messagingService.addHandler(Message.types.OPEN_PANEL_REQUEST, this.handleOpenPanelRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     // this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
+    this.reactivate()
   }
 
   loadUI () {
@@ -48,11 +50,6 @@ export default class ContentProcess {
     ContentProcess.loadTemplate(Template)
 
     // Initialize components
-    this.pageControls = new PageControls({
-      methods: {
-        onPanelToggle: this.togglePanel.bind(this)
-      }
-    })
     this.panel = new Panel({})
     // Should be loaded after Panel because options are inserted into a panel
     this.options = new Options({
@@ -60,6 +57,7 @@ export default class ContentProcess {
         ready: (options) => {
           this.status = Statuses.ACTIVE
           this.setPanelPositionTo(options.panelPosition.currentValue)
+          this.setDefaultLanguageTo(options.defaultLanguage.currentValue)
           console.log('Content script is set to active')
         },
         onChange: this.optionChangeListener.bind(this)
@@ -119,13 +117,12 @@ export default class ContentProcess {
   deactivate () {
     console.log('Content has been deactivated.')
     this.panel.close()
-    this.pageControl.classList.add(this.settings.hiddenClassName)
     this.status = Statuses.DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
-    this.pageControl.classList.remove(this.settings.hiddenClassName)
+    this.panel.open()
     this.status = Statuses.ACTIVE
   }
 
@@ -262,6 +259,17 @@ export default class ContentProcess {
     )
   }
 
+  handleOpenPanelRequest (request, sender) {
+    console.log(`Open panel request received. Sending a response back.`)
+    this.panel.open()
+    this.status = Status.PANEL_OPEN
+    this.messagingService.sendResponseToBg(new StatusResponse(request, this.status)).catch(
+      (error) => {
+        console.error(`Unable to send a response to panel open request: ${error}`)
+      }
+    )
+  }
+
   togglePanel () {
     this.panel.toggle()
   }
@@ -283,6 +291,11 @@ export default class ContentProcess {
   optionChangeListener (optionName, optionValue) {
     if (optionName === 'locale' && this.presenter) { this.presenter.setLocale(optionValue) }
     if (optionName === 'panelPosition') { this.setPanelPositionTo(optionValue) }
+    if (optionName === 'defaulLanguage') { this.setDefaultLanguageTo(optionValue)}
+  }
+
+  setDefaultLanguageTo (language) {
+    this.defaultLanguage = language
   }
 
   setPanelPositionTo (position) {
@@ -295,7 +308,7 @@ export default class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = HTMLSelector.getSelector(event.target, 'grc')
+      let textSelector = HTMLSelector.getSelector(event.target, this.defaultLanguage)
 
       // HTMLSelector.getExtendedTextQuoteSelector()
       if (!textSelector.isEmpty()) {
