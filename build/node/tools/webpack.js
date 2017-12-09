@@ -4,6 +4,9 @@ const webpack = require('webpack')
 const webpackContentConfig = {
   context: path.resolve(__dirname, '../../../src/content'),
   entry: './content.js',
+  resolve: {
+    mainFields: ['moduleExternal', 'module', 'main']
+  },
   devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, '../../../dist'),
@@ -78,6 +81,9 @@ const webpackContentConfig = {
 const webpackBackgroundConfig = {
   context: path.resolve(__dirname, '../../../src/background'),
   entry: './background.js',
+  resolve: {
+    mainFields: ['moduleExternal', 'module', 'main']
+  },
   devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, '../../../dist'),

@@ -1,8 +1,6 @@
 /* global browser */
-import {Constants as LDMConstants, Definition} from 'alpheios-data-models'
 import * as InflectionTables from 'alpheios-inflection-tables'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
-import Lexicons from './lexicons'
 import Message from '../lib/messaging/message'
 import MessagingService from '../lib/messaging/service'
 import ActivationRequest from '../lib/messaging/request/activation-request'
@@ -13,6 +11,7 @@ import ContentTab from './content-tab'
 import State from '../lib/state'
 import TextSelector from '../lib/selection/text-selector'
 import TestDefinitionService from '../../test/stubs/definitions/test'
+import {Lexicons} from 'alpheios-lexicon-client'
 import {
   Transporter,
   StorageAdapter as LocalExperienceStorage,
@@ -53,8 +52,6 @@ export default class BackgroundProcess {
     console.log('initialize')
 
     this.langData = new InflectionTables.LanguageData([InflectionTables.LatinDataSet, InflectionTables.GreekDataSet]).loadData()
-    // this.lexiconID = 'https://github.com/alpheios-project/lsj'
-    this.lexicons = new Lexicons(LDMConstants.LANG_LATIN)
 
     this.messagingService.addHandler(Message.types.WORD_DATA_REQUEST, this.handleWordDataRequestStatefully, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
@@ -175,27 +172,22 @@ export default class BackgroundProcess {
 
     try {
       // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
-      let homonym, wordData
+      let homonym, lexicalData
       ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
       if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
 
-      wordData = this.langData.getSuffixes(homonym, state)
-      /* wordData.definitions = []
+      lexicalData = this.langData.getSuffixes(homonym, state)
       for (let lexeme of homonym.lexemes) {
-        // Will return an array of Definition objects
-        // This returns a proxy, not a definition object
-        let definitions = await this.lexicons[LDMConstants.LANG_LATIN].lookupFullDef(lexeme.lemma)
-        for (let definition of definitions) {
-          definition.text = encodeURIComponent(definition.text)
-          console.log(`Word definition is: `, definition)
-          wordData.definitions.push(new Definition(definition.text, definition.language, definition.format))
-        }
-      } */
-//      wordData.definition = await TestDefinitionService.getDefinition(textSelector.language, textSelector.normalizedText)
-//      wordData.definition = encodeURIComponent(wordData.definition)
-      console.log(wordData)
+        let shortDefs = await Lexicons.fetchShortDefs(lexeme.lemma)
+        console.log(`Retrieved short definitions:`, shortDefs)
+        lexeme.meaning.appendShortDefs(shortDefs)
+        let fullDefs = await Lexicons.fetchFullDefs(lexeme.lemma)
+        console.log(`Retrieved full definitions:`, fullDefs)
+        lexeme.meaning.appendFullDefs(fullDefs)
+      }
+      console.log(lexicalData)
 
-      let returnObject = this.sendResponseToTabStatefully(new WordDataResponse(request, wordData, Message.statuses.DATA_FOUND), tabID, state)
+      let returnObject = this.sendResponseToTabStatefully(new WordDataResponse(request, lexicalData, Message.statuses.DATA_FOUND), tabID, state)
       return State.emptyValue(returnObject.state)
     } catch (error) {
       let errorValue = State.getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown

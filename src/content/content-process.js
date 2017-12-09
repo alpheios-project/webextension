@@ -168,9 +168,9 @@ export default class ContentProcess {
       let message = messageObject.value
 
       if (Message.statusSymIs(message, Message.statuses.DATA_FOUND)) {
-        let wordData = Lib.WordData.readObject(message.body)
-        console.log('Word data is: ', wordData)
-        this.displayWordData(wordData)
+        let lexicalData = Lib.LexicalData.readObject(message.body)
+        console.log('Word data is: ', lexicalData)
+        this.displayWordData(lexicalData)
       } else if (Message.statusSymIs(message, Message.statuses.NO_DATA_FOUND)) {
         this.showMessage('<p>Sorry, the word you requested was not found.</p>')
       }
@@ -181,7 +181,7 @@ export default class ContentProcess {
     }
   }
 
-  displayWordData (wordData) {
+  displayWordData (lexicalData) {
     /* let definitions = ''
     if (wordData.definitions) {
       for (let definition of wordData.definitions) {
@@ -190,15 +190,33 @@ export default class ContentProcess {
       }
     } */
 
+    let shortDefsText = ''
+    let fullDefsText = ''
+    for (let lexeme of lexicalData.homonym.lexemes) {
+      if (lexeme.meaning.shortDefs.length > 0) {
+        shortDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3><br>\n`
+        for (let shortDef of lexeme.meaning.shortDefs) {
+          shortDefsText += `${shortDef.text}<br>\n`
+        }
+      }
+
+      if (lexeme.meaning.fullDefs.length > 0) {
+        fullDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3><br>\n`
+        for (let fullDef of lexeme.meaning.fullDefs) {
+          fullDefsText += `${fullDef.text}<br>\n`
+        }
+      }
+    }
+
     // Populate a panel
     this.panel.clear()
-    // this.updateDefinition(wordData)
-    this.updateInflectionTable(wordData)
+    this.updateDefinition(`<h2>Short definitions:</h2><br>${shortDefsText}<h2>Full definitions:</h2><br>${fullDefsText}`)
+    this.updateInflectionTable(lexicalData)
 
     // Pouplate a popup
     this.vueInstance.panel = this.panel
-    this.vueInstance.popupTitle = `${wordData.homonym.targetWord}`
-    // this.vueInstance.popupContent = decodeURIComponent(definitions)
+    this.vueInstance.popupTitle = `${lexicalData.homonym.targetWord}`
+    this.vueInstance.popupContent = decodeURIComponent(shortDefsText)
 
     if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
       this.panel.open()
@@ -248,8 +266,8 @@ export default class ContentProcess {
     this.panel.toggle()
   }
 
-  updateDefinition (wordData) {
-    this.panel.options.elements.definitionContainer.innerHTML = decodeURIComponent(wordData.definition)
+  updateDefinition (definition) {
+    this.panel.options.elements.definitionContainer.innerHTML = definition
   }
 
   updateInflectionTable (wordData) {
