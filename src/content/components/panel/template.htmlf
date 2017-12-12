@@ -28,5 +28,5 @@
                   uk-icon="icon: cog; ratio: 2" data-target="alpheios-panel-content-options"></span>
         </div>
     </div>
-  </wrapper>
+  </div>
 </div>
