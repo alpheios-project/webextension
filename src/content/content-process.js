@@ -283,7 +283,7 @@ export default class ContentProcess {
   optionChangeListener (optionName, optionValue) {
     if (optionName === 'locale' && this.presenter) { this.presenter.setLocale(optionValue) }
     if (optionName === 'panelPosition') { this.setPanelPositionTo(optionValue) }
-    if (optionName === 'defaulLanguage') { this.setDefaultLanguageTo(optionValue)}
+    if (optionName === 'defaultLanguage') { this.setDefaultLanguageTo(optionValue)}
   }
 
   setDefaultLanguageTo (language) {
