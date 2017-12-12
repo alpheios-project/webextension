@@ -2365,26 +2365,18 @@ class ContentProcess {
   }
 
   displayWordData (lexicalData) {
-    /* let definitions = ''
-    if (wordData.definitions) {
-      for (let definition of wordData.definitions) {
-        definition.text = decodeURIComponent(definition.text)
-        definitions += definition.text
-      }
-    } */
-
     let shortDefsText = ''
     let fullDefsText = ''
     for (let lexeme of lexicalData.homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
-        shortDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3><br>\n`
+        shortDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
         for (let shortDef of lexeme.meaning.shortDefs) {
           shortDefsText += `${shortDef.text}<br>\n`
         }
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {
-        fullDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3><br>\n`
+        fullDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
         for (let fullDef of lexeme.meaning.fullDefs) {
           fullDefsText += `${fullDef.text}<br>\n`
         }
@@ -2393,7 +2385,7 @@ class ContentProcess {
 
     // Populate a panel
     this.panel.clear()
-    this.updateDefinition(`<h2>Short definitions:</h2><br>${shortDefsText}<h2>Full definitions:</h2><br>${fullDefsText}`)
+    this.updateDefinition(`<h2>Short definitions:</h2>${shortDefsText}<h2>Full definitions:</h2>${fullDefsText}`)
     this.updateInflectionTable(lexicalData)
 
     // Pouplate a popup
@@ -9851,8 +9843,8 @@ class StoredRequest {
 
 
 class WordDataRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["a" /* default */] {
-  constructor (textSelector) {
-    super(textSelector)
+  constructor (textSelector, options = {}) {
+    super({textSelector: textSelector, options: options})
     this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].types.WORD_DATA_REQUEST)
   }
 }
@@ -9957,14 +9949,13 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
     for (let tab of this.options.elements.tabs) {
       let target = tab.dataset.target
       let targetElem = document.getElementById(target)
-      if( targetElem.classList.contains(this.activeClassName)) {
+      if (targetElem.classList.contains(this.activeClassName)) {
         activeTab = tab
       } else {
         document.getElementById(target).classList.add(this.hiddenClassName)
       }
       tab.addEventListener('click', this.switchTab.bind(this))
     }
-    debugger;
     this.changeActiveTabTo(activeTab)
   }
 
@@ -10112,7 +10103,7 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
 /* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\">\r\n  <div class=\"alpheios-panel__wrapper\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(19) + "\"></div>\r\n        <span id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div id=\"alpheios-panel-content-definition\"></div>\r\n            <div id=\"alpheios-panel-content-infl-table\">\r\n                <div id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-options\" class=\"active\"><div data-component=\"alpheios-panel-options\"></div></div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn\"\r\n                  data-target=\"alpheios-panel-content-definition\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\r\n                  data-target=\"alpheios-panel-content-infl-table\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\r\n                  uk-icon=\"icon: cog; ratio: 2\" data-target=\"alpheios-panel-content-options\"></span>\r\n        </div>\r\n    </div>\r\n  </wrapper>\r\n</div>\r\n";
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\">\r\n  <div class=\"alpheios-panel__wrapper\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(19) + "\"></div>\r\n        <span id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div id=\"alpheios-panel-content-definition\"></div>\r\n            <div id=\"alpheios-panel-content-infl-table\">\r\n                <div id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-options\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn active\"\r\n                  data-target=\"alpheios-panel-content-definition\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\r\n                  data-target=\"alpheios-panel-content-infl-table\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\r\n                  uk-icon=\"icon: cog; ratio: 2\" data-target=\"alpheios-panel-content-options\"></span>\r\n        </div>\r\n    </div>\r\n  </div>\r\n</div>";
 
 /***/ }),
 /* 19 */

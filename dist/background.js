@@ -2524,7 +2524,7 @@ let browserFeatures = new __WEBPACK_IMPORTED_MODULE_0__lib_browser__["a" /* defa
 console.log(`Support of a "browser" namespace: ${browserFeatures.browserNamespace}`)
 if (!browserFeatures.browserNamespace) {
   console.log('"browser" namespace is not supported, will load a WebExtensions polyfill into the background script')
-  window.browser = __webpack_require__(27)
+  window.browser = __webpack_require__(26)
 }
 
 let monitoredBackgroundProcess = __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].track(
@@ -2595,10 +2595,9 @@ class Browser {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__content_tab__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_state__ = __webpack_require__(22);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_selection_text_selector__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__test_stubs_definitions_test__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_alpheios_lexicon_client__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_alpheios_experience__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_alpheios_experience__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_alpheios_lexicon_client__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_alpheios_experience__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_alpheios_experience__);
 /* global browser */
 
 
@@ -2612,7 +2611,7 @@ class Browser {
 
 
 
-
+// import TestDefinitionService from '../../test/stubs/definitions/test'
 
 
 
@@ -2661,7 +2660,7 @@ class BackgroundProcess {
     browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
     browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
 
-    this.transporter = new __WEBPACK_IMPORTED_MODULE_14_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_14_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_14_alpheios_experience__["TestAdapter"],
+    this.transporter = new __WEBPACK_IMPORTED_MODULE_13_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_13_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_13_alpheios_experience__["TestAdapter"],
       BackgroundProcess.defaults.experienceStorageThreshold, BackgroundProcess.defaults.experienceStorageCheckInterval)
   }
 
@@ -2766,7 +2765,8 @@ class BackgroundProcess {
   }
 
   async handleWordDataRequestStatefully (request, sender, state = undefined) {
-    let textSelector = __WEBPACK_IMPORTED_MODULE_11__lib_selection_text_selector__["a" /* default */].readObject(request.body)
+    let textSelector = __WEBPACK_IMPORTED_MODULE_11__lib_selection_text_selector__["a" /* default */].readObject(request.body.textSelector)
+    let requestOptions = request.body.options
     console.log(`Request for a "${textSelector.normalizedText}" word`)
     let tabID = sender.tab.id
 
@@ -2778,10 +2778,10 @@ class BackgroundProcess {
 
       lexicalData = this.langData.getSuffixes(homonym, state)
       for (let lexeme of homonym.lexemes) {
-        let shortDefs = await __WEBPACK_IMPORTED_MODULE_13_alpheios_lexicon_client__["a" /* Lexicons */].fetchShortDefs(lexeme.lemma)
+        let shortDefs = await __WEBPACK_IMPORTED_MODULE_12_alpheios_lexicon_client__["a" /* Lexicons */].fetchShortDefs(lexeme.lemma, requestOptions)
         console.log(`Retrieved short definitions:`, shortDefs)
         lexeme.meaning.appendShortDefs(shortDefs)
-        let fullDefs = await __WEBPACK_IMPORTED_MODULE_13_alpheios_lexicon_client__["a" /* Lexicons */].fetchFullDefs(lexeme.lemma)
+        let fullDefs = await __WEBPACK_IMPORTED_MODULE_12_alpheios_lexicon_client__["a" /* Lexicons */].fetchFullDefs(lexeme.lemma, requestOptions)
         console.log(`Retrieved full definitions:`, fullDefs)
         lexeme.meaning.appendFullDefs(fullDefs)
       }
@@ -10862,39 +10862,6 @@ class TextQuoteSelector {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-class TestDefinitionsService {
-  static get definitionStub () {
-    return `
-                <h4>Some Dummy word data</h4>
-                <p>
-                    Nunc maximus ex id tincidunt pretium. Nunc vel dignissim magna, ut hendrerit lectus. Proin aliquet purus at
-                    ullamcorper dignissim. Sed mollis maximus dui. Morbi viverra, metus in fermentum lobortis, arcu est vehicula nibh, a
-                    efficitur orci libero eu eros. Nam vulputate risus sed odio fermentum, quis pharetra nibh tincidunt. Mauris eu
-                    posuere nunc, tincidunt accumsan metus. Nullam quis enim laoreet, euismod lacus ut, maximus ipsum. Donec vitae
-                    sapien non sem eleifend posuere sed vel mauris.
-                </p>
-                <p>
-                    Sed non orci convallis, iaculis ipsum quis, luctus orci. In et auctor metus. Vestibulum venenatis turpis nibh, vitae
-                    ornare urna fringilla eu. Nam efficitur blandit metus. Nullam in quam et sapien iaculis accumsan nec ut neque.
-                    Aenean aliquam urna quis egestas tempor. Pellentesque habitant morbi tristique senectus et netus et malesuada fames
-                    ac turpis egestas. Praesent sit amet tellus dignissim, tristique ante luctus, gravida lectus.
-                </p>
-            `
-  }
-
-  static async getDefinition (language, word) {
-    return TestDefinitionsService.definitionStub
-  }
-}
-/* unused harmony export default */
-
-
-
-/***/ }),
-/* 26 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Lexicons; });
 /* unused harmony export AlpheiosLexAdapter */
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(1);
@@ -12704,38 +12671,62 @@ class AlpheiosLexAdapter extends BaseLexiconAdapter {
 }
 
 class Lexicons {
-  static async fetchShortDefs (lemma) {
-    // TODO: Add a timeout
+  static get defaults () {
+    return {
+      timeout: 10000
+    }
+  }
+
+  static async fetchShortDefs (lemma, options) {
+    return Lexicons.fetchDefinitions(lemma, options, 'lookupShortDef')
+  }
+
+  static async fetchFullDefs (lemma, options) {
+    return Lexicons.fetchDefinitions(lemma, options, 'lookupFullDef')
+  }
+
+  static async fetchDefinitions (lemma, options, lookupFunction) {
+    let config = Object.assign(Lexicons.defaults, options);
+
     let requests = [];
     try {
       let adapters = Lexicons.getLexiconAdapters(lemma.languageID);
-      requests = adapters.map(adapter => adapter.lookupShortDef(lemma));
+      requests = adapters.map(adapter => {
+        console.log(`Preparing a request to "${adapter.config.description}"`);
+        // This promise is never rejected. For errors and timeouts, it will return `undefined` instead of a Definition object
+        return new Promise((resolve) => {
+          let timeout = window.setTimeout(() => {
+            console.warn(`Timeout of ${config.timeout} ms has been expired for a request to "${adapter.config.description}"`);
+            resolve(undefined);
+          }, config.timeout);
+
+          adapter[lookupFunction](lemma)
+            .then(value => {
+              console.log(`A definition object has been returned from "${adapter.config.description}"`);
+              // value is a Definition object wrapped in a Proxy
+              window.clearTimeout(timeout);
+              resolve(new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["c" /* Definition */](value.text, value.language, value.format));
+            }).catch(error => {
+              console.error(`Error from a request to "${adapter.config.description}": ${error}`);
+              window.clearTimeout(timeout);
+              resolve(undefined);
+            });
+        })
+      });
     } catch (error) {
-      console.log(`Unable to fetch short definitions due to: ${error}`);
+      console.log(`Unable to fetch full definitions due to: ${error}`);
       return []
     }
 
     return Promise.all(requests).then(
       values => {
-        return values.map(value => new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["c" /* Definition */](value.text, value.language, value.format))
+        console.log(`All promises have been resolved`, values);
+        return values.filter(value => {
+          return value
+        })
       },
       error => {
-        console.log(`Unable to fetch short definitions due to: ${error}`);
-        return []
-      }
-    )
-  }
-
-  static async fetchFullDefs (lemma) {
-    // TODO: Add a timeout
-    let adapters = Lexicons.getLexiconAdapters(lemma.languageID);
-    let requests = adapters.map(adapter => adapter.lookupFullDef(lemma));
-
-    return Promise.all(requests).then(
-      values => {
-        return values.map(value => new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["c" /* Definition */](value.text, value.language, value.format))
-      },
-      error => {
+        // This should never happen because requests are never rejected but just in case
         console.error(error);
         throw new Error(error)
       }
@@ -12755,7 +12746,7 @@ class Lexicons {
 
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {

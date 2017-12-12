@@ -15,10 +15,12 @@
                 <div id="alpheios-panel-content-infl-table-view-selector" class="alpheios-ui-form-group"></div>
                 <div id="alpheios-panel-content-infl-table-body"></div>
             </div>
-            <div id="alpheios-panel-content-options" class="active"><div data-component="alpheios-panel-options"></div></div>
+            <div id="alpheios-panel-content-options">
+                <div data-component="alpheios-panel-options"></div>
+            </div>
         </div>
         <div id="alpheios-panel__nav" class="alpheios-panel__nav">
-            <span id="alpheios-panel-show-word-data" class="alpheios-panel__nav-btn"
+            <span id="alpheios-panel-show-word-data" class="alpheios-panel__nav-btn active"
                   data-target="alpheios-panel-content-definition" uk-icon="icon: comment; ratio: 2"></span>
 
             <span id="alpheios-panel-show-infl-table" class="alpheios-panel__nav-btn"
