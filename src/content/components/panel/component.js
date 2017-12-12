@@ -114,6 +114,7 @@ export default class Panel extends Component {
       this.options.elements.self.classList.add(this.panelOpenedClassName)
       this.options.elements.fullWidthButton.classList.remove(this.hiddenClassName)
     }
+    return this
   }
   close () {
     if (this.isOpened) {
