@@ -2365,26 +2365,18 @@ class ContentProcess {
   }
 
   displayWordData (lexicalData) {
-    /* let definitions = ''
-    if (wordData.definitions) {
-      for (let definition of wordData.definitions) {
-        definition.text = decodeURIComponent(definition.text)
-        definitions += definition.text
-      }
-    } */
-
     let shortDefsText = ''
     let fullDefsText = ''
     for (let lexeme of lexicalData.homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
-        shortDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3><br>\n`
+        shortDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
         for (let shortDef of lexeme.meaning.shortDefs) {
           shortDefsText += `${shortDef.text}<br>\n`
         }
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {
-        fullDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3><br>\n`
+        fullDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
         for (let fullDef of lexeme.meaning.fullDefs) {
           fullDefsText += `${fullDef.text}<br>\n`
         }
@@ -2393,7 +2385,7 @@ class ContentProcess {
 
     // Populate a panel
     this.panel.clear()
-    this.updateDefinition(`<h2>Short definitions:</h2><br>${shortDefsText}<h2>Full definitions:</h2><br>${fullDefsText}`)
+    this.updateDefinition(`<h2>Short definitions:</h2>${shortDefsText}<h2>Full definitions:</h2>${fullDefsText}`)
     this.updateInflectionTable(lexicalData)
 
     // Pouplate a popup
@@ -9851,8 +9843,8 @@ class StoredRequest {
 
 
 class WordDataRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["a" /* default */] {
-  constructor (textSelector) {
-    super(textSelector)
+  constructor (textSelector, options = {}) {
+    super({textSelector: textSelector, options: options})
     this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].types.WORD_DATA_REQUEST)
   }
 }

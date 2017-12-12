@@ -11,7 +11,7 @@ import Statuses from '../content/statuses'
 import ContentTab from './content-tab'
 import State from '../lib/state'
 import TextSelector from '../lib/selection/text-selector'
-import TestDefinitionService from '../../test/stubs/definitions/test'
+// import TestDefinitionService from '../../test/stubs/definitions/test'
 import {Lexicons} from 'alpheios-lexicon-client'
 import {
   Transporter,
@@ -169,7 +169,8 @@ export default class BackgroundProcess {
   }
 
   async handleWordDataRequestStatefully (request, sender, state = undefined) {
-    let textSelector = TextSelector.readObject(request.body)
+    let textSelector = TextSelector.readObject(request.body.textSelector)
+    let requestOptions = request.body.options
     console.log(`Request for a "${textSelector.normalizedText}" word`)
     let tabID = sender.tab.id
 
@@ -181,10 +182,10 @@ export default class BackgroundProcess {
 
       lexicalData = this.langData.getSuffixes(homonym, state)
       for (let lexeme of homonym.lexemes) {
-        let shortDefs = await Lexicons.fetchShortDefs(lexeme.lemma)
+        let shortDefs = await Lexicons.fetchShortDefs(lexeme.lemma, requestOptions)
         console.log(`Retrieved short definitions:`, shortDefs)
         lexeme.meaning.appendShortDefs(shortDefs)
-        let fullDefs = await Lexicons.fetchFullDefs(lexeme.lemma)
+        let fullDefs = await Lexicons.fetchFullDefs(lexeme.lemma, requestOptions)
         console.log(`Retrieved full definitions:`, fullDefs)
         lexeme.meaning.appendFullDefs(fullDefs)
       }
