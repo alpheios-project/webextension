@@ -44,14 +44,13 @@ export default class Panel extends Component {
     for (let tab of this.options.elements.tabs) {
       let target = tab.dataset.target
       let targetElem = document.getElementById(target)
-      if( targetElem.classList.contains(this.activeClassName)) {
+      if (targetElem.classList.contains(this.activeClassName)) {
         activeTab = tab
       } else {
         document.getElementById(target).classList.add(this.hiddenClassName)
       }
       tab.addEventListener('click', this.switchTab.bind(this))
     }
-    debugger;
     this.changeActiveTabTo(activeTab)
   }
 
