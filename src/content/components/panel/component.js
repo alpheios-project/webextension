@@ -8,9 +8,8 @@ export default class Panel extends Component {
   constructor (options) {
     super(Object.assign({
       template: template,
-      selectors: {
-        self: '[data-component="alpheios-panel"]',
-        page: 'body',
+      selfSelector: '[data-component="alpheios-panel"]',
+      innerElements: {
         definitionContainer: '#alpheios-panel-content-definition',
         inflTableContainer: '#alpheios-panel-content-infl-table-body',
         viewSelectorContainer: '#alpheios-panel-content-infl-table-view-selector',
@@ -21,6 +20,9 @@ export default class Panel extends Component {
         closeButton: '#alpheios-panel-hide',
         tabs: '#alpheios-panel__nav .alpheios-panel__nav-btn',
         activeTab: '#alpheios-panel__nav .alpheios-panel__nav-btn.active'
+      },
+      outerElements: {
+        page: 'body'
       },
       position: Panel.positions.default
     },
@@ -36,16 +38,16 @@ export default class Panel extends Component {
     this.width = Panel.widths.zero // Sets initial width to zero because panel is closed initially
 
     // Set panel controls event handlers
-    this.options.elements.normalWidthButton.addEventListener('click', this.open.bind(this, Panel.widths.normal))
-    this.options.elements.fullWidthButton.addEventListener('click', this.open.bind(this, Panel.widths.full))
-    this.options.elements.closeButton.addEventListener('click', this.close.bind(this))
+    this.innerElements.normalWidthButton.element.addEventListener('click', this.open.bind(this, Panel.widths.normal))
+    this.innerElements.fullWidthButton.element.addEventListener('click', this.open.bind(this, Panel.widths.full))
+    this.innerElements.closeButton.element.addEventListener('click', this.close.bind(this))
 
-    let activeTab = this.options.elements.tabs[0]
-    for (let tab of this.options.elements.tabs) {
+    let activeTab = this.innerElements.tabs.elements[0]
+    for (let tab of this.innerElements.tabs.elements) {
       let target = tab.dataset.target
       let targetElem = document.getElementById(target)
       if (targetElem.classList.contains(this.activeClassName)) {
-        activeTab = tab
+        activeTab.elements[0] = tab
       } else {
         document.getElementById(target).classList.add(this.hiddenClassName)
       }
@@ -76,12 +78,12 @@ export default class Panel extends Component {
       this.bodyPositionClassName = position
       if (position === Panel.positions.right) {
         // Panel is at the right
-        this.options.elements.page.classList.remove(Panel.positions.left)
-        this.options.elements.page.classList.add(Panel.positions.right)
+        this.outerElements.page.element.classList.remove(Panel.positions.left)
+        this.outerElements.page.element.classList.add(Panel.positions.right)
       } else {
         // Default: Panel is at the left
-        this.options.elements.page.classList.remove(Panel.positions.right)
-        this.options.elements.page.classList.add(Panel.positions.left)
+        this.outerElements.page.element.classList.remove(Panel.positions.right)
+        this.outerElements.page.element.classList.add(Panel.positions.left)
       }
     }
   }
@@ -100,19 +102,19 @@ export default class Panel extends Component {
 
     if (this.width === Panel.widths.full) {
       // Panel will to be shown in full width
-      this.options.elements.self.classList.add(this.panelOpenedClassName)
-      this.options.elements.page.classList.add(this.bodyPositionClassName)
+      this.options.self.element.classList.add(this.panelOpenedClassName)
+      this.outerElements.page.element.classList.add(this.bodyPositionClassName)
 
-      this.options.elements.self.classList.add(this.panelOpenedClassName)
-      this.options.elements.self.classList.add(this.panelFullWidthClassName)
-      this.options.elements.normalWidthButton.classList.remove(this.hiddenClassName)
+      this.options.self.element.classList.add(this.panelOpenedClassName)
+      this.options.self.element.classList.add(this.panelFullWidthClassName)
+      this.innerElements.normalWidthButton.element.classList.remove(this.hiddenClassName)
     } else {
       // Default: panel will to be shown in normal width
-      this.options.elements.self.classList.add(this.panelOpenedClassName)
-      this.options.elements.page.classList.add(this.bodyNormalWidthClassName)
-      this.options.elements.page.classList.add(this.bodyPositionClassName)
-      this.options.elements.self.classList.add(this.panelOpenedClassName)
-      this.options.elements.fullWidthButton.classList.remove(this.hiddenClassName)
+      this.options.self.element.classList.add(this.panelOpenedClassName)
+      this.outerElements.page.element.classList.add(this.bodyNormalWidthClassName)
+      this.outerElements.page.element.classList.add(this.bodyPositionClassName)
+      this.options.self.element.classList.add(this.panelOpenedClassName)
+      this.innerElements.fullWidthButton.element.classList.remove(this.hiddenClassName)
     }
   }
   close () {
@@ -127,14 +129,14 @@ export default class Panel extends Component {
   }
 
   resetWidth () {
-    this.options.elements.self.classList.remove(this.panelOpenedClassName)
-    this.options.elements.page.classList.remove(this.bodyNormalWidthClassName)
-    this.options.elements.page.classList.remove(this.bodyPositionClassName)
+    this.options.self.element.classList.remove(this.panelOpenedClassName)
+    this.outerElements.page.element.classList.remove(this.bodyNormalWidthClassName)
+    this.outerElements.page.element.classList.remove(this.bodyPositionClassName)
 
-    this.options.elements.self.classList.remove(this.panelOpenedClassName)
-    this.options.elements.self.classList.remove(this.panelFullWidthClassName)
-    this.options.elements.normalWidthButton.classList.add(this.hiddenClassName)
-    this.options.elements.fullWidthButton.classList.add(this.hiddenClassName)
+    this.options.self.element.classList.remove(this.panelOpenedClassName)
+    this.options.self.element.classList.remove(this.panelFullWidthClassName)
+    this.innerElements.normalWidthButton.element.classList.add(this.hiddenClassName)
+    this.innerElements.fullWidthButton.element.classList.add(this.hiddenClassName)
 
     this.width = Panel.widths.zero
   }
@@ -149,10 +151,10 @@ export default class Panel extends Component {
   }
 
   clear () {
-    this.options.elements.definitionContainer.innerHTML = ''
-    this.options.elements.inflTableContainer.innerHTML = ''
-    this.options.elements.viewSelectorContainer.innerHTML = ''
-    this.options.elements.localeSwitcherContainer.innerHTML = ''
+    this.innerElements.definitionContainer.element.innerHTML = ''
+    this.innerElements.inflTableContainer.element.innerHTML = ''
+    this.innerElements.viewSelectorContainer.element.innerHTML = ''
+    this.innerElements.localeSwitcherContainer.element.innerHTML = ''
     return this
   }
 
@@ -161,32 +163,37 @@ export default class Panel extends Component {
     return this
   }
 
+  /**
+   * Todo: simplify
+   * @param {HTMLElement} activeTab - A tab that must be set to active state.
+   * @return {Panel}
+   */
   changeActiveTabTo (activeTab) {
-    if (this.options.elements.activeTab) {
-      let target = this.options.elements.activeTab.dataset.target
+    if (this.innerElements.activeTab) {
+      let target = this.innerElements.activeTab.element.dataset.target
       document.getElementById(target).classList.add(this.hiddenClassName)
-      this.options.elements.activeTab.classList.remove(this.activeClassName)
+      this.innerElements.activeTab.element.classList.remove(this.activeClassName)
     }
 
     activeTab.classList.add(this.activeClassName)
     let target = activeTab.dataset.target
     document.getElementById(target).classList.remove(this.hiddenClassName)
-    this.options.elements.activeTab = activeTab
+    this.innerElements.activeTab.elements = document.querySelectorAll(this.innerElements.activeTab.selector)
     return this
   }
 
   get optionsPage () {
-    return this.options.elements.optionsContainer
+    return this.innerElements.element.optionsContainer
   }
 
   set optionsPage (htmlContent) {
-    this.options.elements.optionsContainer.innerHTML = htmlContent
-    return this.options.elements.optionsContainer.innerHTML
+    this.innerElements.optionsContainer.element.innerHTML = htmlContent
+    return this.innerElements.optionsContainer.element.innerHTML
   }
 
   showMessage (messageHTML) {
     this.clear()
-    this.options.elements.definitionContainer.innerHTML = messageHTML
-    this.open().changeActiveTabTo(this.options.elements.tabs[0])
+    this.innerElements.definitionContainer.element.innerHTML = messageHTML
+    this.open().changeActiveTabTo(this.innerElements.tabs.elements[0])
   }
 }

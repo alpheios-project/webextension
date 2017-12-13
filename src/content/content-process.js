@@ -9,7 +9,7 @@ import Options from './components/options/component'
 import State from '../lib/state'
 import Statuses from './statuses'
 import Template from './template.htmlf'
-import PageControls from './components/page-controls/component'
+// import PageControls from './components/page-controls/component'
 import HTMLSelector from '../lib/selection/media/html-selector'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import VueJsModal from 'vue-js-modal'
@@ -50,7 +50,13 @@ export default class ContentProcess {
     ContentProcess.loadTemplate(Template)
 
     // Initialize components
-    this.panel = new Panel({})
+    this.panel = new Panel({
+      contentAreas: {
+        shortDefinitions: function (lexicalData) {
+          return lexicalData
+        }
+      }
+    })
     // Should be loaded after Panel because options are inserted into a panel
     this.options = new Options({
       methods: {
@@ -87,9 +93,6 @@ export default class ContentProcess {
 
     // Initialize a UIKit
     UIkit.use(UIkITIconts)
-
-// components can be called from the imported UIkit reference
-    UIkit.notification('Hello world.')
   }
 
   static get settingValues () {
@@ -149,7 +152,7 @@ export default class ContentProcess {
       let result = await this.messagingService.sendRequestToBg(request, timeout)
       return State.value(state, result)
     } catch (error) {
-      // Wrap error te same way we wrap value
+      // Wrap an error the same way we wrap the value
       console.log(`Statefull request to a background failed: ${error}`)
       throw State.value(state, error)
     }
@@ -254,7 +257,7 @@ export default class ContentProcess {
   handleOpenPanelRequest (request, sender) {
     console.log(`Open panel request received. Sending a response back.`)
     this.panel.open()
-    this.status = Status.PANEL_OPEN
+    this.status = Statuses.PANEL_OPEN
     this.messagingService.sendResponseToBg(new StatusResponse(request, this.status)).catch(
       (error) => {
         console.error(`Unable to send a response to panel open request: ${error}`)
@@ -283,7 +286,7 @@ export default class ContentProcess {
   optionChangeListener (optionName, optionValue) {
     if (optionName === 'locale' && this.presenter) { this.presenter.setLocale(optionValue) }
     if (optionName === 'panelPosition') { this.setPanelPositionTo(optionValue) }
-    if (optionName === 'defaultLanguage') { this.setDefaultLanguageTo(optionValue)}
+    if (optionName === 'defaultLanguage') { this.setDefaultLanguageTo(optionValue) }
   }
 
   setDefaultLanguageTo (language) {
@@ -302,7 +305,6 @@ export default class ContentProcess {
     if (this.isActive) {
       let textSelector = HTMLSelector.getSelector(event.target, this.defaultLanguage)
 
-      // HTMLSelector.getExtendedTextQuoteSelector()
       if (!textSelector.isEmpty()) {
         this.getWordDataStatefully(textSelector)
       }

@@ -9,7 +9,10 @@
 
     <div class="alpheios-panel__body">
         <div id="alpheios-panel-content" class="alpheios-panel__content">
-            <div id="alpheios-panel-content-definition"></div>
+            <div id="alpheios-panel-content-definition">
+                <h2>Short Definitions</h2>
+                <div data-content-area="shortDefinitions"></div>
+            </div>
             <div id="alpheios-panel-content-infl-table">
                 <div id="alpheios-panel-content-infl-table-locale-switcher" class="alpheios-ui-form-group"></div>
                 <div id="alpheios-panel-content-infl-table-view-selector" class="alpheios-ui-form-group"></div>

@@ -6,9 +6,7 @@ export default class Options extends Component {
   constructor (options) {
     super(Object.assign({
       template: template,
-      selectors: {
-        self: '[data-component="alpheios-panel-options"]'
-      },
+      selfSelector: '[data-component="alpheios-panel-options"]',
       data: {
         locale: {
           defaultValue: 'en-US',
@@ -55,7 +53,7 @@ export default class Options extends Component {
         local storage.
          */
         optionData.currentValue = optionData.defaultValue
-        let element = this.options.elements.self.querySelector(optionData.selector)
+        let element = this.options.self.element.querySelector(optionData.selector)
         if (element) {
           optionData.element = element
         } else {
