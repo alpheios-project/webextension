@@ -2685,7 +2685,6 @@ class BackgroundProcess {
   }
 
   activateContent (tabID) {
-    debugger
     if (!this.isContentLoaded(tabID)) {
       // This tab has no content loaded
       this.loadContent(tabID)

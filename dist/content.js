@@ -12384,7 +12384,6 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
       contextPos = preWordlist.length - 1
     }
 
-    console.log(`Setting word to ${word}`)
     textSelector.text = word
     textSelector.start = wordStart
     textSelector.end = wordEnd
