@@ -66,7 +66,19 @@ export default class HTMLSelector extends MediaSelector {
     let anchor = selection.anchorNode
     let focus = selection.focusNode
     let anchorText = anchor.data
-    let ro = selection.anchorOffset
+    let ro
+    let invalidAnchor = false
+    if (! anchorText.match(focus.data)) {
+      console.log(this.target)
+      anchorText = this.target.textContent
+      ro = 0
+      invalidAnchor = true
+      anchor = this.target
+      focus = this.target
+    } else {
+      ro = selection.anchorOffset
+    }
+
     // clean string:
     //   convert punctuation to spaces
     anchorText = anchorText.replace(new RegExp('[' + textSelector.language.getPunctuation() + ']', 'g'), ' ')
@@ -76,7 +88,11 @@ export default class HTMLSelector extends MediaSelector {
     let wordEnd = anchorText.indexOf(' ', wordStart + 1)
 
     if (wordStart === -1) {
-      wordStart = ro
+      // if we don't have any spaces in the text and the browser identified
+      // an invalid anchor node (i.e. one which doesn't contain the focus node text)
+      // then just assume the focusNode is a single word and the click was inside it, so
+      // set the wordStart to the beginning
+      wordStart = invalidAnchor ? 0 : ro
     }
 
     if (wordEnd === -1) {
@@ -134,10 +150,17 @@ export default class HTMLSelector extends MediaSelector {
     textSelector.context = contextStr
     textSelector.position = contextPos
 
-    /* if (!textSelector.isEmpty()) {
+    if (!textSelector.isEmpty()) {
       // Reset a selection
-      selection.setBaseAndExtent(anchor, wordStart, focus, wordEnd)
-    } */
+      if (invalidAnchor) {
+        selection.removeAllRanges()
+        let range = document.createRange()
+        range.selectNode(anchor)
+        selection.addRange(range)
+      } else {
+        selection.setBaseAndExtent(anchor, wordStart, focus, wordEnd)
+      }
+    }
     return textSelector
   }
 

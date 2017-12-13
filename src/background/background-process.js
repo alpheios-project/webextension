@@ -88,7 +88,7 @@ export default class BackgroundProcess {
             this.tabs.get(tabID).status = Message.statusSym(message)
           },
           (error) => {
-            console.log(`No status confirmation from tab {tabID} on activation request: ${error}`)
+            console.log(`No status confirmation from tab {tabID} on activation request: ${error.message}`)
           }
         )
       }
@@ -103,7 +103,7 @@ export default class BackgroundProcess {
           this.tabs.get(tabID).status = Message.statusSym(message)
         },
         (error) => {
-          console.log(`No status confirmation from tab {tabID} on deactivation request: ${error}`)
+          console.log(`No status confirmation from tab {tabID} on deactivation request: ${error.message}`)
         }
       )
     }
@@ -181,6 +181,11 @@ export default class BackgroundProcess {
       if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
 
       lexicalData = this.langData.getSuffixes(homonym, state)
+    } catch (e) {
+      console.log(`Failure retrieving inflection data. ${e}`)
+    }
+
+    try {
       for (let lexeme of homonym.lexemes) {
         let shortDefs = await Lexicons.fetchShortDefs(lexeme.lemma, requestOptions)
         console.log(`Retrieved short definitions:`, shortDefs)
@@ -220,7 +225,7 @@ export default class BackgroundProcess {
         (message) => {
         },
         (error) => {
-          console.log(`Error opening panel ${error}`)
+          console.log(`Error opening panel ${error.message}`)
         }
       );
     }
