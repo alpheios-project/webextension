@@ -9,33 +9,35 @@
 
     <div class="alpheios-panel__body">
         <div id="alpheios-panel-content" class="alpheios-panel__content">
-            <div id="alpheios-panel-content-definition" data-element="definitionsPanel">
-                <div data-content-area="messages"></div>
+            <div data-element="definitionsPanel">
                 <h2>Short Definitions</h2>
                 <div data-content-area="shortDefinitions"></div>
                 <h2>Full Definitions</h2>
                 <div data-content-area="fullDefinitions"></div>
             </div>
-            <div id="alpheios-panel-content-infl-table" data-element="inflectionsPanel">
+            <div data-element="inflectionsPanel">
                 <div data-content-area="inflectionsLocaleSwitcher" id="alpheios-panel-content-infl-table-locale-switcher" class="alpheios-ui-form-group"></div>
                 <div data-content-area="inflectionsViewSelector" id="alpheios-panel-content-infl-table-view-selector" class="alpheios-ui-form-group"></div>
                 <div data-content-area="inflectionsTable" id="alpheios-panel-content-infl-table-body"></div>
             </div>
-            <div id="alpheios-panel-content-options" data-element="optionsPanel">
+            <div data-element="statusPanel">
+                <div data-content-area="messages"></div>
+            </div>
+            <div data-element="optionsPanel">
                 <div data-component="alpheios-panel-options"></div>
             </div>
         </div>
         <div id="alpheios-panel__nav" class="alpheios-panel__nav">
-            <span id="alpheios-panel-show-word-data" class="alpheios-panel__nav-btn active"
-                  data-element="definitionsTab" data-tab-group="contentTabs"
+            <span class="alpheios-panel__nav-btn active" data-element="definitionsTab" data-tab-group="contentTabs"
                   data-target-name="definitionsPanel" uk-icon="icon: comment; ratio: 2"></span>
 
-            <span id="alpheios-panel-show-infl-table" class="alpheios-panel__nav-btn"
-                  data-element="inflectionsTab" data-tab-group="contentTabs"
+            <span class="alpheios-panel__nav-btn" data-element="inflectionsTab" data-tab-group="contentTabs"
                   data-target-name="inflectionsPanel" uk-icon="icon: table; ratio: 2"></span>
 
-            <span id="alpheios-panel-show-options" class="alpheios-panel__nav-btn"
-                  uk-icon="icon: cog; ratio: 2" data-element="optionsTab"
+            <span class="alpheios-panel__nav-btn" uk-icon="icon: clock; ratio: 2"
+                  data-element="statusTab" data-tab-group="contentTabs" data-target-name="statusPanel"></span>
+
+            <span class="alpheios-panel__nav-btn" uk-icon="icon: cog; ratio: 2" data-element="optionsTab"
                   data-tab-group="contentTabs" data-target-name="optionsPanel"></span>
         </div>
     </div>

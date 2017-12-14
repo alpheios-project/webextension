@@ -1,19 +1,12 @@
 /* global browser */
-import * as InflectionTables from 'alpheios-inflection-tables'
-import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import Message from '../lib/messaging/message'
 import MessagingService from '../lib/messaging/service'
 import ActivationRequest from '../lib/messaging/request/activation-request'
 import DeactivationRequest from '../lib/messaging/request/deactivation-request'
 import OpenPanelRequest from '../lib/messaging/request/open-panel-request'
-import WordDataResponse from '../lib/messaging/response/word-data-response'
 import Statuses from '../content/statuses'
 import ContentTab from './content-tab'
 import State from '../lib/state'
-import TextSelector from '../lib/selection/text-selector'
-// import TestDefinitionService from '../../test/stubs/definitions/test'
-import {Lexicons} from 'alpheios-lexicon-client'
-import {Homonym, Lemma, Lexeme} from 'alpheios-data-models'
 import {
   Transporter,
   StorageAdapter as LocalExperienceStorage,
@@ -24,9 +17,6 @@ export default class BackgroundProcess {
   constructor (browserFeatures) {
     this.browserFeatures = browserFeatures
     this.settings = BackgroundProcess.defaults
-
-    this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
-    // this.maAdapter.fetch = this.maAdapter.fetchTestData // Switch adapter to a test mode
 
     this.tabs = new Map() // A list of tabs that have content script loaded
 
@@ -53,11 +43,8 @@ export default class BackgroundProcess {
   }
 
   initialize () {
-    console.log('initialize')
+    console.log('Background script initialization started ...')
 
-    this.langData = new InflectionTables.LanguageData([InflectionTables.LatinDataSet, InflectionTables.GreekDataSet]).loadData()
-
-    this.messagingService.addHandler(Message.types.WORD_DATA_REQUEST, this.handleWordDataRequestStatefully, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     BackgroundProcess.createMenuItem()
@@ -155,60 +142,6 @@ export default class BackgroundProcess {
     return State.value(state, this.messagingService.sendResponseToTab(request, tabID))
   }
 
-  async getHomonymStatefully (languageCode, word, state) {
-    try {
-      let result = await this.maAdapter.getHomonym(languageCode, word, state)
-      // If no valid homonym data found should always throw an error to be caught in a calling function
-      return State.value(state, result)
-    } catch (error) {
-      /*
-      getHomonym is non-statefull function. If it throws an error, we should catch it here, attach state
-      information, and rethrow
-      */
-      throw (State.value(state, error))
-    }
-  }
-
-  async handleWordDataRequestStatefully (request, sender, state = undefined) {
-    let textSelector = TextSelector.readObject(request.body.textSelector)
-    let requestOptions = request.body.options
-    console.log(`Request for a "${textSelector.normalizedText}" word`)
-    let tabID = sender.tab.id
-
-    let homonym, lexicalData
-    try {
-      // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
-      ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
-      if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
-
-      lexicalData = this.langData.getSuffixes(homonym, state)
-    } catch (e) {
-      console.log(`Failure retrieving inflection data. ${e}`)
-    }
-
-    try {
-      for (let lexeme of homonym.lexemes) {
-        let shortDefs = await Lexicons.fetchShortDefs(lexeme.lemma, requestOptions)
-        console.log(`Retrieved short definitions:`, shortDefs)
-        lexeme.meaning.appendShortDefs(shortDefs)
-        let fullDefs = await Lexicons.fetchFullDefs(lexeme.lemma, requestOptions)
-        console.log(`Retrieved full definitions:`, fullDefs)
-        lexeme.meaning.appendFullDefs(fullDefs)
-      }
-      console.log(lexicalData)
-
-      let returnObject = this.sendResponseToTabStatefully(new WordDataResponse(request, lexicalData, Message.statuses.DATA_FOUND), tabID, state)
-      return State.emptyValue(returnObject.state)
-    } catch (error) {
-      let errorValue = State.getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
-      console.error(`Word data retrieval failed: ${errorValue}`)
-      let returnObject = this.sendResponseToTabStatefully(
-        new WordDataResponse(request, undefined, Message.statuses.NO_DATA_FOUND), tabID, State.getState(error)
-      )
-      return State.emptyValue(returnObject.state)
-    }
-  }
-
   static async getActiveTabID () {
     let tabs = await browser.tabs.query({ active: true })
     console.log(`Active tab ID is ${tabs[0].id}`)
@@ -228,9 +161,8 @@ export default class BackgroundProcess {
         (error) => {
           console.log(`Error opening panel ${error.message}`)
         }
-      );
+      )
     }
-
   }
 
   async browserActionListener (tab) {

@@ -6,7 +6,7 @@ export default class Element {
     let defaultSelector = `[data-element="${this.name}"]`
     this.selector = elementData.selector || defaultSelector
     let elements = scope.querySelectorAll(this.selector)
-    if (elements.length === 0) { throw new Error(`Element(s) does not exist:`, elements) }
+    if (elements.length === 0) { throw new Error(`Element "${name}" does not exist`) }
     this.elements = (elements.length > 0) ? Array.from(elements) : [elements]
     this.dataFunction = elementData.dataFunction
   }

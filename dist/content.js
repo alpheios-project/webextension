@@ -68,294 +68,23 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
-
-
-class Message {
-  constructor (body) {
-    /** @member {Symbol} requestType - */
-    this.role = undefined
-    this.type = Message.types.GENERIC_MESSAGE
-    this.ID = __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()
-    this.body = body
-  }
-
-  static get types () {
-    return {
-      GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
-      WORD_DATA_REQUEST: Symbol.for('Alpheios_WordDataRequest'),
-      WORD_DATA_RESPONSE: Symbol.for('Alpheios_WordDataResponse'),
-      STATUS_REQUEST: Symbol.for('Alpheios_StatusRequest'),
-      STATUS_RESPONSE: Symbol.for('Alpheios_StatusResponse'),
-      ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
-      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
-      OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest')
-    }
-  }
-
-  static get roles () {
-    return {
-      REQUEST: Symbol.for('Alpheios_Request'),
-      RESPONSE: Symbol.for('Alpheios_Response')
-    }
-  }
-
-  static get statuses () {
-    return {
-      DATA_FOUND: Symbol.for('Alpheios_DataFound'), // Requested word's data has been found
-      NO_DATA_FOUND: Symbol.for('Alpheios_NoDataFound'), // Requested word's data has not been found,
-      ACTIVE: Symbol.for('Alpheios_Active'), // Content script is loaded and active
-      DEACTIVATED: Symbol.for('Alpheios_Deactivated') // Content script has been loaded, but is deactivated
-    }
-  }
-
-  static statusSym (message) {
-    return Symbol.for(message.status)
-  }
-
-  static statusSymIs (message, status) {
-    return Message.statusSym(message) === status
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Message;
-
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class Element {
-  constructor (name, scope, elementData = {}) {
-    this.options = Element.defaults
-
-    this.name = name
-    let defaultSelector = `[data-element="${this.name}"]`
-    this.selector = elementData.selector || defaultSelector
-    let elements = scope.querySelectorAll(this.selector)
-    if (elements.length === 0) { throw new Error(`Element(s) does not exist:`, elements) }
-    this.elements = (elements.length > 0) ? Array.from(elements) : [elements]
-    this.dataFunction = elementData.dataFunction
-  }
-
-  static get defaults () {
-    return {
-      classNames: {
-        hidden: 'hidden',
-        active: 'active'
-      }
-    }
-  }
-
-  get element () {
-    return this.elements[0]
-  }
-
-  setContent (...values) {
-    let contentHTML = this.dataFunction ? this.dataFunction(...values) : values[0]
-    for (let element of this.elements) {
-      element.innerHTML = contentHTML
-    }
-  }
-
-  appendContent (...values) {
-    let contentHTML = this.dataFunction ? this.dataFunction(...values) : values[0]
-    for (let element of this.elements) {
-      element.innerHTML += contentHTML
-    }
-  }
-
-  clearContent () {
-    for (let element of this.elements) {
-      element.innerHTML = ''
-    }
-  }
-
-  show () {
-    for (let element of this.elements) {
-      element.classList.remove(this.options.classNames.hidden)
-    }
-  }
-
-  hide () {
-    for (let element of this.elements) {
-      element.classList.add(this.options.classNames.hidden)
-    }
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Element;
-
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
-
-
-class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */] {
-  constructor (request, body, status = undefined) {
-    super(body)
-    this.role = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.RESPONSE)
-    this.requestID = request.ID // ID of the request to match request and response
-    if (status) {
-      if (typeof status === 'symbol') {
-        // If status is a symbol, store a symbol key instead of a symbol for serialization
-        this.status = Symbol.keyFor(status)
-      } else {
-        this.status = status
-      }
-    }
-  }
-
-  /**
-   * Checks if this message is a response (i.e. follows a response message format)
-   * @param message
-   */
-  static isResponse (message) {
-    return message.role &&
-    Symbol.for(message.role) === __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.RESPONSE && message.requestID
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = ResponseMessage;
-
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(20);
-
-
-
-class Component {
-  constructor (componentOptions = {}, userOptions = {}) {
-    this.options = {}
-    this.options = Object.assign(this.options, componentOptions)
-    this.options = Object.assign(this.options, userOptions)
-    if (componentOptions.innerElements && userOptions.innerElements) {
-      this.options.innerElements = Object.assign(componentOptions.innerElements, userOptions.innerElements)
-    }
-    if (componentOptions.outerElements && userOptions.outerElements) {
-      this.options.outerElements = Object.assign(componentOptions.outerElements, userOptions.outerElements)
-    }
-    if (componentOptions.contentAreas && userOptions.contentAreas) {
-      this.options.contentAreas = Object.assign(componentOptions.contentAreas, userOptions.contentAreas)
-    }
-    this.self = {
-      selector: this.options.selfSelector
-    }
-    this.options.elements = {}
-    this.innerElements = {}
-    this.outerElements = {}
-    this.tabGroups = {}
-    this.contentAreas = {}
-
-    this.self.element = document.querySelector(this.self.selector)
-    if (!this.self.element) {
-      throw new Error(`Element's placeholder "${this.self.selector}" does not exist. Cannot create a component`)
-    }
-    this.self.element.outerHTML = this.options.template
-    this.self.element = document.querySelector(this.self.selector)
-
-    if (this.options && this.options.innerElements) {
-      for (const [name, elementData] of Object.entries(this.options.innerElements)) {
-        this.innerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, this.self.element, elementData)
-      }
-    }
-
-    if (this.options && this.options.outerElements) {
-      for (const [name, elementData] of Object.entries(this.options.outerElements)) {
-        this.outerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, document, elementData)
-      }
-    }
-
-    // Scan for tab groups
-    let tabGroups = new Set()
-    let tabs = this.self.element.querySelectorAll('[data-tab-group]')
-    for (let tab of tabs) {
-      let groupName = tab.dataset.tabGroup
-      if (!tabGroups.has(groupName)) { tabGroups.add(groupName) }
-    }
-    for (let groupNames of tabGroups.entries()) {
-      let groupName = groupNames[0] // entries() returns [groupName, groupName]
-      this.tabGroups[groupName] = new __WEBPACK_IMPORTED_MODULE_1__tab_group__["a" /* default */](groupName, this.self.element)
-    }
-
-    if (this.options && this.options.methods) {
-      for (const [key, value] of Object.entries(this.options.methods)) {
-        this[key] = value
-      }
-    }
-
-    if (this.options && this.options.contentAreas) {
-      for (const [areaName, areaData] of Object.entries(this.options.contentAreas)) {
-        areaData.selector = `[data-content-area="${areaName}"]`
-        this.contentAreas[areaName] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](areaName, this.self.element, areaData)
-      }
-    }
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Component;
-
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return constants; });
-/* unused harmony export Definition */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return constants; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return Definition; });
 /* unused harmony export DefinitionSet */
-/* unused harmony export Feature */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return Feature; });
 /* unused harmony export FeatureType */
 /* unused harmony export FeatureList */
-/* unused harmony export FeatureImporter */
-/* unused harmony export Inflection */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return LanguageModelFactory; });
-/* unused harmony export Homonym */
-/* unused harmony export Lexeme */
-/* unused harmony export Lemma */
-/* unused harmony export LatinLanguageModel */
-/* unused harmony export GreekLanguageModel */
-/* unused harmony export ArabicLanguageModel */
-/* unused harmony export PersianLanguageModel */
-/* unused harmony export ResourceProvider */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "e", function() { return FeatureImporter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return Inflection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "i", function() { return LanguageModelFactory; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "g", function() { return Homonym; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "l", function() { return Lexeme; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "k", function() { return Lemma; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "j", function() { return LatinLanguageModel; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "f", function() { return GreekLanguageModel; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return ArabicLanguageModel; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "m", function() { return PersianLanguageModel; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "n", function() { return ResourceProvider; });
 /* eslint-disable no-unused-vars */
 const LANG_UNIT_WORD = Symbol('word');
 const LANG_UNIT_CHAR = Symbol('char');
@@ -2178,6 +1907,277 @@ class ResourceProvider {
 
 
 /***/ }),
+/* 1 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
+
+
+class Message {
+  constructor (body) {
+    /** @member {Symbol} requestType - */
+    this.role = undefined
+    this.type = Message.types.GENERIC_MESSAGE
+    this.ID = __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()
+    this.body = body
+  }
+
+  static get types () {
+    return {
+      GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
+      WORD_DATA_REQUEST: Symbol.for('Alpheios_WordDataRequest'),
+      WORD_DATA_RESPONSE: Symbol.for('Alpheios_WordDataResponse'),
+      STATUS_REQUEST: Symbol.for('Alpheios_StatusRequest'),
+      STATUS_RESPONSE: Symbol.for('Alpheios_StatusResponse'),
+      ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
+      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
+      OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest')
+    }
+  }
+
+  static get roles () {
+    return {
+      REQUEST: Symbol.for('Alpheios_Request'),
+      RESPONSE: Symbol.for('Alpheios_Response')
+    }
+  }
+
+  static get statuses () {
+    return {
+      DATA_FOUND: Symbol.for('Alpheios_DataFound'), // Requested word's data has been found
+      NO_DATA_FOUND: Symbol.for('Alpheios_NoDataFound'), // Requested word's data has not been found,
+      ACTIVE: Symbol.for('Alpheios_Active'), // Content script is loaded and active
+      DEACTIVATED: Symbol.for('Alpheios_Deactivated') // Content script has been loaded, but is deactivated
+    }
+  }
+
+  static statusSym (message) {
+    return Symbol.for(message.status)
+  }
+
+  static statusSymIs (message, status) {
+    return Message.statusSym(message) === status
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Message;
+
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Element {
+  constructor (name, scope, elementData = {}) {
+    this.options = Element.defaults
+
+    this.name = name
+    let defaultSelector = `[data-element="${this.name}"]`
+    this.selector = elementData.selector || defaultSelector
+    let elements = scope.querySelectorAll(this.selector)
+    if (elements.length === 0) { throw new Error(`Element "${name}" does not exist`) }
+    this.elements = (elements.length > 0) ? Array.from(elements) : [elements]
+    this.dataFunction = elementData.dataFunction
+  }
+
+  static get defaults () {
+    return {
+      classNames: {
+        hidden: 'hidden',
+        active: 'active'
+      }
+    }
+  }
+
+  get element () {
+    return this.elements[0]
+  }
+
+  setContent (...values) {
+    let contentHTML = this.dataFunction ? this.dataFunction(...values) : values[0]
+    for (let element of this.elements) {
+      element.innerHTML = contentHTML
+    }
+  }
+
+  appendContent (...values) {
+    let contentHTML = this.dataFunction ? this.dataFunction(...values) : values[0]
+    for (let element of this.elements) {
+      element.innerHTML += contentHTML
+    }
+  }
+
+  clearContent () {
+    for (let element of this.elements) {
+      element.innerHTML = ''
+    }
+  }
+
+  show () {
+    for (let element of this.elements) {
+      element.classList.remove(this.options.classNames.hidden)
+    }
+  }
+
+  hide () {
+    for (let element of this.elements) {
+      element.classList.add(this.options.classNames.hidden)
+    }
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Element;
+
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(2);
+
+
+class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */] {
+  constructor (request, body, status = undefined) {
+    super(body)
+    this.role = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.RESPONSE)
+    this.requestID = request.ID // ID of the request to match request and response
+    if (status) {
+      if (typeof status === 'symbol') {
+        // If status is a symbol, store a symbol key instead of a symbol for serialization
+        this.status = Symbol.keyFor(status)
+      } else {
+        this.status = status
+      }
+    }
+  }
+
+  /**
+   * Checks if this message is a response (i.e. follows a response message format)
+   * @param message
+   */
+  static isResponse (message) {
+    return message.role &&
+    Symbol.for(message.role) === __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.RESPONSE && message.requestID
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = ResponseMessage;
+
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(20);
+
+
+
+class Component {
+  constructor (componentOptions = {}, userOptions = {}) {
+    this.options = {}
+    this.options = Object.assign(this.options, componentOptions)
+    this.options = Object.assign(this.options, userOptions)
+    if (componentOptions.innerElements && userOptions.innerElements) {
+      this.options.innerElements = Object.assign(componentOptions.innerElements, userOptions.innerElements)
+    }
+    if (componentOptions.outerElements && userOptions.outerElements) {
+      this.options.outerElements = Object.assign(componentOptions.outerElements, userOptions.outerElements)
+    }
+    if (componentOptions.contentAreas && userOptions.contentAreas) {
+      this.options.contentAreas = Object.assign(componentOptions.contentAreas, userOptions.contentAreas)
+    }
+    this.self = {
+      selector: this.options.selfSelector
+    }
+    this.options.elements = {}
+    this.innerElements = {}
+    this.outerElements = {}
+    this.tabGroups = {}
+    this.contentAreas = {}
+
+    this.self.element = document.querySelector(this.self.selector)
+    if (!this.self.element) {
+      throw new Error(`Element's placeholder "${this.self.selector}" does not exist. Cannot create a component`)
+    }
+    this.self.element.outerHTML = this.options.template
+    this.self.element = document.querySelector(this.self.selector)
+
+    if (this.options && this.options.innerElements) {
+      for (const [name, elementData] of Object.entries(this.options.innerElements)) {
+        this.innerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, this.self.element, elementData)
+      }
+    }
+
+    if (this.options && this.options.outerElements) {
+      for (const [name, elementData] of Object.entries(this.options.outerElements)) {
+        this.outerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, document, elementData)
+      }
+    }
+
+    // Scan for tab groups
+    let tabGroups = new Set()
+    let tabs = this.self.element.querySelectorAll('[data-tab-group]')
+    for (let tab of tabs) {
+      let groupName = tab.dataset.tabGroup
+      if (!tabGroups.has(groupName)) { tabGroups.add(groupName) }
+    }
+    for (let groupNames of tabGroups.entries()) {
+      let groupName = groupNames[0] // entries() returns [groupName, groupName]
+      this.tabGroups[groupName] = new __WEBPACK_IMPORTED_MODULE_1__tab_group__["a" /* default */](groupName, this.self.element)
+    }
+
+    if (this.options && this.options.methods) {
+      for (const [key, value] of Object.entries(this.options.methods)) {
+        this[key] = value
+      }
+    }
+
+    if (this.options && this.options.contentAreas) {
+      for (const [areaName, areaData] of Object.entries(this.options.contentAreas)) {
+        areaData.selector = `[data-content-area="${areaName}"]`
+        this.contentAreas[areaName] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](areaName, this.self.element, areaData)
+      }
+    }
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Component;
+
+
+
+/***/ }),
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2272,27 +2272,29 @@ contentProcess.initialize()
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_panel_component__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_options_component__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_state__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__statuses__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__template_htmlf__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_vue_dist_vue__ = __webpack_require__(34);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_vue_js_modal__ = __webpack_require__(37);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_12_vue_js_modal__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__vue_components_popup_vue__ = __webpack_require__(38);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__node_modules_uikit_dist_js_uikit__ = __webpack_require__(47);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14__node_modules_uikit_dist_js_uikit__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(48);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit_icons__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_message__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_service__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_response_status_response__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_panel_component__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_options_component__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_state__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__statuses__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__template_htmlf__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__template_htmlf__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_selection_media_html_selector__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_vue_dist_vue__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_12_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_js_modal__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_vue_js_modal__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__vue_components_popup_vue__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit_icons__);
 /* global browser */
+
 
 
 
@@ -2314,23 +2316,26 @@ contentProcess.initialize()
 
 class ContentProcess {
   constructor () {
-    this.status = __WEBPACK_IMPORTED_MODULE_8__statuses__["a" /* default */].PENDING
+    this.status = __WEBPACK_IMPORTED_MODULE_9__statuses__["a" /* default */].PENDING
     this.settings = ContentProcess.settingValues
     this.vueInstance = undefined
 
     this.modal = undefined
 
-    this.messagingService = new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__["a" /* default */]()
+    this.messagingService = new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_service__["a" /* default */]()
+
+    this.maAdapter = new __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__["a" /* default */]() // Morphological analyzer adapter, with default arguments
+    this.langData = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* LanguageData */]([__WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["c" /* LatinDataSet */], __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* GreekDataSet */]]).loadData()
   }
 
   initialize () {
     this.loadUI()
 
     // Adds message listeners
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.STATUS_REQUEST, this.handleStatusRequest, this)
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].types.OPEN_PANEL_REQUEST, this.handleOpenPanelRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message__["a" /* default */].types.STATUS_REQUEST, this.handleStatusRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message__["a" /* default */].types.OPEN_PANEL_REQUEST, this.handleOpenPanelRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     // this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
@@ -2341,10 +2346,10 @@ class ContentProcess {
   loadUI () {
     // Inject HTML code of a plugin. Should go in reverse order.
     document.body.classList.add('alpheios')
-    ContentProcess.loadTemplate(__WEBPACK_IMPORTED_MODULE_9__template_htmlf___default.a)
+    ContentProcess.loadTemplate(__WEBPACK_IMPORTED_MODULE_10__template_htmlf___default.a)
 
     // Initialize components
-    this.panel = new __WEBPACK_IMPORTED_MODULE_5__components_panel_component__["a" /* default */]({
+    this.panel = new __WEBPACK_IMPORTED_MODULE_6__components_panel_component__["a" /* default */]({
       contentAreas: {
         shortDefinitions: {
           dataFunction: this.formatShortDefinitions.bind(this)
@@ -2355,10 +2360,10 @@ class ContentProcess {
       }
     })
     // Should be loaded after Panel because options are inserted into a panel
-    this.options = new __WEBPACK_IMPORTED_MODULE_6__components_options_component__["a" /* default */]({
+    this.options = new __WEBPACK_IMPORTED_MODULE_7__components_options_component__["a" /* default */]({
       methods: {
         ready: (options) => {
-          this.status = __WEBPACK_IMPORTED_MODULE_8__statuses__["a" /* default */].ACTIVE
+          this.status = __WEBPACK_IMPORTED_MODULE_9__statuses__["a" /* default */].ACTIVE
           this.setPanelPositionTo(options.panelPosition.currentValue)
           this.setDefaultLanguageTo(options.defaultLanguage.currentValue)
           console.log('Content script is set to active')
@@ -2368,15 +2373,15 @@ class ContentProcess {
     })
 
     // Register a Vue.js modal plugin
-    __WEBPACK_IMPORTED_MODULE_11_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_12_vue_js_modal___default.a, {
+    __WEBPACK_IMPORTED_MODULE_12_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_13_vue_js_modal___default.a, {
       dialog: false
     })
 
     // Create a Vue instance for a popup
-    this.vueInstance = new __WEBPACK_IMPORTED_MODULE_11_vue_dist_vue___default.a({
+    this.vueInstance = new __WEBPACK_IMPORTED_MODULE_12_vue_dist_vue___default.a({
       el: '#popup',
       // template: '<app/>',
-      components: { popup: __WEBPACK_IMPORTED_MODULE_13__vue_components_popup_vue__["a" /* default */] },
+      components: { popup: __WEBPACK_IMPORTED_MODULE_14__vue_components_popup_vue__["a" /* default */] },
       data: {
         popupTitle: '',
         popupContent: '',
@@ -2389,7 +2394,7 @@ class ContentProcess {
     this.modal = this.vueInstance.$modal
 
     // Initialize a UIKit
-    __WEBPACK_IMPORTED_MODULE_14__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit_icons___default.a)
+    __WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit_icons___default.a)
   }
 
   static get settingValues () {
@@ -2411,19 +2416,19 @@ class ContentProcess {
   }
 
   get isActive () {
-    return this.status === __WEBPACK_IMPORTED_MODULE_8__statuses__["a" /* default */].ACTIVE
+    return this.status === __WEBPACK_IMPORTED_MODULE_9__statuses__["a" /* default */].ACTIVE
   }
 
   deactivate () {
     console.log('Content has been deactivated.')
     this.panel.close()
-    this.status = __WEBPACK_IMPORTED_MODULE_8__statuses__["a" /* default */].DEACTIVATED
+    this.status = __WEBPACK_IMPORTED_MODULE_9__statuses__["a" /* default */].DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
     this.panel.open()
-    this.status = __WEBPACK_IMPORTED_MODULE_8__statuses__["a" /* default */].ACTIVE
+    this.status = __WEBPACK_IMPORTED_MODULE_9__statuses__["a" /* default */].ACTIVE
   }
 
   static loadTemplate (template) {
@@ -2432,49 +2437,74 @@ class ContentProcess {
     container.outerHTML = template
   }
 
-  showMessage (messageHTML) {
-    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-      this.panel.showMessage(messageHTML)
-    } else {
-      this.panel.close()
-      this.vueInstance.panel = this.panel // For being able to open a panel from within a popup
-      this.vueInstance.popupTitle = ''
-      this.vueInstance.popupContent = messageHTML
-      this.vueInstance.$modal.show('popup')
-    }
-  }
-
   async sendRequestToBgStatefully (request, timeout, state = undefined) {
     try {
       let result = await this.messagingService.sendRequestToBg(request, timeout)
-      return __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, result)
+      return __WEBPACK_IMPORTED_MODULE_8__lib_state__["a" /* default */].value(state, result)
     } catch (error) {
       // Wrap an error the same way we wrap the value
       console.log(`Statefull request to a background failed: ${error}`)
-      throw __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, error)
+      throw __WEBPACK_IMPORTED_MODULE_8__lib_state__["a" /* default */].value(state, error)
+    }
+  }
+
+  async getHomonymStatefully (languageCode, word, state) {
+    try {
+      let result = await this.maAdapter.getHomonym(languageCode, word, state)
+      // If no valid homonym data found should always throw an error to be caught in a calling function
+      return __WEBPACK_IMPORTED_MODULE_8__lib_state__["a" /* default */].value(state, result)
+    } catch (error) {
+      /*
+      getHomonym is non-statefull function. If it throws an error, we should catch it here, attach state
+      information, and rethrow
+      */
+      throw (__WEBPACK_IMPORTED_MODULE_8__lib_state__["a" /* default */].value(state, error))
     }
   }
 
   async getWordDataStatefully (textSelector, state = undefined) {
+    let homonym, lexicalData
+    // this.showMessage('Please wait while your data is loading ...<br>')
     try {
-      let messageObject = await this.sendRequestToBgStatefully(
-        new __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__["a" /* default */](textSelector),
-        this.settings.requestTimeout,
-        state
-      )
-      let message = messageObject.value
-
-      if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND)) {
-        let lexicalData = __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* LexicalData */].readObject(message.body)
-        console.log('Word data is: ', lexicalData)
-        this.displayWordData(lexicalData)
-      } else if (__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statusSymIs(message, __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND)) {
-        this.showMessage('<p>Sorry, the word you requested was not found.</p>')
-      }
-      return messageObject
+      // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
+      ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
+      if (!homonym) { throw __WEBPACK_IMPORTED_MODULE_8__lib_state__["a" /* default */].value(state, new Error(`Homonym data is empty`)) }
+      // this.appendMessage('Homonym data is ready<br>')
+      this.updateDefinitionsData(homonym)
     } catch (error) {
-      console.error(`Word data request failed: ${error.value}`)
-      this.showMessage(`<p>Sorry, your word you requested failed:<br><strong>${error.value}</strong></p>`)
+      console.error(`Cannot retrieve homonym data: ${error}`)
+    }
+
+    try {
+      lexicalData = this.langData.getSuffixes(homonym, state)
+      // this.panel.contentAreas.messages.appendContent('Inflection data is ready<br>')
+      this.updateInflectionsData(lexicalData)
+    } catch (e) {
+      console.log(`Failure retrieving inflection data. ${e}`)
+    }
+
+    let defRequestOptions = { timeout: 10000 }
+    try {
+      for (let lexeme of homonym.lexemes) {
+        // this.appendMessage(`<br>Retrieving data for "${lexeme.lemma.word}" lexeme<br>`)
+        let shortDefs = await __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__["a" /* Lexicons */].fetchShortDefs(lexeme.lemma, defRequestOptions)
+        console.log(`Retrieved short definitions:`, shortDefs)
+        lexeme.meaning.appendShortDefs(shortDefs)
+        this.updateDefinitionsData(homonym)
+        // this.appendMessage('Short definitions are ready<br>')
+        let fullDefs = await __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__["a" /* Lexicons */].fetchFullDefs(lexeme.lemma, defRequestOptions)
+        console.log(`Retrieved full definitions:`, fullDefs)
+        lexeme.meaning.appendFullDefs(fullDefs)
+        this.updateDefinitionsData(homonym)
+        // this.appendMessage('Full definitions are ready<br>')
+      }
+      console.log('Lexical data is: ', lexicalData)
+      this.displayWordData(lexicalData)
+      return __WEBPACK_IMPORTED_MODULE_8__lib_state__["a" /* default */].emptyValue(state)
+    } catch (error) {
+      let errorValue = __WEBPACK_IMPORTED_MODULE_8__lib_state__["a" /* default */].getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
+      console.error(`Word data retrieval failed: ${errorValue}`)
+      return __WEBPACK_IMPORTED_MODULE_8__lib_state__["a" /* default */].emptyValue(state)
     }
   }
 
@@ -2492,9 +2522,6 @@ class ContentProcess {
       }
     }
 
-    // Populate a panel
-
-    //this.updateDefinition(`<h2>Short definitions:</h2>${shortDefsText}<h2>Full definitions:</h2>${fullDefsText}`)
     this.updateInflectionTable(lexicalData)
 
     // Pouplate a popup
@@ -2509,6 +2536,54 @@ class ContentProcess {
       if (this.panel.isOpened) { this.panel.close() }
       this.vueInstance.$modal.show('popup')
     }
+  }
+
+  updateDefinitionsData (homonym) {
+    this.panel.clearContent()
+    let shortDefsText = ''
+    for (let lexeme of homonym.lexemes) {
+      if (lexeme.meaning.shortDefs.length > 0) {
+        this.panel.contentAreas.shortDefinitions.setContent(lexeme)
+        shortDefsText += this.formatShortDefinitions(lexeme)
+      }
+
+      if (lexeme.meaning.fullDefs.length > 0) {
+        this.panel.contentAreas.fullDefinitions.setContent(lexeme)
+      }
+    }
+
+    // Pouplate a popup
+    this.vueInstance.panel = this.panel
+    this.vueInstance.popupTitle = `${homonym.targetWord}`
+
+    this.vueInstance.popupContent = decodeURIComponent(shortDefsText)
+
+    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+      this.panel.open()
+    } else {
+      if (this.panel.isOpened) { this.panel.close() }
+      this.vueInstance.$modal.show('popup')
+    }
+  }
+
+  updateInflectionsData (lexicalData) {
+    this.updateInflectionTable(lexicalData)
+  }
+
+  showMessage (message) {
+    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+      if (!this.panel.isOpened) { this.panel.open() }
+      this.panel.showMessage(message)
+    } else {
+      if (this.panel.isOpened) { this.panel.close() }
+      this.vueInstance.$modal.show('popup')
+      this.vueInstance.messageContent = message
+    }
+  }
+
+  appendMessage (message) {
+    if (!this.panel.isOpened) { this.panel.open() }
+    this.panel.contentAreas.messages.appendContent(message)
   }
 
   formatShortDefinitions (lexeme) {
@@ -2530,7 +2605,7 @@ class ContentProcess {
   handleStatusRequest (request, sender) {
     // Send a status response
     console.log(`Status request received. Sending a response back.`)
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -2543,7 +2618,7 @@ class ContentProcess {
     if (!this.isActive) {
       this.reactivate()
     }
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -2556,7 +2631,7 @@ class ContentProcess {
     if (this.isActive) {
       this.deactivate()
     }
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -2566,24 +2641,16 @@ class ContentProcess {
   handleOpenPanelRequest (request, sender) {
     console.log(`Open panel request received. Sending a response back.`)
     this.panel.open()
-    this.status = __WEBPACK_IMPORTED_MODULE_8__statuses__["a" /* default */].PANEL_OPEN
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
+    this.status = __WEBPACK_IMPORTED_MODULE_9__statuses__["a" /* default */].PANEL_OPEN
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
       (error) => {
         console.error(`Unable to send a response to panel open request: ${error}`)
       }
     )
   }
 
-  togglePanel () {
-    this.panel.toggle()
-  }
-
-  updateDefinition (definition) {
-    this.panel.options.elements.definitionContainer.innerHTML = definition
-  }
-
   updateInflectionTable (wordData) {
-    this.presenter = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* Presenter */](
+    this.presenter = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["d" /* Presenter */](
       this.panel.contentAreas.inflectionsTable.element,
       this.panel.contentAreas.inflectionsViewSelector.element,
       this.panel.contentAreas.inflectionsLocaleSwitcher.element,
@@ -2612,7 +2679,7 @@ class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.defaultLanguage)
+      let textSelector = __WEBPACK_IMPORTED_MODULE_11__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.defaultLanguage)
 
       if (!textSelector.isEmpty()) {
         this.getWordDataStatefully(textSelector)
@@ -2629,20 +2696,20 @@ class ContentProcess {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* unused harmony export LatinDataSet */
-/* unused harmony export GreekDataSet */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return dataSet; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return dataSet$1; });
 /* unused harmony export languages */
 /* unused harmony export LanguageDataset */
-/* unused harmony export LanguageData */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return LanguageData; });
 /* unused harmony export Suffix */
 /* unused harmony export Footnote */
 /* unused harmony export MatchData */
 /* unused harmony export ExtendedLanguageData */
 /* unused harmony export ExtendedGreekData */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return LexicalData; });
+/* unused harmony export LexicalData */
 /* unused harmony export loadData */
 /* unused harmony export SelectedWord */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return Presenter; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return Presenter; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(10);
 
 
@@ -2880,7 +2947,8 @@ class LanguageData {
     if (this.supportedLanguages.includes(language)) {
       return this[homonym.language].getSuffixes(homonym)
     } else {
-      throw new Error(`"${language}" language data is missing. Unable to get suffix data.`)
+      // throw new Error(`"${language}" language data is missing. Unable to get suffix data.`)
+      return new LexicalData(homonym)
     }
   }
 }
@@ -11536,10 +11604,2338 @@ class ResourceProvider {
 
 /***/ }),
 /* 11 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(0);
+
+
+/**
+ * Base Adapter Class for a Morphology Service Client
+ */
+class BaseAdapter {
+  /**
+   * Method which is used to prepare a lookup request according
+   * to the adapter specific logic
+   * @param {string} lang - the language code
+   * @param {string} word - the word to lookup
+   * @returns {string} the url for the request
+   */
+  prepareRequestUrl (lang, word) {
+      /** must be overridden in the adapter implementation class **/
+    return null
+  }
+
+  /**
+   * Fetch response from a remote URL
+   * @param {string} lang - the language code
+   * @param {string} word - the word to lookup
+   * @returns {Promise} a promse which if successful resolves to json response object
+   *                    with the results of the analysis
+   */
+  fetch (lang, word) {
+    let url = this.prepareRequestUrl(lang, word);
+    return new Promise((resolve, reject) => {
+      if (url) {
+        window.fetch(url).then(
+            function (response) {
+              let json = response.json();
+              resolve(json);
+            }
+          ).catch((error) => {
+            reject(error);
+          }
+        );
+      } else {
+        reject(new Error(`Unable to prepare parser request url for ${lang}`));
+      }
+    })
+  }
+
+  /**
+   * Fetch test data to test the adapter
+   * @param {string} lang - the language code
+   * @param {string} word - the word to lookup
+   * @returns {Promise} a promse which if successful resolves to json response object
+   *                    with the test data
+   */
+  fetchTestData (lang, word) {
+    return new Promise((resolve, reject) => {
+      try {
+        let data = {};
+        resolve(data);
+      } catch (error) {
+        reject(error);
+      }
+    })
+  }
+
+  /**
+   * A function that maps a morphological service's specific data types and values into an inflection library standard.
+   * @param {object} jsonObj - A JSON data from the fetch request
+   * @param {object} targetWord - the original target word of the analysis
+   * @returns {Homonym} A library standard Homonym object.
+   */
+  transform (jsonObj, targetWord) {
+    return {}
+  }
+}
+
+/*
+Objects of a morphology analyzer's library
+ */
+/**
+ * Holds all information required to transform from morphological analyzer's grammatical feature values to the
+ * library standards. There is one ImportData object per language.
+ */
+class ImportData {
+    /**
+     * Creates an InmportData object for the language provided.
+     * @param {Models.LanguageModel} language - A language of the import data.
+     */
+  constructor (language, engine) {
+    'use strict';
+    this.language = language;
+    this.engine = engine;
+    // add all the features that the language supports so that we
+    // can return the default values if we don't need to import a mapping
+    for (let featureName of Object.keys(language.features)) {
+      this.addFeature(featureName);
+    }
+    // may be overridden by specific engine use via setLemmaParser
+    this.parseLemma = function (lemma) { return new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* Lemma */](lemma, this.language.toCode()) };
+  }
+
+    /**
+     * Adds a grammatical feature whose values to be mapped.
+     * @param {string} featureName - A name of a grammatical feature (i.e. declension, number, etc.)
+     * @return {Object} An object that represent a newly created grammatical feature.
+     */
+  addFeature (featureName) {
+    this[featureName] = {};
+    let language = this.language;
+
+    this[featureName].add = function add (providerValue, alpheiosValue) {
+      'use strict';
+      this[providerValue] = alpheiosValue;
+      return this
+    };
+
+    this[featureName].get = function get (providerValue) {
+      'use strict';
+      if (!this.importer.has(providerValue)) {
+        // if the providerValue matches the model value return that
+        if (language.features[featureName][providerValue]) {
+          return language.features[featureName][providerValue]
+        } else {
+          throw new Error("Skipping an unknown value '" +
+                    providerValue + "' of a grammatical feature '" + featureName + "' of " + language + ' language.')
+        }
+      } else {
+        return this.importer.get(providerValue)
+      }
+    };
+
+    this[featureName].importer = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["e" /* FeatureImporter */]();
+
+    return this[featureName]
+  }
+
+  /**
+   * Add an engine-specific lemma parser
+   */
+  setLemmaParser (callback) {
+    this.parseLemma = callback;
+  }
+}
+
+let data = new ImportData(new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["j" /* LatinLanguageModel */](), 'whitakerLat');
+let types = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types;
+
+/*
+Below are value conversion maps for each grammatical feature to be parsed.
+Format:
+data.addFeature(typeName).add(providerValueName, LibValueName);
+(functions are chainable)
+Types and values that are unknown (undefined) will be skipped during parsing.
+ */
+
+ // TODO  - per inflections.xsd
+ // Whitakers Words uses packon and tackon in POFS, not sure how
+
+data.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender).importer
+    .map('common',
+  [ data.language.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_MASCULINE],
+    data.language.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_FEMININE]
+  ])
+    .map('all',
+  [ data.language.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_MASCULINE],
+    data.language.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_FEMININE],
+    data.language.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_NEUTER]
+  ]);
+
+data.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense).importer
+    .map('future_perfect', data.language.features[types.tense][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE_PERFECT]);
+
+data.setLemmaParser(function (lemma) {
+  // Whitaker's Words returns principal parts for some words
+  // and sometimes has a space separted stem and suffix
+  let parsed, primary;
+  let parts = [];
+  let lemmas = lemma.split(', ');
+  for (let [index, l] of lemmas.entries()) {
+    let normalized = l.split(' ')[0];
+    if (index === 0) {
+      primary = normalized;
+    }
+    parts.push(normalized);
+  }
+  if (primary) {
+    parsed = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* Lemma */](primary, this.language.toCode(), parts);
+  }
+
+  return parsed
+});
+
+let data$1 = new ImportData(new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["f" /* GreekLanguageModel */](), 'morpheusgrc');
+let types$1 = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types;
+
+/*
+Below are value conversion maps for each grammatical feature to be parsed.
+Format:
+data.addFeature(typeName).add(providerValueName, LibValueName);
+(functions are chainable)
+Types and values that are unknown (undefined) will be skipped during parsing.
+ */
+
+data$1.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender).importer
+    .map('masculine feminine',
+  [ data$1.language.features[types$1.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_MASCULINE],
+    data$1.language.features[types$1.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_FEMININE]
+  ]);
+
+data$1.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension).importer
+    .map('1st & 2nd',
+  [ data$1.language.features[types$1.declension][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_1ST],
+    data$1.language.features[types$1.declension][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_2ND]
+  ]);
+
+let data$2 = new ImportData(new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["a" /* ArabicLanguageModel */](), 'aramorph');
+let types$2 = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types;
+
+data$2.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part).importer
+    .map('proper noun', [data$2.language.features[types$2.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_NOUN]]);
+
+let data$3 = new ImportData(new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["m" /* PersianLanguageModel */](), 'hazm');
+let types$3 = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types;
+
+data$3.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part).importer
+    .map('proper noun', [data$3.language.features[types$3.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_NOUN]]);
+
+var Cupidinibus = "{\n  \"RDF\": {\n    \"Annotation\": {\n      \"about\": \"urn:TuftsMorphologyService:cupidinibus:whitakerLat\",\n      \"creator\": {\n        \"Agent\": {\n          \"about\": \"net.alpheios:tools:wordsxml.v1\"\n        }\n      },\n      \"created\": {\n        \"$\": \"2017-08-10T23:15:29.185581\"\n      },\n      \"hasTarget\": {\n        \"Description\": {\n          \"about\": \"urn:word:cupidinibus\"\n        }\n      },\n      \"title\": {},\n      \"hasBody\": [\n        {\n          \"resource\": \"urn:uuid:idm140578094883136\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140578158026160\"\n        }\n      ],\n      \"Body\": [\n        {\n          \"about\": \"urn:uuid:idm140578094883136\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 2,\n                    \"$\": \"locative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 5,\n                    \"$\": \"dative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  }\n                }\n              ],\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"Cupido, Cupidinis\"\n                },\n                \"pofs\": {\n                  \"order\": 5,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                },\n                \"gend\": {\n                  \"$\": \"masculine\"\n                },\n                \"area\": {\n                  \"$\": \"religion\"\n                },\n                \"freq\": {\n                  \"order\": 4,\n                  \"$\": \"common\"\n                },\n                \"src\": {\n                  \"$\": \"Ox.Lat.Dict.\"\n                }\n              },\n              \"mean\": {\n                \"$\": \"Cupid, son of Venus; personification of carnal desire;\"\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140578158026160\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 2,\n                    \"$\": \"locative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"common\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 5,\n                    \"$\": \"dative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"common\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"common\"\n                  }\n                }\n              ],\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"cupido, cupidinis\"\n                },\n                \"pofs\": {\n                  \"order\": 5,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                },\n                \"gend\": {\n                  \"$\": \"common\"\n                },\n                \"freq\": {\n                  \"order\": 5,\n                  \"$\": \"frequent\"\n                },\n                \"src\": {\n                  \"$\": \"Ox.Lat.Dict.\"\n                }\n              },\n              \"mean\": {\n                \"$\": \"desire/love/wish/longing (passionate); lust; greed, appetite; desire for gain;\"\n              }\n            }\n          }\n        }\n      ]\n    }\n  }\n}\n";
+
+var Mare = "{\n  \"RDF\": {\n    \"Annotation\": {\n      \"about\": \"urn:TuftsMorphologyService:mare:morpheuslat\",\n      \"creator\": {\n        \"Agent\": {\n          \"about\": \"org.perseus:tools:morpheus.v1\"\n        }\n      },\n      \"created\": {\n        \"$\": \"2017-09-08T06:59:48.639180\"\n      },\n      \"hasTarget\": {\n        \"Description\": {\n          \"about\": \"urn:word:mare\"\n        }\n      },\n      \"title\": {},\n      \"hasBody\": [\n        {\n          \"resource\": \"urn:uuid:idm140446402389888\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140446402332400\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140446402303648\"\n        }\n      ],\n      \"Body\": [\n        {\n          \"about\": \"urn:uuid:idm140446402389888\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34070.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"mare\"\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                }\n              },\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 7,\n                    \"$\": \"nominative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 1,\n                    \"$\": \"vocative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 4,\n                    \"$\": \"accusative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                }\n              ],\n              \"mean\": {\n                \"$\": \"the sea\"\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140446402332400\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34118.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"marum\"\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"2nd\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                }\n              },\n              \"infl\": {\n                \"term\": {\n                  \"lang\": \"lat\",\n                  \"stem\": {\n                    \"$\": \"mar\"\n                  },\n                  \"suff\": {\n                    \"$\": \"e\"\n                  }\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"2nd\"\n                },\n                \"case\": {\n                  \"order\": 1,\n                  \"$\": \"vocative\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                },\n                \"num\": {\n                  \"$\": \"singular\"\n                },\n                \"stemtype\": {\n                  \"$\": \"us_i\"\n                }\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140446402303648\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34119.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"mas\"\n                },\n                \"pofs\": {\n                  \"order\": 2,\n                  \"$\": \"adjective\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                }\n              },\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"feminine\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                }\n              ]\n            }\n          }\n        }\n      ]\n    }\n  }\n}\n";
+
+var Cepit = "{\n  \"RDF\": {\n    \"Annotation\": {\n      \"about\": \"urn:TuftsMorphologyService:cepit:whitakerLat\",\n      \"creator\": {\n        \"Agent\": {\n          \"about\": \"net.alpheios:tools:wordsxml.v1\"\n        }\n      },\n      \"created\": {\n        \"$\": \"2017-08-10T23:16:53.672068\"\n      },\n      \"hasTarget\": {\n        \"Description\": {\n          \"about\": \"urn:word:cepit\"\n        }\n      },\n      \"title\": {},\n      \"hasBody\": {\n        \"resource\": \"urn:uuid:idm140578133848416\"\n      },\n      \"Body\": {\n        \"about\": \"urn:uuid:idm140578133848416\",\n        \"type\": {\n          \"resource\": \"cnt:ContentAsXML\"\n        },\n        \"rest\": {\n          \"entry\": {\n            \"infl\": {\n              \"term\": {\n                \"lang\": \"lat\",\n                \"stem\": {\n                  \"$\": \"cep\"\n                },\n                \"suff\": {\n                  \"$\": \"it\"\n                }\n              },\n              \"pofs\": {\n                \"order\": 3,\n                \"$\": \"verb\"\n              },\n              \"conj\": {\n                \"$\": \"3rd\"\n              },\n              \"var\": {\n                \"$\": \"1st\"\n              },\n              \"tense\": {\n                \"$\": \"perfect\"\n              },\n              \"voice\": {\n                \"$\": \"active\"\n              },\n              \"mood\": {\n                \"$\": \"indicative\"\n              },\n              \"pers\": {\n                \"$\": \"3rd\"\n              },\n              \"num\": {\n                \"$\": \"singular\"\n              }\n            },\n            \"dict\": {\n              \"hdwd\": {\n                \"lang\": \"lat\",\n                \"$\": \"capio, capere, cepi, captus\"\n              },\n              \"pofs\": {\n                \"order\": 3,\n                \"$\": \"verb\"\n              },\n              \"conj\": {\n                \"$\": \"3rd\"\n              },\n              \"kind\": {\n                \"$\": \"transitive\"\n              },\n              \"freq\": {\n                \"order\": 6,\n                \"$\": \"very frequent\"\n              },\n              \"src\": {\n                \"$\": \"Ox.Lat.Dict.\"\n              }\n            },\n            \"mean\": {\n              \"$\": \"take hold, seize; grasp; take bribe; arrest/capture; put on; occupy; captivate;\"\n            }\n          }\n        }\n      }\n    }\n  }\n}\n";
+
+var Pilsopo = "{\n  \"RDF\": {\n    \"Annotation\": {\n      \"about\": \"urn:TuftsMorphologyService:φιλόσοφος:morpheuslat\",\n      \"creator\": {\n        \"Agent\": {\n          \"about\": \"org.perseus:tools:morpheus.v1\"\n        }\n      },\n      \"created\": {\n        \"$\": \"2017-10-15T14:06:40.522369\"\n      },\n      \"hasTarget\": {\n        \"Description\": {\n          \"about\": \"urn:word:φιλόσοφος\"\n        }\n      },\n      \"title\": {},\n      \"hasBody\": {\n        \"resource\": \"urn:uuid:idm140446394225264\"\n      },\n      \"Body\": {\n        \"about\": \"urn:uuid:idm140446394225264\",\n        \"type\": {\n          \"resource\": \"cnt:ContentAsXML\"\n        },\n        \"rest\": {\n          \"entry\": {\n            \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:grclexent.lex78378.1\",\n            \"dict\": {\n              \"hdwd\": {\n                \"lang\": \"grc\",\n                \"$\": \"φιλόσοφος\"\n              },\n              \"pofs\": {\n                \"order\": 3,\n                \"$\": \"noun\"\n              },\n              \"decl\": {\n                \"$\": \"2nd\"\n              },\n              \"gend\": {\n                \"$\": \"masculine\"\n              }\n            },\n            \"infl\": {\n              \"term\": {\n                \"lang\": \"grc\",\n                \"stem\": {\n                  \"$\": \"φιλοσοφ\"\n                },\n                \"suff\": {\n                  \"$\": \"ος\"\n                }\n              },\n              \"pofs\": {\n                \"order\": 3,\n                \"$\": \"noun\"\n              },\n              \"decl\": {\n                \"$\": \"2nd\"\n              },\n              \"case\": {\n                \"order\": 7,\n                \"$\": \"nominative\"\n              },\n              \"gend\": {\n                \"$\": \"masculine\"\n              },\n              \"num\": {\n                \"$\": \"singular\"\n              },\n              \"stemtype\": {\n                \"$\": \"os_ou\"\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}";
+
+class WordTestData {
+  constructor () {
+    this._words = {
+      'cupidinibus': Cupidinibus,
+      'mare': Mare,
+      'cepit': Cepit,
+      'φιλόσοφος': Pilsopo
+    };
+  }
+
+  get (word) {
+    if (this._words.hasOwnProperty(word)) {
+      return this._words[word]
+    }
+    throw new Error(`Word "${word}" does not exist in test data`)
+  }
+}
+
+var DefaultConfig = "{\n  \"engine\": {\n    \"lat\": [\"whitakerLat\"],\n    \"grc\": [\"morpheusgrc\"],\n    \"ara\": [\"aramorph\"],\n    \"per\": [\"hazm\"]\n  },\n  \"url\": \"http://morph.alpheios.net/api/v1/analysis/word?word=r_WORD&engine=r_ENGINE&lang=r_LANG\"\n}\n";
+
+class TuftsAdapter extends BaseAdapter {
+  /**
+   * A Morph Client Adapter for the Tufts Morphology Service
+   * @constructor
+   * @param {object} engine an object which maps language code to desired engine code
+                            for that language. E.g. { lat : whitakerLat, grc: morpheusgrc }
+   */
+  constructor (config = null) {
+    super();
+    if (config == null) {
+      try {
+        this.config = JSON.parse(DefaultConfig);
+      } catch (e) {
+        this.config = DefaultConfig;
+      }
+    } else {
+      this.config = config;
+    }
+    this.engineMap = new Map(([ data, data$1, data$2, data$3 ]).map((e) => { return [ e.engine, e ] }));
+  }
+
+  getEngineLanguageMap (lang) {
+    if (this.config.engine[lang]) {
+      return this.engineMap.get(this.config.engine[lang][0])
+    } else {
+      return null
+    }
+  }
+
+  prepareRequestUrl (lang, word) {
+    let engine = this.getEngineLanguageMap(lang);
+    if (engine) {
+      let code = engine.engine;
+      return this.config.url.replace('r_WORD', word).replace('r_ENGINE', code).replace('r_LANG', lang)
+    } else {
+      return null
+    }
+  }
+
+  fetchTestData (lang, word) {
+    return new Promise((resolve, reject) => {
+      try {
+        let wordData = new WordTestData().get(word);
+        let json = JSON.parse(wordData);
+        resolve(json);
+      } catch (error) {
+                // Word is not found in test data
+        reject(error);
+      }
+    })
+  }
+
+  /**
+   * A function that maps a morphological service's specific data types and values into an inflection library standard.
+   * @param {object} jsonObj - A JSON data from a Morphological Analyzer.
+   * @param {object} targetWord - the target of the analysis
+   * @returns {Homonym} A library standard Homonym object.
+   */
+  transform (jsonObj, targetWord) {
+    'use strict';
+    let lexemes = [];
+    let annotationBody = jsonObj.RDF.Annotation.Body;
+    if (!Array.isArray(annotationBody)) {
+            /*
+            If only one lexeme is returned, Annotation Body will not be an array but rather a single object.
+            Let's convert it to an array so we can work with it in the same way no matter what format it is.
+             */
+      annotationBody = [annotationBody];
+    }
+    let provider;
+    for (let lexeme of annotationBody) {
+            // Get importer based on the language
+      let language = lexeme.rest.entry.dict.hdwd.lang;
+      let mappingData = this.getEngineLanguageMap(language);
+      let lemma = mappingData.parseLemma(lexeme.rest.entry.dict.hdwd.$, language);
+
+      if (!provider) {
+        let providerUri = jsonObj.RDF.Annotation.about;
+        let providerRights = '';
+        if (jsonObj.RDF.Annotation.rights) {
+          providerRights = jsonObj.RDF.Annotation.rights.$;
+        }
+        provider = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["n" /* ResourceProvider */](providerUri, providerRights);
+      }
+      let meaning = lexeme.rest.entry.mean;
+      let shortdef;
+      if (meaning) {
+        // TODO: convert a source-specific language code to ISO 639-3 if don't match
+        let lang = meaning.lang ? meaning.lang : 'eng';
+        shortdef = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["c" /* Definition */](meaning.$, lang, 'text/plain');
+      }
+      let inflections = [];
+      let inflectionsJSON = lexeme.rest.entry.infl;
+      if (!Array.isArray(inflectionsJSON)) {
+                // If only one inflection returned, it is a single object, not an array of objects. Convert it to an array for uniformity.
+        inflectionsJSON = [inflectionsJSON];
+      }
+      for (let inflectionJSON of inflectionsJSON) {
+        let inflection = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["h" /* Inflection */](inflectionJSON.term.stem.$, mappingData.language.toCode());
+        if (inflectionJSON.term.suff) {
+                    // Set suffix if provided by a morphological analyzer
+          inflection.suffix = inflectionJSON.term.suff.$;
+        }
+
+        if (inflectionJSON.xmpl) {
+          inflection.example = inflectionJSON.xmpl.$;
+        }
+                // Parse whatever grammatical features we're interested in
+        if (inflectionJSON.pofs) {
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(inflectionJSON.pofs.$);
+        }
+
+        if (inflectionJSON.case) {
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase].get(inflectionJSON.case.$);
+        }
+
+        if (inflectionJSON.decl) {
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(inflectionJSON.decl.$);
+        }
+
+        if (inflectionJSON.num) {
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number].get(inflectionJSON.num.$);
+        }
+
+        if (inflectionJSON.gend) {
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender].get(inflectionJSON.gend.$);
+        }
+
+        if (inflectionJSON.conj) {
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(inflectionJSON.conj.$);
+        }
+
+        if (inflectionJSON.tense) {
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense].get(inflectionJSON.tense.$);
+        }
+
+        if (inflectionJSON.voice) {
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.voice].get(inflectionJSON.voice.$);
+        }
+
+        if (inflectionJSON.mood) {
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood].get(inflectionJSON.mood.$);
+        }
+
+        if (inflectionJSON.pers) {
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person].get(inflectionJSON.pers.$);
+        }
+
+        inflections.push(inflection);
+      }
+
+      let lexmodel = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* Lexeme */](lemma, inflections);
+      lexmodel.meaning.appendShortDefs(shortdef);
+      let providedLexeme = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["n" /* ResourceProvider */].getProxy(provider, lexmodel);
+      lexemes.push(providedLexeme);
+    }
+    return new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* Homonym */](lexemes, targetWord)
+  }
+
+  async getHomonym (lang, word) {
+    let jsonObj = await this.fetch(lang, word);
+    if (jsonObj) {
+      let homonym = this.transform(jsonObj, word);
+      return homonym
+    } else {
+        // No data found for this word
+      return undefined
+    }
+  }
+}
+
+/* harmony default export */ __webpack_exports__["a"] = (TuftsAdapter);
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Lexicons; });
+/* unused harmony export AlpheiosLexAdapter */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(0);
+
+
+/**
+ * Base Adapter Class for a Lexicon Service
+ */
+class BaseLexiconAdapter {
+  /**
+   * Lookup a short definition in a lexicon
+   * @param {Lemma} lemma Lemma to lookup
+   * @return {Promise} a Promise that resolves to a Definition object
+   */
+  async lookupShortDef (lemma) {
+    throw new Error('Unimplemented')
+  }
+
+  /**
+   * Lookup a full definition in a lexicon
+   * @param {Lemma} lemma Lemma to lookup
+   * @return {Promise} a Promise that resovles to a Definition object
+   */
+  async lookupFullDef (lemma) {
+    throw new Error('Unimplemented')
+  }
+
+  /**
+   * Get the available lexicons provided by this adapter class for the
+   * requested language
+   * @param {string} language languageCode
+   * @return {Array} a Map of lexicon objects. Keys are lexicon uris, values are the lexicon description.
+   */
+  static getLexicons (language) {
+    return []
+  }
+}
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var papaparse = createCommonjsModule(function (module, exports) {
+/*!
+	Papa Parse
+	v4.3.6
+	https://github.com/mholt/PapaParse
+	License: MIT
+*/
+(function(root, factory)
+{
+	if (false)
+	{
+		// AMD. Register as an anonymous module.
+		undefined([], factory);
+	}
+	else {
+		// Node. Does not work with strict CommonJS, but
+		// only CommonJS-like environments that support module.exports,
+		// like Node.
+		module.exports = factory();
+	}
+}(this, function()
+{
+	'use strict';
+
+	var global = (function () {
+		// alternative method, similar to `Function('return this')()`
+		// but without using `eval` (which is disabled when
+		// using Content Security Policy).
+
+		if (typeof self !== 'undefined') { return self; }
+		if (typeof window !== 'undefined') { return window; }
+		if (typeof global !== 'undefined') { return global; }
+
+		// When running tests none of the above have been defined
+		return {};
+	})();
+
+
+	var IS_WORKER = !global.document && !!global.postMessage,
+		IS_PAPA_WORKER = IS_WORKER && /(\?|&)papaworker(=|&|$)/.test(global.location.search),
+		LOADED_SYNC = false, AUTO_SCRIPT_PATH;
+	var workers = {}, workerIdCounter = 0;
+
+	var Papa = {};
+
+	Papa.parse = CsvToJson;
+	Papa.unparse = JsonToCsv;
+
+	Papa.RECORD_SEP = String.fromCharCode(30);
+	Papa.UNIT_SEP = String.fromCharCode(31);
+	Papa.BYTE_ORDER_MARK = '\ufeff';
+	Papa.BAD_DELIMITERS = ['\r', '\n', '"', Papa.BYTE_ORDER_MARK];
+	Papa.WORKERS_SUPPORTED = !IS_WORKER && !!global.Worker;
+	Papa.SCRIPT_PATH = null;	// Must be set by your code if you use workers and this lib is loaded asynchronously
+
+	// Configurable chunk sizes for local and remote files, respectively
+	Papa.LocalChunkSize = 1024 * 1024 * 10;	// 10 MB
+	Papa.RemoteChunkSize = 1024 * 1024 * 5;	// 5 MB
+	Papa.DefaultDelimiter = ',';			// Used if not specified and detection fails
+
+	// Exposed for testing and development only
+	Papa.Parser = Parser;
+	Papa.ParserHandle = ParserHandle;
+	Papa.NetworkStreamer = NetworkStreamer;
+	Papa.FileStreamer = FileStreamer;
+	Papa.StringStreamer = StringStreamer;
+	Papa.ReadableStreamStreamer = ReadableStreamStreamer;
+
+	if (global.jQuery)
+	{
+		var $ = global.jQuery;
+		$.fn.parse = function(options)
+		{
+			var config = options.config || {};
+			var queue = [];
+
+			this.each(function(idx)
+			{
+				var supported = $(this).prop('tagName').toUpperCase() === 'INPUT'
+								&& $(this).attr('type').toLowerCase() === 'file'
+								&& global.FileReader;
+
+				if (!supported || !this.files || this.files.length === 0)
+					return true;	// continue to next input element
+
+				for (var i = 0; i < this.files.length; i++)
+				{
+					queue.push({
+						file: this.files[i],
+						inputElem: this,
+						instanceConfig: $.extend({}, config)
+					});
+				}
+			});
+
+			parseNextFile();	// begin parsing
+			return this;		// maintains chainability
+
+
+			function parseNextFile()
+			{
+				if (queue.length === 0)
+				{
+					if (isFunction(options.complete))
+						options.complete();
+					return;
+				}
+
+				var f = queue[0];
+
+				if (isFunction(options.before))
+				{
+					var returned = options.before(f.file, f.inputElem);
+
+					if (typeof returned === 'object')
+					{
+						if (returned.action === 'abort')
+						{
+							error('AbortError', f.file, f.inputElem, returned.reason);
+							return;	// Aborts all queued files immediately
+						}
+						else if (returned.action === 'skip')
+						{
+							fileComplete();	// parse the next file in the queue, if any
+							return;
+						}
+						else if (typeof returned.config === 'object')
+							f.instanceConfig = $.extend(f.instanceConfig, returned.config);
+					}
+					else if (returned === 'skip')
+					{
+						fileComplete();	// parse the next file in the queue, if any
+						return;
+					}
+				}
+
+				// Wrap up the user's complete callback, if any, so that ours also gets executed
+				var userCompleteFunc = f.instanceConfig.complete;
+				f.instanceConfig.complete = function(results)
+				{
+					if (isFunction(userCompleteFunc))
+						userCompleteFunc(results, f.file, f.inputElem);
+					fileComplete();
+				};
+
+				Papa.parse(f.file, f.instanceConfig);
+			}
+
+			function error(name, file, elem, reason)
+			{
+				if (isFunction(options.error))
+					options.error({name: name}, file, elem, reason);
+			}
+
+			function fileComplete()
+			{
+				queue.splice(0, 1);
+				parseNextFile();
+			}
+		};
+	}
+
+
+	if (IS_PAPA_WORKER)
+	{
+		global.onmessage = workerThreadReceivedMessage;
+	}
+	else if (Papa.WORKERS_SUPPORTED)
+	{
+		AUTO_SCRIPT_PATH = getScriptPath();
+
+		// Check if the script was loaded synchronously
+		if (!document.body)
+		{
+			// Body doesn't exist yet, must be synchronous
+			LOADED_SYNC = true;
+		}
+		else
+		{
+			document.addEventListener('DOMContentLoaded', function () {
+				LOADED_SYNC = true;
+			}, true);
+		}
+	}
+
+
+
+
+	function CsvToJson(_input, _config)
+	{
+		_config = _config || {};
+		var dynamicTyping = _config.dynamicTyping || false;
+		if (isFunction(dynamicTyping)) {
+			_config.dynamicTypingFunction = dynamicTyping;
+			// Will be filled on first row call
+			dynamicTyping = {};
+		}
+		_config.dynamicTyping = dynamicTyping;
+
+		if (_config.worker && Papa.WORKERS_SUPPORTED)
+		{
+			var w = newWorker();
+
+			w.userStep = _config.step;
+			w.userChunk = _config.chunk;
+			w.userComplete = _config.complete;
+			w.userError = _config.error;
+
+			_config.step = isFunction(_config.step);
+			_config.chunk = isFunction(_config.chunk);
+			_config.complete = isFunction(_config.complete);
+			_config.error = isFunction(_config.error);
+			delete _config.worker;	// prevent infinite loop
+
+			w.postMessage({
+				input: _input,
+				config: _config,
+				workerId: w.id
+			});
+
+			return;
+		}
+
+		var streamer = null;
+		if (typeof _input === 'string')
+		{
+			if (_config.download)
+				streamer = new NetworkStreamer(_config);
+			else
+				streamer = new StringStreamer(_config);
+		}
+		else if (_input.readable === true && isFunction(_input.read) && isFunction(_input.on))
+		{
+			streamer = new ReadableStreamStreamer(_config);
+		}
+		else if ((global.File && _input instanceof File) || _input instanceof Object)	// ...Safari. (see issue #106)
+			streamer = new FileStreamer(_config);
+
+		return streamer.stream(_input);
+	}
+
+
+
+
+
+
+	function JsonToCsv(_input, _config)
+	{
+		var _output = '';
+		var _fields = [];
+
+		// Default configuration
+
+		/** whether to surround every datum with quotes */
+		var _quotes = false;
+
+		/** whether to write headers */
+		var _writeHeader = true;
+
+		/** delimiting character */
+		var _delimiter = ',';
+
+		/** newline character(s) */
+		var _newline = '\r\n';
+
+		/** quote character */
+		var _quoteChar = '"';
+
+		unpackConfig();
+
+		var quoteCharRegex = new RegExp(_quoteChar, 'g');
+
+		if (typeof _input === 'string')
+			_input = JSON.parse(_input);
+
+		if (_input instanceof Array)
+		{
+			if (!_input.length || _input[0] instanceof Array)
+				return serialize(null, _input);
+			else if (typeof _input[0] === 'object')
+				return serialize(objectKeys(_input[0]), _input);
+		}
+		else if (typeof _input === 'object')
+		{
+			if (typeof _input.data === 'string')
+				_input.data = JSON.parse(_input.data);
+
+			if (_input.data instanceof Array)
+			{
+				if (!_input.fields)
+					_input.fields =  _input.meta && _input.meta.fields;
+
+				if (!_input.fields)
+					_input.fields =  _input.data[0] instanceof Array
+									? _input.fields
+									: objectKeys(_input.data[0]);
+
+				if (!(_input.data[0] instanceof Array) && typeof _input.data[0] !== 'object')
+					_input.data = [_input.data];	// handles input like [1,2,3] or ['asdf']
+			}
+
+			return serialize(_input.fields || [], _input.data || []);
+		}
+
+		// Default (any valid paths should return before this)
+		throw 'exception: Unable to serialize unrecognized input';
+
+
+		function unpackConfig()
+		{
+			if (typeof _config !== 'object')
+				return;
+
+			if (typeof _config.delimiter === 'string'
+				&& _config.delimiter.length === 1
+				&& Papa.BAD_DELIMITERS.indexOf(_config.delimiter) === -1)
+			{
+				_delimiter = _config.delimiter;
+			}
+
+			if (typeof _config.quotes === 'boolean'
+				|| _config.quotes instanceof Array)
+				_quotes = _config.quotes;
+
+			if (typeof _config.newline === 'string')
+				_newline = _config.newline;
+
+			if (typeof _config.quoteChar === 'string')
+				_quoteChar = _config.quoteChar;
+
+			if (typeof _config.header === 'boolean')
+				_writeHeader = _config.header;
+		}
+
+
+		/** Turns an object's keys into an array */
+		function objectKeys(obj)
+		{
+			if (typeof obj !== 'object')
+				return [];
+			var keys = [];
+			for (var key in obj)
+				keys.push(key);
+			return keys;
+		}
+
+		/** The double for loop that iterates the data and writes out a CSV string including header row */
+		function serialize(fields, data)
+		{
+			var csv = '';
+
+			if (typeof fields === 'string')
+				fields = JSON.parse(fields);
+			if (typeof data === 'string')
+				data = JSON.parse(data);
+
+			var hasHeader = fields instanceof Array && fields.length > 0;
+			var dataKeyedByField = !(data[0] instanceof Array);
+
+			// If there a header row, write it first
+			if (hasHeader && _writeHeader)
+			{
+				for (var i = 0; i < fields.length; i++)
+				{
+					if (i > 0)
+						csv += _delimiter;
+					csv += safe(fields[i], i);
+				}
+				if (data.length > 0)
+					csv += _newline;
+			}
+
+			// Then write out the data
+			for (var row = 0; row < data.length; row++)
+			{
+				var maxCol = hasHeader ? fields.length : data[row].length;
+
+				for (var col = 0; col < maxCol; col++)
+				{
+					if (col > 0)
+						csv += _delimiter;
+					var colIdx = hasHeader && dataKeyedByField ? fields[col] : col;
+					csv += safe(data[row][colIdx], col);
+				}
+
+				if (row < data.length - 1)
+					csv += _newline;
+			}
+
+			return csv;
+		}
+
+		/** Encloses a value around quotes if needed (makes a value safe for CSV insertion) */
+		function safe(str, col)
+		{
+			if (typeof str === 'undefined' || str === null)
+				return '';
+
+			str = str.toString().replace(quoteCharRegex, _quoteChar+_quoteChar);
+
+			var needsQuotes = (typeof _quotes === 'boolean' && _quotes)
+							|| (_quotes instanceof Array && _quotes[col])
+							|| hasAny(str, Papa.BAD_DELIMITERS)
+							|| str.indexOf(_delimiter) > -1
+							|| str.charAt(0) === ' '
+							|| str.charAt(str.length - 1) === ' ';
+
+			return needsQuotes ? _quoteChar + str + _quoteChar : str;
+		}
+
+		function hasAny(str, substrings)
+		{
+			for (var i = 0; i < substrings.length; i++)
+				if (str.indexOf(substrings[i]) > -1)
+					return true;
+			return false;
+		}
+	}
+
+	/** ChunkStreamer is the base prototype for various streamer implementations. */
+	function ChunkStreamer(config)
+	{
+		this._handle = null;
+		this._paused = false;
+		this._finished = false;
+		this._input = null;
+		this._baseIndex = 0;
+		this._partialLine = '';
+		this._rowCount = 0;
+		this._start = 0;
+		this._nextChunk = null;
+		this.isFirstChunk = true;
+		this._completeResults = {
+			data: [],
+			errors: [],
+			meta: {}
+		};
+		replaceConfig.call(this, config);
+
+		this.parseChunk = function(chunk)
+		{
+			// First chunk pre-processing
+			if (this.isFirstChunk && isFunction(this._config.beforeFirstChunk))
+			{
+				var modifiedChunk = this._config.beforeFirstChunk(chunk);
+				if (modifiedChunk !== undefined)
+					chunk = modifiedChunk;
+			}
+			this.isFirstChunk = false;
+
+			// Rejoin the line we likely just split in two by chunking the file
+			var aggregate = this._partialLine + chunk;
+			this._partialLine = '';
+
+			var results = this._handle.parse(aggregate, this._baseIndex, !this._finished);
+
+			if (this._handle.paused() || this._handle.aborted())
+				return;
+
+			var lastIndex = results.meta.cursor;
+
+			if (!this._finished)
+			{
+				this._partialLine = aggregate.substring(lastIndex - this._baseIndex);
+				this._baseIndex = lastIndex;
+			}
+
+			if (results && results.data)
+				this._rowCount += results.data.length;
+
+			var finishedIncludingPreview = this._finished || (this._config.preview && this._rowCount >= this._config.preview);
+
+			if (IS_PAPA_WORKER)
+			{
+				global.postMessage({
+					results: results,
+					workerId: Papa.WORKER_ID,
+					finished: finishedIncludingPreview
+				});
+			}
+			else if (isFunction(this._config.chunk))
+			{
+				this._config.chunk(results, this._handle);
+				if (this._paused)
+					return;
+				results = undefined;
+				this._completeResults = undefined;
+			}
+
+			if (!this._config.step && !this._config.chunk) {
+				this._completeResults.data = this._completeResults.data.concat(results.data);
+				this._completeResults.errors = this._completeResults.errors.concat(results.errors);
+				this._completeResults.meta = results.meta;
+			}
+
+			if (finishedIncludingPreview && isFunction(this._config.complete) && (!results || !results.meta.aborted))
+				this._config.complete(this._completeResults, this._input);
+
+			if (!finishedIncludingPreview && (!results || !results.meta.paused))
+				this._nextChunk();
+
+			return results;
+		};
+
+		this._sendError = function(error)
+		{
+			if (isFunction(this._config.error))
+				this._config.error(error);
+			else if (IS_PAPA_WORKER && this._config.error)
+			{
+				global.postMessage({
+					workerId: Papa.WORKER_ID,
+					error: error,
+					finished: false
+				});
+			}
+		};
+
+		function replaceConfig(config)
+		{
+			// Deep-copy the config so we can edit it
+			var configCopy = copy(config);
+			configCopy.chunkSize = parseInt(configCopy.chunkSize);	// parseInt VERY important so we don't concatenate strings!
+			if (!config.step && !config.chunk)
+				configCopy.chunkSize = null;  // disable Range header if not streaming; bad values break IIS - see issue #196
+			this._handle = new ParserHandle(configCopy);
+			this._handle.streamer = this;
+			this._config = configCopy;	// persist the copy to the caller
+		}
+	}
+
+
+	function NetworkStreamer(config)
+	{
+		config = config || {};
+		if (!config.chunkSize)
+			config.chunkSize = Papa.RemoteChunkSize;
+		ChunkStreamer.call(this, config);
+
+		var xhr;
+
+		if (IS_WORKER)
+		{
+			this._nextChunk = function()
+			{
+				this._readChunk();
+				this._chunkLoaded();
+			};
+		}
+		else
+		{
+			this._nextChunk = function()
+			{
+				this._readChunk();
+			};
+		}
+
+		this.stream = function(url)
+		{
+			this._input = url;
+			this._nextChunk();	// Starts streaming
+		};
+
+		this._readChunk = function()
+		{
+			if (this._finished)
+			{
+				this._chunkLoaded();
+				return;
+			}
+
+			xhr = new XMLHttpRequest();
+
+			if (this._config.withCredentials)
+			{
+				xhr.withCredentials = this._config.withCredentials;
+			}
+
+			if (!IS_WORKER)
+			{
+				xhr.onload = bindFunction(this._chunkLoaded, this);
+				xhr.onerror = bindFunction(this._chunkError, this);
+			}
+
+			xhr.open('GET', this._input, !IS_WORKER);
+			// Headers can only be set when once the request state is OPENED
+			if (this._config.downloadRequestHeaders)
+			{
+				var headers = this._config.downloadRequestHeaders;
+
+				for (var headerName in headers)
+				{
+					xhr.setRequestHeader(headerName, headers[headerName]);
+				}
+			}
+
+			if (this._config.chunkSize)
+			{
+				var end = this._start + this._config.chunkSize - 1;	// minus one because byte range is inclusive
+				xhr.setRequestHeader('Range', 'bytes='+this._start+'-'+end);
+				xhr.setRequestHeader('If-None-Match', 'webkit-no-cache'); // https://bugs.webkit.org/show_bug.cgi?id=82672
+			}
+
+			try {
+				xhr.send();
+			}
+			catch (err) {
+				this._chunkError(err.message);
+			}
+
+			if (IS_WORKER && xhr.status === 0)
+				this._chunkError();
+			else
+				this._start += this._config.chunkSize;
+		};
+
+		this._chunkLoaded = function()
+		{
+			if (xhr.readyState != 4)
+				return;
+
+			if (xhr.status < 200 || xhr.status >= 400)
+			{
+				this._chunkError();
+				return;
+			}
+
+			this._finished = !this._config.chunkSize || this._start > getFileSize(xhr);
+			this.parseChunk(xhr.responseText);
+		};
+
+		this._chunkError = function(errorMessage)
+		{
+			var errorText = xhr.statusText || errorMessage;
+			this._sendError(errorText);
+		};
+
+		function getFileSize(xhr)
+		{
+			var contentRange = xhr.getResponseHeader('Content-Range');
+			if (contentRange === null) { // no content range, then finish!
+					return -1;
+					}
+			return parseInt(contentRange.substr(contentRange.lastIndexOf('/') + 1));
+		}
+	}
+	NetworkStreamer.prototype = Object.create(ChunkStreamer.prototype);
+	NetworkStreamer.prototype.constructor = NetworkStreamer;
+
+
+	function FileStreamer(config)
+	{
+		config = config || {};
+		if (!config.chunkSize)
+			config.chunkSize = Papa.LocalChunkSize;
+		ChunkStreamer.call(this, config);
+
+		var reader, slice;
+
+		// FileReader is better than FileReaderSync (even in worker) - see http://stackoverflow.com/q/24708649/1048862
+		// But Firefox is a pill, too - see issue #76: https://github.com/mholt/PapaParse/issues/76
+		var usingAsyncReader = typeof FileReader !== 'undefined';	// Safari doesn't consider it a function - see issue #105
+
+		this.stream = function(file)
+		{
+			this._input = file;
+			slice = file.slice || file.webkitSlice || file.mozSlice;
+
+			if (usingAsyncReader)
+			{
+				reader = new FileReader();		// Preferred method of reading files, even in workers
+				reader.onload = bindFunction(this._chunkLoaded, this);
+				reader.onerror = bindFunction(this._chunkError, this);
+			}
+			else
+				reader = new FileReaderSync();	// Hack for running in a web worker in Firefox
+
+			this._nextChunk();	// Starts streaming
+		};
+
+		this._nextChunk = function()
+		{
+			if (!this._finished && (!this._config.preview || this._rowCount < this._config.preview))
+				this._readChunk();
+		};
+
+		this._readChunk = function()
+		{
+			var input = this._input;
+			if (this._config.chunkSize)
+			{
+				var end = Math.min(this._start + this._config.chunkSize, this._input.size);
+				input = slice.call(input, this._start, end);
+			}
+			var txt = reader.readAsText(input, this._config.encoding);
+			if (!usingAsyncReader)
+				this._chunkLoaded({ target: { result: txt } });	// mimic the async signature
+		};
+
+		this._chunkLoaded = function(event)
+		{
+			// Very important to increment start each time before handling results
+			this._start += this._config.chunkSize;
+			this._finished = !this._config.chunkSize || this._start >= this._input.size;
+			this.parseChunk(event.target.result);
+		};
+
+		this._chunkError = function()
+		{
+			this._sendError(reader.error);
+		};
+
+	}
+	FileStreamer.prototype = Object.create(ChunkStreamer.prototype);
+	FileStreamer.prototype.constructor = FileStreamer;
+
+
+	function StringStreamer(config)
+	{
+		config = config || {};
+		ChunkStreamer.call(this, config);
+
+		var string;
+		var remaining;
+		this.stream = function(s)
+		{
+			string = s;
+			remaining = s;
+			return this._nextChunk();
+		};
+		this._nextChunk = function()
+		{
+			if (this._finished) return;
+			var size = this._config.chunkSize;
+			var chunk = size ? remaining.substr(0, size) : remaining;
+			remaining = size ? remaining.substr(size) : '';
+			this._finished = !remaining;
+			return this.parseChunk(chunk);
+		};
+	}
+	StringStreamer.prototype = Object.create(StringStreamer.prototype);
+	StringStreamer.prototype.constructor = StringStreamer;
+
+
+	function ReadableStreamStreamer(config)
+	{
+		config = config || {};
+
+		ChunkStreamer.call(this, config);
+
+		var queue = [];
+		var parseOnData = true;
+
+		this.stream = function(stream)
+		{
+			this._input = stream;
+
+			this._input.on('data', this._streamData);
+			this._input.on('end', this._streamEnd);
+			this._input.on('error', this._streamError);
+		};
+
+		this._nextChunk = function()
+		{
+			if (queue.length)
+			{
+				this.parseChunk(queue.shift());
+			}
+			else
+			{
+				parseOnData = true;
+			}
+		};
+
+		this._streamData = bindFunction(function(chunk)
+		{
+			try
+			{
+				queue.push(typeof chunk === 'string' ? chunk : chunk.toString(this._config.encoding));
+
+				if (parseOnData)
+				{
+					parseOnData = false;
+					this.parseChunk(queue.shift());
+				}
+			}
+			catch (error)
+			{
+				this._streamError(error);
+			}
+		}, this);
+
+		this._streamError = bindFunction(function(error)
+		{
+			this._streamCleanUp();
+			this._sendError(error.message);
+		}, this);
+
+		this._streamEnd = bindFunction(function()
+		{
+			this._streamCleanUp();
+			this._finished = true;
+			this._streamData('');
+		}, this);
+
+		this._streamCleanUp = bindFunction(function()
+		{
+			this._input.removeListener('data', this._streamData);
+			this._input.removeListener('end', this._streamEnd);
+			this._input.removeListener('error', this._streamError);
+		}, this);
+	}
+	ReadableStreamStreamer.prototype = Object.create(ChunkStreamer.prototype);
+	ReadableStreamStreamer.prototype.constructor = ReadableStreamStreamer;
+
+
+	// Use one ParserHandle per entire CSV file or string
+	function ParserHandle(_config)
+	{
+		// One goal is to minimize the use of regular expressions...
+		var FLOAT = /^\s*-?(\d*\.?\d+|\d+\.?\d*)(e[-+]?\d+)?\s*$/i;
+
+		var self = this;
+		var _stepCounter = 0;	// Number of times step was called (number of rows parsed)
+		var _input;				// The input being parsed
+		var _parser;			// The core parser being used
+		var _paused = false;	// Whether we are paused or not
+		var _aborted = false;	// Whether the parser has aborted or not
+		var _delimiterError;	// Temporary state between delimiter detection and processing results
+		var _fields = [];		// Fields are from the header row of the input, if there is one
+		var _results = {		// The last results returned from the parser
+			data: [],
+			errors: [],
+			meta: {}
+		};
+
+		if (isFunction(_config.step))
+		{
+			var userStep = _config.step;
+			_config.step = function(results)
+			{
+				_results = results;
+
+				if (needsHeaderRow())
+					processResults();
+				else	// only call user's step function after header row
+				{
+					processResults();
+
+					// It's possbile that this line was empty and there's no row here after all
+					if (_results.data.length === 0)
+						return;
+
+					_stepCounter += results.data.length;
+					if (_config.preview && _stepCounter > _config.preview)
+						_parser.abort();
+					else
+						userStep(_results, self);
+				}
+			};
+		}
+
+		/**
+		 * Parses input. Most users won't need, and shouldn't mess with, the baseIndex
+		 * and ignoreLastRow parameters. They are used by streamers (wrapper functions)
+		 * when an input comes in multiple chunks, like from a file.
+		 */
+		this.parse = function(input, baseIndex, ignoreLastRow)
+		{
+			if (!_config.newline)
+				_config.newline = guessLineEndings(input);
+
+			_delimiterError = false;
+			if (!_config.delimiter)
+			{
+				var delimGuess = guessDelimiter(input, _config.newline, _config.skipEmptyLines);
+				if (delimGuess.successful)
+					_config.delimiter = delimGuess.bestDelimiter;
+				else
+				{
+					_delimiterError = true;	// add error after parsing (otherwise it would be overwritten)
+					_config.delimiter = Papa.DefaultDelimiter;
+				}
+				_results.meta.delimiter = _config.delimiter;
+			}
+			else if(isFunction(_config.delimiter))
+			{
+				_config.delimiter = _config.delimiter(input);
+				_results.meta.delimiter = _config.delimiter;
+			}
+
+			var parserConfig = copy(_config);
+			if (_config.preview && _config.header)
+				parserConfig.preview++;	// to compensate for header row
+
+			_input = input;
+			_parser = new Parser(parserConfig);
+			_results = _parser.parse(_input, baseIndex, ignoreLastRow);
+			processResults();
+			return _paused ? { meta: { paused: true } } : (_results || { meta: { paused: false } });
+		};
+
+		this.paused = function()
+		{
+			return _paused;
+		};
+
+		this.pause = function()
+		{
+			_paused = true;
+			_parser.abort();
+			_input = _input.substr(_parser.getCharIndex());
+		};
+
+		this.resume = function()
+		{
+			_paused = false;
+			self.streamer.parseChunk(_input);
+		};
+
+		this.aborted = function ()
+		{
+			return _aborted;
+		};
+
+		this.abort = function()
+		{
+			_aborted = true;
+			_parser.abort();
+			_results.meta.aborted = true;
+			if (isFunction(_config.complete))
+				_config.complete(_results);
+			_input = '';
+		};
+
+		function processResults()
+		{
+			if (_results && _delimiterError)
+			{
+				addError('Delimiter', 'UndetectableDelimiter', 'Unable to auto-detect delimiting character; defaulted to \''+Papa.DefaultDelimiter+'\'');
+				_delimiterError = false;
+			}
+
+			if (_config.skipEmptyLines)
+			{
+				for (var i = 0; i < _results.data.length; i++)
+					if (_results.data[i].length === 1 && _results.data[i][0] === '')
+						_results.data.splice(i--, 1);
+			}
+
+			if (needsHeaderRow())
+				fillHeaderFields();
+
+			return applyHeaderAndDynamicTyping();
+		}
+
+		function needsHeaderRow()
+		{
+			return _config.header && _fields.length === 0;
+		}
+
+		function fillHeaderFields()
+		{
+			if (!_results)
+				return;
+			for (var i = 0; needsHeaderRow() && i < _results.data.length; i++)
+				for (var j = 0; j < _results.data[i].length; j++)
+					_fields.push(_results.data[i][j]);
+			_results.data.splice(0, 1);
+		}
+
+		function shouldApplyDynamicTyping(field) {
+			// Cache function values to avoid calling it for each row
+			if (_config.dynamicTypingFunction && _config.dynamicTyping[field] === undefined) {
+				_config.dynamicTyping[field] = _config.dynamicTypingFunction(field);
+			}
+			return (_config.dynamicTyping[field] || _config.dynamicTyping) === true
+		}
+
+		function parseDynamic(field, value)
+		{
+			if (shouldApplyDynamicTyping(field))
+			{
+				if (value === 'true' || value === 'TRUE')
+					return true;
+				else if (value === 'false' || value === 'FALSE')
+					return false;
+				else
+					return tryParseFloat(value);
+			}
+			return value;
+		}
+
+		function applyHeaderAndDynamicTyping()
+		{
+			if (!_results || (!_config.header && !_config.dynamicTyping))
+				return _results;
+
+			for (var i = 0; i < _results.data.length; i++)
+			{
+				var row = _config.header ? {} : [];
+
+				for (var j = 0; j < _results.data[i].length; j++)
+				{
+					var field = j;
+					var value = _results.data[i][j];
+
+					if (_config.header)
+						field = j >= _fields.length ? '__parsed_extra' : _fields[j];
+
+					value = parseDynamic(field, value);
+
+					if (field === '__parsed_extra')
+					{
+						row[field] = row[field] || [];
+						row[field].push(value);
+					}
+					else
+						row[field] = value;
+				}
+
+				_results.data[i] = row;
+
+				if (_config.header)
+				{
+					if (j > _fields.length)
+						addError('FieldMismatch', 'TooManyFields', 'Too many fields: expected ' + _fields.length + ' fields but parsed ' + j, i);
+					else if (j < _fields.length)
+						addError('FieldMismatch', 'TooFewFields', 'Too few fields: expected ' + _fields.length + ' fields but parsed ' + j, i);
+				}
+			}
+
+			if (_config.header && _results.meta)
+				_results.meta.fields = _fields;
+			return _results;
+		}
+
+		function guessDelimiter(input, newline, skipEmptyLines)
+		{
+			var delimChoices = [',', '\t', '|', ';', Papa.RECORD_SEP, Papa.UNIT_SEP];
+			var bestDelim, bestDelta, fieldCountPrevRow;
+
+			for (var i = 0; i < delimChoices.length; i++)
+			{
+				var delim = delimChoices[i];
+				var delta = 0, avgFieldCount = 0, emptyLinesCount = 0;
+				fieldCountPrevRow = undefined;
+
+				var preview = new Parser({
+					delimiter: delim,
+					newline: newline,
+					preview: 10
+				}).parse(input);
+
+				for (var j = 0; j < preview.data.length; j++)
+				{
+					if (skipEmptyLines && preview.data[j].length === 1 && preview.data[j][0].length === 0) {
+						emptyLinesCount++;
+						continue
+					}
+					var fieldCount = preview.data[j].length;
+					avgFieldCount += fieldCount;
+
+					if (typeof fieldCountPrevRow === 'undefined')
+					{
+						fieldCountPrevRow = fieldCount;
+						continue;
+					}
+					else if (fieldCount > 1)
+					{
+						delta += Math.abs(fieldCount - fieldCountPrevRow);
+						fieldCountPrevRow = fieldCount;
+					}
+				}
+
+				if (preview.data.length > 0)
+					avgFieldCount /= (preview.data.length - emptyLinesCount);
+
+				if ((typeof bestDelta === 'undefined' || delta < bestDelta)
+					&& avgFieldCount > 1.99)
+				{
+					bestDelta = delta;
+					bestDelim = delim;
+				}
+			}
+
+			_config.delimiter = bestDelim;
+
+			return {
+				successful: !!bestDelim,
+				bestDelimiter: bestDelim
+			}
+		}
+
+		function guessLineEndings(input)
+		{
+			input = input.substr(0, 1024*1024);	// max length 1 MB
+
+			var r = input.split('\r');
+
+			var n = input.split('\n');
+
+			var nAppearsFirst = (n.length > 1 && n[0].length < r[0].length);
+
+			if (r.length === 1 || nAppearsFirst)
+				return '\n';
+
+			var numWithN = 0;
+			for (var i = 0; i < r.length; i++)
+			{
+				if (r[i][0] === '\n')
+					numWithN++;
+			}
+
+			return numWithN >= r.length / 2 ? '\r\n' : '\r';
+		}
+
+		function tryParseFloat(val)
+		{
+			var isNumber = FLOAT.test(val);
+			return isNumber ? parseFloat(val) : val;
+		}
+
+		function addError(type, code, msg, row)
+		{
+			_results.errors.push({
+				type: type,
+				code: code,
+				message: msg,
+				row: row
+			});
+		}
+	}
+
+
+
+
+
+	/** The core parser implements speedy and correct CSV parsing */
+	function Parser(config)
+	{
+		// Unpack the config object
+		config = config || {};
+		var delim = config.delimiter;
+		var newline = config.newline;
+		var comments = config.comments;
+		var step = config.step;
+		var preview = config.preview;
+		var fastMode = config.fastMode;
+		var quoteChar = config.quoteChar || '"';
+
+		// Delimiter must be valid
+		if (typeof delim !== 'string'
+			|| Papa.BAD_DELIMITERS.indexOf(delim) > -1)
+			delim = ',';
+
+		// Comment character must be valid
+		if (comments === delim)
+			throw 'Comment character same as delimiter';
+		else if (comments === true)
+			comments = '#';
+		else if (typeof comments !== 'string'
+			|| Papa.BAD_DELIMITERS.indexOf(comments) > -1)
+			comments = false;
+
+		// Newline must be valid: \r, \n, or \r\n
+		if (newline != '\n' && newline != '\r' && newline != '\r\n')
+			newline = '\n';
+
+		// We're gonna need these at the Parser scope
+		var cursor = 0;
+		var aborted = false;
+
+		this.parse = function(input, baseIndex, ignoreLastRow)
+		{
+			// For some reason, in Chrome, this speeds things up (!?)
+			if (typeof input !== 'string')
+				throw 'Input must be a string';
+
+			// We don't need to compute some of these every time parse() is called,
+			// but having them in a more local scope seems to perform better
+			var inputLen = input.length,
+				delimLen = delim.length,
+				newlineLen = newline.length,
+				commentsLen = comments.length;
+			var stepIsFunction = isFunction(step);
+
+			// Establish starting state
+			cursor = 0;
+			var data = [], errors = [], row = [], lastCursor = 0;
+
+			if (!input)
+				return returnable();
+
+			if (fastMode || (fastMode !== false && input.indexOf(quoteChar) === -1))
+			{
+				var rows = input.split(newline);
+				for (var i = 0; i < rows.length; i++)
+				{
+					var row = rows[i];
+					cursor += row.length;
+					if (i !== rows.length - 1)
+						cursor += newline.length;
+					else if (ignoreLastRow)
+						return returnable();
+					if (comments && row.substr(0, commentsLen) === comments)
+						continue;
+					if (stepIsFunction)
+					{
+						data = [];
+						pushRow(row.split(delim));
+						doStep();
+						if (aborted)
+							return returnable();
+					}
+					else
+						pushRow(row.split(delim));
+					if (preview && i >= preview)
+					{
+						data = data.slice(0, preview);
+						return returnable(true);
+					}
+				}
+				return returnable();
+			}
+
+			var nextDelim = input.indexOf(delim, cursor);
+			var nextNewline = input.indexOf(newline, cursor);
+			var quoteCharRegex = new RegExp(quoteChar+quoteChar, 'g');
+
+			// Parser loop
+			for (;;)
+			{
+				// Field has opening quote
+				if (input[cursor] === quoteChar)
+				{
+					// Start our search for the closing quote where the cursor is
+					var quoteSearch = cursor;
+
+					// Skip the opening quote
+					cursor++;
+
+					for (;;)
+					{
+						// Find closing quote
+						var quoteSearch = input.indexOf(quoteChar, quoteSearch+1);
+
+						//No other quotes are found - no other delimiters
+						if (quoteSearch === -1)
+						{
+							if (!ignoreLastRow) {
+								// No closing quote... what a pity
+								errors.push({
+									type: 'Quotes',
+									code: 'MissingQuotes',
+									message: 'Quoted field unterminated',
+									row: data.length,	// row has yet to be inserted
+									index: cursor
+								});
+							}
+							return finish();
+						}
+
+						// Closing quote at EOF
+						if (quoteSearch === inputLen-1)
+						{
+							var value = input.substring(cursor, quoteSearch).replace(quoteCharRegex, quoteChar);
+							return finish(value);
+						}
+
+						// If this quote is escaped, it's part of the data; skip it
+						if (input[quoteSearch+1] === quoteChar)
+						{
+							quoteSearch++;
+							continue;
+						}
+
+						// Closing quote followed by delimiter
+						if (input[quoteSearch+1] === delim)
+						{
+							row.push(input.substring(cursor, quoteSearch).replace(quoteCharRegex, quoteChar));
+							cursor = quoteSearch + 1 + delimLen;
+							nextDelim = input.indexOf(delim, cursor);
+							nextNewline = input.indexOf(newline, cursor);
+							break;
+						}
+
+						// Closing quote followed by newline
+						if (input.substr(quoteSearch+1, newlineLen) === newline)
+						{
+							row.push(input.substring(cursor, quoteSearch).replace(quoteCharRegex, quoteChar));
+							saveRow(quoteSearch + 1 + newlineLen);
+							nextDelim = input.indexOf(delim, cursor);	// because we may have skipped the nextDelim in the quoted field
+
+							if (stepIsFunction)
+							{
+								doStep();
+								if (aborted)
+									return returnable();
+							}
+
+							if (preview && data.length >= preview)
+								return returnable(true);
+
+							break;
+						}
+
+
+						// Checks for valid closing quotes are complete (escaped quotes or quote followed by EOF/delimiter/newline) -- assume these quotes are part of an invalid text string
+						errors.push({
+							type: 'Quotes',
+							code: 'InvalidQuotes',
+							message: 'Trailing quote on quoted field is malformed',
+							row: data.length,	// row has yet to be inserted
+							index: cursor
+						});
+
+						quoteSearch++;
+						continue;
+
+					}
+
+					continue;
+				}
+
+				// Comment found at start of new line
+				if (comments && row.length === 0 && input.substr(cursor, commentsLen) === comments)
+				{
+					if (nextNewline === -1)	// Comment ends at EOF
+						return returnable();
+					cursor = nextNewline + newlineLen;
+					nextNewline = input.indexOf(newline, cursor);
+					nextDelim = input.indexOf(delim, cursor);
+					continue;
+				}
+
+				// Next delimiter comes before next newline, so we've reached end of field
+				if (nextDelim !== -1 && (nextDelim < nextNewline || nextNewline === -1))
+				{
+					row.push(input.substring(cursor, nextDelim));
+					cursor = nextDelim + delimLen;
+					nextDelim = input.indexOf(delim, cursor);
+					continue;
+				}
+
+				// End of row
+				if (nextNewline !== -1)
+				{
+					row.push(input.substring(cursor, nextNewline));
+					saveRow(nextNewline + newlineLen);
+
+					if (stepIsFunction)
+					{
+						doStep();
+						if (aborted)
+							return returnable();
+					}
+
+					if (preview && data.length >= preview)
+						return returnable(true);
+
+					continue;
+				}
+
+				break;
+			}
+
+
+			return finish();
+
+
+			function pushRow(row)
+			{
+				data.push(row);
+				lastCursor = cursor;
+			}
+
+			/**
+			 * Appends the remaining input from cursor to the end into
+			 * row, saves the row, calls step, and returns the results.
+			 */
+			function finish(value)
+			{
+				if (ignoreLastRow)
+					return returnable();
+				if (typeof value === 'undefined')
+					value = input.substr(cursor);
+				row.push(value);
+				cursor = inputLen;	// important in case parsing is paused
+				pushRow(row);
+				if (stepIsFunction)
+					doStep();
+				return returnable();
+			}
+
+			/**
+			 * Appends the current row to the results. It sets the cursor
+			 * to newCursor and finds the nextNewline. The caller should
+			 * take care to execute user's step function and check for
+			 * preview and end parsing if necessary.
+			 */
+			function saveRow(newCursor)
+			{
+				cursor = newCursor;
+				pushRow(row);
+				row = [];
+				nextNewline = input.indexOf(newline, cursor);
+			}
+
+			/** Returns an object with the results, errors, and meta. */
+			function returnable(stopped)
+			{
+				return {
+					data: data,
+					errors: errors,
+					meta: {
+						delimiter: delim,
+						linebreak: newline,
+						aborted: aborted,
+						truncated: !!stopped,
+						cursor: lastCursor + (baseIndex || 0)
+					}
+				};
+			}
+
+			/** Executes the user's step function and resets data & errors. */
+			function doStep()
+			{
+				step(returnable());
+				data = [], errors = [];
+			}
+		};
+
+		/** Sets the abort flag */
+		this.abort = function()
+		{
+			aborted = true;
+		};
+
+		/** Gets the cursor position */
+		this.getCharIndex = function()
+		{
+			return cursor;
+		};
+	}
+
+
+	// If you need to load Papa Parse asynchronously and you also need worker threads, hard-code
+	// the script path here. See: https://github.com/mholt/PapaParse/issues/87#issuecomment-57885358
+	function getScriptPath()
+	{
+		var scripts = document.getElementsByTagName('script');
+		return scripts.length ? scripts[scripts.length - 1].src : '';
+	}
+
+	function newWorker()
+	{
+		if (!Papa.WORKERS_SUPPORTED)
+			return false;
+		if (!LOADED_SYNC && Papa.SCRIPT_PATH === null)
+			throw new Error(
+				'Script path cannot be determined automatically when Papa Parse is loaded asynchronously. ' +
+				'You need to set Papa.SCRIPT_PATH manually.'
+			);
+		var workerUrl = Papa.SCRIPT_PATH || AUTO_SCRIPT_PATH;
+		// Append 'papaworker' to the search string to tell papaparse that this is our worker.
+		workerUrl += (workerUrl.indexOf('?') !== -1 ? '&' : '?') + 'papaworker';
+		var w = new global.Worker(workerUrl);
+		w.onmessage = mainThreadReceivedMessage;
+		w.id = workerIdCounter++;
+		workers[w.id] = w;
+		return w;
+	}
+
+	/** Callback when main thread receives a message */
+	function mainThreadReceivedMessage(e)
+	{
+		var msg = e.data;
+		var worker = workers[msg.workerId];
+		var aborted = false;
+
+		if (msg.error)
+			worker.userError(msg.error, msg.file);
+		else if (msg.results && msg.results.data)
+		{
+			var abort = function() {
+				aborted = true;
+				completeWorker(msg.workerId, { data: [], errors: [], meta: { aborted: true } });
+			};
+
+			var handle = {
+				abort: abort,
+				pause: notImplemented,
+				resume: notImplemented
+			};
+
+			if (isFunction(worker.userStep))
+			{
+				for (var i = 0; i < msg.results.data.length; i++)
+				{
+					worker.userStep({
+						data: [msg.results.data[i]],
+						errors: msg.results.errors,
+						meta: msg.results.meta
+					}, handle);
+					if (aborted)
+						break;
+				}
+				delete msg.results;	// free memory ASAP
+			}
+			else if (isFunction(worker.userChunk))
+			{
+				worker.userChunk(msg.results, handle, msg.file);
+				delete msg.results;
+			}
+		}
+
+		if (msg.finished && !aborted)
+			completeWorker(msg.workerId, msg.results);
+	}
+
+	function completeWorker(workerId, results) {
+		var worker = workers[workerId];
+		if (isFunction(worker.userComplete))
+			worker.userComplete(results);
+		worker.terminate();
+		delete workers[workerId];
+	}
+
+	function notImplemented() {
+		throw 'Not implemented.';
+	}
+
+	/** Callback when worker thread receives a message */
+	function workerThreadReceivedMessage(e)
+	{
+		var msg = e.data;
+
+		if (typeof Papa.WORKER_ID === 'undefined' && msg)
+			Papa.WORKER_ID = msg.workerId;
+
+		if (typeof msg.input === 'string')
+		{
+			global.postMessage({
+				workerId: Papa.WORKER_ID,
+				results: Papa.parse(msg.input, msg.config),
+				finished: true
+			});
+		}
+		else if ((global.File && msg.input instanceof File) || msg.input instanceof Object)	// thank you, Safari (see issue #106)
+		{
+			var results = Papa.parse(msg.input, msg.config);
+			if (results)
+				global.postMessage({
+					workerId: Papa.WORKER_ID,
+					results: results,
+					finished: true
+				});
+		}
+	}
+
+	/** Makes a deep copy of an array or object (mostly) */
+	function copy(obj)
+	{
+		if (typeof obj !== 'object')
+			return obj;
+		var cpy = obj instanceof Array ? [] : {};
+		for (var key in obj)
+			cpy[key] = copy(obj[key]);
+		return cpy;
+	}
+
+	function bindFunction(f, self)
+	{
+		return function() { f.apply(self, arguments); };
+	}
+
+	function isFunction(func)
+	{
+		return typeof func === 'function';
+	}
+
+	return Papa;
+}));
+});
+
+var DefaultConfig = "{\n  \"https://github.com/alpheios-project/lsj\": {\n    \"urls\": {\n      \"short\": \"https://raw.githubusercontent.com/alpheios-project/lsj/master/dat/grc-lsj-defs.dat\",\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/lsj/master/dat/grc-lsj-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lsj&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\",\n    \"rights\": \"From \\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\"\n  },\n  \"https://github.com/alpheios-project/aut\": {\n    \"urls\": {\n      \"short\": \"https://raw.githubusercontent.com/alpheios-project/aut/master/dat/grc-aut-defs.dat\",\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/aut/master/dat/grc-aut-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=aut&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\",\n    \"rights\": \"From \\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\"\n  },\n  \"https://github.com/alpheios-project/ml\": {\n    \"urls\": {\n      \"short\": \"https://raw.githubusercontent.com/alpheios-project/ml/master/dat/grc-ml-defs.dat\",\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/ml/master/dat/grc-ml-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ml&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Middle Liddell\\\"\",\n    \"rights\": \"From \\\"An Intermediate Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://raw.githubusercontent.com/alpheios-project/dod/master/dat/grc-dod-defs.dat\",\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/dod/master/dat/grc-dod-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=dod&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"From \\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Created for The Greek New Testament for Beginning Readers: The Byzantine Greek Text & Verb Parsing</span>. Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://raw.githubusercontent.com/alpheios-project/dod/master/dat/grc-dod-defs.dat\",\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/dod/master/dat/grc-dod-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=dod&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"From \\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Created for The Greek New Testament for Beginning Readers: The Byzantine Greek Text & Verb Parsing</span>. Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/ls\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/ls/master/dat/lat-ls-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ls&lg=lat&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"lat\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\",\n    \"rights\": \"From \\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\"\n  },\n  \"https://github.com/alpheios-project/lan\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/lan/master/dat/ara-lan-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lan&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane)\",\n    \"rights\": \"From \\\"The Arabic-English Lexicon\\\" (Edward Lane)\"\n  },\n  \"https://github.com/alpheios-project/sal\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/sal/master/dat/ara-sal-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=sal&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\",\n    \"rights\": \"From \\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\"\n  },\n  \"https://github.com/alpheios-project/stg\": {\n    \"urls\": {\n      \"short\": \"https://raw.githubusercontent.com/alpheios-project/stg/master/dat/per-stg-defs.dat\",\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/stg/master/dat/per-stg-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=stg&lg=per&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"per\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\",\n    \"rights\": \"From \\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\"\n  }\n}\n";
+
+class AlpheiosLexAdapter extends BaseLexiconAdapter {
+  /**
+   * A Client Adapter for the Alpheios V1 Lexicon service
+   * @constructor
+   * @param {string} lexid - the idenitifer code for the lexicon this instance
+   *                         provides access to
+   * @param {Object} config - JSON configuration object override
+   */
+  constructor (lexid = null, config = null) {
+    super();
+    this.lexid = lexid;
+    this.data = null;
+    this.index = null;
+    // this is a bit of a hack to enable inclusion of a JSON config file
+    // in a way that works both pre and post-rollup. Our rollup config
+    // will stringify the file and then we can parse it but if we want to
+    // run unit tests on pre-rolled up code, then we need to have a fallback
+    // which works with the raw ES6 import
+    if (config == null) {
+      try {
+        let fullconfig = JSON.parse(DefaultConfig);
+        this.config = fullconfig[lexid];
+      } catch (e) {
+        this.config = DefaultConfig[lexid];
+      }
+    } else {
+      this.config = config;
+    }
+    this.provider = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["n" /* ResourceProvider */](this.lexid, this.config.rights);
+  }
+
+  /**
+   * @override BaseLexiconAdapter#lookupFullDef
+   */
+  async lookupFullDef (lemma = null) {
+    // TODO figure out the best way to handle initial reading of the data file
+    if (this.index === null && this.getConfig('urls').index) {
+      let url = this.getConfig('urls').index;
+      let unparsed = await this._loadData(url);
+      let parsed = papaparse.parse(unparsed, {});
+      this.index = new Map(parsed.data);
+    }
+    let id;
+    if (this.index) {
+      let model = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["i" /* LanguageModelFactory */].getLanguageForCode(lemma.language);
+      id = this._lookupInDataIndex(this.index, lemma, model);
+    }
+    let url = this.getConfig('urls').full;
+    if (id) {
+      url = `${url}&n=${id}`;
+    } else {
+      url = `${url}&l=${lemma.word}`;
+    }
+    let targetLanguage = this.getConfig('langs').target;
+    let p = new Promise((resolve, reject) => {
+      window.fetch(url).then(
+          function (response) {
+            let text = response.text();
+            resolve(text);
+          }
+        ).catch((error) => {
+          reject(error);
+        });
+    });
+    return p.then((result) => {
+      let def = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["c" /* Definition */](result, targetLanguage, 'text/html');
+      return __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["n" /* ResourceProvider */].getProxy(this.provider, def)
+    })
+  }
+
+  /**
+   * @override BaseLexiconAdapter#lookupShortDef
+   */
+  async lookupShortDef (lemma = null) {
+    if (this.data === null) {
+      let url = this.getConfig('urls').short;
+      let unparsed = await this._loadData(url);
+      // the PapaParse algorigthm doesn't deal well with fields with start with data
+      // in quotes but doesn't use quotes to enclose the entire field contents.
+      // eg. a row like
+      //   lemma|"some def" and more def.
+      // throws it off. Since these data files don't contain quoted
+      // fields just use a non-printable unicode char as the quoteChar
+      // (i.e. one which is unlikely to appear in the data) as the
+      // in the papaparse config to prevent it from doing this
+      let parsed = papaparse.parse(unparsed, {quoteChar: '\u{0000}'});
+      this.data = new Map(parsed.data);
+    }
+    let model = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["i" /* LanguageModelFactory */].getLanguageForCode(lemma.language);
+    let deftext = this._lookupInDataIndex(this.data, lemma, model);
+    return new Promise((resolve, reject) => {
+      let def = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["c" /* Definition */](deftext, this.getConfig('langs').target, 'text/plain');
+      resolve(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["n" /* ResourceProvider */].getProxy(this.provider, def));
+    })
+  }
+
+  /**
+   * Lookup a Lemma object in an Alpheios v1 data index
+   * @param {Map} data the data inddex
+   * @param {Lemma} lemma the lemma to lookupInDataIndex
+   * @param {LanguageModel} model a language model for language specific methods
+   * @return {string} the index entry as a text string
+   */
+  _lookupInDataIndex (data, lemma, model) {
+    // legacy behavior from Alpheios lemma data file indices
+    // first look to see if we explicitly have an instance of this lemma
+    // with capitalization retained
+    let found;
+
+    let alternatives = [];
+    let altEncodings = [];
+    for (let l of [lemma.word, ...lemma.principalParts]) {
+      alternatives.push(l);
+      for (let a of model.alternateWordEncodings(l)) {
+        // we gather altEncodings separately because they should
+        // be tried last after the lemma and principalParts in their
+        // original form
+        altEncodings.push(a);
+      }
+      let nosense = l.replace(/_?\d+$/, '');
+      if (l !== nosense) {
+        alternatives.push(nosense);
+      }
+    }
+    alternatives = [...alternatives, ...altEncodings];
+
+    for (let lookup of alternatives) {
+      found = data.get(lookup.toLocaleLowerCase());
+      if (found === '@') {
+        found = data.get(`@${lookup}`);
+      }
+      if (found) {
+        break
+      }
+    }
+    return found
+  }
+
+  /**
+   * Loads a data file from a URL
+   * @param {string} url - the url of the file
+   * @returns {Promise} a Promise that resolves to the text contents of the loaded file
+   */
+  _loadData (url) {
+    // TODO figure out best way to load this data
+    return new Promise((resolve, reject) => {
+      window.fetch(url).then(
+          function (response) {
+            let text = response.text();
+            resolve(text);
+          }
+        ).catch((error) => {
+          reject(error);
+        });
+    })
+  }
+
+  /**
+   * Get a configuration setting for this lexicon client instance
+   * @param {string} property
+   * @returns {string} the value of the property
+   */
+  getConfig (property) {
+    return this.config[property]
+  }
+
+  /**
+   * @override BaseAdapter#getLexicons
+   */
+  static getLexicons (language) {
+    let fullconfig;
+    let lexicons = new Map();
+    try {
+      fullconfig = JSON.parse(DefaultConfig);
+    } catch (e) {
+      fullconfig = DefaultConfig;
+    }
+    for (let l of Object.keys(fullconfig)) {
+      if (fullconfig[l].langs.source === language) {
+        lexicons.set(l, fullconfig[l].description);
+      }
+    }
+    return lexicons
+  }
+}
+
+class Lexicons {
+  static get defaults () {
+    return {
+      timeout: 10000
+    }
+  }
+
+  static async fetchShortDefs (lemma, options) {
+    return Lexicons.fetchDefinitions(lemma, options, 'lookupShortDef')
+  }
+
+  static async fetchFullDefs (lemma, options) {
+    return Lexicons.fetchDefinitions(lemma, options, 'lookupFullDef')
+  }
+
+  static async fetchDefinitions (lemma, options, lookupFunction) {
+    let config = Object.assign(Lexicons.defaults, options);
+
+    let requests = [];
+    try {
+      let adapters = Lexicons.getLexiconAdapters(lemma.languageID);
+      requests = adapters.map(adapter => {
+        console.log(`Preparing a request to "${adapter.config.description}"`);
+        // This promise is never rejected. For errors and timeouts, it will return `undefined` instead of a Definition object
+        return new Promise((resolve) => {
+          let timeout = window.setTimeout(() => {
+            console.warn(`Timeout of ${config.timeout} ms has been expired for a request to "${adapter.config.description}"`);
+            resolve(undefined);
+          }, config.timeout);
+
+          adapter[lookupFunction](lemma)
+            .then(value => {
+              console.log(`A definition object has been returned from "${adapter.config.description}"`);
+              // value is a Definition object wrapped in a Proxy
+              window.clearTimeout(timeout);
+              resolve(new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["c" /* Definition */](value.text, value.language, value.format));
+            }).catch(error => {
+              console.error(`Error from a request to "${adapter.config.description}": ${error}`);
+              window.clearTimeout(timeout);
+              resolve(undefined);
+            });
+        })
+      });
+    } catch (error) {
+      console.log(`Unable to fetch full definitions due to: ${error}`);
+      return []
+    }
+
+    return Promise.all(requests).then(
+      values => {
+        console.log(`All promises have been resolved`, values);
+        return values.filter(value => {
+          return value
+        })
+      },
+      error => {
+        // This should never happen because requests are never rejected but just in case
+        console.error(error);
+        throw new Error(error)
+      }
+    )
+  }
+
+  static getLexiconAdapters (languageID) {
+    // As getLexicons need a language code, let's convert a language ID to a code
+    let languageCode = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["i" /* LanguageModelFactory */].getLanguageCodeFromId(languageID);
+
+    let lexicons = AlpheiosLexAdapter.getLexicons(languageCode);
+    return Array.from(lexicons.keys()).map(id => new AlpheiosLexAdapter(id))
+  }
+}
+
+
+
+
+/***/ }),
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(12);
-var bytesToUuid = __webpack_require__(13);
+var rng = __webpack_require__(14);
+var bytesToUuid = __webpack_require__(15);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -11570,7 +13966,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -11610,7 +14006,7 @@ module.exports = rng;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports) {
 
 /**
@@ -11639,12 +14035,12 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(17);
 /* global browser */
 
 
@@ -11779,7 +14175,7 @@ class Service {
 
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11801,50 +14197,12 @@ class StoredRequest {
 
 
 /***/ }),
-/* 16 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(17);
-
-
-
-class WordDataRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["a" /* default */] {
-  constructor (textSelector, options = {}) {
-    super({textSelector: textSelector, options: options})
-    this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].types.WORD_DATA_REQUEST)
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = WordDataRequest;
-
-
-
-/***/ }),
-/* 17 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
-
-
-class RequestMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */] {
-  constructor (body) {
-    super(body)
-    this.role = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.REQUEST)
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = RequestMessage;
-
-
-
-/***/ }),
 /* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(4);
 
 
 
@@ -11868,7 +14226,7 @@ class StatusResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a"
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(22);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
 
@@ -11901,16 +14259,9 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
       template: __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default.a,
       selfSelector: '[data-component="alpheios-panel"]',
       innerElements: {
-        definitionContainer: { selector: '#alpheios-panel-content-definition' },
-        inflTableContainer: { selector: '#alpheios-panel-content-infl-table-body' },
-        viewSelectorContainer: { selector: '#alpheios-panel-content-infl-table-view-selector' },
-        localeSwitcherContainer: { selector: '#alpheios-panel-content-infl-table-locale-switcher' },
-        optionsContainer: { selector: '#alpheios-panel-content-options' },
         normalWidthButton: { selector: '#alpheios-panel-show-open' },
         fullWidthButton: { selector: '#alpheios-panel-show-fw' },
-        closeButton: { selector: '#alpheios-panel-hide' },
-        tabs: { selector: '#alpheios-panel__nav .alpheios-panel__nav-btn' },
-        activeTab: { selector: '#alpheios-panel__nav .alpheios-panel__nav-btn.active' }
+        closeButton: { selector: '#alpheios-panel-hide' }
       },
       outerElements: {
         page: { selector: 'body' }
@@ -12031,19 +14382,10 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
     return this
   }
 
-  /* get optionsPage () {
-    return this.innerElements.element.optionsContainer
-  }
-
-  set optionsPage (htmlContent) {
-    this.innerElements.optionsContainer.element.innerHTML = htmlContent
-    return this.innerElements.optionsContainer.element.innerHTML
-  } */
-
   showMessage (messageHTML) {
     this.clearContent()
     this.contentAreas.messages.setContent(messageHTML)
-    this.tabGroups.contentTabs.activate('definitionsTab')
+    this.tabGroups.contentTabs.activate('statusTab')
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Panel;
@@ -12055,37 +14397,36 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(21);
 
 
 
 class TabGroup {
   constructor (groupName, scope) {
-    this.options = TabGroup.defaults
+    this._index = []
 
-    this.nameIndex = {}
-    this.tabs = Array.from(scope.querySelectorAll(`[data-tab-group="${groupName}"]`)).map(
-      tab => {
-        let name = tab.dataset.element
-        let tabElement = new __WEBPACK_IMPORTED_MODULE_1__tab_element__["a" /* default */](name, scope)
-        this.nameIndex[name] = tabElement
-        return tabElement
-      }
-    )
+    let tabs = scope.querySelectorAll(`[data-tab-group="${groupName}"]`)
+    if (!tabs || tabs.length === 0) { throw new Error(`Tab group "${groupName}" has no tabs in it`) }
+    for (let tab of tabs) {
+      let name = tab.dataset.element
+      let tabElement = new __WEBPACK_IMPORTED_MODULE_1__tab_element__["a" /* default */](name, scope)
+      this[name] = tabElement
+      this._index.push(tabElement)
+    }
 
     // Try to set active tabe based on presence of an `active` class
-    for (let tab of this.tabs) {
+    for (let tab of this._index) {
       if (tab.element.classList.contains(__WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */].defaults.classNames.active)) {
         this.activeTab = tab
       }
     }
     // If not found, let's set it to a default value
     if (!this.activeTab) {
-      this.activeTab = this.tabs[0] // Set to a first tab if `active` class is not assigned to any tab element
+      this.activeTab = this._index[0] // Set to a first tab if `active` class is not assigned to any tab element
     }
 
-    for (let tab of this.tabs) {
+    for (let tab of this._index) {
       tab.deactivate() // Reset all panels and tabs to match object configuration
       tab.element.addEventListener('click', this.onClick.bind(this))
     }
@@ -12095,7 +14436,7 @@ class TabGroup {
   activate (tabName) {
     // Deactivate a currently active tab
     this.activeTab.deactivate()
-    this.activeTab = this.nameIndex[tabName]
+    this.activeTab = this[tabName]
     this.activeTab.activate()
   }
 
@@ -12116,7 +14457,7 @@ class TabGroup {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(3);
 
 
 class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */] {
@@ -12146,7 +14487,7 @@ class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default *
 /* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\">\r\n  <div class=\"alpheios-panel__wrapper\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(23) + "\"></div>\r\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div id=\"alpheios-panel-content-definition\" data-element=\"definitionsPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-infl-table\" data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\" id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-options\" data-element=\"optionsPanel\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn active\"\r\n                  data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\r\n                  data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\r\n                  uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n";
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\">\r\n  <div class=\"alpheios-panel__wrapper\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(23) + "\"></div>\r\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\" id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n";
 
 /***/ }),
 /* 23 */
@@ -12159,7 +14500,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAz
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
 /* global browser */
@@ -12376,7 +14717,7 @@ module.exports = "<svg xmlns=\"http://www.w3.org/2000/svg\" style=\"display: non
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(30);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(31);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(33);
  // To polyfill Element.closest() if required
@@ -12390,8 +14731,8 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
     this.defaultLanguageCode = defaultLanguageCode
 
     this.wordSeparator = new Map()
-    this.wordSeparator.set(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["a" /* Constants */].LANG_UNIT_WORD, this.doSpaceSeparatedWordSelection.bind(this))
-    this.wordSeparator.set(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["a" /* Constants */].LANG_UNIT_CHAR, this.doCharacterBasedWordSelection.bind(this))
+    this.wordSeparator.set(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["b" /* Constants */].LANG_UNIT_WORD, this.doSpaceSeparatedWordSelection.bind(this))
+    this.wordSeparator.set(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["b" /* Constants */].LANG_UNIT_CHAR, this.doCharacterBasedWordSelection.bind(this))
   }
 
   static getSelector (target, defaultLanguageCode) {
@@ -12605,7 +14946,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(32);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
 
 
 
@@ -12675,7 +15016,7 @@ class TextSelector {
    * @return {LanguageModel} Language model of a selection's language
    */
   static getLanguage (languageCode) {
-    return __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["b" /* LanguageModelFactory */].getLanguageForCode(languageCode)
+    return __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["i" /* LanguageModelFactory */].getLanguageForCode(languageCode)
   }
 
   get textQuoteSelector () {
@@ -12748,7 +15089,7 @@ class MediaSelector {
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
- * Vue.js v2.5.10
+ * Vue.js v2.5.11
  * (c) 2014-2017 Evan You
  * Released under the MIT License.
  */
@@ -13095,6 +15436,7 @@ var config = ({
   /**
    * Option merge strategies (used in core/util/options)
    */
+  // $flow-disable-line
   optionMergeStrategies: Object.create(null),
 
   /**
@@ -13135,6 +15477,7 @@ var config = ({
   /**
    * Custom user key aliases for v-on
    */
+  // $flow-disable-line
   keyCodes: Object.create(null),
 
   /**
@@ -13569,8 +15912,7 @@ var arrayMethods = Object.create(arrayProto);[
   'splice',
   'sort',
   'reverse'
-]
-.forEach(function (method) {
+].forEach(function (method) {
   // cache original method
   var original = arrayProto[method];
   def(arrayMethods, method, function mutator () {
@@ -14077,8 +16419,7 @@ function validateComponentName (name) {
       'and must start with a letter.'
     );
   }
-  var lower = name.toLowerCase();
-  if (isBuiltInTag(lower) || config.isReservedTag(lower)) {
+  if (isBuiltInTag(name) || config.isReservedTag(name)) {
     warn(
       'Do not use built-in or reserved HTML elements as component ' +
       'id: ' + name
@@ -14110,6 +16451,9 @@ function normalizeProps (options, vm) {
     for (var key in props) {
       val = props[key];
       name = camelize(key);
+      if ("development" !== 'production' && isPlainObject(val)) {
+        validatePropObject(name, val, vm);
+      }
       res[name] = isPlainObject(val)
         ? val
         : { type: val };
@@ -14122,6 +16466,26 @@ function normalizeProps (options, vm) {
     );
   }
   options.props = res;
+}
+
+/**
+ * Validate whether a prop object keys are valid.
+ */
+var propOptionsRE = /^(type|default|required|validator)$/;
+
+function validatePropObject (
+  propName,
+  prop,
+  vm
+) {
+  for (var key in prop) {
+    if (!propOptionsRE.test(key)) {
+      warn(
+        ("Invalid key \"" + key + "\" in validation rules object for prop \"" + propName + "\"."),
+        vm
+      );
+    }
+  }
 }
 
 /**
@@ -15269,6 +17633,8 @@ function eventsMixin (Vue) {
 
 /*  */
 
+
+
 /**
  * Runtime helper for resolving raw children VNodes into a slot object.
  */
@@ -15292,10 +17658,10 @@ function resolveSlots (
     if ((child.context === context || child.fnContext === context) &&
       data && data.slot != null
     ) {
-      var name = child.data.slot;
+      var name = data.slot;
       var slot = (slots[name] || (slots[name] = []));
       if (child.tag === 'template') {
-        slot.push.apply(slot, child.children);
+        slot.push.apply(slot, child.children || []);
       } else {
         slot.push(child);
       }
@@ -16132,6 +18498,7 @@ function getData (data, vm) {
 var computedWatcherOptions = { lazy: true };
 
 function initComputed (vm, computed) {
+  // $flow-disable-line
   var watchers = vm._computedWatchers = Object.create(null);
   // computed properties are just getters during SSR
   var isSSR = isServerRendering();
@@ -16360,11 +18727,11 @@ function resolveInject (inject, vm) {
     // inject is :any because flow is not smart enough to figure out cached
     var result = Object.create(null);
     var keys = hasSymbol
-        ? Reflect.ownKeys(inject).filter(function (key) {
-          /* istanbul ignore next */
-          return Object.getOwnPropertyDescriptor(inject, key).enumerable
-        })
-        : Object.keys(inject);
+      ? Reflect.ownKeys(inject).filter(function (key) {
+        /* istanbul ignore next */
+        return Object.getOwnPropertyDescriptor(inject, key).enumerable
+      })
+      : Object.keys(inject);
 
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i];
@@ -17714,7 +20081,7 @@ Object.defineProperty(Vue$3.prototype, '$ssrContext', {
   }
 });
 
-Vue$3.version = '2.5.10';
+Vue$3.version = '2.5.11';
 
 /*  */
 
@@ -17766,12 +20133,12 @@ function genClassForVnode (vnode) {
   var childNode = vnode;
   while (isDef(childNode.componentInstance)) {
     childNode = childNode.componentInstance._vnode;
-    if (childNode.data) {
+    if (childNode && childNode.data) {
       data = mergeClassData(childNode.data, data);
     }
   }
   while (isDef(parentNode = parentNode.parent)) {
-    if (parentNode.data) {
+    if (parentNode && parentNode.data) {
       data = mergeClassData(data, parentNode.data);
     }
   }
@@ -18872,17 +21239,20 @@ function normalizeDirectives$1 (
 ) {
   var res = Object.create(null);
   if (!dirs) {
+    // $flow-disable-line
     return res
   }
   var i, dir;
   for (i = 0; i < dirs.length; i++) {
     dir = dirs[i];
     if (!dir.modifiers) {
+      // $flow-disable-line
       dir.modifiers = emptyModifiers;
     }
     res[getRawDirName(dir)] = dir;
     dir.def = resolveAsset(vm.$options, 'directives', dir.name, true);
   }
+  // $flow-disable-line
   return res
 }
 
@@ -19508,11 +21878,11 @@ function genCheckboxModel (
   var falseValueBinding = getBindingAttr(el, 'false-value') || 'false';
   addProp(el, 'checked',
     "Array.isArray(" + value + ")" +
-      "?_i(" + value + "," + valueBinding + ")>-1" + (
-        trueValueBinding === 'true'
-          ? (":(" + value + ")")
-          : (":_q(" + value + "," + trueValueBinding + ")")
-      )
+    "?_i(" + value + "," + valueBinding + ")>-1" + (
+      trueValueBinding === 'true'
+        ? (":(" + value + ")")
+        : (":_q(" + value + "," + trueValueBinding + ")")
+    )
   );
   addHandler(el, 'change',
     "var $$a=" + value + "," +
@@ -19529,9 +21899,9 @@ function genCheckboxModel (
 }
 
 function genRadioModel (
-    el,
-    value,
-    modifiers
+  el,
+  value,
+  modifiers
 ) {
   var number = modifiers && modifiers.number;
   var valueBinding = getBindingAttr(el, 'value') || 'null';
@@ -19541,9 +21911,9 @@ function genRadioModel (
 }
 
 function genSelect (
-    el,
-    value,
-    modifiers
+  el,
+  value,
+  modifiers
 ) {
   var number = modifiers && modifiers.number;
   var selectedVal = "Array.prototype.filter" +
@@ -19832,7 +22202,10 @@ function getStyle (vnode, checkChild) {
     var childNode = vnode;
     while (childNode.componentInstance) {
       childNode = childNode.componentInstance._vnode;
-      if (childNode.data && (styleData = normalizeStyleData(childNode.data))) {
+      if (
+        childNode && childNode.data &&
+        (styleData = normalizeStyleData(childNode.data))
+      ) {
         extend(res, styleData);
       }
     }
@@ -20988,7 +23361,7 @@ var TransitionGroup = {
       this._vnode,
       this.kept,
       false, // hydrating
-      true // removeOnly (!important, avoids unnecessary moves)
+      true // removeOnly (!important avoids unnecessary moves)
     );
     this._vnode = this.kept;
   },
@@ -23312,7 +25685,7 @@ function createCompilerCreator (baseCompile) {
         // merge custom directives
         if (options.directives) {
           finalOptions.directives = extend(
-            Object.create(baseOptions.directives),
+            Object.create(baseOptions.directives || null),
             options.directives
           );
         }
@@ -24838,7 +27211,7 @@ exports = module.exports = __webpack_require__(41)(true);
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n    border-radius: 0;\n    box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n}\n.alpheios-popup__content {\n    padding: 20px;\n    font-size: 14px;\n    position: relative;\n}\n.alpheios-popup__close-btn {\n    border: none;\n    background: transparent;\n    right: 1rem;\n    top: 1rem;\n    position: absolute;\n    cursor: pointer;\n}\n.auk .uk-button.alpheios-popup__more-btn {\n    margin-top: 30px;\n    float: right;\n}\n.v--modal-overlay[data-modal=\"popup\"] {\n    background: rgba(0, 0, 0, 0.0);\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?b35cb78a"],"names":[],"mappings":";AAkEA;IACA,iBAAA;IACA,iDAAA;CACA;AAEA;IACA,cAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,aAAA;IACA,wBAAA;IACA,YAAA;IACA,UAAA;IACA,mBAAA;IACA,gBAAA;CACA;AAEA;IACA,iBAAA;IACA,aAAA;CACA;AAEA;IACA,+BAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <modal name=\"popup\"\r\n           transition=\"nice-modal-fade\"\r\n           classes=\"alpheios-popup auk\"\r\n           :min-width=\"200\"\r\n           :min-height=\"200\"\r\n           :pivot-y=\"0.5\"\r\n           :adaptive=\"true\"\r\n           :resizable=\"true\"\r\n           :draggable=\"true\"\r\n           :scrollable=\"false\"\r\n           :clickToClose=\"false\"\r\n           :reset=\"true\"\r\n           width=\"60%\"\r\n           height=\"60%\"\r\n           @before-open=\"beforeOpen\"\r\n           @opened=\"opened\"\r\n           @closed=\"closed\"\r\n           @before-close=\"beforeClose\">\r\n        <div class=\"alpheios-popup__content\">\r\n            <button v-on:click=\"closePopup\" class=\"alpheios-popup__close-btn\"><span uk-icon=\"icon: close\"></span></button>\r\n            <h2>{{ $root.popupTitle }}</h2>\r\n            <div v-html=\"$root.popupContent\"></div>\r\n            <button v-on:click=\"openPanel\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Extended data ...</button>\r\n        </div>\r\n    </modal>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'Popup',\r\n    methods: {\r\n      openPanel () {\r\n        console.log('Opening a panel to show extended results')\r\n        this.$root.$modal.hide('popup')\r\n        this.$root.panel.open()\r\n      },\r\n\r\n      closePopup () {\r\n        this.$root.$modal.hide('popup')\r\n      },\r\n\r\n      beforeOpen () { },\r\n\r\n      beforeClose () { },\r\n\r\n      opened (e) {\r\n        // e.ref should not be undefined here\r\n        console.log('opened', e)\r\n        console.log('ref', e.ref)\r\n      },\r\n\r\n      closed (e) {\r\n        console.log('closed', e)\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Popup is mounted')\r\n    },\r\n    watch: {\r\n      popupContent: function (value) {\r\n        console.log('Popup content changed to ' + value)\r\n      }\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .alpheios-popup {\r\n        border-radius: 0;\r\n        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\r\n    }\r\n\r\n    .alpheios-popup__content {\r\n        padding: 20px;\r\n        font-size: 14px;\r\n        position: relative;\r\n    }\r\n\r\n    .alpheios-popup__close-btn {\r\n        border: none;\r\n        background: transparent;\r\n        right: 1rem;\r\n        top: 1rem;\r\n        position: absolute;\r\n        cursor: pointer;\r\n    }\r\n\r\n    .auk .uk-button.alpheios-popup__more-btn {\r\n        margin-top: 30px;\r\n        float: right;\r\n    }\r\n\r\n    .v--modal-overlay[data-modal=\"popup\"] {\r\n        background: rgba(0, 0, 0, 0.0);\r\n    }\r\n</style>\r\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n.alpheios-popup {\n    border-radius: 0;\n    box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n}\n.alpheios-popup__content {\n    padding: 20px;\n    font-size: 14px;\n    position: relative;\n}\n.alpheios-popup__close-btn {\n    border: none;\n    background: transparent;\n    right: 1rem;\n    top: 1rem;\n    position: absolute;\n    cursor: pointer;\n}\n.auk .uk-button.alpheios-popup__more-btn {\n    margin-top: 30px;\n    float: right;\n}\n.v--modal-overlay[data-modal=\"popup\"] {\n    background: rgba(0, 0, 0, 0.0);\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?3c0acfa8"],"names":[],"mappings":";AA8EA;IACA,iBAAA;IACA,iDAAA;CACA;AAEA;IACA,cAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,aAAA;IACA,wBAAA;IACA,YAAA;IACA,UAAA;IACA,mBAAA;IACA,gBAAA;CACA;AAEA;IACA,iBAAA;IACA,aAAA;CACA;AAEA;IACA,+BAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <modal name=\"popup\"\r\n           transition=\"nice-modal-fade\"\r\n           classes=\"alpheios-popup auk\"\r\n           :min-width=\"200\"\r\n           :min-height=\"200\"\r\n           :pivot-y=\"0.5\"\r\n           :adaptive=\"true\"\r\n           :resizable=\"true\"\r\n           :draggable=\"true\"\r\n           :scrollable=\"false\"\r\n           :clickToClose=\"false\"\r\n           :reset=\"true\"\r\n           width=\"60%\"\r\n           height=\"60%\"\r\n           @before-open=\"beforeOpen\"\r\n           @opened=\"opened\"\r\n           @closed=\"closed\"\r\n           @before-close=\"beforeClose\">\r\n        <div class=\"alpheios-popup__content\">\r\n            <button v-on:click=\"closePopup\" class=\"alpheios-popup__close-btn\"><span uk-icon=\"icon: close\"></span></button>\r\n            <h2>{{ $root.popupTitle }}</h2>\r\n            <div v-html=\"$root.messageContent\"></div>\r\n            <div v-html=\"$root.popupContent\"></div>\r\n            <button v-on:click=\"showInflectionsPanelTab\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Inflections</button>\r\n            <button v-on:click=\"showDefinitionsPanelTab\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Full Definitions</button>\r\n        </div>\r\n    </modal>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'Popup',\r\n    methods: {\r\n      showMessage (message) {\r\n        this.messageContent = message\r\n      },\r\n\r\n      showDefinitionsPanelTab () {\r\n        this.$root.$modal.hide('popup')\r\n        if (!this.$root.panel.isOpened) { this.$root.panel.open() }\r\n        this.$root.panel.tabGroups.contentTabs.activate('definitionsTab')\r\n      },\r\n\r\n      showInflectionsPanelTab () {\r\n        this.$root.$modal.hide('popup')\r\n        if (!this.$root.panel.isOpened) { this.$root.panel.open() }\r\n        this.$root.panel.tabGroups.contentTabs.activate('inflectionsTab')\r\n      },\r\n\r\n      closePopup () {\r\n        this.$root.$modal.hide('popup')\r\n      },\r\n\r\n      beforeOpen () { },\r\n\r\n      beforeClose () { },\r\n\r\n      opened (e) {\r\n        // e.ref should not be undefined here\r\n        console.log('opened', e)\r\n        console.log('ref', e.ref)\r\n      },\r\n\r\n      closed (e) {\r\n        console.log('closed', e)\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Popup is mounted')\r\n    },\r\n    watch: {\r\n      popupContent: function (value) {\r\n        console.log('Popup content changed to ' + value)\r\n      }\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .alpheios-popup {\r\n        border-radius: 0;\r\n        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\r\n    }\r\n\r\n    .alpheios-popup__content {\r\n        padding: 20px;\r\n        font-size: 14px;\r\n        position: relative;\r\n    }\r\n\r\n    .alpheios-popup__close-btn {\r\n        border: none;\r\n        background: transparent;\r\n        right: 1rem;\r\n        top: 1rem;\r\n        position: absolute;\r\n        cursor: pointer;\r\n    }\r\n\r\n    .auk .uk-button.alpheios-popup__more-btn {\r\n        margin-top: 30px;\r\n        float: right;\r\n    }\r\n\r\n    .v--modal-overlay[data-modal=\"popup\"] {\r\n        background: rgba(0, 0, 0, 0.0);\r\n    }\r\n</style>\r\n"],"sourceRoot":""}]);
 
 // exports
 
@@ -25320,14 +27693,30 @@ module.exports = function normalizeComponent (
 //
 //
 //
+//
+//
 
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: 'Popup',
   methods: {
-    openPanel() {
-      console.log('Opening a panel to show extended results');
+    showMessage(message) {
+      this.messageContent = message;
+    },
+
+    showDefinitionsPanelTab() {
       this.$root.$modal.hide('popup');
-      this.$root.panel.open();
+      if (!this.$root.panel.isOpened) {
+        this.$root.panel.open();
+      }
+      this.$root.panel.tabGroups.contentTabs.activate('definitionsTab');
+    },
+
+    showInflectionsPanelTab() {
+      this.$root.$modal.hide('popup');
+      if (!this.$root.panel.isOpened) {
+        this.$root.panel.open();
+      }
+      this.$root.panel.tabGroups.contentTabs.activate('inflectionsTab');
     },
 
     closePopup() {
@@ -25406,15 +27795,28 @@ var render = function() {
         _vm._v(" "),
         _c("h2", [_vm._v(_vm._s(_vm.$root.popupTitle))]),
         _vm._v(" "),
+        _c("div", {
+          domProps: { innerHTML: _vm._s(_vm.$root.messageContent) }
+        }),
+        _vm._v(" "),
         _c("div", { domProps: { innerHTML: _vm._s(_vm.$root.popupContent) } }),
         _vm._v(" "),
         _c(
           "button",
           {
             staticClass: "uk-button uk-button-default alpheios-popup__more-btn",
-            on: { click: _vm.openPanel }
+            on: { click: _vm.showInflectionsPanelTab }
           },
-          [_vm._v("Extended data ...")]
+          [_vm._v("Go to Inflections")]
+        ),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            staticClass: "uk-button uk-button-default alpheios-popup__more-btn",
+            on: { click: _vm.showDefinitionsPanelTab }
+          },
+          [_vm._v("Go to Full Definitions")]
         )
       ])
     ]
@@ -36472,14 +38874,14 @@ class Monitor {
     console.log(`${property}() async method has been called`);
     // Last item in arguments list is a transaction
     args.push(experience);
-    let resultObject = await target[property].apply(monitor, args);
+    let result = await target[property].apply(monitor, args);
     // resultObject.value is a returned message, experience object is in a `experience` property
-    experience = Experience.readObject(resultObject.value.experience);
+    experience = result.state;
     experience.complete();
     console.log(`${property}() completed with success, experience is:`, experience);
 
     storage.write(experience);
-    return resultObject
+    return result
   }
 
   /**

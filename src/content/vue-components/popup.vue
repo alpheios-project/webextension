@@ -20,8 +20,10 @@
         <div class="alpheios-popup__content">
             <button v-on:click="closePopup" class="alpheios-popup__close-btn"><span uk-icon="icon: close"></span></button>
             <h2>{{ $root.popupTitle }}</h2>
+            <div v-html="$root.messageContent"></div>
             <div v-html="$root.popupContent"></div>
-            <button v-on:click="openPanel" class="uk-button uk-button-default alpheios-popup__more-btn">Extended data ...</button>
+            <button v-on:click="showInflectionsPanelTab" class="uk-button uk-button-default alpheios-popup__more-btn">Go to Inflections</button>
+            <button v-on:click="showDefinitionsPanelTab" class="uk-button uk-button-default alpheios-popup__more-btn">Go to Full Definitions</button>
         </div>
     </modal>
 </template>
@@ -29,10 +31,20 @@
   export default {
     name: 'Popup',
     methods: {
-      openPanel () {
-        console.log('Opening a panel to show extended results')
+      showMessage (message) {
+        this.messageContent = message
+      },
+
+      showDefinitionsPanelTab () {
         this.$root.$modal.hide('popup')
-        this.$root.panel.open()
+        if (!this.$root.panel.isOpened) { this.$root.panel.open() }
+        this.$root.panel.tabGroups.contentTabs.activate('definitionsTab')
+      },
+
+      showInflectionsPanelTab () {
+        this.$root.$modal.hide('popup')
+        if (!this.$root.panel.isOpened) { this.$root.panel.open() }
+        this.$root.panel.tabGroups.contentTabs.activate('inflectionsTab')
       },
 
       closePopup () {

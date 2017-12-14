@@ -28,16 +28,9 @@ export default class Panel extends Component {
       template: template,
       selfSelector: '[data-component="alpheios-panel"]',
       innerElements: {
-        definitionContainer: { selector: '#alpheios-panel-content-definition' },
-        inflTableContainer: { selector: '#alpheios-panel-content-infl-table-body' },
-        viewSelectorContainer: { selector: '#alpheios-panel-content-infl-table-view-selector' },
-        localeSwitcherContainer: { selector: '#alpheios-panel-content-infl-table-locale-switcher' },
-        optionsContainer: { selector: '#alpheios-panel-content-options' },
         normalWidthButton: { selector: '#alpheios-panel-show-open' },
         fullWidthButton: { selector: '#alpheios-panel-show-fw' },
-        closeButton: { selector: '#alpheios-panel-hide' },
-        tabs: { selector: '#alpheios-panel__nav .alpheios-panel__nav-btn' },
-        activeTab: { selector: '#alpheios-panel__nav .alpheios-panel__nav-btn.active' }
+        closeButton: { selector: '#alpheios-panel-hide' }
       },
       outerElements: {
         page: { selector: 'body' }
@@ -158,18 +151,9 @@ export default class Panel extends Component {
     return this
   }
 
-  /* get optionsPage () {
-    return this.innerElements.element.optionsContainer
-  }
-
-  set optionsPage (htmlContent) {
-    this.innerElements.optionsContainer.element.innerHTML = htmlContent
-    return this.innerElements.optionsContainer.element.innerHTML
-  } */
-
   showMessage (messageHTML) {
     this.clearContent()
     this.contentAreas.messages.setContent(messageHTML)
-    this.tabGroups.contentTabs.activate('definitionsTab')
+    this.tabGroups.contentTabs.activate('statusTab')
   }
 }

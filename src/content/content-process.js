@@ -1,8 +1,9 @@
 /* global browser */
-import * as Lib from 'alpheios-inflection-tables'
+import * as InflectionTables from 'alpheios-inflection-tables'
+import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
+import {Lexicons} from 'alpheios-lexicon-client'
 import Message from '../lib/messaging/message'
 import MessagingService from '../lib/messaging/service'
-import WordDataRequest from '../lib/messaging/request/word-data-request'
 import StatusResponse from '../lib/messaging/response/status-response'
 import Panel from './components/panel/component'
 import Options from './components/options/component'
@@ -27,6 +28,9 @@ export default class ContentProcess {
     this.modal = undefined
 
     this.messagingService = new MessagingService()
+
+    this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
+    this.langData = new InflectionTables.LanguageData([InflectionTables.LatinDataSet, InflectionTables.GreekDataSet]).loadData()
   }
 
   initialize () {
@@ -138,18 +142,6 @@ export default class ContentProcess {
     container.outerHTML = template
   }
 
-  showMessage (messageHTML) {
-    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-      this.panel.showMessage(messageHTML)
-    } else {
-      this.panel.close()
-      this.vueInstance.panel = this.panel // For being able to open a panel from within a popup
-      this.vueInstance.popupTitle = ''
-      this.vueInstance.popupContent = messageHTML
-      this.vueInstance.$modal.show('popup')
-    }
-  }
-
   async sendRequestToBgStatefully (request, timeout, state = undefined) {
     try {
       let result = await this.messagingService.sendRequestToBg(request, timeout)
@@ -161,26 +153,63 @@ export default class ContentProcess {
     }
   }
 
-  async getWordDataStatefully (textSelector, state = undefined) {
+  async getHomonymStatefully (languageCode, word, state) {
     try {
-      let messageObject = await this.sendRequestToBgStatefully(
-        new WordDataRequest(textSelector),
-        this.settings.requestTimeout,
-        state
-      )
-      let message = messageObject.value
-
-      if (Message.statusSymIs(message, Message.statuses.DATA_FOUND)) {
-        let lexicalData = Lib.LexicalData.readObject(message.body)
-        console.log('Word data is: ', lexicalData)
-        this.displayWordData(lexicalData)
-      } else if (Message.statusSymIs(message, Message.statuses.NO_DATA_FOUND)) {
-        this.showMessage('<p>Sorry, the word you requested was not found.</p>')
-      }
-      return messageObject
+      let result = await this.maAdapter.getHomonym(languageCode, word, state)
+      // If no valid homonym data found should always throw an error to be caught in a calling function
+      return State.value(state, result)
     } catch (error) {
-      console.error(`Word data request failed: ${error.value}`)
-      this.showMessage(`<p>Sorry, your word you requested failed:<br><strong>${error.value}</strong></p>`)
+      /*
+      getHomonym is non-statefull function. If it throws an error, we should catch it here, attach state
+      information, and rethrow
+      */
+      throw (State.value(state, error))
+    }
+  }
+
+  async getWordDataStatefully (textSelector, state = undefined) {
+    let homonym, lexicalData
+    // this.showMessage('Please wait while your data is loading ...<br>')
+    try {
+      // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
+      ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
+      if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
+      // this.appendMessage('Homonym data is ready<br>')
+      this.updateDefinitionsData(homonym)
+    } catch (error) {
+      console.error(`Cannot retrieve homonym data: ${error}`)
+    }
+
+    try {
+      lexicalData = this.langData.getSuffixes(homonym, state)
+      // this.panel.contentAreas.messages.appendContent('Inflection data is ready<br>')
+      this.updateInflectionsData(lexicalData)
+    } catch (e) {
+      console.log(`Failure retrieving inflection data. ${e}`)
+    }
+
+    let defRequestOptions = { timeout: 10000 }
+    try {
+      for (let lexeme of homonym.lexemes) {
+        // this.appendMessage(`<br>Retrieving data for "${lexeme.lemma.word}" lexeme<br>`)
+        let shortDefs = await Lexicons.fetchShortDefs(lexeme.lemma, defRequestOptions)
+        console.log(`Retrieved short definitions:`, shortDefs)
+        lexeme.meaning.appendShortDefs(shortDefs)
+        this.updateDefinitionsData(homonym)
+        // this.appendMessage('Short definitions are ready<br>')
+        let fullDefs = await Lexicons.fetchFullDefs(lexeme.lemma, defRequestOptions)
+        console.log(`Retrieved full definitions:`, fullDefs)
+        lexeme.meaning.appendFullDefs(fullDefs)
+        this.updateDefinitionsData(homonym)
+        // this.appendMessage('Full definitions are ready<br>')
+      }
+      console.log('Lexical data is: ', lexicalData)
+      this.displayWordData(lexicalData)
+      return State.emptyValue(state)
+    } catch (error) {
+      let errorValue = State.getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
+      console.error(`Word data retrieval failed: ${errorValue}`)
+      return State.emptyValue(state)
     }
   }
 
@@ -198,9 +227,6 @@ export default class ContentProcess {
       }
     }
 
-    // Populate a panel
-
-    //this.updateDefinition(`<h2>Short definitions:</h2>${shortDefsText}<h2>Full definitions:</h2>${fullDefsText}`)
     this.updateInflectionTable(lexicalData)
 
     // Pouplate a popup
@@ -215,6 +241,54 @@ export default class ContentProcess {
       if (this.panel.isOpened) { this.panel.close() }
       this.vueInstance.$modal.show('popup')
     }
+  }
+
+  updateDefinitionsData (homonym) {
+    this.panel.clearContent()
+    let shortDefsText = ''
+    for (let lexeme of homonym.lexemes) {
+      if (lexeme.meaning.shortDefs.length > 0) {
+        this.panel.contentAreas.shortDefinitions.setContent(lexeme)
+        shortDefsText += this.formatShortDefinitions(lexeme)
+      }
+
+      if (lexeme.meaning.fullDefs.length > 0) {
+        this.panel.contentAreas.fullDefinitions.setContent(lexeme)
+      }
+    }
+
+    // Pouplate a popup
+    this.vueInstance.panel = this.panel
+    this.vueInstance.popupTitle = `${homonym.targetWord}`
+
+    this.vueInstance.popupContent = decodeURIComponent(shortDefsText)
+
+    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+      this.panel.open()
+    } else {
+      if (this.panel.isOpened) { this.panel.close() }
+      this.vueInstance.$modal.show('popup')
+    }
+  }
+
+  updateInflectionsData (lexicalData) {
+    this.updateInflectionTable(lexicalData)
+  }
+
+  showMessage (message) {
+    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
+      if (!this.panel.isOpened) { this.panel.open() }
+      this.panel.showMessage(message)
+    } else {
+      if (this.panel.isOpened) { this.panel.close() }
+      this.vueInstance.$modal.show('popup')
+      this.vueInstance.messageContent = message
+    }
+  }
+
+  appendMessage (message) {
+    if (!this.panel.isOpened) { this.panel.open() }
+    this.panel.contentAreas.messages.appendContent(message)
   }
 
   formatShortDefinitions (lexeme) {
@@ -280,16 +354,8 @@ export default class ContentProcess {
     )
   }
 
-  togglePanel () {
-    this.panel.toggle()
-  }
-
-  updateDefinition (definition) {
-    this.panel.options.elements.definitionContainer.innerHTML = definition
-  }
-
   updateInflectionTable (wordData) {
-    this.presenter = new Lib.Presenter(
+    this.presenter = new InflectionTables.Presenter(
       this.panel.contentAreas.inflectionsTable.element,
       this.panel.contentAreas.inflectionsViewSelector.element,
       this.panel.contentAreas.inflectionsLocaleSwitcher.element,
