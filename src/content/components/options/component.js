@@ -1,10 +1,41 @@
 /* global browser */
-import Component from '../component'
+import Component from '../lib/component'
 import template from './template.htmlf'
 
 export default class Options extends Component {
   constructor (options) {
-    super(Object.assign({
+    super(Options.defaults, options)
+
+    for (let [optionName, optionData] of Object.entries(this.options.data)) {
+      if (this.options.data.hasOwnProperty(optionName)) {
+        /*
+        Initialize current values with defaults. Actual values will be set after options are loaded from a
+        local storage.
+         */
+        optionData.currentValue = optionData.defaultValue
+        let element = this.self.element.querySelector(optionData.selector)
+        if (element) {
+          optionData.element = element
+        } else {
+          console.warn(`Option element with "${optionData.selector}" selector is not found`)
+        }
+      }
+    }
+
+    this.load().then(
+      () => {
+        this.render()
+      },
+      (error) => {
+        console.error(`Cannot retrieve options for Alpheios extension from a local storage: ${error}. Default values
+          will be used instead`)
+        this.render()
+      }
+    )
+  }
+
+  static get defaults () {
+    return {
       template: template,
       selfSelector: '[data-component="alpheios-panel-options"]',
       data: {
@@ -43,35 +74,7 @@ export default class Options extends Component {
           selector: '#alpheios-language-selector-list'
         }
       }
-    },
-    options))
-
-    for (let [optionName, optionData] of Object.entries(this.options.data)) {
-      if (this.options.data.hasOwnProperty(optionName)) {
-        /*
-        Initialize current values with defaults. Actual values will be set after options are loaded from a
-        local storage.
-         */
-        optionData.currentValue = optionData.defaultValue
-        let element = this.options.self.element.querySelector(optionData.selector)
-        if (element) {
-          optionData.element = element
-        } else {
-          console.warn(`Option element with "${optionData.selector}" selector is not found`)
-        }
-      }
     }
-
-    this.load().then(
-      () => {
-        this.render()
-      },
-      (error) => {
-        console.error(`Cannot retrieve options for Alpheios extension from a local storage: ${error}. Default values
-          will be used instead`)
-        this.render()
-      }
-    )
   }
 
   /**

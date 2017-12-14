@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -68,7 +68,7 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
 
 
@@ -154,6 +154,73 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+class Element {
+  constructor (name, scope, elementData = {}) {
+    this.options = Element.defaults
+
+    this.name = name
+    let defaultSelector = `[data-element="${this.name}"]`
+    this.selector = elementData.selector || defaultSelector
+    let elements = scope.querySelectorAll(this.selector)
+    if (elements.length === 0) { throw new Error(`Element(s) does not exist:`, elements) }
+    this.elements = (elements.length > 0) ? Array.from(elements) : [elements]
+    this.dataFunction = elementData.dataFunction
+  }
+
+  static get defaults () {
+    return {
+      classNames: {
+        hidden: 'hidden',
+        active: 'active'
+      }
+    }
+  }
+
+  get element () {
+    return this.elements[0]
+  }
+
+  setContent (...values) {
+    let contentHTML = this.dataFunction ? this.dataFunction(...values) : values[0]
+    for (let element of this.elements) {
+      element.innerHTML = contentHTML
+    }
+  }
+
+  appendContent (...values) {
+    let contentHTML = this.dataFunction ? this.dataFunction(...values) : values[0]
+    for (let element of this.elements) {
+      element.innerHTML += contentHTML
+    }
+  }
+
+  clearContent () {
+    for (let element of this.elements) {
+      element.innerHTML = ''
+    }
+  }
+
+  show () {
+    for (let element of this.elements) {
+      element.classList.remove(this.options.classNames.hidden)
+    }
+  }
+
+  hide () {
+    for (let element of this.elements) {
+      element.classList.add(this.options.classNames.hidden)
+    }
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Element;
+
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
 
 
@@ -186,50 +253,67 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* defa
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(20);
+
+
+
 class Component {
-  constructor (options) {
-    this.options = options
-    this.options.self = {
+  constructor (componentOptions = {}, userOptions = {}) {
+    this.options = {}
+    this.options = Object.assign(this.options, componentOptions)
+    this.options = Object.assign(this.options, userOptions)
+    if (componentOptions.innerElements && userOptions.innerElements) {
+      this.options.innerElements = Object.assign(componentOptions.innerElements, userOptions.innerElements)
+    }
+    if (componentOptions.outerElements && userOptions.outerElements) {
+      this.options.outerElements = Object.assign(componentOptions.outerElements, userOptions.outerElements)
+    }
+    if (componentOptions.contentAreas && userOptions.contentAreas) {
+      this.options.contentAreas = Object.assign(componentOptions.contentAreas, userOptions.contentAreas)
+    }
+    this.self = {
       selector: this.options.selfSelector
     }
     this.options.elements = {}
     this.innerElements = {}
     this.outerElements = {}
+    this.tabGroups = {}
     this.contentAreas = {}
 
-    this.options.self.element = document.querySelector(this.options.self.selector)
-    if (!this.options.self.element) {
-      throw new Error(`Element's placeholder "${this.options.self.selector}" does not exist. Cannot create a component`)
+    this.self.element = document.querySelector(this.self.selector)
+    if (!this.self.element) {
+      throw new Error(`Element's placeholder "${this.self.selector}" does not exist. Cannot create a component`)
     }
-    this.options.self.element.outerHTML = this.options.template
-    this.options.self.element = document.querySelector(this.options.self.selector)
+    this.self.element.outerHTML = this.options.template
+    this.self.element = document.querySelector(this.self.selector)
 
     if (this.options && this.options.innerElements) {
-      for (const [name, selector] of Object.entries(this.options.innerElements)) {
-        let elements = this.options.self.element.querySelectorAll(selector)
-        if (elements.length === 0) { throw new Error(`Inner element "${name}" cannot be found`) }
-        this.innerElements[name] = {
-          elements: elements,
-          element: elements[0],
-          selector: selector
-        }
+      for (const [name, elementData] of Object.entries(this.options.innerElements)) {
+        this.innerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, this.self.element, elementData)
       }
     }
 
     if (this.options && this.options.outerElements) {
-      for (const [name, selector] of Object.entries(this.options.outerElements)) {
-        let elements = document.querySelectorAll(selector)
-        if (elements.length === 0) { throw new Error(`Outer element "${name}" cannot be found`) }
-        this.outerElements[name] = {
-          elements: elements,
-          element: elements[0],
-          selector: selector
-        }
+      for (const [name, elementData] of Object.entries(this.options.outerElements)) {
+        this.outerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, document, elementData)
       }
+    }
+
+    // Scan for tab groups
+    let tabGroups = new Set()
+    let tabs = this.self.element.querySelectorAll('[data-tab-group]')
+    for (let tab of tabs) {
+      let groupName = tab.dataset.tabGroup
+      if (!tabGroups.has(groupName)) { tabGroups.add(groupName) }
+    }
+    for (let groupNames of tabGroups.entries()) {
+      let groupName = groupNames[0] // entries() returns [groupName, groupName]
+      this.tabGroups[groupName] = new __WEBPACK_IMPORTED_MODULE_1__tab_group__["a" /* default */](groupName, this.self.element)
     }
 
     if (this.options && this.options.methods) {
@@ -239,21 +323,9 @@ class Component {
     }
 
     if (this.options && this.options.contentAreas) {
-      for (const [areaName, dataFunction] of Object.entries(this.options.contentAreas)) {
-        let elements = this.options.self.element.querySelectorAll(`[data-content-area="${areaName}"]`)
-        if (elements.length === 0) { throw new Error(`Content area "${areaName}" cannot be found`) }
-        this.contentAreas[areaName] = {
-          elements: elements,
-          dataFunction: dataFunction,
-          setContent: (...values) => {
-            let contentHTML = dataFunction(...values)
-            elements.forEach(element => { element.innerHTML = contentHTML })
-          },
-          appendContent: (...values) => {
-            let contentHTML = dataFunction(...values)
-            elements.forEach(element => { element.innerHTML += contentHTML })
-          }
-        }
+      for (const [areaName, areaData] of Object.entries(this.options.contentAreas)) {
+        areaData.selector = `[data-content-area="${areaName}"]`
+        this.contentAreas[areaName] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](areaName, this.self.element, areaData)
       }
     }
   }
@@ -263,7 +335,7 @@ class Component {
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2106,7 +2178,7 @@ class ResourceProvider {
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var apply = Function.prototype.apply;
@@ -2159,19 +2231,19 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(32);
+__webpack_require__(35);
 exports.setImmediate = setImmediate;
 exports.clearImmediate = clearImmediate;
 
 
 /***/ }),
-/* 6 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(46);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(49);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
 
 
@@ -2195,30 +2267,30 @@ contentProcess.initialize()
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_panel_component__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_options_component__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_state__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__statuses__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__template_htmlf__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_word_data_request__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_response_status_response__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_panel_component__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_options_component__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_state__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__statuses__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__template_htmlf__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_vue_dist_vue__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_vue_dist_vue__ = __webpack_require__(34);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_vue_js_modal__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_vue_js_modal__ = __webpack_require__(37);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_12_vue_js_modal__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__vue_components_popup_vue__ = __webpack_require__(35);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__node_modules_uikit_dist_js_uikit__ = __webpack_require__(44);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__vue_components_popup_vue__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__node_modules_uikit_dist_js_uikit__ = __webpack_require__(47);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14__node_modules_uikit_dist_js_uikit__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(45);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(48);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit_icons__);
 /* global browser */
 
@@ -2274,8 +2346,11 @@ class ContentProcess {
     // Initialize components
     this.panel = new __WEBPACK_IMPORTED_MODULE_5__components_panel_component__["a" /* default */]({
       contentAreas: {
-        shortDefinitions: function (lexicalData) {
-          return lexicalData
+        shortDefinitions: {
+          dataFunction: this.formatShortDefinitions.bind(this)
+        },
+        fullDefinitions: {
+          dataFunction: this.formatFullDefinitions.bind(this)
         }
       }
     })
@@ -2315,9 +2390,6 @@ class ContentProcess {
 
     // Initialize a UIKit
     __WEBPACK_IMPORTED_MODULE_14__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_15__node_modules_uikit_dist_js_uikit_icons___default.a)
-
-    this.panel.contentAreas.shortDefinitions.appendContent('blah<br>')
-    this.panel.contentAreas.shortDefinitions.appendContent('2')
   }
 
   static get settingValues () {
@@ -2407,32 +2479,28 @@ class ContentProcess {
   }
 
   displayWordData (lexicalData) {
+    this.panel.clearContent()
     let shortDefsText = ''
-    let fullDefsText = ''
     for (let lexeme of lexicalData.homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
-        shortDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
-        for (let shortDef of lexeme.meaning.shortDefs) {
-          shortDefsText += `${shortDef.text}<br>\n`
-        }
+        this.panel.contentAreas.shortDefinitions.setContent(lexeme)
+        shortDefsText += this.formatShortDefinitions(lexeme)
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {
-        fullDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
-        for (let fullDef of lexeme.meaning.fullDefs) {
-          fullDefsText += `${fullDef.text}<br>\n`
-        }
+        this.panel.contentAreas.fullDefinitions.setContent(lexeme)
       }
     }
 
     // Populate a panel
-    this.panel.clear()
-    this.updateDefinition(`<h2>Short definitions:</h2>${shortDefsText}<h2>Full definitions:</h2>${fullDefsText}`)
+
+    //this.updateDefinition(`<h2>Short definitions:</h2>${shortDefsText}<h2>Full definitions:</h2>${fullDefsText}`)
     this.updateInflectionTable(lexicalData)
 
     // Pouplate a popup
     this.vueInstance.panel = this.panel
     this.vueInstance.popupTitle = `${lexicalData.homonym.targetWord}`
+
     this.vueInstance.popupContent = decodeURIComponent(shortDefsText)
 
     if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
@@ -2441,6 +2509,22 @@ class ContentProcess {
       if (this.panel.isOpened) { this.panel.close() }
       this.vueInstance.$modal.show('popup')
     }
+  }
+
+  formatShortDefinitions (lexeme) {
+    let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
+    for (let shortDef of lexeme.meaning.shortDefs) {
+      content += `${shortDef.text}<br>\n`
+    }
+    return content
+  }
+
+  formatFullDefinitions (lexeme) {
+    let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
+    for (let fullDef of lexeme.meaning.fullDefs) {
+      content += `${fullDef.text}<br>\n`
+    }
+    return content
   }
 
   handleStatusRequest (request, sender) {
@@ -2500,9 +2584,9 @@ class ContentProcess {
 
   updateInflectionTable (wordData) {
     this.presenter = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* Presenter */](
-      this.panel.options.elements.inflTableContainer,
-      this.panel.options.elements.viewSelectorContainer,
-      this.panel.options.elements.localeSwitcherContainer,
+      this.panel.contentAreas.inflectionsTable.element,
+      this.panel.contentAreas.inflectionsViewSelector.element,
+      this.panel.contentAreas.inflectionsLocaleSwitcher.element,
       wordData,
       this.options.items.locale.currentValue
     ).render()
@@ -2541,7 +2625,7 @@ class ContentProcess {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2559,7 +2643,7 @@ class ContentProcess {
 /* unused harmony export loadData */
 /* unused harmony export SelectedWord */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return Presenter; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(10);
 
 
 /**
@@ -9608,7 +9692,7 @@ class Presenter {
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11451,11 +11535,11 @@ class ResourceProvider {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(11);
-var bytesToUuid = __webpack_require__(12);
+var rng = __webpack_require__(12);
+var bytesToUuid = __webpack_require__(13);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -11486,7 +11570,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -11526,7 +11610,7 @@ module.exports = rng;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports) {
 
 /**
@@ -11555,12 +11639,12 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(15);
 /* global browser */
 
 
@@ -11695,7 +11779,7 @@ class Service {
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11717,12 +11801,12 @@ class StoredRequest {
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(17);
 
 
 
@@ -11737,7 +11821,7 @@ class WordDataRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["a"
 
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11755,12 +11839,12 @@ class RequestMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* defau
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(3);
 
 
 
@@ -11780,12 +11864,12 @@ class StatusResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a"
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__component__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(22);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
 
 
@@ -11793,29 +11877,9 @@ class StatusResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a"
 /**
  * This is a singleton component.
  */
-class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] {
+class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default */] {
   constructor (options) {
-    super(Object.assign({
-      template: __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default.a,
-      selfSelector: '[data-component="alpheios-panel"]',
-      innerElements: {
-        definitionContainer: '#alpheios-panel-content-definition',
-        inflTableContainer: '#alpheios-panel-content-infl-table-body',
-        viewSelectorContainer: '#alpheios-panel-content-infl-table-view-selector',
-        localeSwitcherContainer: '#alpheios-panel-content-infl-table-locale-switcher',
-        optionsContainer: '#alpheios-panel-content-options',
-        normalWidthButton: '#alpheios-panel-show-open',
-        fullWidthButton: '#alpheios-panel-show-fw',
-        closeButton: '#alpheios-panel-hide',
-        tabs: '#alpheios-panel__nav .alpheios-panel__nav-btn',
-        activeTab: '#alpheios-panel__nav .alpheios-panel__nav-btn.active'
-      },
-      outerElements: {
-        page: 'body'
-      },
-      position: Panel.positions.default
-    },
-    options))
+    super(Panel.defaults, options)
 
     this.activeClassName = 'active'
     this.hiddenClassName = 'hidden'
@@ -11830,19 +11894,37 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
     this.innerElements.normalWidthButton.element.addEventListener('click', this.open.bind(this, Panel.widths.normal))
     this.innerElements.fullWidthButton.element.addEventListener('click', this.open.bind(this, Panel.widths.full))
     this.innerElements.closeButton.element.addEventListener('click', this.close.bind(this))
+  }
 
-    let activeTab = this.innerElements.tabs.elements[0]
-    for (let tab of this.innerElements.tabs.elements) {
-      let target = tab.dataset.target
-      let targetElem = document.getElementById(target)
-      if (targetElem.classList.contains(this.activeClassName)) {
-        activeTab.elements[0] = tab
-      } else {
-        document.getElementById(target).classList.add(this.hiddenClassName)
-      }
-      tab.addEventListener('click', this.switchTab.bind(this))
+  static get defaults () {
+    return {
+      template: __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default.a,
+      selfSelector: '[data-component="alpheios-panel"]',
+      innerElements: {
+        definitionContainer: { selector: '#alpheios-panel-content-definition' },
+        inflTableContainer: { selector: '#alpheios-panel-content-infl-table-body' },
+        viewSelectorContainer: { selector: '#alpheios-panel-content-infl-table-view-selector' },
+        localeSwitcherContainer: { selector: '#alpheios-panel-content-infl-table-locale-switcher' },
+        optionsContainer: { selector: '#alpheios-panel-content-options' },
+        normalWidthButton: { selector: '#alpheios-panel-show-open' },
+        fullWidthButton: { selector: '#alpheios-panel-show-fw' },
+        closeButton: { selector: '#alpheios-panel-hide' },
+        tabs: { selector: '#alpheios-panel__nav .alpheios-panel__nav-btn' },
+        activeTab: { selector: '#alpheios-panel__nav .alpheios-panel__nav-btn.active' }
+      },
+      outerElements: {
+        page: { selector: 'body' }
+      },
+      contentAreas: {
+        messages: {},
+        shortDefinitions: {},
+        fullDefinitions: {},
+        inflectionsLocaleSwitcher: {},
+        inflectionsViewSelector: {},
+        inflectionsTable: {}
+      },
+      position: Panel.positions.default
     }
-    this.changeActiveTabTo(activeTab)
   }
 
   static get positions () {
@@ -11891,18 +11973,18 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
 
     if (this.width === Panel.widths.full) {
       // Panel will to be shown in full width
-      this.options.self.element.classList.add(this.panelOpenedClassName)
+      this.self.element.classList.add(this.panelOpenedClassName)
       this.outerElements.page.element.classList.add(this.bodyPositionClassName)
 
-      this.options.self.element.classList.add(this.panelOpenedClassName)
-      this.options.self.element.classList.add(this.panelFullWidthClassName)
+      this.self.element.classList.add(this.panelOpenedClassName)
+      this.self.element.classList.add(this.panelFullWidthClassName)
       this.innerElements.normalWidthButton.element.classList.remove(this.hiddenClassName)
     } else {
       // Default: panel will to be shown in normal width
-      this.options.self.element.classList.add(this.panelOpenedClassName)
+      this.self.element.classList.add(this.panelOpenedClassName)
       this.outerElements.page.element.classList.add(this.bodyNormalWidthClassName)
       this.outerElements.page.element.classList.add(this.bodyPositionClassName)
-      this.options.self.element.classList.add(this.panelOpenedClassName)
+      this.self.element.classList.add(this.panelOpenedClassName)
       this.innerElements.fullWidthButton.element.classList.remove(this.hiddenClassName)
     }
   }
@@ -11918,12 +12000,12 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
   }
 
   resetWidth () {
-    this.options.self.element.classList.remove(this.panelOpenedClassName)
+    this.self.element.classList.remove(this.panelOpenedClassName)
     this.outerElements.page.element.classList.remove(this.bodyNormalWidthClassName)
     this.outerElements.page.element.classList.remove(this.bodyPositionClassName)
 
-    this.options.self.element.classList.remove(this.panelOpenedClassName)
-    this.options.self.element.classList.remove(this.panelFullWidthClassName)
+    this.self.element.classList.remove(this.panelOpenedClassName)
+    this.self.element.classList.remove(this.panelFullWidthClassName)
     this.innerElements.normalWidthButton.element.classList.add(this.hiddenClassName)
     this.innerElements.fullWidthButton.element.classList.add(this.hiddenClassName)
 
@@ -11939,51 +12021,28 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
     return this
   }
 
-  clear () {
-    this.innerElements.definitionContainer.element.innerHTML = ''
-    this.innerElements.inflTableContainer.element.innerHTML = ''
-    this.innerElements.viewSelectorContainer.element.innerHTML = ''
-    this.innerElements.localeSwitcherContainer.element.innerHTML = ''
-    return this
-  }
-
-  switchTab (event) {
-    this.changeActiveTabTo(event.currentTarget)
-    return this
-  }
-
-  /**
-   * Todo: simplify
-   * @param {HTMLElement} activeTab - A tab that must be set to active state.
-   * @return {Panel}
-   */
-  changeActiveTabTo (activeTab) {
-    if (this.innerElements.activeTab) {
-      let target = this.innerElements.activeTab.element.dataset.target
-      document.getElementById(target).classList.add(this.hiddenClassName)
-      this.innerElements.activeTab.element.classList.remove(this.activeClassName)
+  clearContent () {
+    for (let contentArea in this.contentAreas) {
+      if (this.contentAreas.hasOwnProperty(contentArea)) {
+        this.contentAreas[contentArea].clearContent()
+      }
     }
-
-    activeTab.classList.add(this.activeClassName)
-    let target = activeTab.dataset.target
-    document.getElementById(target).classList.remove(this.hiddenClassName)
-    this.innerElements.activeTab.elements = document.querySelectorAll(this.innerElements.activeTab.selector)
     return this
   }
 
-  get optionsPage () {
+  /* get optionsPage () {
     return this.innerElements.element.optionsContainer
   }
 
   set optionsPage (htmlContent) {
     this.innerElements.optionsContainer.element.innerHTML = htmlContent
     return this.innerElements.optionsContainer.element.innerHTML
-  }
+  } */
 
   showMessage (messageHTML) {
-    this.clear()
-    this.innerElements.definitionContainer.element.innerHTML = messageHTML
-    this.open().changeActiveTabTo(this.innerElements.tabs.elements[0])
+    this.clearContent()
+    this.contentAreas.messages.setContent(messageHTML)
+    this.tabGroups.contentTabs.activate('definitionsTab')
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Panel;
@@ -11991,32 +12050,155 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] 
 
 
 /***/ }),
-/* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\">\r\n  <div class=\"alpheios-panel__wrapper\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(20) + "\"></div>\r\n        <span id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div id=\"alpheios-panel-content-definition\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-infl-table\">\r\n                <div id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-options\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn active\"\r\n                  data-target=\"alpheios-panel-content-definition\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\r\n                  data-target=\"alpheios-panel-content-infl-table\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\r\n                  uk-icon=\"icon: cog; ratio: 2\" data-target=\"alpheios-panel-content-options\"></span>\r\n        </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n";
-
-/***/ }),
 /* 20 */
-/***/ (function(module, exports) {
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-module.exports = "data:image/png;base64,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"
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(21);
+
+
+
+class TabGroup {
+  constructor (groupName, scope) {
+    this.options = TabGroup.defaults
+
+    this.nameIndex = {}
+    this.tabs = Array.from(scope.querySelectorAll(`[data-tab-group="${groupName}"]`)).map(
+      tab => {
+        let name = tab.dataset.element
+        let tabElement = new __WEBPACK_IMPORTED_MODULE_1__tab_element__["a" /* default */](name, scope)
+        this.nameIndex[name] = tabElement
+        return tabElement
+      }
+    )
+
+    // Try to set active tabe based on presence of an `active` class
+    for (let tab of this.tabs) {
+      if (tab.element.classList.contains(__WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */].defaults.classNames.active)) {
+        this.activeTab = tab
+      }
+    }
+    // If not found, let's set it to a default value
+    if (!this.activeTab) {
+      this.activeTab = this.tabs[0] // Set to a first tab if `active` class is not assigned to any tab element
+    }
+
+    for (let tab of this.tabs) {
+      tab.deactivate() // Reset all panels and tabs to match object configuration
+      tab.element.addEventListener('click', this.onClick.bind(this))
+    }
+    this.activeTab.activate()
+  }
+
+  activate (tabName) {
+    // Deactivate a currently active tab
+    this.activeTab.deactivate()
+    this.activeTab = this.nameIndex[tabName]
+    this.activeTab.activate()
+  }
+
+  onClick (event) {
+    let tabName = event.currentTarget.dataset.element
+    if (!tabName) {
+      throw new Error(`Tab currently being selected has no name`)
+    }
+    this.activate(tabName)
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = TabGroup;
+
+
 
 /***/ }),
 /* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__component__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(2);
+
+
+class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */] {
+  constructor (name, scope, elementData = {}) {
+    super(name, scope, elementData)
+    this.isActive = false
+    this.panel = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](this.element.dataset.targetName, scope)
+  }
+
+  deactivate () {
+    this.element.classList.remove(__WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */].defaults.classNames.active)
+    this.panel.hide()
+    this.isActive = false
+  }
+
+  activate () {
+    this.element.classList.add(__WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */].defaults.classNames.active)
+    this.panel.show()
+    this.isActive = true
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = TabElement;
+
+
+
+/***/ }),
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\">\r\n  <div class=\"alpheios-panel__wrapper\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(23) + "\"></div>\r\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div id=\"alpheios-panel-content-definition\" data-element=\"definitionsPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-infl-table\" data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\" id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div id=\"alpheios-panel-content-options\" data-element=\"optionsPanel\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span id=\"alpheios-panel-show-word-data\" class=\"alpheios-panel__nav-btn active\"\r\n                  data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-infl-table\" class=\"alpheios-panel__nav-btn\"\r\n                  data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span id=\"alpheios-panel-show-options\" class=\"alpheios-panel__nav-btn\"\r\n                  uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n";
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/png;base64,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"
+
+/***/ }),
+/* 24 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
 /* global browser */
 
 
 
-class Options extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */] {
+class Options extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default */] {
   constructor (options) {
-    super(Object.assign({
+    super(Options.defaults, options)
+
+    for (let [optionName, optionData] of Object.entries(this.options.data)) {
+      if (this.options.data.hasOwnProperty(optionName)) {
+        /*
+        Initialize current values with defaults. Actual values will be set after options are loaded from a
+        local storage.
+         */
+        optionData.currentValue = optionData.defaultValue
+        let element = this.self.element.querySelector(optionData.selector)
+        if (element) {
+          optionData.element = element
+        } else {
+          console.warn(`Option element with "${optionData.selector}" selector is not found`)
+        }
+      }
+    }
+
+    this.load().then(
+      () => {
+        this.render()
+      },
+      (error) => {
+        console.error(`Cannot retrieve options for Alpheios extension from a local storage: ${error}. Default values
+          will be used instead`)
+        this.render()
+      }
+    )
+  }
+
+  static get defaults () {
+    return {
       template: __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default.a,
       selfSelector: '[data-component="alpheios-panel-options"]',
       data: {
@@ -12055,35 +12237,7 @@ class Options extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */
           selector: '#alpheios-language-selector-list'
         }
       }
-    },
-    options))
-
-    for (let [optionName, optionData] of Object.entries(this.options.data)) {
-      if (this.options.data.hasOwnProperty(optionName)) {
-        /*
-        Initialize current values with defaults. Actual values will be set after options are loaded from a
-        local storage.
-         */
-        optionData.currentValue = optionData.defaultValue
-        let element = this.options.self.element.querySelector(optionData.selector)
-        if (element) {
-          optionData.element = element
-        } else {
-          console.warn(`Option element with "${optionData.selector}" selector is not found`)
-        }
-      }
     }
-
-    this.load().then(
-      () => {
-        this.render()
-      },
-      (error) => {
-        console.error(`Cannot retrieve options for Alpheios extension from a local storage: ${error}. Default values
-          will be used instead`)
-        this.render()
-      }
-    )
   }
 
   /**
@@ -12151,13 +12305,13 @@ class Options extends __WEBPACK_IMPORTED_MODULE_0__component__["a" /* default */
 
 
 /***/ }),
-/* 22 */
+/* 25 */
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"auk\" data-component=\"alpheios-panel-options\">\r\n    <h4>Options</h4>\r\n    <div id=\"alpheios-language-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-language-selector-list\" class=\"uk-form-label\">Preferred Language:</label>\r\n        <select id=\"alpheios-language-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-locale-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-locale-selector-list\" class=\"uk-form-label\">Locale:</label>\r\n        <select id=\"alpheios-locale-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-ui-type-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-ui-type-selector-list\" class=\"uk-form-label\">UI Type:</label>\r\n        <select id=\"alpheios-ui-type-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-position-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-position-selector-list\" class=\"uk-form-label\">Panel position:</label>\r\n        <select id=\"alpheios-position-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n</div>\r\n";
 
 /***/ }),
-/* 23 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12193,7 +12347,7 @@ class State {
 
 
 /***/ }),
-/* 24 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12209,21 +12363,21 @@ class State {
 
 
 /***/ }),
-/* 25 */
+/* 28 */
 /***/ (function(module, exports) {
 
 module.exports = "<svg xmlns=\"http://www.w3.org/2000/svg\" style=\"display: none;\">\r\n    <symbol id=\"alf-icon-chevron-left\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1427 301l-531 531 531 531q19 19 19 45t-19 45l-166 166q-19 19-45 19t-45-19l-742-742q-19-19-19-45t19-45l742-742q19-19 45-19t45 19l166 166q19 19 19 45t-19 45z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-chevron-right\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1363 877l-742 742q-19 19-45 19t-45-19l-166-166q-19-19-19-45t19-45l531-531-531-531q-19-19-19-45t19-45l166-166q19-19 45-19t45 19l742 742q19 19 19 45t-19 45z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-arrow-left\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1664 896v128q0 53-32.5 90.5t-84.5 37.5h-704l293 294q38 36 38 90t-38 90l-75 76q-37 37-90 37-52 0-91-37l-651-652q-37-37-37-90 0-52 37-91l651-650q38-38 91-38 52 0 90 38l75 74q38 38 38 91t-38 91l-293 293h704q52 0 84.5 37.5t32.5 90.5z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-commenting\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M640 896q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0 174-120 321.5t-326 233-450 85.5q-110 0-211-18-173 173-435 229-52 10-86 13-12 1-22-6t-13-18q-4-15 20-37 5-5 23.5-21.5t25.5-23.5 23.5-25.5 24-31.5 20.5-37 20-48 14.5-57.5 12.5-72.5q-146-90-229.5-216.5t-83.5-269.5q0-174 120-321.5t326-233 450-85.5 450 85.5 326 233 120 321.5z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-table\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M576 1376v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm0-384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm-512-768v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm-512-768v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm0-384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm128-320v1088q0 66-47 113t-113 47h-1344q-66 0-113-47t-47-113v-1088q0-66 47-113t113-47h1344q66 0 113 47t47 113z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-wrench\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M448 1472q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm644-420l-682 682q-37 37-90 37-52 0-91-37l-106-108q-38-36-38-90 0-53 38-91l681-681q39 98 114.5 173.5t173.5 114.5zm634-435q0 39-23 106-47 134-164.5 217.5t-258.5 83.5q-185 0-316.5-131.5t-131.5-316.5 131.5-316.5 316.5-131.5q58 0 121.5 16.5t107.5 46.5q16 11 16 28t-16 28l-293 169v224l193 107q5-3 79-48.5t135.5-81 70.5-35.5q15 0 23.5 10t8.5 25z\"/>\r\n    </symbol>\r\n</svg>\r\n<div data-component=\"page-controls\"></div>\r\n<div id=\"popup\"><popup></popup></div>\r\n<div data-component=\"alpheios-panel\"></div>";
 
 /***/ }),
-/* 26 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(30);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(33);
  // To polyfill Element.closest() if required
 
 
@@ -12383,7 +12537,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 27 */
+/* 30 */
 /***/ (function(module, exports) {
 
 // element-closest | CC0-1.0 | github.com/jonathantneal/closest
@@ -12422,12 +12576,12 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 28 */
+/* 31 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(5);
 
 
 
@@ -12509,7 +12663,7 @@ class TextSelector {
 
 
 /***/ }),
-/* 29 */
+/* 32 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12523,7 +12677,7 @@ class TextQuoteSelector {
 
 
 /***/ }),
-/* 30 */
+/* 33 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12566,7 +12720,7 @@ class MediaSelector {
 
 
 /***/ }),
-/* 31 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
@@ -23297,10 +23451,10 @@ return Vue$3;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(5).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(6).setImmediate))
 
 /***/ }),
-/* 32 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -23490,10 +23644,10 @@ return Vue$3;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(33)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(36)))
 
 /***/ }),
-/* 33 */
+/* 36 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -23683,7 +23837,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 34 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 !function(root, factory) {
@@ -24571,18 +24725,18 @@ process.umask = function() { return 0; };
 });
 
 /***/ }),
-/* 35 */
+/* 38 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(42);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(43);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(45);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(46);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(36)
+  __webpack_require__(39)
 }
-var normalizeComponent = __webpack_require__(41)
+var normalizeComponent = __webpack_require__(44)
 /* script */
 
 /* template */
@@ -24626,17 +24780,17 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 36 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(37);
+var content = __webpack_require__(40);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(39)("449bb36b", content, false);
+var update = __webpack_require__(42)("449bb36b", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -24652,10 +24806,10 @@ if(false) {
 }
 
 /***/ }),
-/* 37 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(38)(true);
+exports = module.exports = __webpack_require__(41)(true);
 // imports
 
 
@@ -24666,7 +24820,7 @@ exports.push([module.i, "\n.alpheios-popup {\n    border-radius: 0;\n    box-sha
 
 
 /***/ }),
-/* 38 */
+/* 41 */
 /***/ (function(module, exports) {
 
 /*
@@ -24748,7 +24902,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 39 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -24767,7 +24921,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(40)
+var listToStyles = __webpack_require__(43)
 
 /*
 type StyleObject = {
@@ -24969,7 +25123,7 @@ function applyToTag (styleElement, obj) {
 
 
 /***/ }),
-/* 40 */
+/* 43 */
 /***/ (function(module, exports) {
 
 /**
@@ -25002,7 +25156,7 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 41 */
+/* 44 */
 /***/ (function(module, exports) {
 
 /* globals __VUE_SSR_CONTEXT__ */
@@ -25111,7 +25265,7 @@ module.exports = function normalizeComponent (
 
 
 /***/ }),
-/* 42 */
+/* 45 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -25181,7 +25335,7 @@ module.exports = function normalizeComponent (
 });
 
 /***/ }),
-/* 43 */
+/* 46 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -25254,7 +25408,7 @@ if (false) {
 }
 
 /***/ }),
-/* 44 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(setImmediate) {/*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -35749,10 +35903,10 @@ return UIkit$2;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6).setImmediate))
 
 /***/ }),
-/* 45 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -36020,7 +36174,7 @@ return plugin;
 
 
 /***/ }),
-/* 46 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

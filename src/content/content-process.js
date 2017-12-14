@@ -52,8 +52,11 @@ export default class ContentProcess {
     // Initialize components
     this.panel = new Panel({
       contentAreas: {
-        shortDefinitions: function (lexicalData) {
-          return lexicalData
+        shortDefinitions: {
+          dataFunction: this.formatShortDefinitions.bind(this)
+        },
+        fullDefinitions: {
+          dataFunction: this.formatFullDefinitions.bind(this)
         }
       }
     })
@@ -182,32 +185,28 @@ export default class ContentProcess {
   }
 
   displayWordData (lexicalData) {
+    this.panel.clearContent()
     let shortDefsText = ''
-    let fullDefsText = ''
     for (let lexeme of lexicalData.homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
-        shortDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
-        for (let shortDef of lexeme.meaning.shortDefs) {
-          shortDefsText += `${shortDef.text}<br>\n`
-        }
+        this.panel.contentAreas.shortDefinitions.setContent(lexeme)
+        shortDefsText += this.formatShortDefinitions(lexeme)
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {
-        fullDefsText += `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
-        for (let fullDef of lexeme.meaning.fullDefs) {
-          fullDefsText += `${fullDef.text}<br>\n`
-        }
+        this.panel.contentAreas.fullDefinitions.setContent(lexeme)
       }
     }
 
     // Populate a panel
-    this.panel.clear()
-    this.updateDefinition(`<h2>Short definitions:</h2>${shortDefsText}<h2>Full definitions:</h2>${fullDefsText}`)
+
+    //this.updateDefinition(`<h2>Short definitions:</h2>${shortDefsText}<h2>Full definitions:</h2>${fullDefsText}`)
     this.updateInflectionTable(lexicalData)
 
     // Pouplate a popup
     this.vueInstance.panel = this.panel
     this.vueInstance.popupTitle = `${lexicalData.homonym.targetWord}`
+
     this.vueInstance.popupContent = decodeURIComponent(shortDefsText)
 
     if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
@@ -216,6 +215,22 @@ export default class ContentProcess {
       if (this.panel.isOpened) { this.panel.close() }
       this.vueInstance.$modal.show('popup')
     }
+  }
+
+  formatShortDefinitions (lexeme) {
+    let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
+    for (let shortDef of lexeme.meaning.shortDefs) {
+      content += `${shortDef.text}<br>\n`
+    }
+    return content
+  }
+
+  formatFullDefinitions (lexeme) {
+    let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
+    for (let fullDef of lexeme.meaning.fullDefs) {
+      content += `${fullDef.text}<br>\n`
+    }
+    return content
   }
 
   handleStatusRequest (request, sender) {
@@ -275,9 +290,9 @@ export default class ContentProcess {
 
   updateInflectionTable (wordData) {
     this.presenter = new Lib.Presenter(
-      this.panel.options.elements.inflTableContainer,
-      this.panel.options.elements.viewSelectorContainer,
-      this.panel.options.elements.localeSwitcherContainer,
+      this.panel.contentAreas.inflectionsTable.element,
+      this.panel.contentAreas.inflectionsViewSelector.element,
+      this.panel.contentAreas.inflectionsLocaleSwitcher.element,
       wordData,
       this.options.items.locale.currentValue
     ).render()

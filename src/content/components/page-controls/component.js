@@ -1,4 +1,4 @@
-import Component from '../component'
+import Component from '../lib/component'
 import template from './template.htmlf'
 
 /**
