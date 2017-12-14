@@ -89,7 +89,7 @@ export default class BackgroundProcess {
             this.tabs.get(tabID).status = Message.statusSym(message)
           },
           (error) => {
-            console.log(`No status confirmation from tab {tabID} on activation request: ${error}`)
+            console.log(`No status confirmation from tab {tabID} on activation request: ${error.message}`)
           }
         )
       }
@@ -104,7 +104,7 @@ export default class BackgroundProcess {
           this.tabs.get(tabID).status = Message.statusSym(message)
         },
         (error) => {
-          console.log(`No status confirmation from tab {tabID} on deactivation request: ${error}`)
+          console.log(`No status confirmation from tab {tabID} on deactivation request: ${error.message}`)
         }
       )
     }
@@ -179,20 +179,13 @@ export default class BackgroundProcess {
     try {
       // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
       ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
-    } catch (error) {
-      let errorValue = State.getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
-      console.error(`Word data retrieval failed: ${errorValue}`)
-      let lemma = new Lemma(textSelector.normalizedText,textSelector.languageCode,[])
-      let lexeme = new Lexeme(lemma,[])
-      homonym = new Homonym([lexeme],textSelector.normalizedText)
-    }
+      if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
 
-    try {
       lexicalData = this.langData.getSuffixes(homonym, state)
     } catch (e) {
       console.log(`Failure retrieving inflection data. ${e}`)
     }
-    
+
     try {
       for (let lexeme of homonym.lexemes) {
         let shortDefs = await Lexicons.fetchShortDefs(lexeme.lemma, requestOptions)
@@ -233,7 +226,7 @@ export default class BackgroundProcess {
         (message) => {
         },
         (error) => {
-          console.log(`Error opening panel ${error}`)
+          console.log(`Error opening panel ${error.message}`)
         }
       );
     }
