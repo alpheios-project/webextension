@@ -13,6 +13,7 @@ import State from '../lib/state'
 import TextSelector from '../lib/selection/text-selector'
 // import TestDefinitionService from '../../test/stubs/definitions/test'
 import {Lexicons} from 'alpheios-lexicon-client'
+import {Homonym, Lemma, Lexeme} from 'alpheios-data-models'
 import {
   Transporter,
   StorageAdapter as LocalExperienceStorage,
@@ -174,13 +175,25 @@ export default class BackgroundProcess {
     console.log(`Request for a "${textSelector.normalizedText}" word`)
     let tabID = sender.tab.id
 
+    let homonym, lexicalData
     try {
       // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
-      let homonym, lexicalData
       ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
-      if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
+    } catch (error) {
+      let errorValue = State.getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
+      console.error(`Word data retrieval failed: ${errorValue}`)
+      let lemma = new Lemma(textSelector.normalizedText,textSelector.languageCode,[])
+      let lexeme = new Lexeme(lemma,[])
+      homonym = new Homonym([lexeme],textSelector.normalizedText)
+    }
 
+    try {
       lexicalData = this.langData.getSuffixes(homonym, state)
+    } catch (e) {
+      console.log(`Failure retrieving inflection data. ${e}`)
+    }
+    
+    try {
       for (let lexeme of homonym.lexemes) {
         let shortDefs = await Lexicons.fetchShortDefs(lexeme.lemma, requestOptions)
         console.log(`Retrieved short definitions:`, shortDefs)
