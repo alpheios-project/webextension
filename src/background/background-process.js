@@ -58,7 +58,9 @@ export default class BackgroundProcess {
     this.langData = new InflectionTables.LanguageData([InflectionTables.LatinDataSet, InflectionTables.GreekDataSet]).loadData()
 
     this.messagingService.addHandler(Message.types.WORD_DATA_REQUEST, this.handleWordDataRequestStatefully, this)
+    this.messagingService.addHandler(Message.types.PANEL_STATUS_CHANGE_REQUEST, this.updatePanelStatus, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
+    browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
 
     BackgroundProcess.createMenuItem()
 
@@ -75,6 +77,10 @@ export default class BackgroundProcess {
 
   isContentActive (tabID) {
     return this.isContentLoaded(tabID) && this.tabs.get(tabID).status === Statuses.ACTIVE
+  }
+
+  isPanelOpen (tabID) {
+    return this.isContentActive(tabID) && this.tabs.get(tabID).panelStatus === Statuses.PANEL_OPEN
   }
 
   activateContent (tabID) {
@@ -138,16 +144,35 @@ export default class BackgroundProcess {
     })
   };
 
-  loadContent (tabID) {
+  handleOpenPanelRequest(tabID) {
+    this.messagingService.sendRequestToTab(new OpenPanelRequest(), 10000, tabID).then(
+      (message) => {
+        this.tabs.get(tabID).panelStatus = message
+      },
+      (error) => {
+        console.log(`Error opening panel ${error}`)
+      }
+    )
+  }
+
+  loadContent (tabID, options={activate:true, openPanel:true}) {
     let polyfillScript = this.loadPolyfill(tabID)
     let contentScript = this.loadContentScript(tabID)
     let contentCSS = this.loadContentCSS(tabID)
     Promise.all([polyfillScript, contentScript, contentCSS]).then(() => {
       console.log('Content script(s) has been loaded successfully or already present')
-      this.tabs.set(tabID, new ContentTab(tabID, Statuses.ACTIVE))
+      this.tabs.set(tabID, new ContentTab(tabID, Statuses.ACTIVE, Statuses.PANEL_OPEN))
       BackgroundProcess.defaults.contentScriptLoaded = true
+      if (! options.activate) {
+        console.log("Deactiving after load")
+        this.deactivateContent(tabID)
+      }
+      if (options.openPanel) {
+        this.handleOpenPanelRequest(tabID)
+      }
     }, (error) => {
-      throw new Error('Content script loading failed', error)
+      console.log(`Content script loading failed, ${error.message}`)
+      //throw new Error('Content script loading failed', error)
     })
   }
 
@@ -167,6 +192,13 @@ export default class BackgroundProcess {
       */
       throw (State.value(state, error))
     }
+  }
+
+  updatePanelStatus(request, sender) {
+    console.log(`Request to update panel status ${request.body.isOpen}`)
+    let tab = this.tabs.get(sender.tab.id)
+    tab.panelStatus = request.body.isOpen ? Statuses.PANEL_OPEN : Statuses.PANEL_CLOSED
+    return tab.panelStatus
   }
 
   async handleWordDataRequestStatefully (request, sender, state = undefined) {
@@ -215,23 +247,29 @@ export default class BackgroundProcess {
     return tabs[0].id
   }
 
+  async tabUpdatedListener (tabID, changeInfo, tab) {
+    if (changeInfo.status === 'complete') {
+      let wasLoaded = this.isContentLoaded(tabID)
+      let wasActive = this.isContentActive(tabID)
+      let panelOpen = this.isPanelOpen(tabID)
+      if (wasLoaded) {
+        this.loadContent(tabID,{ activate: wasActive, openPanel: panelOpen } )
+      }
+    }
+  }
+
   async menuListener (info, tab) {
     if (info.menuItemId === this.settings.activateMenuItemId) {
       this.activateContent(tab.id)
     } else if (info.menuItemId === this.settings.deactivateMenuItemId) {
       this.deactivateContent(tab.id)
     } else if (info.menuItemId === this.settings.openPanelMenuItemId) {
+      // make sure the content script is loaded and active first
       this.activateContent(tab.id)
-      this.messagingService.sendRequestToTab(new OpenPanelRequest(), 10000, tab.id).then(
-        (message) => {
-        },
-        (error) => {
-          console.log(`Error opening panel ${error.message}`)
-        }
-      );
+      this.handleOpenPanelRequest(tab.id)
     }
-
   }
+
 
   async browserActionListener (tab) {
     if (!this.isContentActive(tab.id)) {

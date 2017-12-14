@@ -60,6 +60,7 @@ export default class Service {
    */
   registerRequest (request, timeout = undefined) {
     let requestInfo = new StoredOutgoingRequest(request)
+    console.log(requestInfo)
     this.messages.set(request.ID, requestInfo)
     if (timeout) {
       requestInfo.timeoutID = window.setTimeout((requestID) => {
@@ -79,7 +80,7 @@ export default class Service {
     browser.tabs.sendMessage(tabID, request).then(
       () => { console.log(`Successfully sent a request to a tab`) },
       (error) => {
-        console.error(`tabs.sendMessage() failed: ${error}`)
+        console.error(`tabs.sendMessage() failed: ${error.message}`,error)
         this.rejectRequest(request.ID, error)
       }
     )
@@ -87,11 +88,12 @@ export default class Service {
   }
 
   sendRequestToBg (request, timeout) {
+    console.log(request)
     let promise = this.registerRequest(request, timeout)
     browser.runtime.sendMessage(request).then(
       () => { console.log(`Successfully sent a request to a background`) },
       (error) => {
-        console.error(`Sending request to a background failed: ${error}`)
+        console.error(`Sending request to a background failed: ${error.message}`,error)
         this.rejectRequest(request.ID, error)
       }
     )

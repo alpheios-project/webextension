@@ -119,6 +119,7 @@ export default class Panel extends Component {
   close () {
     if (this.isOpened) {
       this.resetWidth()
+      this.options.methods.onClose()
     }
     return this
   }

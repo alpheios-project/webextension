@@ -3,6 +3,7 @@ import * as Lib from 'alpheios-inflection-tables'
 import Message from '../lib/messaging/message'
 import MessagingService from '../lib/messaging/service'
 import WordDataRequest from '../lib/messaging/request/word-data-request'
+import PanelStatusChangeRequest from '../lib/messaging/request/panel-status-change-request'
 import StatusResponse from '../lib/messaging/response/status-response'
 import Panel from './components/panel/component'
 import Options from './components/options/component'
@@ -21,6 +22,7 @@ import UIkITIconts from '../../node_modules/uikit/dist/js/uikit-icons'
 export default class ContentProcess {
   constructor () {
     this.status = Statuses.PENDING
+    this.panelStatus = Statuses.PANEL_CLOSED
     this.settings = ContentProcess.settingValues
     this.vueInstance = undefined
 
@@ -58,6 +60,9 @@ export default class ContentProcess {
         fullDefinitions: {
           dataFunction: this.formatFullDefinitions.bind(this)
         }
+      },
+      methods: {
+        onClose: this.closePanel.bind(this)
       }
     })
     // Should be loaded after Panel because options are inserted into a panel
@@ -122,13 +127,12 @@ export default class ContentProcess {
 
   deactivate () {
     console.log('Content has been deactivated.')
-    this.panel.close()
+    this.closePanel()
     this.status = Statuses.DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
-    this.panel.open()
     this.status = Statuses.ACTIVE
   }
 
@@ -142,7 +146,7 @@ export default class ContentProcess {
     if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
       this.panel.showMessage(messageHTML)
     } else {
-      this.panel.close()
+      //this.panel.close()
       this.vueInstance.panel = this.panel // For being able to open a panel from within a popup
       this.vueInstance.popupTitle = ''
       this.vueInstance.popupContent = messageHTML
@@ -171,6 +175,8 @@ export default class ContentProcess {
       let message = messageObject.value
 
       if (Message.statusSymIs(message, Message.statuses.DATA_FOUND)) {
+        console.log(message.body)
+        debugger
         let lexicalData = Lib.LexicalData.readObject(message.body)
         console.log('Word data is: ', lexicalData)
         this.displayWordData(lexicalData)
@@ -210,11 +216,22 @@ export default class ContentProcess {
     this.vueInstance.popupContent = decodeURIComponent(shortDefsText)
 
     if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-      this.panel.open()
+      this.openPanel()
     } else {
-      if (this.panel.isOpened) { this.panel.close() }
+      //if (this.panel.isOpened) { this.panel.close() }
       this.vueInstance.$modal.show('popup')
     }
+  }
+
+  openPanel() {
+    this.panel.open()
+    this.messagingService.sendRequestToBg(new PanelStatusChangeRequest(true),this.settings.requestTimeout)
+  }
+
+  closePanel() {
+    this.panel.close()
+    this.panelStatus = Statuses.PANEL_CLOSED
+    this.messagingService.sendRequestToBg(new PanelStatusChangeRequest(false),this.settings.requestTimeout)
   }
 
   formatShortDefinitions (lexeme) {
@@ -271,13 +288,7 @@ export default class ContentProcess {
 
   handleOpenPanelRequest (request, sender) {
     console.log(`Open panel request received. Sending a response back.`)
-    this.panel.open()
-    this.status = Statuses.PANEL_OPEN
-    this.messagingService.sendResponseToBg(new StatusResponse(request, this.status)).catch(
-      (error) => {
-        console.error(`Unable to send a response to panel open request: ${error}`)
-      }
-    )
+    let panelStatus = this.openPanel()
   }
 
   togglePanel () {
@@ -319,6 +330,7 @@ export default class ContentProcess {
   getSelectedText (event) {
     if (this.isActive) {
       let textSelector = HTMLSelector.getSelector(event.target, this.defaultLanguage)
+      debugger
 
       if (!textSelector.isEmpty()) {
         this.getWordDataStatefully(textSelector)
