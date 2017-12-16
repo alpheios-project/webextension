@@ -4,12 +4,14 @@ import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import {Lexicons} from 'alpheios-lexicon-client'
 import Message from '../lib/messaging/message'
 import MessagingService from '../lib/messaging/service'
+import PanelStatusChangeRequest from '../lib/messaging/request/panel-status-change-request'
 import StatusResponse from '../lib/messaging/response/status-response'
 import Panel from './components/panel/component'
 import Options from './components/options/component'
 import State from '../lib/state'
 import Statuses from './statuses'
 import Template from './template.htmlf'
+// import PageControls from './components/page-controls/component'
 import HTMLSelector from '../lib/selection/media/html-selector'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import VueJsModal from 'vue-js-modal'
@@ -21,6 +23,7 @@ import UIkITIconts from '../../node_modules/uikit/dist/js/uikit-icons'
 export default class ContentProcess {
   constructor () {
     this.status = Statuses.PENDING
+    this.panelStatus = Statuses.PANEL_CLOSED
     this.settings = ContentProcess.settingValues
     this.vueInstance = undefined
 
@@ -61,6 +64,9 @@ export default class ContentProcess {
         fullDefinitions: {
           dataFunction: this.formatFullDefinitions.bind(this)
         }
+      },
+      methods: {
+        onClose: this.closePanel.bind(this)
       }
     })
     // Should be loaded after Panel because options are inserted into a panel
@@ -96,7 +102,6 @@ export default class ContentProcess {
         console.log('Root instance is mounted')
       }
     })
-    // this.vueInstance.panel = this.panel
     this.modal = this.vueInstance.$modal
 
     // Initialize a UIKit
@@ -127,13 +132,12 @@ export default class ContentProcess {
 
   deactivate () {
     console.log('Content has been deactivated.')
-    this.panel.close()
+    this.closePanel()
     this.status = Statuses.DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
-    this.panel.open()
     this.status = Statuses.ACTIVE
   }
 
@@ -305,6 +309,17 @@ export default class ContentProcess {
     this.vueInstance.messageContent = ''
   }
 
+  openPanel () {
+    this.panel.open()
+    this.messagingService.sendRequestToBg(new PanelStatusChangeRequest(true),this.settings.requestTimeout)
+  }
+
+  closePanel () {
+    this.panel.close()
+    this.panelStatus = Statuses.PANEL_CLOSED
+    this.messagingService.sendRequestToBg(new PanelStatusChangeRequest(false),this.settings.requestTimeout)
+  }
+
   formatShortDefinitions (lexeme) {
     let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
     for (let shortDef of lexeme.meaning.shortDefs) {
@@ -359,13 +374,7 @@ export default class ContentProcess {
 
   handleOpenPanelRequest (request, sender) {
     console.log(`Open panel request received. Sending a response back.`)
-    this.panel.open()
-    this.status = Statuses.PANEL_OPEN
-    this.messagingService.sendResponseToBg(new StatusResponse(request, this.status)).catch(
-      (error) => {
-        console.error(`Unable to send a response to panel open request: ${error}`)
-      }
-    )
+    let panelStatus = this.openPanel()
   }
 
   updateInflectionTable (wordData) {

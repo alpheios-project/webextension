@@ -7,6 +7,8 @@
     "48": "icons/ic_device_hub_black_24px.svg"
   },
   "permissions": [
+    "http://*/",
+    "https://*/",
     "tabs",
     "activeTab",
     "contextMenus",
