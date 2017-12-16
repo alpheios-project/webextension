@@ -10,7 +10,6 @@ import Options from './components/options/component'
 import State from '../lib/state'
 import Statuses from './statuses'
 import Template from './template.htmlf'
-// import PageControls from './components/page-controls/component'
 import HTMLSelector from '../lib/selection/media/html-selector'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import VueJsModal from 'vue-js-modal'
@@ -90,12 +89,14 @@ export default class ContentProcess {
       data: {
         popupTitle: '',
         popupContent: '',
-        panel: undefined
+        messageContent: '',
+        panel: this.panel
       },
       mounted: function () {
         console.log('Root instance is mounted')
       }
     })
+    // this.vueInstance.panel = this.panel
     this.modal = this.vueInstance.$modal
 
     // Initialize a UIKit
@@ -169,12 +170,15 @@ export default class ContentProcess {
 
   async getWordDataStatefully (textSelector, state = undefined) {
     let homonym, lexicalData
-    // this.showMessage('Please wait while your data is loading ...<br>')
+
+    this.clearUI()
+    this.openUI()
+    this.showMessage(`Please wait while data is retrieved ...<br>`)
     try {
       // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
       ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
       if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
-      // this.appendMessage('Homonym data is ready<br>')
+      this.appendMessage(`Morphological analyzer data is ready<br>`)
       this.updateDefinitionsData(homonym)
     } catch (error) {
       console.error(`Cannot retrieve homonym data: ${error}`)
@@ -183,28 +187,62 @@ export default class ContentProcess {
     try {
       lexicalData = this.langData.getSuffixes(homonym, state)
       // this.panel.contentAreas.messages.appendContent('Inflection data is ready<br>')
+      this.appendMessage(`Inflection data is ready<br>`)
       this.updateInflectionsData(lexicalData)
     } catch (e) {
       console.log(`Failure retrieving inflection data. ${e}`)
     }
 
-    let defRequestOptions = { timeout: 10000 }
+    let definitionRequests = []
     try {
       for (let lexeme of homonym.lexemes) {
-        // this.appendMessage(`<br>Retrieving data for "${lexeme.lemma.word}" lexeme<br>`)
-        let shortDefs = await Lexicons.fetchShortDefs(lexeme.lemma, defRequestOptions)
-        console.log(`Retrieved short definitions:`, shortDefs)
-        lexeme.meaning.appendShortDefs(shortDefs)
-        this.updateDefinitionsData(homonym)
-        // this.appendMessage('Short definitions are ready<br>')
-        let fullDefs = await Lexicons.fetchFullDefs(lexeme.lemma, defRequestOptions)
-        console.log(`Retrieved full definitions:`, fullDefs)
-        lexeme.meaning.appendFullDefs(fullDefs)
-        this.updateDefinitionsData(homonym)
-        // this.appendMessage('Full definitions are ready<br>')
+        // Short definition requests
+        let requests = Lexicons.fetchShortDefs(lexeme.lemma)
+        definitionRequests = definitionRequests.concat(requests.map(request => {
+          return {
+            request: request,
+            type: 'Short definition',
+            lexeme: lexeme,
+            appendFunction: 'appendShortDefs',
+            isCompleted: false
+          }
+        }))
+        requests = Lexicons.fetchFullDefs(lexeme.lemma)
+        definitionRequests = definitionRequests.concat(requests.map(request => {
+          return {
+            request: request,
+            type: 'Full definition',
+            lexeme: lexeme,
+            appendFunction: 'appendFullDefs',
+            isCompleted: false
+          }
+        }))
       }
-      console.log('Lexical data is: ', lexicalData)
-      this.displayWordData(lexicalData)
+
+      // Full definition requests
+      for (let definitionRequest of definitionRequests) {
+        definitionRequest.request.then(
+          definition => {
+            console.log(`${definitionRequest.type}(s) received: ${definition}`)
+            definitionRequest.lexeme.meaning[definitionRequest.appendFunction](definition)
+            definitionRequest.isCompleted = true
+            this.appendMessage(`${definitionRequest.type} request is completed successfully. Lemma: "${definitionRequest.lexeme.lemma.word}"<br>`)
+            if (definitionRequests.every(request => request.isCompleted)) {
+              this.appendMessage(`<strong>All lexical data is available now</strong><br>`)
+            }
+            this.updateDefinitionsData(homonym)
+          },
+          error => {
+            console.error(`${definitionRequest.type}(s) request failed: ${error}`)
+            definitionRequest.isCompleted = true
+            this.appendMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"<br>`)
+            if (definitionRequests.every(request => request.isCompleted)) {
+              this.appendMessage(`<strong>All lexical data is available now</strong><br>`)
+            }
+          }
+        )
+      }
+
       return State.emptyValue(state)
     } catch (error) {
       let errorValue = State.getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
@@ -213,28 +251,7 @@ export default class ContentProcess {
     }
   }
 
-  displayWordData (lexicalData) {
-    this.panel.clearContent()
-    let shortDefsText = ''
-    for (let lexeme of lexicalData.homonym.lexemes) {
-      if (lexeme.meaning.shortDefs.length > 0) {
-        this.panel.contentAreas.shortDefinitions.setContent(lexeme)
-        shortDefsText += this.formatShortDefinitions(lexeme)
-      }
-
-      if (lexeme.meaning.fullDefs.length > 0) {
-        this.panel.contentAreas.fullDefinitions.setContent(lexeme)
-      }
-    }
-
-    this.updateInflectionTable(lexicalData)
-
-    // Pouplate a popup
-    this.vueInstance.panel = this.panel
-    this.vueInstance.popupTitle = `${lexicalData.homonym.targetWord}`
-
-    this.vueInstance.popupContent = decodeURIComponent(shortDefsText)
-
+  openUI () {
     if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
       this.panel.open()
     } else {
@@ -243,32 +260,30 @@ export default class ContentProcess {
     }
   }
 
-  updateDefinitionsData (homonym) {
+  clearUI () {
     this.panel.clearContent()
+    this.vueInstance.popupTitle = ''
+    this.vueInstance.popupContent = ''
+  }
+
+  updateDefinitionsData (homonym) {
+    this.panel.contentAreas.shortDefinitions.clearContent()
+    this.panel.contentAreas.fullDefinitions.clearContent()
     let shortDefsText = ''
     for (let lexeme of homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
-        this.panel.contentAreas.shortDefinitions.setContent(lexeme)
+        this.panel.contentAreas.shortDefinitions.appendContent(lexeme)
         shortDefsText += this.formatShortDefinitions(lexeme)
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {
-        this.panel.contentAreas.fullDefinitions.setContent(lexeme)
+        this.panel.contentAreas.fullDefinitions.appendContent(lexeme)
       }
     }
 
     // Pouplate a popup
-    this.vueInstance.panel = this.panel
     this.vueInstance.popupTitle = `${homonym.targetWord}`
-
-    this.vueInstance.popupContent = decodeURIComponent(shortDefsText)
-
-    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-      this.panel.open()
-    } else {
-      if (this.panel.isOpened) { this.panel.close() }
-      this.vueInstance.$modal.show('popup')
-    }
+    this.vueInstance.popupContent = shortDefsText
   }
 
   updateInflectionsData (lexicalData) {
@@ -276,19 +291,18 @@ export default class ContentProcess {
   }
 
   showMessage (message) {
-    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-      if (!this.panel.isOpened) { this.panel.open() }
-      this.panel.showMessage(message)
-    } else {
-      if (this.panel.isOpened) { this.panel.close() }
-      this.vueInstance.$modal.show('popup')
-      this.vueInstance.messageContent = message
-    }
+    this.panel.showMessage(message)
+    this.vueInstance.messageContent = message
   }
 
   appendMessage (message) {
-    if (!this.panel.isOpened) { this.panel.open() }
-    this.panel.contentAreas.messages.appendContent(message)
+    this.panel.appendMessage(message)
+    this.vueInstance.messageContent += message
+  }
+
+  clearMessages () {
+    this.panel.clearMessages()
+    this.vueInstance.messageContent = ''
   }
 
   formatShortDefinitions (lexeme) {

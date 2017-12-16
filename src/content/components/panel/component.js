@@ -152,8 +152,15 @@ export default class Panel extends Component {
   }
 
   showMessage (messageHTML) {
-    this.clearContent()
     this.contentAreas.messages.setContent(messageHTML)
     this.tabGroups.contentTabs.activate('statusTab')
+  }
+
+  appendMessage (messageHTML) {
+    this.contentAreas.messages.appendContent(messageHTML)
+  }
+
+  clearMessages () {
+    this.contentAreas.messages.setContent('')
   }
 }

@@ -1,13 +1,20 @@
 const path = require('path')
 const webpack = require('webpack')
 
+const webpackCommonConfig = {
+  resolve: {
+    alias: {
+      // Below will force all imported modules with unresolved dependencies to use a single instance of that dependency
+      'alpheios-data-models': path.resolve(__dirname, '../../../node_modules/alpheios-data-models/dist/alpheios-data-models.js')
+    },
+    mainFields: ['moduleExternal', 'module', 'main']
+  },
+  devtool: 'source-map'
+}
+
 const webpackContentConfig = {
   context: path.resolve(__dirname, '../../../src/content'),
   entry: './content.js',
-  resolve: {
-    mainFields: ['moduleExternal', 'module', 'main']
-  },
-  devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, '../../../dist'),
     filename: 'content.js'
@@ -81,10 +88,6 @@ const webpackContentConfig = {
 const webpackBackgroundConfig = {
   context: path.resolve(__dirname, '../../../src/background'),
   entry: './background.js',
-  resolve: {
-    mainFields: ['moduleExternal', 'module', 'main']
-  },
-  devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, '../../../dist'),
     filename: 'background.js'
@@ -120,8 +123,8 @@ const webpackBackgroundConfig = {
 
 let build = function build () {
   webpack([
-    webpackBackgroundConfig,
-    webpackContentConfig
+    Object.assign(webpackBackgroundConfig, webpackCommonConfig),
+    Object.assign(webpackContentConfig, webpackCommonConfig)
   ], (err, stats) => {
     if (err) {
       console.error(err.stack || err)
