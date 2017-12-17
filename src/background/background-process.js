@@ -132,7 +132,7 @@ export default class BackgroundProcess {
     })
   };
 
-  handleOpenPanelRequest(tabID) {
+  handleOpenPanelRequest (tabID) {
     this.messagingService.sendRequestToTab(new OpenPanelRequest(), 10000, tabID).then(
       (message) => {
         this.tabs.get(tabID).panelStatus = message
@@ -143,7 +143,7 @@ export default class BackgroundProcess {
     )
   }
 
-  loadContent (tabID, options={activate:true, openPanel:true}) {
+  loadContent (tabID, options = {activate: true, openPanel: true}) {
     let polyfillScript = this.loadPolyfill(tabID)
     let contentScript = this.loadContentScript(tabID)
     let contentCSS = this.loadContentCSS(tabID)
@@ -151,8 +151,8 @@ export default class BackgroundProcess {
       console.log('Content script(s) has been loaded successfully or already present')
       this.tabs.set(tabID, new ContentTab(tabID, Statuses.ACTIVE, Statuses.PANEL_OPEN))
       BackgroundProcess.defaults.contentScriptLoaded = true
-      if (! options.activate) {
-        console.log("Deactiving after load")
+      if (!options.activate) {
+        console.log('Deactiving after load')
         this.deactivateContent(tabID)
       }
       if (options.openPanel) {
@@ -160,7 +160,7 @@ export default class BackgroundProcess {
       }
     }, (error) => {
       console.log(`Content script loading failed, ${error.message}`)
-      //throw new Error('Content script loading failed', error)
+      // throw new Error('Content script loading failed', error)
     })
   }
 
@@ -175,59 +175,27 @@ export default class BackgroundProcess {
     return tab.panelStatus
   }
 
-  async handleWordDataRequestStatefully (request, sender, state = undefined) {
-    let textSelector = TextSelector.readObject(request.body.textSelector)
-    let requestOptions = request.body.options
-    console.log(`Request for a "${textSelector.normalizedText}" word`)
-    let tabID = sender.tab.id
-
-    let homonym, lexicalData
-    try {
-      // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
-      ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
-      if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
-
-      lexicalData = this.langData.getSuffixes(homonym, state)
-    } catch (e) {
-      console.log(`Failure retrieving inflection data. ${e}`)
-    }
-
-    try {
-      for (let lexeme of homonym.lexemes) {
-        let shortDefs = await Lexicons.fetchShortDefs(lexeme.lemma, requestOptions)
-        console.log(`Retrieved short definitions:`, shortDefs)
-        lexeme.meaning.appendShortDefs(shortDefs)
-        let fullDefs = await Lexicons.fetchFullDefs(lexeme.lemma, requestOptions)
-        console.log(`Retrieved full definitions:`, fullDefs)
-        lexeme.meaning.appendFullDefs(fullDefs)
-      }
-      console.log(lexicalData)
-
-      let returnObject = this.sendResponseToTabStatefully(new WordDataResponse(request, lexicalData, Message.statuses.DATA_FOUND), tabID, state)
-      return State.emptyValue(returnObject.state)
-    } catch (error) {
-      let errorValue = State.getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
-      console.error(`Word data retrieval failed: ${errorValue}`)
-      let returnObject = this.sendResponseToTabStatefully(
-        new WordDataResponse(request, undefined, Message.statuses.NO_DATA_FOUND), tabID, State.getState(error)
-      )
-      return State.emptyValue(returnObject.state)
-    }
-  }
-
   static async getActiveTabID () {
     let tabs = await browser.tabs.query({ active: true })
     console.log(`Active tab ID is ${tabs[0].id}`)
     return tabs[0].id
   }
 
-  async tabUpdatedListener (tabID, changeInfo, tab) {
+  /**
+   * Called when tab is updated
+   * @param tabID
+   * @param changeInfo
+   * @param tab
+   * @return {Promise.<void>}
+   */
+  tabUpdatedListener (tabID, changeInfo, tab) {
     if (changeInfo.status === 'complete') {
       let wasLoaded = this.isContentLoaded(tabID)
       let wasActive = this.isContentActive(tabID)
       let panelOpen = this.isPanelOpen(tabID)
       if (wasLoaded) {
-        this.loadContent(tabID,{ activate: wasActive, openPanel: panelOpen } )
+        // If content script was loaded to that tab, restore it to the state it had before
+        this.loadContent(tabID, { activate: wasActive, openPanel: panelOpen })
       }
     }
   }

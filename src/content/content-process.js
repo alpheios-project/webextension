@@ -104,7 +104,7 @@ export default class ContentProcess {
     })
     this.modal = this.vueInstance.$modal
 
-    // Initialize a UIKit
+    // Initialize UIKit
     UIkit.use(UIkITIconts)
   }
 
@@ -311,13 +311,13 @@ export default class ContentProcess {
 
   openPanel () {
     this.panel.open()
-    this.messagingService.sendRequestToBg(new PanelStatusChangeRequest(true),this.settings.requestTimeout)
+    this.messagingService.sendMessageToBg(new PanelStatusChangeRequest(true), this.settings.requestTimeout)
   }
 
   closePanel () {
     this.panel.close()
     this.panelStatus = Statuses.PANEL_CLOSED
-    this.messagingService.sendRequestToBg(new PanelStatusChangeRequest(false),this.settings.requestTimeout)
+    this.messagingService.sendMessageToBg(new PanelStatusChangeRequest(false), this.settings.requestTimeout)
   }
 
   formatShortDefinitions (lexeme) {

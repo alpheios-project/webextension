@@ -80,7 +80,7 @@ export default class Service {
     browser.tabs.sendMessage(tabID, request).then(
       () => { console.log(`Successfully sent a request to a tab`) },
       (error) => {
-        console.error(`tabs.sendMessage() failed: ${error.message}`,error)
+        console.error(`tabs.sendMessage() failed: ${error.message}`, error)
         this.rejectRequest(request.ID, error)
       }
     )
@@ -88,7 +88,6 @@ export default class Service {
   }
 
   sendRequestToBg (request, timeout) {
-    console.log(request)
     let promise = this.registerRequest(request, timeout)
     browser.runtime.sendMessage(request).then(
       () => { console.log(`Successfully sent a request to a background`) },
@@ -127,5 +126,13 @@ export default class Service {
       this.messages.delete(requestID) // Remove request from a map
       console.log(`Map length is ${this.messages.size}`)
     }
+  }
+
+  sendMessageToTab (request, tabID) {
+    return browser.tabs.sendMessage(tabID, request)
+  }
+
+  sendMessageToBg (request) {
+    return browser.runtime.sendMessage(request)
   }
 }

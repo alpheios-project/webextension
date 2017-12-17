@@ -1852,17 +1852,28 @@ class Homonym {
   }
 
     /**
-     * Returns language of a homonym.
+     * Returns a language code of a homonym (ISO 639-3).
      * Homonym does not have a language property, only lemmas and inflections do. We assume that all lemmas
      * and inflections within the same homonym will have the same language, and we can determine a language
      * by using language property of the first lemma. We chan change this logic in the future if we'll need to.
      * @returns {string} A language code, as defined in the `languages` object.
      */
   get language () {
-    if (this.lexemes && this.lexemes[0] && this.lexemes[0].lemma && this.lexemes[0].lemma.language) {
-      return this.lexemes[0].lemma.language
+    return LanguageModelFactory.getLanguageCodeFromId(this.languageID)
+  }
+
+  /**
+   * Returns a language ID of a homonym.
+   * Homonym does not have a languageID property, only lemmas and inflections do. We assume that all lemmas
+   * and inflections within the same homonym will have the same language, and we can determine a language
+   * by using languageID property of the first lemma. We chan change this logic in the future if we'll need to.
+   * @returns {Symbol} A language ID, as defined in the `LANG_` constants.
+   */
+  get languageID () {
+    if (this.lexemes && this.lexemes[0] && this.lexemes[0].lemma && this.lexemes[0].lemma.languageID) {
+      return this.lexemes[0].lemma.languageID
     } else {
-      throw new Error('Homonym has not been initialized properly. Unable to obtain language information.')
+      throw new Error('Homonym has not been initialized properly. Unable to obtain language ID information.')
     }
   }
 }
@@ -2240,7 +2251,7 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(36);
+__webpack_require__(37);
 exports.setImmediate = setImmediate;
 exports.clearImmediate = clearImmediate;
 
@@ -2252,7 +2263,7 @@ exports.clearImmediate = clearImmediate;
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(50);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(51);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
 
 
@@ -2288,20 +2299,20 @@ contentProcess.initialize()
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_request_panel_status_change_request__ = __webpack_require__(17);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_status_response__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_panel_component__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_options_component__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_state__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__statuses__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__template_htmlf__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_options_component__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_state__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__statuses__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__template_htmlf__ = __webpack_require__(30);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue__ = __webpack_require__(36);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_vue_js_modal__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__vue_components_popup_vue__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__vue_components_popup_vue__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit__ = __webpack_require__(49);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(49);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(50);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit_icons__);
 /* global browser */
 
@@ -2409,7 +2420,7 @@ class ContentProcess {
     })
     this.modal = this.vueInstance.$modal
 
-    // Initialize a UIKit
+    // Initialize UIKit
     __WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit_icons___default.a)
   }
 
@@ -2616,13 +2627,13 @@ class ContentProcess {
 
   openPanel () {
     this.panel.open()
-    this.messagingService.sendRequestToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_request_panel_status_change_request__["a" /* default */](true),this.settings.requestTimeout)
+    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_request_panel_status_change_request__["a" /* default */](true), this.settings.requestTimeout)
   }
 
   closePanel () {
     this.panel.close()
     this.panelStatus = __WEBPACK_IMPORTED_MODULE_10__statuses__["a" /* default */].PANEL_CLOSED
-    this.messagingService.sendRequestToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_request_panel_status_change_request__["a" /* default */](false),this.settings.requestTimeout)
+    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_request_panel_status_change_request__["a" /* default */](false), this.settings.requestTimeout)
   }
 
   formatShortDefinitions (lexeme) {
@@ -2729,261 +2740,55 @@ class ContentProcess {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* unused harmony export InflectionData */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return LanguageData; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return dataSet; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return dataSet$1; });
-/* unused harmony export languages */
-/* unused harmony export LanguageDataset */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return LanguageData; });
-/* unused harmony export Suffix */
-/* unused harmony export Footnote */
-/* unused harmony export MatchData */
-/* unused harmony export ExtendedLanguageData */
-/* unused harmony export ExtendedGreekData */
-/* unused harmony export LexicalData */
-/* unused harmony export loadData */
-/* unused harmony export SelectedWord */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return Presenter; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(0);
 
 
 /**
- * Shared data structures and functions
+ * Detailed information about a match type.
  */
-
-const languages = {
-  type: 'language',
-  latin: 'lat',
-  greek: 'grc',
-  isAllowed (language) {
-    if (language === this.type) {
-      return false
-    } else {
-      return Object.values(this).includes(language)
-    }
-  }
-};
-
-/**
- * Stores inflection language data
- */
-class LanguageDataset {
-    /**
-     * Initializes a LanguageDataset.
-     * @param {string} language - A language of a data set, from an allowed languages list (see 'languages' object).
-     */
-  constructor (language) {
-    if (!language) {
-            // Language is not supported
-      throw new Error('Language data cannot be empty.')
-    }
-
-    if (!languages.isAllowed(language)) {
-            // Language is not supported
-      throw new Error('Language "' + language + '" is not supported.')
-    }
-    this.language = language;
-    this.suffixes = []; // An array of suffixes.
-    this.footnotes = []; // Footnotes
-  };
-
-    /**
-     * Each grammatical feature can be either a single or an array of Feature objects. The latter is the case when
-     * an ending can belong to several grammatical features at once (i.e. belong to both 'masculine' and
-     * 'feminine' genders
-     *
-     * @param {string | null} suffixValue - A text of a suffix. It is either a string or null if there is no suffix.
-     * @param {Feature[]} featureValue
-     * @return {Suffix} A newly added suffix value (can be used to add more data to the suffix).
-     */
-  addSuffix (suffixValue, featureValue, extendedLangData) {
-        // TODO: implement run-time error checking
-    let suffixItem = new Suffix(suffixValue);
-    suffixItem.extendedLangData = extendedLangData;
-
-        // Build all possible combinations of features
-    let multiValueFeatures = [];
-
-        // Go through all features provided
-    for (let feature of featureValue) {
-            // If this is a footnote. Footnotes should go in a flat array
-            // because we don't need to split by them
-      if (feature.type === __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote) {
-        suffixItem[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote] = suffixItem[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote] || [];
-        suffixItem[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote].push(feature.value);
-        continue
-      }
-
-            // If this ending has several grammatical feature values then they will be in an array
-      if (Array.isArray(feature)) {
-        if (feature.length > 0) {
-          if (feature[0]) {
-            let type = feature[0].type;
-                    // Store all multi-value features to create a separate copy of a a Suffix object for each of them
-            multiValueFeatures.push({type: type, features: feature});
-          } else {
-            console.log(feature);
-          }
-        } else {
-                    // Array is empty
-          throw new Error('An empty array is provided as a feature argument to the "addSuffix" method.')
-        }
-      } else {
-        suffixItem.features[feature.type] = feature.value;
-      }
-    }
-
-        // Create a copy of an Suffix object for each multi-value item
-    if (multiValueFeatures.length > 0) {
-      for (let featureGroup of multiValueFeatures) {
-        let endingItems = suffixItem.split(featureGroup.type, featureGroup.features);
-        this.suffixes = this.suffixes.concat(endingItems);
-      }
-    } else {
-      this.suffixes.push(suffixItem);
-    }
-  };
-
-    /**
-     * Stores a footnote item.
-     * @param {Feature} partOfSpeech - A part of speech this footnote belongs to
-     * @param {number} index - A footnote's index.
-     * @param {string} text - A footnote's text.
-     */
-  addFootnote (partOfSpeech, index, text) {
-    if (!index) {
-      throw new Error('Footnote index data should not be empty.')
-    }
-
-    if (!text) {
-      throw new Error('Footnote text data should not be empty.')
-    }
-
-    let footnote = new Footnote(index, text, partOfSpeech.value);
-    footnote.index = index;
-
-    this.footnotes.push(footnote);
-  };
-
-  getSuffixes (homonym) {
-        // Add support for languages
-    let result = new LexicalData(homonym);
-    let inflections = {};
-
-        // Find partial matches first, and then full among them
-
-        // TODO: do we ever need lemmas?
-    for (let lexema of homonym.lexemes) {
-      for (let inflection of lexema.inflections) {
-                // Group inflections by a part of speech
-        let partOfSpeech = inflection[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part];
-        if (!partOfSpeech) {
-          throw new Error('Part of speech data is missing in an inflection.')
-        }
-
-        if (!inflections.hasOwnProperty(partOfSpeech)) {
-          inflections[partOfSpeech] = [];
-        }
-        inflections[partOfSpeech].push(inflection);
-      }
-    }
-
-        // Scan for matches for all parts of speech separately
-    for (const partOfSpeech in inflections) {
-      if (inflections.hasOwnProperty(partOfSpeech)) {
-        let inflectionsGroup = inflections[partOfSpeech];
-
-        result[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].push(partOfSpeech);
-        result[partOfSpeech] = {};
-        result[partOfSpeech].suffixes = this.suffixes.reduce(this['reducer'].bind(this, inflectionsGroup), []);
-        result[partOfSpeech].footnotes = [];
-
-                // Create a set so all footnote indexes be unique
-        let footnotesIndex = new Set();
-                // Scan all selected suffixes to build a unique set of footnote indexes
-        for (let suffix of result[partOfSpeech].suffixes) {
-          if (suffix.hasOwnProperty(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote)) {
-                        // Footnote indexes are stored in an array
-            for (let index of suffix[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote]) {
-              footnotesIndex.add(index);
-            }
-          }
-        }
-                // Add footnote indexes and their texts to a result
-        for (let index of footnotesIndex) {
-          let footnote = this.footnotes.find(footnoteElement =>
-                        footnoteElement.index === index && footnoteElement[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part] === partOfSpeech
-                    );
-          result[partOfSpeech].footnotes.push({index: index, text: footnote.text});
-        }
-                // Sort footnotes according to their index numbers
-        result[partOfSpeech].footnotes.sort((a, b) => parseInt(a.index) - parseInt(b.index));
-      }
-    }
-
-    return result
+class MatchData {
+  constructor () {
+    this.suffixMatch = false; // Whether two suffixes are the same.
+    this.fullMatch = false; // Whether two suffixes and all grammatical features, including part of speech, are the same.
+    this.matchedFeatures = []; // How many features matches each other.
   }
 
-  reducer (inflections, accumulator, suffix) {
-    let result = this.matcher(inflections, suffix);
-    if (result) {
-      accumulator.push(result);
+  static readObject (jsonObject) {
+    let matchData = new MatchData();
+    matchData.suffixMatch = jsonObject.suffixMatch;
+    matchData.fullMatch = jsonObject.fullMatch;
+    for (let feature of jsonObject.matchedFeatures) {
+      matchData.matchedFeatures.push(feature);
     }
-    return accumulator
+    return matchData
   }
 }
 
-/**
- * Stores one or several language datasets, one for each language
- */
-class LanguageData {
-    /**
-     * Combines several language datasets for different languages. Allows to abstract away language data.
-     * This function is chainable.
-     * @param {LanguageDataset[]} languageData - Language datasets of different languages.
-     * @return {LanguageData} Self instance for chaining.
-     */
-  constructor (languageData) {
-    this.supportedLanguages = [];
-
-    if (languageData) {
-      for (let dataset of languageData) {
-        this[dataset.language] = dataset;
-        this.supportedLanguages.push(dataset.language);
-      }
-    }
-    return this
+class ExtendedLanguageData {
+  constructor () {
+    this._type = undefined; // This is a base class
   }
 
-    /**
-     * Loads data for all data sets.
-     * This function is chainable.
-     * @return {LanguageData} Self instance for chaining.
-     */
-  loadData () {
-    for (let language of this.supportedLanguages) {
-      try {
-        this[language].loadData();
-      } catch (e) {
-        console.log(e);
-      }
+  static types () {
+    return {
+      EXTENDED_GREEK_DATA: 'ExtendedGreekData'
     }
-    return this
   }
 
-    /**
-     * Finds matching suffixes for a homonym.
-     * @param {Homonym} homonym - A homonym for which matching suffixes must be found.
-     * @return {LexicalData} A return value of an inflection query.
-     */
-  getSuffixes (homonym) {
-    let language = homonym.language;
-    if (this.supportedLanguages.includes(language)) {
-      return this[homonym.language].getSuffixes(homonym)
+  /* static readObject (jsonObject) {
+    if (!jsonObject._type) {
+      throw new Error('Extended language data has no type information. Unable to deserialize.')
+    } else if (jsonObject._type === ExtendedLanguageData.types().EXTENDED_GREEK_DATA) {
+      return ExtendedGreekData.readObject(jsonObject)
     } else {
-      // throw new Error(`"${language}" language data is missing. Unable to get suffix data.`)
-      return new LexicalData(homonym)
+      throw new Error(`Unsupported extended language data of type "${jsonObject._type}".`)
     }
-  }
+  } */
 }
 
 /**
@@ -2993,10 +2798,10 @@ class LanguageData {
  * a single value, or 'masculine' and 'feminine'. That's why all values are stored in an array.
  */
 class Suffix {
-    /**
-     * Initializes a Suffix object.
-     * @param {string | null} suffixValue - A suffix text or null if suffix is empty.
-     */
+  /**
+   * Initializes a Suffix object.
+   * @param {string | null} suffixValue - A suffix text or null if suffix is empty.
+   */
   constructor (suffixValue) {
     if (suffixValue === undefined) {
       throw new Error('Suffix should not be empty.')
@@ -3005,12 +2810,12 @@ class Suffix {
     this.features = {};
     this.featureGroups = {};
 
-        /*
-        Extended language data stores additional suffix information that is specific for a particular language.
-        It uses the following schema:
-        {string} language(key): {object} extended language data. This object is specific for each language
-        and is defined in a language model.
-         */
+    /*
+    Extended language data stores additional suffix information that is specific for a particular language.
+    It uses the following schema:
+    {string} language(key): {object} extended language data. This object is specific for each language
+    and is defined in a language model.
+     */
     this.extendedLangData = {};
     this.match = undefined;
   }
@@ -3056,12 +2861,12 @@ class Suffix {
     return suffix
   }
 
-    /**
-     * Returns a copy of itself. Used in splitting suffixes with multi-value features.
-     * @returns {Suffix}
-     */
+  /**
+   * Returns a copy of itself. Used in splitting suffixes with multi-value features.
+   * @returns {Suffix}
+   */
   clone () {
-        // TODO: do all-feature two-level cloning
+    // TODO: do all-feature two-level cloning
     let clone = new Suffix(this.value);
     for (const key in this.features) {
       if (this.features.hasOwnProperty(key)) {
@@ -3086,13 +2891,13 @@ class Suffix {
     return clone
   };
 
-    /**
-     * Checks if suffix has a feature that is a match to the one provided.
-     * @param {string} featureType - Sets a type of a feature we need to match with the ones stored inside the suffix
-     * @param {string[]} featureValues - A list of feature values we need to match with the ones stored inside the suffix
-     * @returns {string | undefined} - If provided feature is a match, returns a first feature that matched.
-     * If no match found, return undefined.
-     */
+  /**
+   * Checks if suffix has a feature that is a match to the one provided.
+   * @param {string} featureType - Sets a type of a feature we need to match with the ones stored inside the suffix
+   * @param {string[]} featureValues - A list of feature values we need to match with the ones stored inside the suffix
+   * @returns {string | undefined} - If provided feature is a match, returns a first feature that matched.
+   * If no match found, return undefined.
+   */
   featureMatch (featureType, featureValues) {
     if (this.features.hasOwnProperty(featureType)) {
       for (let value of featureValues) {
@@ -3104,10 +2909,10 @@ class Suffix {
     return undefined
   }
 
-    /**
-     * Find feature groups in Suffix.featureGroups that are the same between suffixes provided
-     * @param suffixes
-     */
+  /**
+   * Find feature groups in Suffix.featureGroups that are the same between suffixes provided
+   * @param suffixes
+   */
   static getCommonGroups (suffixes) {
     let features = Object.keys(suffixes[0].featureGroups);
 
@@ -3121,23 +2926,23 @@ class Suffix {
     return commonGroups
   }
 
-    /**
-     * Finds out if an suffix is in the same group with some other suffix. The other suffix is provided as a function argument.
-     * Two suffixes are considered to be in the same group if they are:
-     * a. Have at least one common group in featureGroups;
-     * b. Have the same suffix
-     * c. Have values of all features the same except for those that belong to a common group(s)
-     * d. Values of the common group features must be complementary. Here is an example:
-     * Let's say a 'gender' group can have values such as 'masculine' and 'feminine'. Then suffixes will be combined
-     * only if gender value of one suffix is 'masculine' and the other value is 'feminine'. If both suffixes have the same
-     * either 'masculine' or 'feminine' value, they sill not be combined as are not being complementary.
-     * @param {Suffix} suffix - An other suffix that we compare this suffix with.
-     * @returns {boolean} - True if both suffixes are in the same group, false otherwise.
-     */
+  /**
+   * Finds out if an suffix is in the same group with some other suffix. The other suffix is provided as a function argument.
+   * Two suffixes are considered to be in the same group if they are:
+   * a. Have at least one common group in featureGroups;
+   * b. Have the same suffix
+   * c. Have values of all features the same except for those that belong to a common group(s)
+   * d. Values of the common group features must be complementary. Here is an example:
+   * Let's say a 'gender' group can have values such as 'masculine' and 'feminine'. Then suffixes will be combined
+   * only if gender value of one suffix is 'masculine' and the other value is 'feminine'. If both suffixes have the same
+   * either 'masculine' or 'feminine' value, they sill not be combined as are not being complementary.
+   * @param {Suffix} suffix - An other suffix that we compare this suffix with.
+   * @returns {boolean} - True if both suffixes are in the same group, false otherwise.
+   */
   isInSameGroupWith (suffix) {
     let commonGroups = Suffix.getCommonGroups([this, suffix]);
     if (commonGroups.length < 1) {
-            // If elements do not have common groups in Suffix.featureGroups then they are not in the same group
+      // If elements do not have common groups in Suffix.featureGroups then they are not in the same group
       return false
     }
 
@@ -3146,21 +2951,21 @@ class Suffix {
 
     let result = true;
     result = result && this.value === suffix.value;
-        // If suffixes does not match don't check any further
+    // If suffixes does not match don't check any further
     if (!result) {
       return false
     }
 
-        // Check all features to be a match, except those that are possible group values
+    // Check all features to be a match, except those that are possible group values
     for (let feature of Object.keys(this.features)) {
       if (commonGroups.indexOf(feature) >= 0) {
         commonValues[feature].add(suffix.features[feature]);
 
-                // Do not compare common groups
+        // Do not compare common groups
         continue
       }
       result = result && this.features[feature] === suffix.features[feature];
-            // If feature mismatch discovered, do not check any further
+      // If feature mismatch discovered, do not check any further
       if (!result) {
         return false
       }
@@ -3173,14 +2978,14 @@ class Suffix {
     return result
   }
 
-    /**
-     * Splits a suffix that has multiple values of one or more grammatical features into an array of Suffix objects
-     * with each Suffix object having only a single value of those grammatical features. Initial multiple values
-     * are stored in a featureGroups[featureType] property as an array of values.
-     * @param {string} featureType - A type of a feature
-     * @param {Feature[]} featureValues - Multiple grammatical feature values.
-     * @returns {Suffix[]} - An array of suffixes.
-     */
+  /**
+   * Splits a suffix that has multiple values of one or more grammatical features into an array of Suffix objects
+   * with each Suffix object having only a single value of those grammatical features. Initial multiple values
+   * are stored in a featureGroups[featureType] property as an array of values.
+   * @param {string} featureType - A type of a feature
+   * @param {Feature[]} featureValues - Multiple grammatical feature values.
+   * @returns {Suffix[]} - An array of suffixes.
+   */
   split (featureType, featureValues) {
     let copy = this.clone();
     let values = [];
@@ -3197,15 +3002,15 @@ class Suffix {
     return suffixItems
   };
 
-    /**
-     * Combines suffixes that are in the same group together. Suffixes to be combined must have their values listed
-     * in an array stored as featureGroups[featureType] property.
-     * @param {Suffix[]} suffixes - An array of suffixes to be combined.
-     * @param {function} mergeFunction - A function that will merge two suffixes. By default it uses Suffix.merge,
-     * but provides a way to supply a presentation specific functions. Please see Suffix.merge for more
-     * information on function format.
-     * @returns {Suffix[]} An array of suffixes with some items possibly combined together.
-     */
+  /**
+   * Combines suffixes that are in the same group together. Suffixes to be combined must have their values listed
+   * in an array stored as featureGroups[featureType] property.
+   * @param {Suffix[]} suffixes - An array of suffixes to be combined.
+   * @param {function} mergeFunction - A function that will merge two suffixes. By default it uses Suffix.merge,
+   * but provides a way to supply a presentation specific functions. Please see Suffix.merge for more
+   * information on function format.
+   * @returns {Suffix[]} An array of suffixes with some items possibly combined together.
+   */
   static combine (suffixes, mergeFunction = Suffix.merge) {
     let matchFound = false;
     let matchIdx;
@@ -3213,12 +3018,12 @@ class Suffix {
     do {
       matchFound = false;
 
-            /*
-            Go through an array of suffixes end compare each suffix with each other (two-way compare) one time. \
-            If items are in the same group, merge two suffixes, break out of a loop,
-            and remove one matching suffix (the second one) from an array.
-            Then repeat on a modified array until no further matches found.
-             */
+      /*
+      Go through an array of suffixes end compare each suffix with each other (two-way compare) one time. \
+      If items are in the same group, merge two suffixes, break out of a loop,
+      and remove one matching suffix (the second one) from an array.
+      Then repeat on a modified array until no further matches found.
+       */
       for (let i = 0; i < suffixes.length; i++) {
         if (matchFound) {
           continue
@@ -3240,16 +3045,16 @@ class Suffix {
     return suffixes
   }
 
-    /**
-     * This function provide a logic of to merge data of two suffix object that were previously split together.
-     * @param {Suffix} suffixA - A first of two suffixes to merge (to be returned).
-     * @param {Suffix} suffixB - A second ending to merge (to be discarded).
-     * @returns {Suffix} A modified value of ending A.
-     */
+  /**
+   * This function provide a logic of to merge data of two suffix object that were previously split together.
+   * @param {Suffix} suffixA - A first of two suffixes to merge (to be returned).
+   * @param {Suffix} suffixB - A second ending to merge (to be discarded).
+   * @returns {Suffix} A modified value of ending A.
+   */
   static merge (suffixA, suffixB) {
     let commonGroups = Suffix.getCommonGroups([suffixA, suffixB]);
     for (let type of commonGroups) {
-            // Combine values using a comma separator. Can do anything else if we need to.
+      // Combine values using a comma separator. Can do anything else if we need to.
       suffixA.features[type] = suffixA.features[type] + ', ' + suffixB.features[type];
     }
     return suffixA
@@ -3272,47 +3077,2117 @@ class Footnote {
 }
 
 /**
- * Detailed information about a match type.
+ * A return value for inflection queries
  */
-class MatchData {
-  constructor () {
-    this.suffixMatch = false; // Whether two suffixes are the same.
-    this.fullMatch = false; // Whether two suffixes and all grammatical features, including part of speech, are the same.
-    this.matchedFeatures = []; // How many features matches each other.
+class InflectionData {
+  constructor (language) {
+    // this.homonym = homonym
+    this.language = language;
+    this[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part] = []; // What parts of speech are represented by this object.
   }
 
   static readObject (jsonObject) {
-    let matchData = new MatchData();
-    matchData.suffixMatch = jsonObject.suffixMatch;
-    matchData.fullMatch = jsonObject.fullMatch;
-    for (let feature of jsonObject.matchedFeatures) {
+    // let homonym = Models.Homonym.readObject(jsonObject.homonym)
+
+    let lexicalData = new InflectionData();
+    lexicalData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part] = jsonObject[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part];
+
+    for (let part of lexicalData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part]) {
+      let partData = jsonObject[part];
+      lexicalData[part] = {};
+
+      if (partData.suffixes) {
+        lexicalData[part].suffixes = [];
+        for (let suffix of partData.suffixes) {
+          lexicalData[part].suffixes.push(Suffix.readObject(suffix));
+        }
+      }
+
+      if (partData.footnotes) {
+        lexicalData[part].footnotes = [];
+        for (let footnote of partData.footnotes) {
+          lexicalData[part].footnotes.push(Footnote.readObject(footnote));
+        }
+      }
+    }
+
+    return lexicalData
+  }
+}
+
+/**
+ * Stores one or several language datasets, one for each language
+ */
+class LanguageData {
+  /**
+   * Combines several language datasets for different languages. Allows to abstract away language data.
+   * This function is chainable.
+   * @param {LanguageDataset[]} languageData - Language datasets of different languages.
+   * @return {LanguageData} Self instance for chaining.
+   */
+  constructor (languageData) {
+    this.supportedLanguages = [];
+
+    if (languageData) {
+      for (let dataset of languageData) {
+        this[dataset.language] = dataset;
+        this.supportedLanguages.push(dataset.language);
+      }
+    }
+    return this
+  }
+
+  /**
+   * Loads data for all data sets.
+   * This function is chainable.
+   * @return {LanguageData} Self instance for chaining.
+   */
+  loadData () {
+    for (let language of this.supportedLanguages) {
+      try {
+        this[language].loadData();
+      } catch (e) {
+        console.log(e);
+      }
+    }
+    return this
+  }
+
+  /**
+   * Finds matching suffixes for a homonym.
+   * @param {Homonym} homonym - A homonym for which matching suffixes must be found.
+   * @return {InflectionData} A return value of an inflection query.
+   */
+  getSuffixes (homonym) {
+    let language = homonym.language;
+    if (this.supportedLanguages.includes(language)) {
+      return this[homonym.language].getSuffixes(homonym)
+    } else {
+      // throw new Error(`"${language}" language data is missing. Unable to get suffix data.`)
+      return new InflectionData(homonym)
+    }
+  }
+}
+
+const languages = {
+  type: 'language',
+  latin: 'lat',
+  greek: 'grc',
+  isAllowed (language) {
+    if (language === this.type) {
+      return false
+    } else {
+      return Object.values(this).includes(language)
+    }
+  }
+};
+
+/**
+ * Stores inflection language data
+ */
+class LanguageDataset {
+  /**
+   * Initializes a LanguageDataset.
+   * @param {string} language - A language of a data set, from an allowed languages list (see 'languages' object).
+   */
+  constructor (language) {
+    if (!language) {
+      // Language is not supported
+      throw new Error('Language data cannot be empty.')
+    }
+
+    if (!languages.isAllowed(language)) {
+      // Language is not supported
+      throw new Error('Language "' + language + '" is not supported.')
+    }
+    this.language = language;
+    this.suffixes = []; // An array of suffixes.
+    this.footnotes = []; // Footnotes
+  };
+
+  /**
+   * Each grammatical feature can be either a single or an array of Feature objects. The latter is the case when
+   * an ending can belong to several grammatical features at once (i.e. belong to both 'masculine' and
+   * 'feminine' genders
+   *
+   * @param {string | null} suffixValue - A text of a suffix. It is either a string or null if there is no suffix.
+   * @param {Feature[]} featureValue
+   * @return {Suffix} A newly added suffix value (can be used to add more data to the suffix).
+   */
+  addSuffix (suffixValue, featureValue, extendedLangData) {
+    // TODO: implement run-time error checking
+    let suffixItem = new Suffix(suffixValue);
+    suffixItem.extendedLangData = extendedLangData;
+
+    // Build all possible combinations of features
+    let multiValueFeatures = [];
+
+    // Go through all features provided
+    for (let feature of featureValue) {
+      // If this is a footnote. Footnotes should go in a flat array
+      // because we don't need to split by them
+      if (feature.type === __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote) {
+        suffixItem[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote] = suffixItem[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote] || [];
+        suffixItem[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote].push(feature.value);
+        continue
+      }
+
+      // If this ending has several grammatical feature values then they will be in an array
+      if (Array.isArray(feature)) {
+        if (feature.length > 0) {
+          if (feature[0]) {
+            let type = feature[0].type;
+            // Store all multi-value features to create a separate copy of a a Suffix object for each of them
+            multiValueFeatures.push({type: type, features: feature});
+          } else {
+            console.log(feature);
+          }
+        } else {
+          // Array is empty
+          throw new Error('An empty array is provided as a feature argument to the "addSuffix" method.')
+        }
+      } else {
+        suffixItem.features[feature.type] = feature.value;
+      }
+    }
+
+    // Create a copy of an Suffix object for each multi-value item
+    if (multiValueFeatures.length > 0) {
+      for (let featureGroup of multiValueFeatures) {
+        let endingItems = suffixItem.split(featureGroup.type, featureGroup.features);
+        this.suffixes = this.suffixes.concat(endingItems);
+      }
+    } else {
+      this.suffixes.push(suffixItem);
+    }
+  };
+
+  /**
+   * Stores a footnote item.
+   * @param {Feature} partOfSpeech - A part of speech this footnote belongs to
+   * @param {number} index - A footnote's index.
+   * @param {string} text - A footnote's text.
+   */
+  addFootnote (partOfSpeech, index, text) {
+    if (!index) {
+      throw new Error('Footnote index data should not be empty.')
+    }
+
+    if (!text) {
+      throw new Error('Footnote text data should not be empty.')
+    }
+
+    let footnote = new Footnote(index, text, partOfSpeech.value);
+    footnote.index = index;
+
+    this.footnotes.push(footnote);
+  };
+
+  getSuffixes (homonym) {
+    // Add support for languages
+    let result = new InflectionData(homonym.language);
+    let inflections = {};
+
+    // Find partial matches first, and then full among them
+
+    // TODO: do we ever need lemmas?
+    for (let lexema of homonym.lexemes) {
+      for (let inflection of lexema.inflections) {
+        // Group inflections by a part of speech
+        let partOfSpeech = inflection[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part];
+        if (!partOfSpeech) {
+          throw new Error('Part of speech data is missing in an inflection.')
+        }
+
+        if (!inflections.hasOwnProperty(partOfSpeech)) {
+          inflections[partOfSpeech] = [];
+        }
+        inflections[partOfSpeech].push(inflection);
+      }
+    }
+
+    // Scan for matches for all parts of speech separately
+    for (const partOfSpeech in inflections) {
+      if (inflections.hasOwnProperty(partOfSpeech)) {
+        let inflectionsGroup = inflections[partOfSpeech];
+
+        result[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].push(partOfSpeech);
+        result[partOfSpeech] = {};
+        result[partOfSpeech].suffixes = this.suffixes.reduce(this['reducer'].bind(this, inflectionsGroup), []);
+        result[partOfSpeech].footnotes = [];
+
+        // Create a set so all footnote indexes be unique
+        let footnotesIndex = new Set();
+        // Scan all selected suffixes to build a unique set of footnote indexes
+        for (let suffix of result[partOfSpeech].suffixes) {
+          if (suffix.hasOwnProperty(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote)) {
+            // Footnote indexes are stored in an array
+            for (let index of suffix[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote]) {
+              footnotesIndex.add(index);
+            }
+          }
+        }
+        // Add footnote indexes and their texts to a result
+        for (let index of footnotesIndex) {
+          let footnote = this.footnotes.find(footnoteElement =>
+            footnoteElement.index === index && footnoteElement[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part] === partOfSpeech
+          );
+          result[partOfSpeech].footnotes.push({index: index, text: footnote.text});
+        }
+        // Sort footnotes according to their index numbers
+        result[partOfSpeech].footnotes.sort((a, b) => parseInt(a.index) - parseInt(b.index));
+      }
+    }
+
+    return result
+  }
+
+  reducer (inflections, accumulator, suffix) {
+    let result = this.matcher(inflections, suffix);
+    if (result) {
+      accumulator.push(result);
+    }
+    return accumulator
+  }
+}
+
+var nounSuffixesCSV = "Ending,Number,Case,Declension,Gender,Type,Footnote\r\na,singular,nominative,1st,feminine,regular,\r\nē,singular,nominative,1st,feminine,irregular,\r\nēs,singular,nominative,1st,feminine,irregular,\r\nā,singular,nominative,1st,feminine,irregular,7\r\nus,singular,nominative,2nd,masculine feminine,regular,\r\ner,singular,nominative,2nd,masculine feminine,regular,\r\nir,singular,nominative,2nd,masculine feminine,regular,\r\n-,singular,nominative,2nd,masculine feminine,irregular,\r\nos,singular,nominative,2nd,masculine feminine,irregular,1\r\nōs,singular,nominative,2nd,masculine feminine,irregular,\r\nō,singular,nominative,2nd,masculine feminine,irregular,7\r\num,singular,nominative,2nd,neuter,regular,\r\nus,singular,nominative,2nd,neuter,irregular,10\r\non,singular,nominative,2nd,neuter,irregular,7\r\n-,singular,nominative,3rd,masculine feminine,regular,\r\nos,singular,nominative,3rd,masculine feminine,irregular,\r\nōn,singular,nominative,3rd,masculine feminine,irregular,7\r\n-,singular,nominative,3rd,neuter,regular,\r\nus,singular,nominative,4th,masculine feminine,regular,\r\nū,singular,nominative,4th,neuter,regular,\r\nēs,singular,nominative,5th,feminine,regular,\r\nae,singular,genitive,1st,feminine,regular,\r\nāī,singular,genitive,1st,feminine,irregular,1\r\nās,singular,genitive,1st,feminine,irregular,2\r\nēs,singular,genitive,1st,feminine,irregular,7\r\nī,singular,genitive,2nd,masculine feminine,regular,\r\nō,singular,genitive,2nd,masculine feminine,irregular,7\r\nī,singular,genitive,2nd,neuter,regular,\r\nis,singular,genitive,3rd,masculine feminine,regular,\r\nis,singular,genitive,3rd,neuter,regular,\r\nūs,singular,genitive,4th,masculine feminine,regular,\r\nuis,singular,genitive,4th,masculine feminine,irregular,1\r\nuos,singular,genitive,4th,masculine feminine,irregular,1\r\nī,singular,genitive,4th,masculine feminine,irregular,15\r\nūs,singular,genitive,4th,neuter,regular,\r\nēī,singular,genitive,5th,feminine,regular,\r\neī,singular,genitive,5th,feminine,regular,\r\nī,singular,genitive,5th,feminine,irregular,\r\nē,singular,genitive,5th,feminine,irregular,\r\nēs,singular,genitive,5th,feminine,irregular,6\r\nae,singular,dative,1st,feminine,regular,\r\nāī,singular,dative,1st,feminine,irregular,1\r\nō,singular,dative,2nd,masculine feminine,regular,\r\nō,singular,dative,2nd,neuter,regular,\r\nī,singular,dative,3rd,masculine feminine,regular,\r\ne,singular,dative,3rd,masculine feminine,irregular,17\r\nī,singular,dative,3rd,neuter,regular,\r\nūī,singular,dative,4th,masculine feminine,regular,\r\nū,singular,dative,4th,masculine feminine,regular,\r\nū,singular,dative,4th,neuter,regular,\r\nēī,singular,dative,5th,feminine,regular,\r\neī,singular,dative,5th,feminine,regular,\r\nī,singular,dative,5th,feminine,irregular,\r\nē,singular,dative,5th,feminine,irregular,6\r\nam,singular,accusative,1st,feminine,regular,\r\nēn,singular,accusative,1st,feminine,irregular,\r\nān,singular,accusative,1st,feminine,irregular,7\r\num,singular,accusative,2nd,masculine feminine,regular,\r\nom,singular,accusative,2nd,masculine feminine,irregular,1\r\nōn,singular,accusative,2nd,masculine feminine,irregular,7\r\num,singular,accusative,2nd,neuter,regular,\r\nus,singular,accusative,2nd,neuter,irregular,10\r\non,singular,accusative,2nd,neuter,irregular,7\r\nem,singular,accusative,3rd,masculine feminine,regular,\r\nim,singular,accusative,3rd,masculine feminine,irregular,11\r\na,singular,accusative,3rd,masculine feminine,irregular,7\r\n-,singular,accusative,3rd,neuter,regular,\r\num,singular,accusative,4th,masculine feminine,regular,\r\nū,singular,accusative,4th,neuter,regular,\r\nem,singular,accusative,5th,feminine,regular,\r\nā,singular,ablative,1st,feminine,regular,\r\nād,singular,ablative,1st,feminine,irregular,5\r\nē,singular,ablative,1st,feminine,irregular,7\r\nō,singular,ablative,2nd,masculine feminine,regular,\r\nōd,singular,ablative,2nd,masculine feminine,irregular,1\r\nō,singular,ablative,2nd,neuter,regular,\r\ne,singular,ablative,3rd,masculine feminine,regular,\r\nī,singular,ablative,3rd,masculine feminine,irregular,11\r\ne,singular,ablative,3rd,neuter,regular,\r\nī,singular,ablative,3rd,neuter,irregular,11\r\nū,singular,ablative,4th,masculine feminine,regular,\r\nūd,singular,ablative,4th,masculine feminine,irregular,1\r\nū,singular,ablative,4th,neuter,regular,\r\nē,singular,ablative,5th,feminine,regular,\r\nae,singular,locative,1st,feminine,regular,\r\nō,singular,locative,2nd,masculine feminine,regular,\r\nō,singular,locative,2nd,neuter,regular,\r\ne,singular,locative,3rd,masculine feminine,regular,\r\nī,singular,locative,3rd,masculine feminine,regular,\r\nī,singular,locative,3rd,neuter,regular,\r\nū,singular,locative,4th,masculine feminine,regular,\r\nū,singular,locative,4th,neuter,regular,\r\nē,singular,locative,5th,feminine,regular,\r\na,singular,vocative,1st,feminine,regular,\r\nē,singular,vocative,1st,feminine,irregular,\r\nā,singular,vocative,1st,feminine,irregular,7\r\ne,singular,vocative,2nd,masculine feminine,regular,\r\ner,singular,vocative,2nd,masculine feminine,regular,\r\nir,singular,vocative,2nd,masculine feminine,regular,\r\n-,singular,vocative,2nd,masculine feminine,irregular,\r\nī,singular,vocative,2nd,masculine feminine,irregular,8\r\nōs,singular,vocative,2nd,masculine feminine,irregular,\r\ne,singular,vocative,2nd,masculine feminine,irregular,7\r\num,singular,vocative,2nd,neuter,regular,\r\non,singular,vocative,2nd,neuter,irregular,7\r\n-,singular,vocative,3rd,masculine feminine,regular,\r\n-,singular,vocative,3rd,neuter,regular,\r\nus,singular,vocative,4th,masculine feminine,regular,\r\nū,singular,vocative,4th,neuter,regular,\r\nēs,singular,vocative,5th,feminine,regular,\r\nae,plural,nominative,1st,feminine,regular,\r\nī,plural,nominative,2nd,masculine feminine,regular,\r\noe,plural,nominative,2nd,masculine feminine,irregular,7 9\r\na,plural,nominative,2nd,neuter,regular,\r\nēs,plural,nominative,3rd,masculine feminine,regular,\r\nes,plural,nominative,3rd,masculine feminine,irregular,7\r\na,plural,nominative,3rd,neuter,regular,\r\nia,plural,nominative,3rd,neuter,irregular,11\r\nūs,plural,nominative,4th,masculine feminine,regular,\r\nua,plural,nominative,4th,neuter,regular,\r\nēs,plural,nominative,5th,feminine,regular,\r\nārum,plural,genitive,1st,feminine,regular,\r\num,plural,genitive,1st,feminine,irregular,3\r\nōrum,plural,genitive,2nd,masculine feminine,regular,\r\num,plural,genitive,2nd,masculine feminine,irregular,\r\nom,plural,genitive,2nd,masculine feminine,irregular,8\r\nōrum,plural,genitive,2nd,neuter,regular,\r\num,plural,genitive,2nd,neuter,irregular,\r\num,plural,genitive,3rd,masculine feminine,regular,\r\nium,plural,genitive,3rd,masculine feminine,irregular,11\r\nōn,plural,genitive,3rd,masculine feminine,irregular,7\r\num,plural,genitive,3rd,neuter,regular,\r\nium,plural,genitive,3rd,neuter,irregular,11\r\nuum,plural,genitive,4th,masculine feminine,regular,\r\num,plural,genitive,4th,masculine feminine,irregular,16\r\nuom,plural,genitive,4th,masculine feminine,irregular,1\r\nuum,plural,genitive,4th,neuter,regular,\r\nērum,plural,genitive,5th,feminine,regular,\r\nīs,plural,dative,1st,feminine,regular,\r\nābus,plural,dative,1st,feminine,irregular,4\r\neis,plural,dative,1st,feminine,irregular,6\r\nīs,plural,dative,2nd,masculine feminine,regular,\r\nīs,plural,dative,2nd,neuter,regular,\r\nibus,plural,dative,3rd,masculine feminine,regular,\r\nibus,plural,dative,3rd,neuter,regular,\r\nibus,plural,dative,4th,masculine feminine,regular,\r\nubus,plural,dative,4th,masculine feminine,irregular,14\r\nibus,plural,dative,4th,neuter,regular,\r\nēbus,plural,dative,5th,feminine,regular,\r\nās,plural,accusative,1st,feminine,regular,\r\nōs,plural,accusative,2nd,masculine feminine,regular,\r\na,plural,accusative,2nd,neuter,regular,\r\nēs,plural,accusative,3rd,masculine feminine,regular,\r\nīs,plural,accusative,3rd,masculine feminine,irregular,11\r\nas,plural,accusative,3rd,masculine feminine,irregular,7\r\na,plural,accusative,3rd,neuter,regular,\r\nia,plural,accusative,3rd,neuter,irregular,11\r\nūs,plural,accusative,4th,masculine feminine,regular,\r\nua,plural,accusative,4th,neuter,regular,\r\nēs,plural,accusative,5th,feminine,regular,\r\nīs,plural,ablative,1st,feminine,regular,\r\nābus,plural,ablative,1st,feminine,irregular,4\r\neis,plural,ablative,1st,feminine,irregular,6\r\nīs,plural,ablative,2nd,masculine feminine,regular,\r\nīs,plural,ablative,2nd,neuter,regular,\r\nibus,plural,ablative,3rd,masculine feminine,regular,\r\nibus,plural,ablative,3rd,neuter,regular,\r\nibus,plural,ablative,4th,masculine feminine,regular,\r\nubus,plural,ablative,4th,masculine feminine,irregular,14\r\nibus,plural,ablative,4th,neuter,regular,\r\nēbus,plural,ablative,5th,feminine,regular,\r\nīs,plural,locative,1st,feminine,regular,\r\nīs,plural,locative,2nd,masculine feminine,regular,\r\nīs,plural,locative,2nd,neuter,regular,\r\nibus,plural,locative,3rd,masculine feminine,regular,\r\nibus,plural,locative,3rd,neuter,regular,\r\nibus,plural,locative,4th,masculine feminine,regular,\r\nibus,plural,locative,4th,neuter,regular,\r\nēbus,plural,locative,5th,feminine,regular,\r\nae,plural,vocative,1st,feminine,regular,\r\nī,plural,vocative,2nd,masculine feminine,regular,\r\na,plural,vocative,2nd,neuter,regular,\r\nēs,plural,vocative,3rd,masculine feminine,regular,\r\na,plural,vocative,3rd,neuter,regular,\r\nia,plural,vocative,3rd,neuter,irregular,11\r\nūs,plural,vocative,4th,masculine feminine,regular,\r\nua,plural,vocative,4th,neuter,regular,\r\nēs,plural,vocative,5th,feminine,regular,";
+
+var nounFootnotesCSV = "Index,Text\r\n1,archaic (final s and m of os and om may be omitted in inscriptions)\r\n2,only in familiās\r\n3,especially in Greek patronymics and compounds in -gena and -cola.\r\n4,always in deābus and filiābus; rarely with other words to distinguish the female\r\n5,archaic\r\n6,rare\r\n7,\"may occur in words of Greek origin. The forms of many Greek nouns vary among the first, second and third declensions.\"\r\n8,proper names in ius and filius and genius\r\n9,poetic\r\n10,\"only pelagus, vīrus, and sometimes vulgus\"\r\n11,may occur with i-stems\r\n12,several nouns (most commonly domus) show forms of both second and fourth declensions\r\n13,\"some nouns also have forms from the first declension (eg materia, saevitia) or the third declension (eg requiēs, satiēs, plēbēs, famēs)\"\r\n14,\"Always in partus and tribus, usually in artus and lacus, sometimes in other words, eg portus and specus\"\r\n15,Often in names of plants and trees and in nouns ending in -tus\r\n16,When pronounced as one syllable\r\n17,early\r\n18,dies and meridies are masculine";
+
+var adjectiveSuffixesCSV = "Ending,Number,Case,Declension,Gender,Type,Footnote\r\na,singular,nominative,1st 2nd,feminine,regular,\r\nus,singular,nominative,1st 2nd,masculine,regular,\r\num,singular,nominative,1st 2nd,neuter,regular,\r\nis,singular,nominative,3rd,feminine,regular,\r\n-,singular,nominative,3rd,feminine,irregular,6\r\n-,singular,nominative,3rd,masculine,regular,\r\nis,singular,nominative,3rd,masculine,irregular,5\r\ne,singular,nominative,3rd,neuter,regular,\r\n-,singular,nominative,3rd,neuter,irregular,6\r\nae,singular,genitive,1st 2nd,feminine,regular,\r\nīus,singular,genitive,1st 2nd,feminine,irregular,3\r\nī,singular,genitive,1st 2nd,masculine,regular,\r\nīus,singular,genitive,1st 2nd,masculine,irregular,3\r\nī,singular,genitive,1st 2nd,neuter,regular,\r\nīus,singular,genitive,1st 2nd,neuter,irregular,3\r\nis,singular,genitive,3rd,feminine,regular,\r\nis,singular,genitive,3rd,masculine,regular,\r\nis,singular,genitive,3rd,neuter,regular,\r\nae,singular,dative,1st 2nd,feminine,regular,\r\nī,singular,dative,1st 2nd,feminine,irregular,3\r\nō,singular,dative,1st 2nd,masculine,regular,\r\nī,singular,dative,1st 2nd,masculine,irregular,3\r\nō,singular,dative,1st 2nd,neuter,regular,\r\nī,singular,dative,1st 2nd,neuter,irregular,3\r\nī,singular,dative,3rd,feminine,regular,\r\nī,singular,dative,3rd,masculine,regular,\r\nī,singular,dative,3rd,neuter,regular,\r\nam,singular,accusative,1st 2nd,feminine,regular,\r\num,singular,accusative,1st 2nd,masculine,regular,\r\num,singular,accusative,1st 2nd,neuter,regular,\r\nem,singular,accusative,3rd,feminine,regular,\r\nem,singular,accusative,3rd,masculine,regular,\r\ne,singular,accusative,3rd,neuter,regular,\r\n-,singular,accusative,3rd,neuter,irregular,6\r\nā,singular,ablative,1st 2nd,feminine,regular,\r\nō,singular,ablative,1st 2nd,feminine,irregular,4\r\nō,singular,ablative,1st 2nd,masculine,regular,\r\nō,singular,ablative,1st 2nd,neuter,regular,\r\nī,singular,ablative,3rd,feminine,regular,\r\ne,singular,ablative,3rd,feminine,irregular,7\r\nī,singular,ablative,3rd,masculine,regular,\r\ne,singular,ablative,3rd,masculine,irregular,7\r\nī,singular,ablative,3rd,neuter,regular,\r\nae,singular,locative,1st 2nd,feminine,regular,\r\nī,singular,locative,1st 2nd,masculine,regular,\r\nī,singular,locative,1st 2nd,neuter,regular,\r\nī,singular,locative,3rd,feminine,regular,\r\ne,singular,locative,3rd,feminine,irregular,7\r\nī,singular,locative,3rd,masculine,regular,\r\nī,singular,locative,3rd,neuter,regular,\r\na,singular,vocative,1st 2nd,feminine,regular,\r\ne,singular,vocative,1st 2nd,masculine,regular,\r\nī,singular,vocative,1st 2nd,masculine,irregular,\r\num,singular,vocative,1st 2nd,neuter,regular,\r\nis,singular,vocative,3rd,feminine,regular,\r\n-,singular,vocative,3rd,masculine,regular,\r\ne,singular,vocative,3rd,neuter,regular,\r\n-,singular,vocative,3rd,neuter,irregular,6\r\nae,plural,nominative,1st 2nd,feminine,regular,\r\nī,plural,nominative,1st 2nd,masculine,regular,\r\na,plural,nominative,1st 2nd,neuter,regular,\r\nēs,plural,nominative,3rd,feminine,regular,\r\nēs,plural,nominative,3rd,masculine,regular,\r\nia,plural,nominative,3rd,neuter,regular,\r\nārum,plural,genitive,1st 2nd,feminine,regular,\r\nōrum,plural,genitive,1st 2nd,masculine,regular,\r\nōrum,plural,genitive,1st 2nd,neuter,regular,\r\nium,plural,genitive,3rd,feminine,regular,\r\num,plural,genitive,3rd,feminine,irregular,8\r\nium,plural,genitive,3rd,masculine,regular,\r\num,plural,genitive,3rd,masculine,irregular,8\r\nium,plural,genitive,3rd,neuter,regular,\r\num,plural,genitive,3rd,neuter,irregular,8\r\nīs,plural,dative,1st 2nd,feminine,regular,\r\nīs,plural,dative,1st 2nd,masculine,regular,\r\nīs,plural,dative,1st 2nd,neuter,regular,\r\nibus,plural,dative,3rd,feminine,regular,\r\nibus,plural,dative,3rd,masculine,regular,\r\nibus,plural,dative,3rd,neuter,regular,\r\nās,plural,accusative,1st 2nd,feminine,regular,\r\nōs,plural,accusative,1st 2nd,masculine,regular,\r\na,plural,accusative,1st 2nd,neuter,regular,\r\nīs,plural,accusative,3rd,feminine,regular,\r\nēs,plural,accusative,3rd,feminine,irregular,9\r\nīs,plural,accusative,3rd,masculine,regular,\r\nēs,plural,accusative,3rd,masculine,irregular,9\r\nia,plural,accusative,3rd,neuter,regular,\r\nīs,plural,ablative,1st 2nd,feminine,regular,\r\nīs,plural,ablative,1st 2nd,masculine,regular,\r\nīs,plural,ablative,1st 2nd,neuter,regular,\r\nibus,plural,ablative,3rd,feminine,regular,\r\nibus,plural,ablative,3rd,masculine,regular,\r\nibus,plural,ablative,3rd,neuter,regular,\r\nīs,plural,locative,1st 2nd,feminine,regular,\r\nīs,plural,locative,1st 2nd,masculine,regular,\r\nīs,plural,locative,1st 2nd,neuter,regular,\r\nibus,plural,locative,3rd,feminine,regular,\r\nibus,plural,locative,3rd,masculine,regular,\r\nibus,plural,locative,3rd,neuter,regular,\r\nae,plural,vocative,1st 2nd,feminine,regular,\r\nī,plural,vocative,1st 2nd,masculine,regular,\r\na,plural,vocative,1st 2nd,neuter,regular,\r\nēs,plural,vocative,3rd,feminine,regular,\r\nēs,plural,vocative,3rd,masculine,regular,\r\nia,plural,vocative,3rd,neuter,regular,";
+
+var adjectiveFootnotesCSV = "Index,Text\r\n1,\"Adjectives agree with the noun they modify in gender, number and case.\"\r\n2,Adjectives are inflected according to either\r\n3,\"Only nullus, sōlus, alius (alia, aliud), tōtus, ūllus, ūnus, alter, neuter (neutra,\r\n            neutrum) and uter (utra, utrum).\"\r\n4,In a few adjectives of Greek origin.\r\n5,\"The \"\"two-ending\"\" adjectives use \"\"-is\"\", for both masculine and feminine nominative\r\n            singular.\"\r\n6,\"The \"\"one-ending\"\" adjectives use the same consonant ending for all three genders in the\r\n            nominative singular and the neuter accusative and vocative singular.\"\r\n7,\"An ablative singular in \"\"e\"\" is common in one-ending adjectives, but is usually confined to\r\n            poetry in three and two-ending adjectives.\"\r\n8,\"In comparatives, poetry and some one-ending adjectives.\"\r\n9,Chiefly in comparatives.";
+
+var verbSuffixesCSV = "Ending,Conjugation,Voice,Mood,Tense,Number,Person,Type,Footnote\r\nō,1st,active,indicative,present,singular,1st,regular,\r\nās,1st,active,indicative,present,singular,2nd,regular,\r\nat,1st,active,indicative,present,singular,3rd,regular,\r\nāmus,1st,active,indicative,present,plural,1st,regular,\r\nātis,1st,active,indicative,present,plural,2nd,regular,\r\nant,1st,active,indicative,present,plural,3rd,regular,\r\nem,1st,active,subjunctive,present,singular,1st,regular,\r\nēs,1st,active,subjunctive,present,singular,2nd,regular,\r\net,1st,active,subjunctive,present,singular,3rd,regular,\r\nēmus,1st,active,subjunctive,present,plural,1st,regular,\r\nētis,1st,active,subjunctive,present,plural,2nd,regular,\r\nent,1st,active,subjunctive,present,plural,3rd,regular,\r\neō,2nd,active,indicative,present,singular,1st,regular,\r\nēs,2nd,active,indicative,present,singular,2nd,regular,\r\nēt,2nd,active,indicative,present,singular,3rd,regular,\r\nēmus,2nd,active,indicative,present,plural,1st,regular,\r\nētis,2nd,active,indicative,present,plural,2nd,regular,\r\nent,2nd,active,indicative,present,plural,3rd,regular,\r\neam,2nd,active,subjunctive,present,singular,1st,regular,\r\neās,2nd,active,subjunctive,present,singular,2nd,regular,\r\neat,2nd,active,subjunctive,present,singular,3rd,regular,\r\neāmus,2nd,active,subjunctive,present,plural,1st,regular,\r\neātis,2nd,active,subjunctive,present,plural,2nd,regular,\r\neant,2nd,active,subjunctive,present,plural,3rd,regular,\r\nō,3rd,active,indicative,present,singular,1st,regular,\r\nis,3rd,active,indicative,present,singular,2nd,regular,\r\nit,3rd,active,indicative,present,singular,3rd,regular,\r\nimus,3rd,active,indicative,present,plural,1st,regular,\r\nitis,3rd,active,indicative,present,plural,2nd,regular,\r\nunt,3rd,active,indicative,present,plural,3rd,regular,\r\nam,3rd,active,subjunctive,present,singular,1st,regular,\r\nās,3rd,active,subjunctive,present,singular,2nd,regular,\r\nat,3rd,active,subjunctive,present,singular,3rd,regular,\r\nāmus,3rd,active,subjunctive,present,plural,1st,regular,\r\nātis,3rd,active,subjunctive,present,plural,2nd,regular,\r\nant,3rd,active,subjunctive,present,plural,3rd,regular,\r\niō,4th,active,indicative,present,singular,1st,regular,\r\nīs,4th,active,indicative,present,singular,2nd,regular,\r\nit,4th,active,indicative,present,singular,3rd,regular,\r\nīmus,4th,active,indicative,present,plural,1st,regular,\r\nītis,4th,active,indicative,present,plural,2nd,regular,\r\niunt,4th,active,indicative,present,plural,3rd,regular,\r\niam,4th,active,subjunctive,present,singular,1st,regular,\r\niās,4th,active,subjunctive,present,singular,2nd,regular,\r\niat,4th,active,subjunctive,present,singular,3rd,regular,\r\niāmus,4th,active,subjunctive,present,plural,1st,regular,\r\niāatis,4th,active,subjunctive,present,plural,2nd,regular,\r\niant,4th,active,subjunctive,present,plural,3rd,regular,\r\nābam,1st,active,indicative,imperfect,singular,1st,regular,\r\nābas,1st,active,indicative,imperfect,singular,2nd,regular,\r\nābat,1st,active,indicative,imperfect,singular,3rd,regular,\r\nābāmus,1st,active,indicative,imperfect,plural,1st,regular,\r\nābātis,1st,active,indicative,imperfect,plural,2nd,regular,\r\nābant,1st,active,indicative,imperfect,plural,3rd,regular,\r\nārem,1st,active,subjunctive,imperfect,singular,1st,regular,\r\nārēs,1st,active,subjunctive,imperfect,singular,2nd,regular,\r\nāret,1st,active,subjunctive,imperfect,singular,3rd,regular,\r\nārēmus,1st,active,subjunctive,imperfect,plural,1st,regular,\r\nārētis,1st,active,subjunctive,imperfect,plural,2nd,regular,\r\nārent,1st,active,subjunctive,imperfect,plural,3rd,regular,\r\nēbam,2nd,active,indicative,imperfect,singular,1st,regular,\r\nēbās,2nd,active,indicative,imperfect,singular,2nd,regular,\r\nēbat,2nd,active,indicative,imperfect,singular,3rd,regular,\r\nēbāmus,2nd,active,indicative,imperfect,plural,1st,regular,\r\nēbātis,2nd,active,indicative,imperfect,plural,2nd,regular,\r\nēbant,2nd,active,indicative,imperfect,plural,3rd,regular,\r\nērem,2nd,active,subjunctive,imperfect,singular,1st,regular,\r\nērēs,2nd,active,subjunctive,imperfect,singular,2nd,regular,\r\nēret,2nd,active,subjunctive,imperfect,singular,3rd,regular,\r\nērēmus,2nd,active,subjunctive,imperfect,plural,1st,regular,\r\nērētis,2nd,active,subjunctive,imperfect,plural,2nd,regular,\r\nērēnt,2nd,active,subjunctive,imperfect,plural,3rd,regular,\r\nēbas,3rd,active,indicative,imperfect,singular,1st,regular,\r\nēbāt,3rd,active,indicative,imperfect,singular,2nd,regular,\r\nēbat,3rd,active,indicative,imperfect,singular,3rd,regular,\r\nēbāmus,3rd,active,indicative,imperfect,plural,1st,regular,\r\nēbātis,3rd,active,indicative,imperfect,plural,2nd,regular,\r\nēbant,3rd,active,indicative,imperfect,plural,3rd,regular,\r\nerem,3rd,active,subjunctive,imperfect,singular,1st,regular,\r\nerēs,3rd,active,subjunctive,imperfect,singular,2nd,regular,\r\neret,3rd,active,subjunctive,imperfect,singular,3rd,regular,\r\nerēmus,3rd,active,subjunctive,imperfect,plural,1st,regular,\r\nerētis,3rd,active,subjunctive,imperfect,plural,2nd,regular,\r\nerent,3rd,active,subjunctive,imperfect,plural,3rd,regular,\r\niēbam,4th,active,indicative,imperfect,singular,1st,regular,\r\nībam,4th,active,indicative,imperfect,singular,1st,irregular,2\r\niēbas,4th,active,indicative,imperfect,singular,2nd,regular,\r\nības,4th,active,indicative,imperfect,singular,2nd,irregular,\r\niēbat,4th,active,indicative,imperfect,singular,3rd,regular,\r\nībat,4th,active,indicative,imperfect,singular,3rd,irregular,\r\niēbāmus,4th,active,indicative,imperfect,plural,1st,regular,\r\nībāmus,4th,active,indicative,imperfect,plural,1st,irregular,\r\niēbātis,4th,active,indicative,imperfect,plural,2nd,regular,\r\nībātis,4th,active,indicative,imperfect,plural,2nd,irregular,\r\niēbant,4th,active,indicative,imperfect,plural,3rd,regular,\r\nībant,4th,active,indicative,imperfect,plural,3rd,irregular,\r\nīrem,4th,active,subjunctive,imperfect,singular,1st,regular,\r\nīrēs,4th,active,subjunctive,imperfect,singular,2nd,regular,\r\nīret,4th,active,subjunctive,imperfect,singular,3rd,regular,\r\nīrēmus,4th,active,subjunctive,imperfect,plural,1st,regular,\r\nīrētis,4th,active,subjunctive,imperfect,plural,2nd,regular,\r\nīrēnt,4th,active,subjunctive,imperfect,plural,3rd,regular,\r\nābo,1st,active,indicative,future,singular,1st,regular,\r\nābis,1st,active,indicative,future,singular,2nd,regular,\r\nābit,1st,active,indicative,future,singular,3rd,regular,\r\nābimus,1st,active,indicative,future,plural,1st,regular,\r\nābitis,1st,active,indicative,future,plural,2nd,regular,\r\nābunt,1st,active,indicative,future,plural,3rd,regular,\r\n,1st,active,subjunctive,future,singular,1st,,\r\n,1st,active,subjunctive,future,singular,2nd,,\r\n,1st,active,subjunctive,future,singular,3rd,,\r\n,1st,active,subjunctive,future,plural,1st,,\r\n,1st,active,subjunctive,future,plural,2nd,,\r\n,1st,active,subjunctive,future,plural,3rd,,\r\nēbō,2nd,active,indicative,future,singular,1st,regular,\r\nēbis,2nd,active,indicative,future,singular,2nd,regular,\r\nēbit,2nd,active,indicative,future,singular,3rd,regular,\r\nēbimus,2nd,active,indicative,future,plural,1st,regular,\r\nēbitis,2nd,active,indicative,future,plural,2nd,regular,\r\nēbunt,2nd,active,indicative,future,plural,3rd,regular,\r\n,2nd,active,subjunctive,future,singular,1st,regular,\r\n,2nd,active,subjunctive,future,singular,2nd,,\r\n,2nd,active,subjunctive,future,singular,3rd,,\r\n,2nd,active,subjunctive,future,plural,1st,,\r\n,2nd,active,subjunctive,future,plural,2nd,,\r\n,2nd,active,subjunctive,future,plural,3rd,,\r\nam,3rd,active,indicative,future,singular,1st,regular,\r\nēs,3rd,active,indicative,future,singular,2nd,regular,\r\net,3rd,active,indicative,future,singular,3rd,regular,\r\nēmus,3rd,active,indicative,future,plural,1st,regular,\r\nētis,3rd,active,indicative,future,plural,2nd,regular,\r\nent,3rd,active,indicative,future,plural,3rd,regular,\r\n,3rd,active,subjunctive,future,singular,1st,,\r\n,3rd,active,subjunctive,future,singular,2nd,,\r\n,3rd,active,subjunctive,future,singular,3rd,,\r\n,3rd,active,subjunctive,future,plural,1st,,\r\n,3rd,active,subjunctive,future,plural,2nd,,\r\n,3rd,active,subjunctive,future,plural,3rd,,\r\niam,4th,active,indicative,future,singular,1st,regular,\r\nībō,4th,active,indicative,future,singular,1st,irregular,2\r\niēs,4th,active,indicative,future,singular,2nd,regular,\r\nībis,4th,active,indicative,future,singular,2nd,irregular,\r\niet,4th,active,indicative,future,singular,3rd,regular,\r\nībit,4th,active,indicative,future,singular,3rd,irregular,\r\niēmus,4th,active,indicative,future,plural,1st,regular,\r\nībimus,4th,active,indicative,future,plural,1st,irregular,\r\niētis,4th,active,indicative,future,plural,2nd,regular,\r\nībitis,4th,active,indicative,future,plural,2nd,irregular,\r\nient,4th,active,indicative,future,plural,3rd,regular,\r\nībunt,4th,active,indicative,future,plural,3rd,irregular,\r\n,4th,active,subjunctive,future,singular,1st,,\r\n,4th,active,subjunctive,future,singular,2nd,,\r\n,4th,active,subjunctive,future,singular,3rd,,\r\n,4th,active,subjunctive,future,plural,1st,,\r\n,4th,active,subjunctive,future,plural,2nd,,\r\n,4th,active,subjunctive,future,plural,3rd,,\r\nāvī,1st,active,indicative,perfect,singular,1st,regular,\r\nāvistī,1st,active,indicative,perfect,singular,2nd,regular,\r\nāvit,1st,active,indicative,perfect,singular,3rd,regular,\r\nāvimus,1st,active,indicative,perfect,plural,1st,regular,\r\nāvistis,1st,active,indicative,perfect,plural,2nd,regular,\r\nāvērunt,1st,active,indicative,perfect,plural,3rd,regular,\r\nāvēre,1st,active,indicative,perfect,plural,3rd,irregular,6\r\nāverim,1st,active,subjunctive,perfect,singular,1st,regular,\r\nāveris,1st,active,subjunctive,perfect,singular,2nd,regular,\r\nāverit,1st,active,subjunctive,perfect,singular,3rd,regular,\r\nāverimus,1st,active,subjunctive,perfect,plural,1st,regular,\r\nāveritis,1st,active,subjunctive,perfect,plural,2nd,regular,\r\nāverint,1st,active,subjunctive,perfect,plural,3rd,regular,\r\nvī,2nd,active,indicative,perfect,singular,1st,regular,\r\nvistī,2nd,active,indicative,perfect,singular,2nd,regular,\r\nvit,2nd,active,indicative,perfect,singular,3rd,regular,\r\nvimus,2nd,active,indicative,perfect,plural,1st,regular,\r\nvistis,2nd,active,indicative,perfect,plural,2nd,regular,\r\nvērunt,2nd,active,indicative,perfect,plural,3rd,regular,\r\nvēre,2nd,active,indicative,perfect,plural,3rd,irregular,6\r\nverim,2nd,active,subjunctive,perfect,singular,1st,regular,\r\nveris,2nd,active,subjunctive,perfect,singular,2nd,regular,\r\nverit,2nd,active,subjunctive,perfect,singular,3rd,regular,\r\nverimus,2nd,active,subjunctive,perfect,plural,1st,regular,\r\nveritis,2nd,active,subjunctive,perfect,plural,2nd,regular,\r\nverint,2nd,active,subjunctive,perfect,plural,3rd,regular,\r\nī,3rd,active,indicative,perfect,singular,1st,regular,\r\nistī,3rd,active,indicative,perfect,singular,2nd,regular,\r\nit,3rd,active,indicative,perfect,singular,3rd,regular,\r\nimus,3rd,active,indicative,perfect,plural,1st,regular,\r\nistis,3rd,active,indicative,perfect,plural,2nd,regular,\r\nērunt,3rd,active,indicative,perfect,plural,3rd,regular,\r\nēre,3rd,active,indicative,perfect,plural,3rd,irregular,6\r\nerim,3rd,active,subjunctive,perfect,singular,1st,regular,\r\neris,3rd,active,subjunctive,perfect,singular,2nd,regular,\r\nerit,3rd,active,subjunctive,perfect,singular,3rd,regular,\r\nerimus,3rd,active,subjunctive,perfect,plural,1st,regular,\r\neritis,3rd,active,subjunctive,perfect,plural,2nd,regular,\r\nerint,3rd,active,subjunctive,perfect,plural,3rd,regular,\r\nīvi,4th,active,indicative,perfect,singular,1st,regular,\r\nīvistī,4th,active,indicative,perfect,singular,2nd,regular,\r\nīvit,4th,active,indicative,perfect,singular,3rd,regular,\r\nīvimus,4th,active,indicative,perfect,plural,1st,regular,\r\nīvistis,4th,active,indicative,perfect,plural,2nd,regular,\r\nīvērunt,4th,active,indicative,perfect,plural,3rd,regular,\r\nīvēre,4th,active,indicative,perfect,plural,3rd,irregular,6\r\nīverim,4th,active,subjunctive,perfect,singular,1st,regular,\r\niveris,4th,active,subjunctive,perfect,singular,2nd,regular,\r\nīverit,4th,active,subjunctive,perfect,singular,3rd,regular,\r\nīverimus,4th,active,subjunctive,perfect,plural,1st,regular,\r\nīveritis,4th,active,subjunctive,perfect,plural,2nd,regular,\r\nīverint,4th,active,subjunctive,perfect,plural,3rd,regular,\r\nāveram,1st,active,indicative,pluperfect,singular,1st,regular,\r\nāverās,1st,active,indicative,pluperfect,singular,2nd,regular,\r\nāverat,1st,active,indicative,pluperfect,singular,3rd,regular,\r\nāverāmus,1st,active,indicative,pluperfect,plural,1st,regular,\r\nāverātis,1st,active,indicative,pluperfect,plural,2nd,regular,\r\nāverant,1st,active,indicative,pluperfect,plural,3rd,regular,\r\nāvissem,1st,active,subjunctive,pluperfect,singular,1st,regular,\r\nāvissēs,1st,active,subjunctive,pluperfect,singular,2nd,regular,\r\nāvisset,1st,active,subjunctive,pluperfect,singular,3rd,regular,\r\nāvissēm,1st,active,subjunctive,pluperfect,plural,1st,regular,\r\nāvissēs,1st,active,subjunctive,pluperfect,plural,2nd,regular,\r\nāvisset,1st,active,subjunctive,pluperfect,plural,3rd,regular,\r\nveram,2nd,active,indicative,pluperfect,singular,1st,regular,\r\nverās,2nd,active,indicative,pluperfect,singular,2nd,regular,\r\nverat,2nd,active,indicative,pluperfect,singular,3rd,regular,\r\nverāmus,2nd,active,indicative,pluperfect,plural,1st,regular,\r\nverātis,2nd,active,indicative,pluperfect,plural,2nd,regular,\r\nverant,2nd,active,indicative,pluperfect,plural,3rd,regular,\r\nvissem,2nd,active,subjunctive,pluperfect,singular,1st,regular,\r\nvissēs,2nd,active,subjunctive,pluperfect,singular,2nd,regular,\r\nvisset,2nd,active,subjunctive,pluperfect,singular,3rd,regular,\r\nvissēmus,2nd,active,subjunctive,pluperfect,plural,1st,regular,\r\nvissētis,2nd,active,subjunctive,pluperfect,plural,2nd,regular,\r\nvissent,2nd,active,subjunctive,pluperfect,plural,3rd,regular,\r\neram,3rd,active,indicative,pluperfect,singular,1st,regular,\r\nerās,3rd,active,indicative,pluperfect,singular,2nd,regular,\r\nerat,3rd,active,indicative,pluperfect,singular,3rd,regular,\r\nerāmus,3rd,active,indicative,pluperfect,plural,1st,regular,\r\nerātis,3rd,active,indicative,pluperfect,plural,2nd,regular,\r\nerant,3rd,active,indicative,pluperfect,plural,3rd,regular,\r\nissem,3rd,active,subjunctive,pluperfect,singular,1st,regular,\r\nissēs,3rd,active,subjunctive,pluperfect,singular,2nd,regular,\r\nisset,3rd,active,subjunctive,pluperfect,singular,3rd,regular,\r\nissēmus,3rd,active,subjunctive,pluperfect,plural,1st,regular,\r\nissētis,3rd,active,subjunctive,pluperfect,plural,2nd,regular,\r\nissent,3rd,active,subjunctive,pluperfect,plural,3rd,regular,\r\nīveram,4th,active,indicative,pluperfect,singular,1st,regular,\r\nīverās,4th,active,indicative,pluperfect,singular,2nd,regular,\r\nīverat,4th,active,indicative,pluperfect,singular,3rd,regular,\r\nīverāmus,4th,active,indicative,pluperfect,plural,1st,regular,\r\nīverātis,4th,active,indicative,pluperfect,plural,2nd,regular,\r\nīverant,4th,active,indicative,pluperfect,plural,3rd,regular,\r\nīvissem,4th,active,subjunctive,pluperfect,singular,1st,regular,\r\nīvissēs,4th,active,subjunctive,pluperfect,singular,2nd,regular,\r\nīvisset,4th,active,subjunctive,pluperfect,singular,3rd,regular,\r\nīvissēmus,4th,active,subjunctive,pluperfect,plural,1st,regular,\r\nīvissētis,4th,active,subjunctive,pluperfect,plural,2nd,regular,\r\nīvissent,4th,active,subjunctive,pluperfect,plural,3rd,regular,\r\nāverō,1st,active,indicative,future_perfect,singular,1st,regular,\r\nāveris,1st,active,indicative,future_perfect,singular,2nd,regular,\r\nāverit,1st,active,indicative,future_perfect,singular,3rd,regular,\r\nāverimus,1st,active,indicative,future_perfect,plural,1st,regular,\r\nāveritis,1st,active,indicative,future_perfect,plural,2nd,regular,\r\nāverint,1st,active,indicative,future_perfect,plural,3rd,regular,\r\n,1st,active,subjunctive,future_perfect,singular,1st,,\r\n,1st,active,subjunctive,future_perfect,singular,2nd,,\r\n,1st,active,subjunctive,future_perfect,singular,3rd,,\r\n,1st,active,subjunctive,future_perfect,plural,1st,,\r\n,1st,active,subjunctive,future_perfect,plural,2nd,,\r\n,1st,active,subjunctive,future_perfect,plural,3rd,,\r\nverō,2nd,active,indicative,future_perfect,singular,1st,regular,\r\nvēris,2nd,active,indicative,future_perfect,singular,2nd,regular,\r\nvērit,2nd,active,indicative,future_perfect,singular,3rd,regular,\r\nvērimus,2nd,active,indicative,future_perfect,plural,1st,regular,\r\nvēritis,2nd,active,indicative,future_perfect,plural,2nd,regular,\r\nvērint,2nd,active,indicative,future_perfect,plural,3rd,regular,\r\n,2nd,active,subjunctive,future_perfect,singular,1st,,\r\n,2nd,active,subjunctive,future_perfect,singular,2nd,,\r\n,2nd,active,subjunctive,future_perfect,singular,3rd,,\r\n,2nd,active,subjunctive,future_perfect,plural,1st,,\r\n,2nd,active,subjunctive,future_perfect,plural,2nd,,\r\n,2nd,active,subjunctive,future_perfect,plural,3rd,,\r\nerō,3rd,active,indicative,future_perfect,singular,1st,regular,\r\neris,3rd,active,indicative,future_perfect,singular,2nd,regular,\r\nerit,3rd,active,indicative,future_perfect,singular,3rd,regular,\r\nerimus,3rd,active,indicative,future_perfect,plural,1st,regular,\r\neritis,3rd,active,indicative,future_perfect,plural,2nd,regular,\r\nerint,3rd,active,indicative,future_perfect,plural,3rd,regular,\r\n,3rd,active,subjunctive,future_perfect,singular,1st,,\r\n,3rd,active,subjunctive,future_perfect,singular,2nd,,\r\n,3rd,active,subjunctive,future_perfect,singular,3rd,,\r\n,3rd,active,subjunctive,future_perfect,plural,1st,,\r\n,3rd,active,subjunctive,future_perfect,plural,2nd,,\r\n,3rd,active,subjunctive,future_perfect,plural,3rd,,\r\nīverō,4th,active,indicative,future_perfect,singular,1st,regular,\r\nīveris,4th,active,indicative,future_perfect,singular,2nd,regular,\r\nīverit,4th,active,indicative,future_perfect,singular,3rd,regular,\r\nīverimus,4th,active,indicative,future_perfect,plural,1st,regular,\r\nīveritis,4th,active,indicative,future_perfect,plural,2nd,regular,\r\nīverint,4th,active,indicative,future_perfect,plural,3rd,regular,\r\n,4th,active,subjunctive,future_perfect,singular,1st,,\r\n,4th,active,subjunctive,future_perfect,singular,2nd,,\r\n,4th,active,subjunctive,future_perfect,singular,3rd,,\r\n,4th,active,subjunctive,future_perfect,plural,1st,,\r\n,4th,active,subjunctive,future_perfect,plural,2nd,,\r\n,4th,active,subjunctive,future_perfect,plural,3rd,,\r\nor,1st,passive,indicative,present,singular,1st,regular,\r\nāris,1st,passive,indicative,present,singular,2nd,regular,\r\nāre,1st,passive,indicative,present,singular,2nd,irregular,5\r\nātur,1st,passive,indicative,present,singular,3rd,regular,\r\nāmur,1st,passive,indicative,present,plural,1st,regular,\r\nāminiī,1st,passive,indicative,present,plural,2nd,regular,\r\nantur,1st,passive,indicative,present,plural,3rd,regular,\r\ner,1st,passive,subjunctive,present,singular,1st,regular,\r\nēris,1st,passive,subjunctive,present,singular,2nd,regular,\r\nēre,1st,passive,subjunctive,present,singular,2nd,regular,\r\nētur,1st,passive,subjunctive,present,singular,3rd,regular,\r\nēmur,1st,passive,subjunctive,present,plural,1st,regular,\r\nēminī,1st,passive,subjunctive,present,plural,2nd,regular,\r\nentur,1st,passive,subjunctive,present,plural,3rd,regular,\r\neor,2nd,passive,indicative,present,singular,1st,regular,\r\nēris,2nd,passive,indicative,present,singular,2nd,regular,\r\nēre,2nd,passive,indicative,present,singular,2nd,regular,\r\nētur,2nd,passive,indicative,present,singular,3rd,regular,\r\nēmur,2nd,passive,indicative,present,plural,1st,regular,\r\nēmini,2nd,passive,indicative,present,plural,2nd,regular,\r\nentur,2nd,passive,indicative,present,plural,3rd,regular,\r\near,2nd,passive,subjunctive,present,singular,1st,regular,\r\neāris,2nd,passive,subjunctive,present,singular,2nd,regular,\r\neāre,2nd,passive,subjunctive,present,singular,2nd,regular,\r\neātur,2nd,passive,subjunctive,present,singular,3rd,regular,\r\neāmur,2nd,passive,subjunctive,present,plural,1st,regular,\r\neāminī,2nd,passive,subjunctive,present,plural,2nd,regular,\r\neantur,2nd,passive,subjunctive,present,plural,3rd,regular,\r\nor,3rd,passive,indicative,present,singular,1st,regular,\r\neris,3rd,passive,indicative,present,singular,2nd,regular,\r\nere,3rd,passive,indicative,present,singular,2nd,regular,\r\nitur,3rd,passive,indicative,present,singular,3rd,regular,\r\nimur,3rd,passive,indicative,present,plural,1st,regular,\r\niminī,3rd,passive,indicative,present,plural,2nd,regular,\r\nuntur,3rd,passive,indicative,present,plural,3rd,regular,\r\nar,3rd,passive,subjunctive,present,singular,1st,regular,\r\nāris,3rd,passive,subjunctive,present,singular,2nd,regular,\r\nāre,3rd,passive,subjunctive,present,singular,2nd,regular,\r\nātur,3rd,passive,subjunctive,present,singular,3rd,regular,\r\nāmur,3rd,passive,subjunctive,present,plural,1st,regular,\r\nāminī,3rd,passive,subjunctive,present,plural,2nd,regular,\r\nantur,3rd,passive,subjunctive,present,plural,3rd,regular,\r\nior,4th,passive,indicative,present,singular,1st,regular,\r\nīris,4th,passive,indicative,present,singular,2nd,regular,\r\nīre,4th,passive,indicative,present,singular,2nd,regular,\r\nītur,4th,passive,indicative,present,singular,3rd,regular,\r\nīmur,4th,passive,indicative,present,plural,1st,regular,\r\nīminī,4th,passive,indicative,present,plural,2nd,regular,\r\niuntur,4th,passive,indicative,present,plural,3rd,regular,\r\niar,4th,passive,subjunctive,present,singular,1st,regular,\r\niāris,4th,passive,subjunctive,present,singular,2nd,regular,\r\niāre,4th,passive,subjunctive,present,singular,2nd,regular,\r\niātur,4th,passive,subjunctive,present,singular,3rd,regular,\r\niāmur,4th,passive,subjunctive,present,plural,1st,regular,\r\niāminī,4th,passive,subjunctive,present,plural,2nd,regular,\r\niantur,4th,passive,subjunctive,present,plural,3rd,regular,\r\nābar,1st,passive,indicative,imperfect,singular,1st,regular,\r\nābāaris,1st,passive,indicative,imperfect,singular,2nd,regular,\r\nābāre,1st,passive,indicative,imperfect,singular,2nd,regular,\r\nābātur,1st,passive,indicative,imperfect,singular,3rd,regular,\r\nābāmur,1st,passive,indicative,imperfect,plural,1st,regular,\r\nābāminī,1st,passive,indicative,imperfect,plural,2nd,regular,\r\nābantur,1st,passive,indicative,imperfect,plural,3rd,regular,\r\nārer,1st,passive,subjunctive,imperfect,singular,1st,regular,\r\nārēris,1st,passive,subjunctive,imperfect,singular,2nd,regular,\r\nārēre,1st,passive,subjunctive,imperfect,singular,2nd,regular,\r\nārētur,1st,passive,subjunctive,imperfect,singular,3rd,regular,\r\nārēmur,1st,passive,subjunctive,imperfect,plural,1st,regular,\r\nārēminī,1st,passive,subjunctive,imperfect,plural,2nd,regular,\r\nārentur,1st,passive,subjunctive,imperfect,plural,3rd,regular,\r\nēbar,2nd,passive,indicative,imperfect,singular,1st,regular,\r\nēbāris,2nd,passive,indicative,imperfect,singular,2nd,regular,\r\nēbāre,2nd,passive,indicative,imperfect,singular,2nd,regular,\r\nēbātur,2nd,passive,indicative,imperfect,singular,3rd,regular,\r\nēbāmur,2nd,passive,indicative,imperfect,plural,1st,regular,\r\nēbāmini,2nd,passive,indicative,imperfect,plural,2nd,regular,\r\nēbantur,2nd,passive,indicative,imperfect,plural,3rd,regular,\r\nērer,2nd,passive,subjunctive,imperfect,singular,1st,regular,\r\nērēris,2nd,passive,subjunctive,imperfect,singular,2nd,regular,\r\nērēre,2nd,passive,subjunctive,imperfect,singular,2nd,regular,\r\nērētur,2nd,passive,subjunctive,imperfect,singular,3rd,regular,\r\nērēmur,2nd,passive,subjunctive,imperfect,plural,1st,regular,\r\nērēminī,2nd,passive,subjunctive,imperfect,plural,2nd,regular,\r\nērentur,2nd,passive,subjunctive,imperfect,plural,3rd,regular,\r\nēbar,3rd,passive,indicative,imperfect,singular,1st,regular,\r\nēbāris,3rd,passive,indicative,imperfect,singular,2nd,regular,\r\nēbāre,3rd,passive,indicative,imperfect,singular,2nd,regular,\r\nēbatur,3rd,passive,indicative,imperfect,singular,3rd,regular,\r\nēbāmur,3rd,passive,indicative,imperfect,plural,1st,regular,\r\nēbāminī,3rd,passive,indicative,imperfect,plural,2nd,regular,\r\nēbantur,3rd,passive,indicative,imperfect,plural,3rd,regular,\r\nerer,3rd,passive,subjunctive,imperfect,singular,1st,regular,\r\nerēris,3rd,passive,subjunctive,imperfect,singular,2nd,regular,\r\nerēre,3rd,passive,subjunctive,imperfect,singular,2nd,regular,\r\nerētur,3rd,passive,subjunctive,imperfect,singular,3rd,regular,\r\nerēmur,3rd,passive,subjunctive,imperfect,plural,1st,regular,\r\nerēminī,3rd,passive,subjunctive,imperfect,plural,2nd,regular,\r\nerentur,3rd,passive,subjunctive,imperfect,plural,3rd,regular,\r\niēbar,4th,passive,indicative,imperfect,singular,1st,regular,\r\niēbāris,4th,passive,indicative,imperfect,singular,2nd,regular,\r\niēbāre,4th,passive,indicative,imperfect,singular,2nd,regular,\r\niēbātur,4th,passive,indicative,imperfect,singular,3rd,regular,\r\niēbāmur,4th,passive,indicative,imperfect,plural,1st,regular,\r\niēbāminī,4th,passive,indicative,imperfect,plural,2nd,regular,\r\niēbantur,4th,passive,indicative,imperfect,plural,3rd,regular,\r\nīrer,4th,passive,subjunctive,imperfect,singular,1st,regular,\r\nīrēris,4th,passive,subjunctive,imperfect,singular,2nd,regular,\r\nīrēre,4th,passive,subjunctive,imperfect,singular,2nd,regular,\r\nīrētur,4th,passive,subjunctive,imperfect,singular,3rd,regular,\r\nīrēmur,4th,passive,subjunctive,imperfect,plural,1st,regular,\r\nīrēminī,4th,passive,subjunctive,imperfect,plural,2nd,regular,\r\nīrentur,4th,passive,subjunctive,imperfect,plural,3rd,regular,\r\nābor,1st,passive,indicative,future,singular,1st,regular,\r\nāberis,1st,passive,indicative,future,singular,2nd,regular,\r\nābere,1st,passive,indicative,future,singular,2nd,irregular,\r\nābitur,1st,passive,indicative,future,singular,3rd,regular,\r\nābimur,1st,passive,indicative,future,plural,1st,regular,\r\nābiminī,1st,passive,indicative,future,plural,2nd,regular,\r\nābuntur,1st,passive,indicative,future,plural,3rd,regular,\r\n,1st,passive,subjunctive,future,singular,1st,,\r\n,1st,passive,subjunctive,future,singular,2nd,,\r\n,1st,passive,subjunctive,future,singular,3rd,,\r\n,1st,passive,subjunctive,future,plural,1st,,\r\n,1st,passive,subjunctive,future,plural,2nd,,\r\n,1st,passive,subjunctive,future,plural,3rd,,\r\nēbor,2nd,passive,indicative,future,singular,1st,regular,\r\nēberis,2nd,passive,indicative,future,singular,2nd,regular,\r\nēbere,2nd,passive,indicative,future,singular,2nd,regular,\r\nēbitur,2nd,passive,indicative,future,singular,3rd,regular,\r\nēbimur,2nd,passive,indicative,future,plural,1st,regular,\r\nēbiminī,2nd,passive,indicative,future,plural,2nd,regular,\r\nēbuntur,2nd,passive,indicative,future,plural,3rd,regular,\r\n,2nd,passive,subjunctive,future,singular,1st,,\r\n,2nd,passive,subjunctive,future,singular,2nd,,\r\n,2nd,passive,subjunctive,future,singular,3rd,,\r\n,2nd,passive,subjunctive,future,plural,1st,,\r\n,2nd,passive,subjunctive,future,plural,2nd,,\r\n,2nd,passive,subjunctive,future,plural,3rd,,\r\nar,3rd,passive,indicative,future,singular,1st,regular,\r\nēris,3rd,passive,indicative,future,singular,2nd,regular,\r\nēre,3rd,passive,indicative,future,singular,2nd,irregular,\r\nētur,3rd,passive,indicative,future,singular,3rd,regular,\r\nēmur,3rd,passive,indicative,future,plural,1st,regular,\r\nēminī,3rd,passive,indicative,future,plural,2nd,regular,\r\nentur,3rd,passive,indicative,future,plural,3rd,regular,\r\n,3rd,passive,subjunctive,future,singular,1st,,\r\n,3rd,passive,subjunctive,future,singular,2nd,,\r\n,3rd,passive,subjunctive,future,singular,3rd,,\r\n,3rd,passive,subjunctive,future,plural,1st,,\r\n,3rd,passive,subjunctive,future,plural,2nd,,\r\n,3rd,passive,subjunctive,future,plural,3rd,,\r\niar,4th,passive,indicative,future,singular,1st,regular,\r\niēris,4th,passive,indicative,future,singular,2nd,regular,\r\nīēre,4th,passive,indicative,future,singular,2nd,irregular,\r\niētur,4th,passive,indicative,future,singular,3rd,regular,\r\niēmur,4th,passive,indicative,future,plural,1st,regular,\r\niēminī,4th,passive,indicative,future,plural,2nd,regular,\r\nientur,4th,passive,indicative,future,plural,3rd,regular,\r\n,4th,passive,subjunctive,future,singular,1st,,\r\n,4th,passive,subjunctive,future,singular,2nd,,\r\n,4th,passive,subjunctive,future,singular,3rd,,\r\n,4th,passive,subjunctive,future,plural,1st,,\r\n,4th,passive,subjunctive,future,plural,2nd,,\r\n,4th,passive,subjunctive,future,plural,3rd,,\r\nātus sum,1st,passive,indicative,perfect,singular,1st,regular,\r\nātus fui,1st,passive,indicative,perfect,singular,1st,regular,\r\nātus es,1st,passive,indicative,perfect,singular,2nd,regular,\r\nātus fuisti,1st,passive,indicative,perfect,singular,2nd,regular,\r\nātus est,1st,passive,indicative,perfect,singular,3rd,regular,\r\nātus fuit,1st,passive,indicative,perfect,singular,3rd,regular,\r\nāti sumus,1st,passive,indicative,perfect,plural,1st,regular,\r\nāti fuimus,1st,passive,indicative,perfect,plural,1st,irregular,\r\nāti estis,1st,passive,indicative,perfect,plural,2nd,regular,\r\nāti fuistis,1st,passive,indicative,perfect,plural,2nd,irregular,\r\nāti sunt,1st,passive,indicative,perfect,plural,3rd,regular,\r\nāti fuerunt,1st,passive,indicative,perfect,plural,3rd,irregular,\r\nātus sim,1st,passive,subjunctive,perfect,singular,1st,regular,\r\nātus fuerim,1st,passive,subjunctive,perfect,singular,1st,irregular,\r\nātus sis,1st,passive,subjunctive,perfect,singular,2nd,regular,\r\nātus fueris,1st,passive,subjunctive,perfect,singular,2nd,irregular,\r\nātus sit,1st,passive,subjunctive,perfect,singular,3rd,regular,\r\nātus fuerit,1st,passive,subjunctive,perfect,singular,3rd,regular,\r\nāti sīmus,1st,passive,subjunctive,perfect,plural,1st,regular,\r\nāti fuerimus,1st,passive,subjunctive,perfect,plural,1st,irregular,\r\nāti sītis,1st,passive,subjunctive,perfect,plural,2nd,regular,\r\nāti fueritis,1st,passive,subjunctive,perfect,plural,2nd,irregular,\r\nāti sint,1st,passive,subjunctive,perfect,plural,3rd,regular,\r\nāti fuerint,1st,passive,subjunctive,perfect,plural,3rd,irregular,\r\nitus sum,2nd,passive,indicative,perfect,singular,1st,regular,\r\nitus es,2nd,passive,indicative,perfect,singular,2nd,regular,\r\nitus est,2nd,passive,indicative,perfect,singular,3rd,regular,\r\nitī sumus,2nd,passive,indicative,perfect,plural,1st,regular,\r\nitī estis,2nd,passive,indicative,perfect,plural,2nd,regular,\r\nitī sunt,2nd,passive,indicative,perfect,plural,3rd,regular,\r\nitus sim,2nd,passive,subjunctive,perfect,singular,1st,regular,\r\nitus sīs,2nd,passive,subjunctive,perfect,singular,2nd,regular,\r\nitus sit,2nd,passive,subjunctive,perfect,singular,3rd,regular,\r\nitī sīmus,2nd,passive,subjunctive,perfect,plural,1st,regular,\r\nitī sītis,2nd,passive,subjunctive,perfect,plural,2nd,regular,\r\nitī sint,2nd,passive,subjunctive,perfect,plural,3rd,regular,\r\nus sum,3rd,passive,indicative,perfect,singular,1st,regular,\r\nus es,3rd,passive,indicative,perfect,singular,2nd,regular,\r\nus est,3rd,passive,indicative,perfect,singular,3rd,regular,\r\nī sumus,3rd,passive,indicative,perfect,plural,1st,regular,\r\nī estis,3rd,passive,indicative,perfect,plural,2nd,regular,\r\nī sunt,3rd,passive,indicative,perfect,plural,3rd,regular,\r\nus sim,3rd,passive,subjunctive,perfect,singular,1st,regular,\r\nus sīs,3rd,passive,subjunctive,perfect,singular,2nd,regular,\r\nus sit,3rd,passive,subjunctive,perfect,singular,3rd,regular,\r\nus sīmus,3rd,passive,subjunctive,perfect,plural,1st,regular,\r\nus sītis,3rd,passive,subjunctive,perfect,plural,2nd,regular,\r\nus sint,3rd,passive,subjunctive,perfect,plural,3rd,regular,\r\nītus sum,4th,passive,indicative,perfect,singular,1st,regular,\r\nītus es,4th,passive,indicative,perfect,singular,2nd,regular,\r\nītus est,4th,passive,indicative,perfect,singular,3rd,regular,\r\nītī sumus,4th,passive,indicative,perfect,plural,1st,regular,\r\nīti estis,4th,passive,indicative,perfect,plural,2nd,regular,\r\nīti sunt,4th,passive,indicative,perfect,plural,3rd,regular,\r\nītus sim,4th,passive,subjunctive,perfect,singular,1st,regular,\r\nītus sīs,4th,passive,subjunctive,perfect,singular,2nd,regular,\r\nītus sit,4th,passive,subjunctive,perfect,singular,3rd,regular,\r\nītī sīmus,4th,passive,subjunctive,perfect,plural,1st,regular,\r\nīti sītis,4th,passive,subjunctive,perfect,plural,2nd,regular,\r\nīti sint,4th,passive,subjunctive,perfect,plural,3rd,regular,\r\nātus eram,1st,passive,indicative,pluperfect,singular,1st,regular,\r\nātus fueram,1st,passive,indicative,pluperfect,singular,1st,irregular,\r\nātus eras,1st,passive,indicative,pluperfect,singular,2nd,regular,\r\nātus fueras,1st,passive,indicative,pluperfect,singular,2nd,irregular,\r\nātus erat,1st,passive,indicative,pluperfect,singular,3rd,regular,\r\nātus fuerat,1st,passive,indicative,pluperfect,singular,3rd,irregular,\r\nātī erāmus,1st,passive,indicative,pluperfect,plural,1st,regular,\r\nātī fueramus,1st,passive,indicative,pluperfect,plural,1st,irregular,\r\nātī erātis,1st,passive,indicative,pluperfect,plural,2nd,regular,\r\nātī fueratis,1st,passive,indicative,pluperfect,plural,2nd,irregular,\r\nātī erant,1st,passive,indicative,pluperfect,plural,3rd,regular,\r\nātī fuerant,1st,passive,indicative,pluperfect,plural,3rd,irregular,\r\nātus essem,1st,passive,subjunctive,pluperfect,singular,1st,regular,\r\nātus fuissem,1st,passive,subjunctive,pluperfect,singular,1st,irregular,\r\nātus esses,1st,passive,subjunctive,pluperfect,singular,2nd,regular,\r\nātus fuissēs,1st,passive,subjunctive,pluperfect,singular,2nd,irregular,\r\nātus esset,1st,passive,subjunctive,pluperfect,singular,3rd,regular,\r\nātus fuisset,1st,passive,subjunctive,pluperfect,singular,3rd,irregular,\r\nāti essēmus,1st,passive,subjunctive,pluperfect,plural,1st,regular,\r\nāti fuissēmus,1st,passive,subjunctive,pluperfect,plural,1st,irregular,\r\nāti essētis,1st,passive,subjunctive,pluperfect,plural,2nd,regular,\r\nāti fuissētis,1st,passive,subjunctive,pluperfect,plural,2nd,regular,\r\nāti essent,1st,passive,subjunctive,pluperfect,plural,3rd,regular,\r\nāti fuissent,1st,passive,subjunctive,pluperfect,plural,3rd,regular,\r\nitus eram,2nd,passive,indicative,pluperfect,singular,1st,regular,\r\nitus erās,2nd,passive,indicative,pluperfect,singular,2nd,regular,\r\nitus erat,2nd,passive,indicative,pluperfect,singular,3rd,regular,\r\nitī erāmus,2nd,passive,indicative,pluperfect,plural,1st,regular,\r\nitī erātis,2nd,passive,indicative,pluperfect,plural,2nd,regular,\r\nitī erant,2nd,passive,indicative,pluperfect,plural,3rd,regular,\r\nitus essem,2nd,passive,subjunctive,pluperfect,singular,1st,regular,\r\nitus essēs,2nd,passive,subjunctive,pluperfect,singular,2nd,regular,\r\nitus esset,2nd,passive,subjunctive,pluperfect,singular,3rd,regular,\r\nitī essēmus,2nd,passive,subjunctive,pluperfect,plural,1st,regular,\r\nīti essētis,2nd,passive,subjunctive,pluperfect,plural,2nd,regular,\r\nīti essent,2nd,passive,subjunctive,pluperfect,plural,3rd,regular,\r\nus eram,3rd,passive,indicative,pluperfect,singular,1st,regular,\r\nus erās,3rd,passive,indicative,pluperfect,singular,2nd,regular,\r\nus erat,3rd,passive,indicative,pluperfect,singular,3rd,regular,\r\nī erāmus,3rd,passive,indicative,pluperfect,plural,1st,regular,\r\nī erātis,3rd,passive,indicative,pluperfect,plural,2nd,regular,\r\nī erant,3rd,passive,indicative,pluperfect,plural,3rd,regular,\r\nus essem,3rd,passive,subjunctive,pluperfect,singular,1st,regular,\r\nus essēs,3rd,passive,subjunctive,pluperfect,singular,2nd,regular,\r\nus esset,3rd,passive,subjunctive,pluperfect,singular,3rd,regular,\r\nī essēmus,3rd,passive,subjunctive,pluperfect,plural,1st,regular,\r\nī essētis,3rd,passive,subjunctive,pluperfect,plural,2nd,regular,\r\nī essent,3rd,passive,subjunctive,pluperfect,plural,3rd,regular,\r\nītus eram,4th,passive,indicative,pluperfect,singular,1st,regular,\r\nītus erās,4th,passive,indicative,pluperfect,singular,2nd,regular,\r\nītus erat,4th,passive,indicative,pluperfect,singular,3rd,regular,\r\nītī erāmus,4th,passive,indicative,pluperfect,plural,1st,regular,\r\nīti erātis,4th,passive,indicative,pluperfect,plural,2nd,regular,\r\nītī erant,4th,passive,indicative,pluperfect,plural,3rd,regular,\r\nītus essem,4th,passive,subjunctive,pluperfect,singular,1st,regular,\r\nītus essēs,4th,passive,subjunctive,pluperfect,singular,2nd,regular,\r\nītus esset,4th,passive,subjunctive,pluperfect,singular,3rd,regular,\r\nītī essēmus,4th,passive,subjunctive,pluperfect,plural,1st,regular,\r\nīti essētis,4th,passive,subjunctive,pluperfect,plural,2nd,regular,\r\nīti essent,4th,passive,subjunctive,pluperfect,plural,3rd,regular,\r\nātus erō,1st,passive,indicative,future_perfect,singular,1st,regular,\r\nātus eris,1st,passive,indicative,future_perfect,singular,2nd,regular,\r\nātus erit,1st,passive,indicative,future_perfect,singular,3rd,regular,\r\nāti erimus,1st,passive,indicative,future_perfect,plural,1st,regular,\r\nāti eritis,1st,passive,indicative,future_perfect,plural,2nd,regular,\r\nāti erunt,1st,passive,indicative,future_perfect,plural,3rd,regular,\r\n,1st,passive,subjunctive,future_perfect,singular,1st,,\r\n,1st,passive,subjunctive,future_perfect,singular,2nd,,\r\n,1st,passive,subjunctive,future_perfect,singular,3rd,,\r\n,1st,passive,subjunctive,future_perfect,plural,1st,,\r\n,1st,passive,subjunctive,future_perfect,plural,2nd,,\r\n,1st,passive,subjunctive,future_perfect,plural,3rd,,\r\nitus erō,2nd,passive,indicative,future_perfect,singular,1st,regular,\r\nitus eris,2nd,passive,indicative,future_perfect,singular,2nd,regular,\r\nitus erit,2nd,passive,indicative,future_perfect,singular,3rd,regular,\r\nitī erimus,2nd,passive,indicative,future_perfect,plural,1st,regular,\r\nitī eritis,2nd,passive,indicative,future_perfect,plural,2nd,regular,\r\nitī erunt,2nd,passive,indicative,future_perfect,plural,3rd,regular,\r\n,2nd,passive,subjunctive,future_perfect,singular,1st,,\r\n,2nd,passive,subjunctive,future_perfect,singular,2nd,,\r\n,2nd,passive,subjunctive,future_perfect,singular,3rd,,\r\n,2nd,passive,subjunctive,future_perfect,plural,1st,,\r\n,2nd,passive,subjunctive,future_perfect,plural,2nd,,\r\n,2nd,passive,subjunctive,future_perfect,plural,3rd,,\r\nus erō,3rd,passive,indicative,future_perfect,singular,1st,regular,\r\nus eris,3rd,passive,indicative,future_perfect,singular,2nd,regular,\r\nus erit,3rd,passive,indicative,future_perfect,singular,3rd,regular,\r\nī erimus,3rd,passive,indicative,future_perfect,plural,1st,regular,\r\nī eritis,3rd,passive,indicative,future_perfect,plural,2nd,regular,\r\nī erunt,3rd,passive,indicative,future_perfect,plural,3rd,regular,\r\n,3rd,passive,subjunctive,future_perfect,singular,1st,,\r\n,3rd,passive,subjunctive,future_perfect,singular,2nd,,\r\n,3rd,passive,subjunctive,future_perfect,singular,3rd,,\r\n,3rd,passive,subjunctive,future_perfect,plural,1st,,\r\n,3rd,passive,subjunctive,future_perfect,plural,2nd,,\r\n,3rd,passive,subjunctive,future_perfect,plural,3rd,,\r\nītus erō,4th,passive,indicative,future_perfect,singular,1st,regular,\r\nītus eris,4th,passive,indicative,future_perfect,singular,2nd,regular,\r\nītus erit,4th,passive,indicative,future_perfect,singular,3rd,regular,\r\nītī erimus,4th,passive,indicative,future_perfect,plural,1st,regular,\r\nītī eritis,4th,passive,indicative,future_perfect,plural,2nd,regular,\r\nītī erunt,4th,passive,indicative,future_perfect,plural,3rd,regular,\r\n,4th,passive,subjunctive,future_perfect,singular,1st,,\r\n,4th,passive,subjunctive,future_perfect,singular,2nd,,\r\n,4th,passive,subjunctive,future_perfect,singular,3rd,,\r\n,4th,passive,subjunctive,future_perfect,plural,1st,,\r\n,4th,passive,subjunctive,future_perfect,plural,2nd,,\r\n,4th,passive,subjunctive,future_perfect,plural,3rd,,";
+
+var verbFootnotesCSV = "Index,Text\r\n2,Chiefly in poetry.\r\n3,\"In tenses based on the perfect stem (the perfect, pluperfect and future perfect of the Active voice) a v between two vowels is often lost with contraction of the two vowels, thus āvī to ā, ēvī to ē, ōvi to ō. Perfects in īvī often omit the v but rarely contract the vowels, except before ss or st, and sometimes in the third person. In addition to the use of v or u, the Active perfect stem can also be formed in a number of other ways, such as the addition of s to the root (eg carpsi), reduplication of the root (eg cecidi from cado), and simple lengthening of the vowel (eg vidī from video or legī from lego).\"\r\n4,\"Dic, duc, fac, and fer lack a final vowel in the imperative in classical Latin. The singular imperative of the verb sciō is always scītō, and the plural is usually scītōte.\"\r\n5,Common in epic poetry.\r\n6,Present in early Latin but chiefly confined to popular use until Livy and later writers.\r\n7,The verb fīō is a 4th conjugation verb that is irregular in only two forms: the present infinitive fierī and the imperfect subjunctive fierem.";
+
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var papaparse = createCommonjsModule(function (module, exports) {
+/*!
+	Papa Parse
+	v4.3.6
+	https://github.com/mholt/PapaParse
+	License: MIT
+*/
+(function(root, factory)
+{
+	if (false)
+	{
+		// AMD. Register as an anonymous module.
+		undefined([], factory);
+	}
+	else {
+		// Node. Does not work with strict CommonJS, but
+		// only CommonJS-like environments that support module.exports,
+		// like Node.
+		module.exports = factory();
+	}
+}(this, function()
+{
+	'use strict';
+
+	var global = (function () {
+		// alternative method, similar to `Function('return this')()`
+		// but without using `eval` (which is disabled when
+		// using Content Security Policy).
+
+		if (typeof self !== 'undefined') { return self; }
+		if (typeof window !== 'undefined') { return window; }
+		if (typeof global !== 'undefined') { return global; }
+
+		// When running tests none of the above have been defined
+		return {};
+	})();
+
+
+	var IS_WORKER = !global.document && !!global.postMessage,
+		IS_PAPA_WORKER = IS_WORKER && /(\?|&)papaworker(=|&|$)/.test(global.location.search),
+		LOADED_SYNC = false, AUTO_SCRIPT_PATH;
+	var workers = {}, workerIdCounter = 0;
+
+	var Papa = {};
+
+	Papa.parse = CsvToJson;
+	Papa.unparse = JsonToCsv;
+
+	Papa.RECORD_SEP = String.fromCharCode(30);
+	Papa.UNIT_SEP = String.fromCharCode(31);
+	Papa.BYTE_ORDER_MARK = '\ufeff';
+	Papa.BAD_DELIMITERS = ['\r', '\n', '"', Papa.BYTE_ORDER_MARK];
+	Papa.WORKERS_SUPPORTED = !IS_WORKER && !!global.Worker;
+	Papa.SCRIPT_PATH = null;	// Must be set by your code if you use workers and this lib is loaded asynchronously
+
+	// Configurable chunk sizes for local and remote files, respectively
+	Papa.LocalChunkSize = 1024 * 1024 * 10;	// 10 MB
+	Papa.RemoteChunkSize = 1024 * 1024 * 5;	// 5 MB
+	Papa.DefaultDelimiter = ',';			// Used if not specified and detection fails
+
+	// Exposed for testing and development only
+	Papa.Parser = Parser;
+	Papa.ParserHandle = ParserHandle;
+	Papa.NetworkStreamer = NetworkStreamer;
+	Papa.FileStreamer = FileStreamer;
+	Papa.StringStreamer = StringStreamer;
+	Papa.ReadableStreamStreamer = ReadableStreamStreamer;
+
+	if (global.jQuery)
+	{
+		var $ = global.jQuery;
+		$.fn.parse = function(options)
+		{
+			var config = options.config || {};
+			var queue = [];
+
+			this.each(function(idx)
+			{
+				var supported = $(this).prop('tagName').toUpperCase() === 'INPUT'
+								&& $(this).attr('type').toLowerCase() === 'file'
+								&& global.FileReader;
+
+				if (!supported || !this.files || this.files.length === 0)
+					return true;	// continue to next input element
+
+				for (var i = 0; i < this.files.length; i++)
+				{
+					queue.push({
+						file: this.files[i],
+						inputElem: this,
+						instanceConfig: $.extend({}, config)
+					});
+				}
+			});
+
+			parseNextFile();	// begin parsing
+			return this;		// maintains chainability
+
+
+			function parseNextFile()
+			{
+				if (queue.length === 0)
+				{
+					if (isFunction(options.complete))
+						options.complete();
+					return;
+				}
+
+				var f = queue[0];
+
+				if (isFunction(options.before))
+				{
+					var returned = options.before(f.file, f.inputElem);
+
+					if (typeof returned === 'object')
+					{
+						if (returned.action === 'abort')
+						{
+							error('AbortError', f.file, f.inputElem, returned.reason);
+							return;	// Aborts all queued files immediately
+						}
+						else if (returned.action === 'skip')
+						{
+							fileComplete();	// parse the next file in the queue, if any
+							return;
+						}
+						else if (typeof returned.config === 'object')
+							f.instanceConfig = $.extend(f.instanceConfig, returned.config);
+					}
+					else if (returned === 'skip')
+					{
+						fileComplete();	// parse the next file in the queue, if any
+						return;
+					}
+				}
+
+				// Wrap up the user's complete callback, if any, so that ours also gets executed
+				var userCompleteFunc = f.instanceConfig.complete;
+				f.instanceConfig.complete = function(results)
+				{
+					if (isFunction(userCompleteFunc))
+						userCompleteFunc(results, f.file, f.inputElem);
+					fileComplete();
+				};
+
+				Papa.parse(f.file, f.instanceConfig);
+			}
+
+			function error(name, file, elem, reason)
+			{
+				if (isFunction(options.error))
+					options.error({name: name}, file, elem, reason);
+			}
+
+			function fileComplete()
+			{
+				queue.splice(0, 1);
+				parseNextFile();
+			}
+		};
+	}
+
+
+	if (IS_PAPA_WORKER)
+	{
+		global.onmessage = workerThreadReceivedMessage;
+	}
+	else if (Papa.WORKERS_SUPPORTED)
+	{
+		AUTO_SCRIPT_PATH = getScriptPath();
+
+		// Check if the script was loaded synchronously
+		if (!document.body)
+		{
+			// Body doesn't exist yet, must be synchronous
+			LOADED_SYNC = true;
+		}
+		else
+		{
+			document.addEventListener('DOMContentLoaded', function () {
+				LOADED_SYNC = true;
+			}, true);
+		}
+	}
+
+
+
+
+	function CsvToJson(_input, _config)
+	{
+		_config = _config || {};
+		var dynamicTyping = _config.dynamicTyping || false;
+		if (isFunction(dynamicTyping)) {
+			_config.dynamicTypingFunction = dynamicTyping;
+			// Will be filled on first row call
+			dynamicTyping = {};
+		}
+		_config.dynamicTyping = dynamicTyping;
+
+		if (_config.worker && Papa.WORKERS_SUPPORTED)
+		{
+			var w = newWorker();
+
+			w.userStep = _config.step;
+			w.userChunk = _config.chunk;
+			w.userComplete = _config.complete;
+			w.userError = _config.error;
+
+			_config.step = isFunction(_config.step);
+			_config.chunk = isFunction(_config.chunk);
+			_config.complete = isFunction(_config.complete);
+			_config.error = isFunction(_config.error);
+			delete _config.worker;	// prevent infinite loop
+
+			w.postMessage({
+				input: _input,
+				config: _config,
+				workerId: w.id
+			});
+
+			return;
+		}
+
+		var streamer = null;
+		if (typeof _input === 'string')
+		{
+			if (_config.download)
+				streamer = new NetworkStreamer(_config);
+			else
+				streamer = new StringStreamer(_config);
+		}
+		else if (_input.readable === true && isFunction(_input.read) && isFunction(_input.on))
+		{
+			streamer = new ReadableStreamStreamer(_config);
+		}
+		else if ((global.File && _input instanceof File) || _input instanceof Object)	// ...Safari. (see issue #106)
+			streamer = new FileStreamer(_config);
+
+		return streamer.stream(_input);
+	}
+
+
+
+
+
+
+	function JsonToCsv(_input, _config)
+	{
+		var _output = '';
+		var _fields = [];
+
+		// Default configuration
+
+		/** whether to surround every datum with quotes */
+		var _quotes = false;
+
+		/** whether to write headers */
+		var _writeHeader = true;
+
+		/** delimiting character */
+		var _delimiter = ',';
+
+		/** newline character(s) */
+		var _newline = '\r\n';
+
+		/** quote character */
+		var _quoteChar = '"';
+
+		unpackConfig();
+
+		var quoteCharRegex = new RegExp(_quoteChar, 'g');
+
+		if (typeof _input === 'string')
+			_input = JSON.parse(_input);
+
+		if (_input instanceof Array)
+		{
+			if (!_input.length || _input[0] instanceof Array)
+				return serialize(null, _input);
+			else if (typeof _input[0] === 'object')
+				return serialize(objectKeys(_input[0]), _input);
+		}
+		else if (typeof _input === 'object')
+		{
+			if (typeof _input.data === 'string')
+				_input.data = JSON.parse(_input.data);
+
+			if (_input.data instanceof Array)
+			{
+				if (!_input.fields)
+					_input.fields =  _input.meta && _input.meta.fields;
+
+				if (!_input.fields)
+					_input.fields =  _input.data[0] instanceof Array
+									? _input.fields
+									: objectKeys(_input.data[0]);
+
+				if (!(_input.data[0] instanceof Array) && typeof _input.data[0] !== 'object')
+					_input.data = [_input.data];	// handles input like [1,2,3] or ['asdf']
+			}
+
+			return serialize(_input.fields || [], _input.data || []);
+		}
+
+		// Default (any valid paths should return before this)
+		throw 'exception: Unable to serialize unrecognized input';
+
+
+		function unpackConfig()
+		{
+			if (typeof _config !== 'object')
+				return;
+
+			if (typeof _config.delimiter === 'string'
+				&& _config.delimiter.length === 1
+				&& Papa.BAD_DELIMITERS.indexOf(_config.delimiter) === -1)
+			{
+				_delimiter = _config.delimiter;
+			}
+
+			if (typeof _config.quotes === 'boolean'
+				|| _config.quotes instanceof Array)
+				_quotes = _config.quotes;
+
+			if (typeof _config.newline === 'string')
+				_newline = _config.newline;
+
+			if (typeof _config.quoteChar === 'string')
+				_quoteChar = _config.quoteChar;
+
+			if (typeof _config.header === 'boolean')
+				_writeHeader = _config.header;
+		}
+
+
+		/** Turns an object's keys into an array */
+		function objectKeys(obj)
+		{
+			if (typeof obj !== 'object')
+				return [];
+			var keys = [];
+			for (var key in obj)
+				keys.push(key);
+			return keys;
+		}
+
+		/** The double for loop that iterates the data and writes out a CSV string including header row */
+		function serialize(fields, data)
+		{
+			var csv = '';
+
+			if (typeof fields === 'string')
+				fields = JSON.parse(fields);
+			if (typeof data === 'string')
+				data = JSON.parse(data);
+
+			var hasHeader = fields instanceof Array && fields.length > 0;
+			var dataKeyedByField = !(data[0] instanceof Array);
+
+			// If there a header row, write it first
+			if (hasHeader && _writeHeader)
+			{
+				for (var i = 0; i < fields.length; i++)
+				{
+					if (i > 0)
+						csv += _delimiter;
+					csv += safe(fields[i], i);
+				}
+				if (data.length > 0)
+					csv += _newline;
+			}
+
+			// Then write out the data
+			for (var row = 0; row < data.length; row++)
+			{
+				var maxCol = hasHeader ? fields.length : data[row].length;
+
+				for (var col = 0; col < maxCol; col++)
+				{
+					if (col > 0)
+						csv += _delimiter;
+					var colIdx = hasHeader && dataKeyedByField ? fields[col] : col;
+					csv += safe(data[row][colIdx], col);
+				}
+
+				if (row < data.length - 1)
+					csv += _newline;
+			}
+
+			return csv;
+		}
+
+		/** Encloses a value around quotes if needed (makes a value safe for CSV insertion) */
+		function safe(str, col)
+		{
+			if (typeof str === 'undefined' || str === null)
+				return '';
+
+			str = str.toString().replace(quoteCharRegex, _quoteChar+_quoteChar);
+
+			var needsQuotes = (typeof _quotes === 'boolean' && _quotes)
+							|| (_quotes instanceof Array && _quotes[col])
+							|| hasAny(str, Papa.BAD_DELIMITERS)
+							|| str.indexOf(_delimiter) > -1
+							|| str.charAt(0) === ' '
+							|| str.charAt(str.length - 1) === ' ';
+
+			return needsQuotes ? _quoteChar + str + _quoteChar : str;
+		}
+
+		function hasAny(str, substrings)
+		{
+			for (var i = 0; i < substrings.length; i++)
+				if (str.indexOf(substrings[i]) > -1)
+					return true;
+			return false;
+		}
+	}
+
+	/** ChunkStreamer is the base prototype for various streamer implementations. */
+	function ChunkStreamer(config)
+	{
+		this._handle = null;
+		this._paused = false;
+		this._finished = false;
+		this._input = null;
+		this._baseIndex = 0;
+		this._partialLine = '';
+		this._rowCount = 0;
+		this._start = 0;
+		this._nextChunk = null;
+		this.isFirstChunk = true;
+		this._completeResults = {
+			data: [],
+			errors: [],
+			meta: {}
+		};
+		replaceConfig.call(this, config);
+
+		this.parseChunk = function(chunk)
+		{
+			// First chunk pre-processing
+			if (this.isFirstChunk && isFunction(this._config.beforeFirstChunk))
+			{
+				var modifiedChunk = this._config.beforeFirstChunk(chunk);
+				if (modifiedChunk !== undefined)
+					chunk = modifiedChunk;
+			}
+			this.isFirstChunk = false;
+
+			// Rejoin the line we likely just split in two by chunking the file
+			var aggregate = this._partialLine + chunk;
+			this._partialLine = '';
+
+			var results = this._handle.parse(aggregate, this._baseIndex, !this._finished);
+
+			if (this._handle.paused() || this._handle.aborted())
+				return;
+
+			var lastIndex = results.meta.cursor;
+
+			if (!this._finished)
+			{
+				this._partialLine = aggregate.substring(lastIndex - this._baseIndex);
+				this._baseIndex = lastIndex;
+			}
+
+			if (results && results.data)
+				this._rowCount += results.data.length;
+
+			var finishedIncludingPreview = this._finished || (this._config.preview && this._rowCount >= this._config.preview);
+
+			if (IS_PAPA_WORKER)
+			{
+				global.postMessage({
+					results: results,
+					workerId: Papa.WORKER_ID,
+					finished: finishedIncludingPreview
+				});
+			}
+			else if (isFunction(this._config.chunk))
+			{
+				this._config.chunk(results, this._handle);
+				if (this._paused)
+					return;
+				results = undefined;
+				this._completeResults = undefined;
+			}
+
+			if (!this._config.step && !this._config.chunk) {
+				this._completeResults.data = this._completeResults.data.concat(results.data);
+				this._completeResults.errors = this._completeResults.errors.concat(results.errors);
+				this._completeResults.meta = results.meta;
+			}
+
+			if (finishedIncludingPreview && isFunction(this._config.complete) && (!results || !results.meta.aborted))
+				this._config.complete(this._completeResults, this._input);
+
+			if (!finishedIncludingPreview && (!results || !results.meta.paused))
+				this._nextChunk();
+
+			return results;
+		};
+
+		this._sendError = function(error)
+		{
+			if (isFunction(this._config.error))
+				this._config.error(error);
+			else if (IS_PAPA_WORKER && this._config.error)
+			{
+				global.postMessage({
+					workerId: Papa.WORKER_ID,
+					error: error,
+					finished: false
+				});
+			}
+		};
+
+		function replaceConfig(config)
+		{
+			// Deep-copy the config so we can edit it
+			var configCopy = copy(config);
+			configCopy.chunkSize = parseInt(configCopy.chunkSize);	// parseInt VERY important so we don't concatenate strings!
+			if (!config.step && !config.chunk)
+				configCopy.chunkSize = null;  // disable Range header if not streaming; bad values break IIS - see issue #196
+			this._handle = new ParserHandle(configCopy);
+			this._handle.streamer = this;
+			this._config = configCopy;	// persist the copy to the caller
+		}
+	}
+
+
+	function NetworkStreamer(config)
+	{
+		config = config || {};
+		if (!config.chunkSize)
+			config.chunkSize = Papa.RemoteChunkSize;
+		ChunkStreamer.call(this, config);
+
+		var xhr;
+
+		if (IS_WORKER)
+		{
+			this._nextChunk = function()
+			{
+				this._readChunk();
+				this._chunkLoaded();
+			};
+		}
+		else
+		{
+			this._nextChunk = function()
+			{
+				this._readChunk();
+			};
+		}
+
+		this.stream = function(url)
+		{
+			this._input = url;
+			this._nextChunk();	// Starts streaming
+		};
+
+		this._readChunk = function()
+		{
+			if (this._finished)
+			{
+				this._chunkLoaded();
+				return;
+			}
+
+			xhr = new XMLHttpRequest();
+
+			if (this._config.withCredentials)
+			{
+				xhr.withCredentials = this._config.withCredentials;
+			}
+
+			if (!IS_WORKER)
+			{
+				xhr.onload = bindFunction(this._chunkLoaded, this);
+				xhr.onerror = bindFunction(this._chunkError, this);
+			}
+
+			xhr.open('GET', this._input, !IS_WORKER);
+			// Headers can only be set when once the request state is OPENED
+			if (this._config.downloadRequestHeaders)
+			{
+				var headers = this._config.downloadRequestHeaders;
+
+				for (var headerName in headers)
+				{
+					xhr.setRequestHeader(headerName, headers[headerName]);
+				}
+			}
+
+			if (this._config.chunkSize)
+			{
+				var end = this._start + this._config.chunkSize - 1;	// minus one because byte range is inclusive
+				xhr.setRequestHeader('Range', 'bytes='+this._start+'-'+end);
+				xhr.setRequestHeader('If-None-Match', 'webkit-no-cache'); // https://bugs.webkit.org/show_bug.cgi?id=82672
+			}
+
+			try {
+				xhr.send();
+			}
+			catch (err) {
+				this._chunkError(err.message);
+			}
+
+			if (IS_WORKER && xhr.status === 0)
+				this._chunkError();
+			else
+				this._start += this._config.chunkSize;
+		};
+
+		this._chunkLoaded = function()
+		{
+			if (xhr.readyState != 4)
+				return;
+
+			if (xhr.status < 200 || xhr.status >= 400)
+			{
+				this._chunkError();
+				return;
+			}
+
+			this._finished = !this._config.chunkSize || this._start > getFileSize(xhr);
+			this.parseChunk(xhr.responseText);
+		};
+
+		this._chunkError = function(errorMessage)
+		{
+			var errorText = xhr.statusText || errorMessage;
+			this._sendError(errorText);
+		};
+
+		function getFileSize(xhr)
+		{
+			var contentRange = xhr.getResponseHeader('Content-Range');
+			if (contentRange === null) { // no content range, then finish!
+					return -1;
+					}
+			return parseInt(contentRange.substr(contentRange.lastIndexOf('/') + 1));
+		}
+	}
+	NetworkStreamer.prototype = Object.create(ChunkStreamer.prototype);
+	NetworkStreamer.prototype.constructor = NetworkStreamer;
+
+
+	function FileStreamer(config)
+	{
+		config = config || {};
+		if (!config.chunkSize)
+			config.chunkSize = Papa.LocalChunkSize;
+		ChunkStreamer.call(this, config);
+
+		var reader, slice;
+
+		// FileReader is better than FileReaderSync (even in worker) - see http://stackoverflow.com/q/24708649/1048862
+		// But Firefox is a pill, too - see issue #76: https://github.com/mholt/PapaParse/issues/76
+		var usingAsyncReader = typeof FileReader !== 'undefined';	// Safari doesn't consider it a function - see issue #105
+
+		this.stream = function(file)
+		{
+			this._input = file;
+			slice = file.slice || file.webkitSlice || file.mozSlice;
+
+			if (usingAsyncReader)
+			{
+				reader = new FileReader();		// Preferred method of reading files, even in workers
+				reader.onload = bindFunction(this._chunkLoaded, this);
+				reader.onerror = bindFunction(this._chunkError, this);
+			}
+			else
+				reader = new FileReaderSync();	// Hack for running in a web worker in Firefox
+
+			this._nextChunk();	// Starts streaming
+		};
+
+		this._nextChunk = function()
+		{
+			if (!this._finished && (!this._config.preview || this._rowCount < this._config.preview))
+				this._readChunk();
+		};
+
+		this._readChunk = function()
+		{
+			var input = this._input;
+			if (this._config.chunkSize)
+			{
+				var end = Math.min(this._start + this._config.chunkSize, this._input.size);
+				input = slice.call(input, this._start, end);
+			}
+			var txt = reader.readAsText(input, this._config.encoding);
+			if (!usingAsyncReader)
+				this._chunkLoaded({ target: { result: txt } });	// mimic the async signature
+		};
+
+		this._chunkLoaded = function(event)
+		{
+			// Very important to increment start each time before handling results
+			this._start += this._config.chunkSize;
+			this._finished = !this._config.chunkSize || this._start >= this._input.size;
+			this.parseChunk(event.target.result);
+		};
+
+		this._chunkError = function()
+		{
+			this._sendError(reader.error);
+		};
+
+	}
+	FileStreamer.prototype = Object.create(ChunkStreamer.prototype);
+	FileStreamer.prototype.constructor = FileStreamer;
+
+
+	function StringStreamer(config)
+	{
+		config = config || {};
+		ChunkStreamer.call(this, config);
+
+		var string;
+		var remaining;
+		this.stream = function(s)
+		{
+			string = s;
+			remaining = s;
+			return this._nextChunk();
+		};
+		this._nextChunk = function()
+		{
+			if (this._finished) return;
+			var size = this._config.chunkSize;
+			var chunk = size ? remaining.substr(0, size) : remaining;
+			remaining = size ? remaining.substr(size) : '';
+			this._finished = !remaining;
+			return this.parseChunk(chunk);
+		};
+	}
+	StringStreamer.prototype = Object.create(StringStreamer.prototype);
+	StringStreamer.prototype.constructor = StringStreamer;
+
+
+	function ReadableStreamStreamer(config)
+	{
+		config = config || {};
+
+		ChunkStreamer.call(this, config);
+
+		var queue = [];
+		var parseOnData = true;
+
+		this.stream = function(stream)
+		{
+			this._input = stream;
+
+			this._input.on('data', this._streamData);
+			this._input.on('end', this._streamEnd);
+			this._input.on('error', this._streamError);
+		};
+
+		this._nextChunk = function()
+		{
+			if (queue.length)
+			{
+				this.parseChunk(queue.shift());
+			}
+			else
+			{
+				parseOnData = true;
+			}
+		};
+
+		this._streamData = bindFunction(function(chunk)
+		{
+			try
+			{
+				queue.push(typeof chunk === 'string' ? chunk : chunk.toString(this._config.encoding));
+
+				if (parseOnData)
+				{
+					parseOnData = false;
+					this.parseChunk(queue.shift());
+				}
+			}
+			catch (error)
+			{
+				this._streamError(error);
+			}
+		}, this);
+
+		this._streamError = bindFunction(function(error)
+		{
+			this._streamCleanUp();
+			this._sendError(error.message);
+		}, this);
+
+		this._streamEnd = bindFunction(function()
+		{
+			this._streamCleanUp();
+			this._finished = true;
+			this._streamData('');
+		}, this);
+
+		this._streamCleanUp = bindFunction(function()
+		{
+			this._input.removeListener('data', this._streamData);
+			this._input.removeListener('end', this._streamEnd);
+			this._input.removeListener('error', this._streamError);
+		}, this);
+	}
+	ReadableStreamStreamer.prototype = Object.create(ChunkStreamer.prototype);
+	ReadableStreamStreamer.prototype.constructor = ReadableStreamStreamer;
+
+
+	// Use one ParserHandle per entire CSV file or string
+	function ParserHandle(_config)
+	{
+		// One goal is to minimize the use of regular expressions...
+		var FLOAT = /^\s*-?(\d*\.?\d+|\d+\.?\d*)(e[-+]?\d+)?\s*$/i;
+
+		var self = this;
+		var _stepCounter = 0;	// Number of times step was called (number of rows parsed)
+		var _input;				// The input being parsed
+		var _parser;			// The core parser being used
+		var _paused = false;	// Whether we are paused or not
+		var _aborted = false;	// Whether the parser has aborted or not
+		var _delimiterError;	// Temporary state between delimiter detection and processing results
+		var _fields = [];		// Fields are from the header row of the input, if there is one
+		var _results = {		// The last results returned from the parser
+			data: [],
+			errors: [],
+			meta: {}
+		};
+
+		if (isFunction(_config.step))
+		{
+			var userStep = _config.step;
+			_config.step = function(results)
+			{
+				_results = results;
+
+				if (needsHeaderRow())
+					processResults();
+				else	// only call user's step function after header row
+				{
+					processResults();
+
+					// It's possbile that this line was empty and there's no row here after all
+					if (_results.data.length === 0)
+						return;
+
+					_stepCounter += results.data.length;
+					if (_config.preview && _stepCounter > _config.preview)
+						_parser.abort();
+					else
+						userStep(_results, self);
+				}
+			};
+		}
+
+		/**
+		 * Parses input. Most users won't need, and shouldn't mess with, the baseIndex
+		 * and ignoreLastRow parameters. They are used by streamers (wrapper functions)
+		 * when an input comes in multiple chunks, like from a file.
+		 */
+		this.parse = function(input, baseIndex, ignoreLastRow)
+		{
+			if (!_config.newline)
+				_config.newline = guessLineEndings(input);
+
+			_delimiterError = false;
+			if (!_config.delimiter)
+			{
+				var delimGuess = guessDelimiter(input, _config.newline, _config.skipEmptyLines);
+				if (delimGuess.successful)
+					_config.delimiter = delimGuess.bestDelimiter;
+				else
+				{
+					_delimiterError = true;	// add error after parsing (otherwise it would be overwritten)
+					_config.delimiter = Papa.DefaultDelimiter;
+				}
+				_results.meta.delimiter = _config.delimiter;
+			}
+			else if(isFunction(_config.delimiter))
+			{
+				_config.delimiter = _config.delimiter(input);
+				_results.meta.delimiter = _config.delimiter;
+			}
+
+			var parserConfig = copy(_config);
+			if (_config.preview && _config.header)
+				parserConfig.preview++;	// to compensate for header row
+
+			_input = input;
+			_parser = new Parser(parserConfig);
+			_results = _parser.parse(_input, baseIndex, ignoreLastRow);
+			processResults();
+			return _paused ? { meta: { paused: true } } : (_results || { meta: { paused: false } });
+		};
+
+		this.paused = function()
+		{
+			return _paused;
+		};
+
+		this.pause = function()
+		{
+			_paused = true;
+			_parser.abort();
+			_input = _input.substr(_parser.getCharIndex());
+		};
+
+		this.resume = function()
+		{
+			_paused = false;
+			self.streamer.parseChunk(_input);
+		};
+
+		this.aborted = function ()
+		{
+			return _aborted;
+		};
+
+		this.abort = function()
+		{
+			_aborted = true;
+			_parser.abort();
+			_results.meta.aborted = true;
+			if (isFunction(_config.complete))
+				_config.complete(_results);
+			_input = '';
+		};
+
+		function processResults()
+		{
+			if (_results && _delimiterError)
+			{
+				addError('Delimiter', 'UndetectableDelimiter', 'Unable to auto-detect delimiting character; defaulted to \''+Papa.DefaultDelimiter+'\'');
+				_delimiterError = false;
+			}
+
+			if (_config.skipEmptyLines)
+			{
+				for (var i = 0; i < _results.data.length; i++)
+					if (_results.data[i].length === 1 && _results.data[i][0] === '')
+						_results.data.splice(i--, 1);
+			}
+
+			if (needsHeaderRow())
+				fillHeaderFields();
+
+			return applyHeaderAndDynamicTyping();
+		}
+
+		function needsHeaderRow()
+		{
+			return _config.header && _fields.length === 0;
+		}
+
+		function fillHeaderFields()
+		{
+			if (!_results)
+				return;
+			for (var i = 0; needsHeaderRow() && i < _results.data.length; i++)
+				for (var j = 0; j < _results.data[i].length; j++)
+					_fields.push(_results.data[i][j]);
+			_results.data.splice(0, 1);
+		}
+
+		function shouldApplyDynamicTyping(field) {
+			// Cache function values to avoid calling it for each row
+			if (_config.dynamicTypingFunction && _config.dynamicTyping[field] === undefined) {
+				_config.dynamicTyping[field] = _config.dynamicTypingFunction(field);
+			}
+			return (_config.dynamicTyping[field] || _config.dynamicTyping) === true
+		}
+
+		function parseDynamic(field, value)
+		{
+			if (shouldApplyDynamicTyping(field))
+			{
+				if (value === 'true' || value === 'TRUE')
+					return true;
+				else if (value === 'false' || value === 'FALSE')
+					return false;
+				else
+					return tryParseFloat(value);
+			}
+			return value;
+		}
+
+		function applyHeaderAndDynamicTyping()
+		{
+			if (!_results || (!_config.header && !_config.dynamicTyping))
+				return _results;
+
+			for (var i = 0; i < _results.data.length; i++)
+			{
+				var row = _config.header ? {} : [];
+
+				for (var j = 0; j < _results.data[i].length; j++)
+				{
+					var field = j;
+					var value = _results.data[i][j];
+
+					if (_config.header)
+						field = j >= _fields.length ? '__parsed_extra' : _fields[j];
+
+					value = parseDynamic(field, value);
+
+					if (field === '__parsed_extra')
+					{
+						row[field] = row[field] || [];
+						row[field].push(value);
+					}
+					else
+						row[field] = value;
+				}
+
+				_results.data[i] = row;
+
+				if (_config.header)
+				{
+					if (j > _fields.length)
+						addError('FieldMismatch', 'TooManyFields', 'Too many fields: expected ' + _fields.length + ' fields but parsed ' + j, i);
+					else if (j < _fields.length)
+						addError('FieldMismatch', 'TooFewFields', 'Too few fields: expected ' + _fields.length + ' fields but parsed ' + j, i);
+				}
+			}
+
+			if (_config.header && _results.meta)
+				_results.meta.fields = _fields;
+			return _results;
+		}
+
+		function guessDelimiter(input, newline, skipEmptyLines)
+		{
+			var delimChoices = [',', '\t', '|', ';', Papa.RECORD_SEP, Papa.UNIT_SEP];
+			var bestDelim, bestDelta, fieldCountPrevRow;
+
+			for (var i = 0; i < delimChoices.length; i++)
+			{
+				var delim = delimChoices[i];
+				var delta = 0, avgFieldCount = 0, emptyLinesCount = 0;
+				fieldCountPrevRow = undefined;
+
+				var preview = new Parser({
+					delimiter: delim,
+					newline: newline,
+					preview: 10
+				}).parse(input);
+
+				for (var j = 0; j < preview.data.length; j++)
+				{
+					if (skipEmptyLines && preview.data[j].length === 1 && preview.data[j][0].length === 0) {
+						emptyLinesCount++;
+						continue
+					}
+					var fieldCount = preview.data[j].length;
+					avgFieldCount += fieldCount;
+
+					if (typeof fieldCountPrevRow === 'undefined')
+					{
+						fieldCountPrevRow = fieldCount;
+						continue;
+					}
+					else if (fieldCount > 1)
+					{
+						delta += Math.abs(fieldCount - fieldCountPrevRow);
+						fieldCountPrevRow = fieldCount;
+					}
+				}
+
+				if (preview.data.length > 0)
+					avgFieldCount /= (preview.data.length - emptyLinesCount);
+
+				if ((typeof bestDelta === 'undefined' || delta < bestDelta)
+					&& avgFieldCount > 1.99)
+				{
+					bestDelta = delta;
+					bestDelim = delim;
+				}
+			}
+
+			_config.delimiter = bestDelim;
+
+			return {
+				successful: !!bestDelim,
+				bestDelimiter: bestDelim
+			}
+		}
+
+		function guessLineEndings(input)
+		{
+			input = input.substr(0, 1024*1024);	// max length 1 MB
+
+			var r = input.split('\r');
+
+			var n = input.split('\n');
+
+			var nAppearsFirst = (n.length > 1 && n[0].length < r[0].length);
+
+			if (r.length === 1 || nAppearsFirst)
+				return '\n';
+
+			var numWithN = 0;
+			for (var i = 0; i < r.length; i++)
+			{
+				if (r[i][0] === '\n')
+					numWithN++;
+			}
+
+			return numWithN >= r.length / 2 ? '\r\n' : '\r';
+		}
+
+		function tryParseFloat(val)
+		{
+			var isNumber = FLOAT.test(val);
+			return isNumber ? parseFloat(val) : val;
+		}
+
+		function addError(type, code, msg, row)
+		{
+			_results.errors.push({
+				type: type,
+				code: code,
+				message: msg,
+				row: row
+			});
+		}
+	}
+
+
+
+
+
+	/** The core parser implements speedy and correct CSV parsing */
+	function Parser(config)
+	{
+		// Unpack the config object
+		config = config || {};
+		var delim = config.delimiter;
+		var newline = config.newline;
+		var comments = config.comments;
+		var step = config.step;
+		var preview = config.preview;
+		var fastMode = config.fastMode;
+		var quoteChar = config.quoteChar || '"';
+
+		// Delimiter must be valid
+		if (typeof delim !== 'string'
+			|| Papa.BAD_DELIMITERS.indexOf(delim) > -1)
+			delim = ',';
+
+		// Comment character must be valid
+		if (comments === delim)
+			throw 'Comment character same as delimiter';
+		else if (comments === true)
+			comments = '#';
+		else if (typeof comments !== 'string'
+			|| Papa.BAD_DELIMITERS.indexOf(comments) > -1)
+			comments = false;
+
+		// Newline must be valid: \r, \n, or \r\n
+		if (newline != '\n' && newline != '\r' && newline != '\r\n')
+			newline = '\n';
+
+		// We're gonna need these at the Parser scope
+		var cursor = 0;
+		var aborted = false;
+
+		this.parse = function(input, baseIndex, ignoreLastRow)
+		{
+			// For some reason, in Chrome, this speeds things up (!?)
+			if (typeof input !== 'string')
+				throw 'Input must be a string';
+
+			// We don't need to compute some of these every time parse() is called,
+			// but having them in a more local scope seems to perform better
+			var inputLen = input.length,
+				delimLen = delim.length,
+				newlineLen = newline.length,
+				commentsLen = comments.length;
+			var stepIsFunction = isFunction(step);
+
+			// Establish starting state
+			cursor = 0;
+			var data = [], errors = [], row = [], lastCursor = 0;
+
+			if (!input)
+				return returnable();
+
+			if (fastMode || (fastMode !== false && input.indexOf(quoteChar) === -1))
+			{
+				var rows = input.split(newline);
+				for (var i = 0; i < rows.length; i++)
+				{
+					var row = rows[i];
+					cursor += row.length;
+					if (i !== rows.length - 1)
+						cursor += newline.length;
+					else if (ignoreLastRow)
+						return returnable();
+					if (comments && row.substr(0, commentsLen) === comments)
+						continue;
+					if (stepIsFunction)
+					{
+						data = [];
+						pushRow(row.split(delim));
+						doStep();
+						if (aborted)
+							return returnable();
+					}
+					else
+						pushRow(row.split(delim));
+					if (preview && i >= preview)
+					{
+						data = data.slice(0, preview);
+						return returnable(true);
+					}
+				}
+				return returnable();
+			}
+
+			var nextDelim = input.indexOf(delim, cursor);
+			var nextNewline = input.indexOf(newline, cursor);
+			var quoteCharRegex = new RegExp(quoteChar+quoteChar, 'g');
+
+			// Parser loop
+			for (;;)
+			{
+				// Field has opening quote
+				if (input[cursor] === quoteChar)
+				{
+					// Start our search for the closing quote where the cursor is
+					var quoteSearch = cursor;
+
+					// Skip the opening quote
+					cursor++;
+
+					for (;;)
+					{
+						// Find closing quote
+						var quoteSearch = input.indexOf(quoteChar, quoteSearch+1);
+
+						//No other quotes are found - no other delimiters
+						if (quoteSearch === -1)
+						{
+							if (!ignoreLastRow) {
+								// No closing quote... what a pity
+								errors.push({
+									type: 'Quotes',
+									code: 'MissingQuotes',
+									message: 'Quoted field unterminated',
+									row: data.length,	// row has yet to be inserted
+									index: cursor
+								});
+							}
+							return finish();
+						}
+
+						// Closing quote at EOF
+						if (quoteSearch === inputLen-1)
+						{
+							var value = input.substring(cursor, quoteSearch).replace(quoteCharRegex, quoteChar);
+							return finish(value);
+						}
+
+						// If this quote is escaped, it's part of the data; skip it
+						if (input[quoteSearch+1] === quoteChar)
+						{
+							quoteSearch++;
+							continue;
+						}
+
+						// Closing quote followed by delimiter
+						if (input[quoteSearch+1] === delim)
+						{
+							row.push(input.substring(cursor, quoteSearch).replace(quoteCharRegex, quoteChar));
+							cursor = quoteSearch + 1 + delimLen;
+							nextDelim = input.indexOf(delim, cursor);
+							nextNewline = input.indexOf(newline, cursor);
+							break;
+						}
+
+						// Closing quote followed by newline
+						if (input.substr(quoteSearch+1, newlineLen) === newline)
+						{
+							row.push(input.substring(cursor, quoteSearch).replace(quoteCharRegex, quoteChar));
+							saveRow(quoteSearch + 1 + newlineLen);
+							nextDelim = input.indexOf(delim, cursor);	// because we may have skipped the nextDelim in the quoted field
+
+							if (stepIsFunction)
+							{
+								doStep();
+								if (aborted)
+									return returnable();
+							}
+
+							if (preview && data.length >= preview)
+								return returnable(true);
+
+							break;
+						}
+
+
+						// Checks for valid closing quotes are complete (escaped quotes or quote followed by EOF/delimiter/newline) -- assume these quotes are part of an invalid text string
+						errors.push({
+							type: 'Quotes',
+							code: 'InvalidQuotes',
+							message: 'Trailing quote on quoted field is malformed',
+							row: data.length,	// row has yet to be inserted
+							index: cursor
+						});
+
+						quoteSearch++;
+						continue;
+
+					}
+
+					continue;
+				}
+
+				// Comment found at start of new line
+				if (comments && row.length === 0 && input.substr(cursor, commentsLen) === comments)
+				{
+					if (nextNewline === -1)	// Comment ends at EOF
+						return returnable();
+					cursor = nextNewline + newlineLen;
+					nextNewline = input.indexOf(newline, cursor);
+					nextDelim = input.indexOf(delim, cursor);
+					continue;
+				}
+
+				// Next delimiter comes before next newline, so we've reached end of field
+				if (nextDelim !== -1 && (nextDelim < nextNewline || nextNewline === -1))
+				{
+					row.push(input.substring(cursor, nextDelim));
+					cursor = nextDelim + delimLen;
+					nextDelim = input.indexOf(delim, cursor);
+					continue;
+				}
+
+				// End of row
+				if (nextNewline !== -1)
+				{
+					row.push(input.substring(cursor, nextNewline));
+					saveRow(nextNewline + newlineLen);
+
+					if (stepIsFunction)
+					{
+						doStep();
+						if (aborted)
+							return returnable();
+					}
+
+					if (preview && data.length >= preview)
+						return returnable(true);
+
+					continue;
+				}
+
+				break;
+			}
+
+
+			return finish();
+
+
+			function pushRow(row)
+			{
+				data.push(row);
+				lastCursor = cursor;
+			}
+
+			/**
+			 * Appends the remaining input from cursor to the end into
+			 * row, saves the row, calls step, and returns the results.
+			 */
+			function finish(value)
+			{
+				if (ignoreLastRow)
+					return returnable();
+				if (typeof value === 'undefined')
+					value = input.substr(cursor);
+				row.push(value);
+				cursor = inputLen;	// important in case parsing is paused
+				pushRow(row);
+				if (stepIsFunction)
+					doStep();
+				return returnable();
+			}
+
+			/**
+			 * Appends the current row to the results. It sets the cursor
+			 * to newCursor and finds the nextNewline. The caller should
+			 * take care to execute user's step function and check for
+			 * preview and end parsing if necessary.
+			 */
+			function saveRow(newCursor)
+			{
+				cursor = newCursor;
+				pushRow(row);
+				row = [];
+				nextNewline = input.indexOf(newline, cursor);
+			}
+
+			/** Returns an object with the results, errors, and meta. */
+			function returnable(stopped)
+			{
+				return {
+					data: data,
+					errors: errors,
+					meta: {
+						delimiter: delim,
+						linebreak: newline,
+						aborted: aborted,
+						truncated: !!stopped,
+						cursor: lastCursor + (baseIndex || 0)
+					}
+				};
+			}
+
+			/** Executes the user's step function and resets data & errors. */
+			function doStep()
+			{
+				step(returnable());
+				data = [], errors = [];
+			}
+		};
+
+		/** Sets the abort flag */
+		this.abort = function()
+		{
+			aborted = true;
+		};
+
+		/** Gets the cursor position */
+		this.getCharIndex = function()
+		{
+			return cursor;
+		};
+	}
+
+
+	// If you need to load Papa Parse asynchronously and you also need worker threads, hard-code
+	// the script path here. See: https://github.com/mholt/PapaParse/issues/87#issuecomment-57885358
+	function getScriptPath()
+	{
+		var scripts = document.getElementsByTagName('script');
+		return scripts.length ? scripts[scripts.length - 1].src : '';
+	}
+
+	function newWorker()
+	{
+		if (!Papa.WORKERS_SUPPORTED)
+			return false;
+		if (!LOADED_SYNC && Papa.SCRIPT_PATH === null)
+			throw new Error(
+				'Script path cannot be determined automatically when Papa Parse is loaded asynchronously. ' +
+				'You need to set Papa.SCRIPT_PATH manually.'
+			);
+		var workerUrl = Papa.SCRIPT_PATH || AUTO_SCRIPT_PATH;
+		// Append 'papaworker' to the search string to tell papaparse that this is our worker.
+		workerUrl += (workerUrl.indexOf('?') !== -1 ? '&' : '?') + 'papaworker';
+		var w = new global.Worker(workerUrl);
+		w.onmessage = mainThreadReceivedMessage;
+		w.id = workerIdCounter++;
+		workers[w.id] = w;
+		return w;
+	}
+
+	/** Callback when main thread receives a message */
+	function mainThreadReceivedMessage(e)
+	{
+		var msg = e.data;
+		var worker = workers[msg.workerId];
+		var aborted = false;
+
+		if (msg.error)
+			worker.userError(msg.error, msg.file);
+		else if (msg.results && msg.results.data)
+		{
+			var abort = function() {
+				aborted = true;
+				completeWorker(msg.workerId, { data: [], errors: [], meta: { aborted: true } });
+			};
+
+			var handle = {
+				abort: abort,
+				pause: notImplemented,
+				resume: notImplemented
+			};
+
+			if (isFunction(worker.userStep))
+			{
+				for (var i = 0; i < msg.results.data.length; i++)
+				{
+					worker.userStep({
+						data: [msg.results.data[i]],
+						errors: msg.results.errors,
+						meta: msg.results.meta
+					}, handle);
+					if (aborted)
+						break;
+				}
+				delete msg.results;	// free memory ASAP
+			}
+			else if (isFunction(worker.userChunk))
+			{
+				worker.userChunk(msg.results, handle, msg.file);
+				delete msg.results;
+			}
+		}
+
+		if (msg.finished && !aborted)
+			completeWorker(msg.workerId, msg.results);
+	}
+
+	function completeWorker(workerId, results) {
+		var worker = workers[workerId];
+		if (isFunction(worker.userComplete))
+			worker.userComplete(results);
+		worker.terminate();
+		delete workers[workerId];
+	}
+
+	function notImplemented() {
+		throw 'Not implemented.';
+	}
+
+	/** Callback when worker thread receives a message */
+	function workerThreadReceivedMessage(e)
+	{
+		var msg = e.data;
+
+		if (typeof Papa.WORKER_ID === 'undefined' && msg)
+			Papa.WORKER_ID = msg.workerId;
+
+		if (typeof msg.input === 'string')
+		{
+			global.postMessage({
+				workerId: Papa.WORKER_ID,
+				results: Papa.parse(msg.input, msg.config),
+				finished: true
+			});
+		}
+		else if ((global.File && msg.input instanceof File) || msg.input instanceof Object)	// thank you, Safari (see issue #106)
+		{
+			var results = Papa.parse(msg.input, msg.config);
+			if (results)
+				global.postMessage({
+					workerId: Papa.WORKER_ID,
+					results: results,
+					finished: true
+				});
+		}
+	}
+
+	/** Makes a deep copy of an array or object (mostly) */
+	function copy(obj)
+	{
+		if (typeof obj !== 'object')
+			return obj;
+		var cpy = obj instanceof Array ? [] : {};
+		for (var key in obj)
+			cpy[key] = copy(obj[key]);
+		return cpy;
+	}
+
+	function bindFunction(f, self)
+	{
+		return function() { f.apply(self, arguments); };
+	}
+
+	function isFunction(func)
+	{
+		return typeof func === 'function';
+	}
+
+	return Papa;
+}));
+});
+
+/*
+ * Latin language data module
+ */
+let languageModel = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */]();
+let types = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types;
+// A language of this module
+const language = languages.latin;
+// Create a language data set that will keep all language-related information
+let dataSet = new LanguageDataset(language);
+
+// region Definition of grammatical features
+/*
+ Define grammatical features of a language. Those grammatical features definitions will also be used by morphological
+ analyzer's language modules as well.
+ */
+const importerName = 'csv';
+languageModel.features[types.declension].addImporter(importerName)
+    .map('1st 2nd',
+  [ languageModel.features[types.declension][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_1ST],
+    languageModel.features[types.declension][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_2ND]
+  ]);
+languageModel.features[types.gender].addImporter(importerName)
+    .map('masculine feminine',
+  [ languageModel.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_MASCULINE],
+    languageModel.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_FEMININE]
+  ]);
+languageModel.features[types.tense].addImporter(importerName)
+    .map('future_perfect', languageModel.features[types.tense][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE_PERFECT]);
+const footnotes = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](types.footnote, [], language);
+
+// endregion Definition of grammatical features
+
+// For noun and adjectives
+dataSet.addSuffixes = function (partOfSpeech, data) {
+    // Some suffix values will mean a lack of suffix, they will be mapped to a null
+  let noSuffixValue = '-';
+
+    // First row are headers
+  for (let i = 1; i < data.length; i++) {
+    let suffix = data[i][0];
+        // Handle special suffix values
+    if (suffix === noSuffixValue) {
+      suffix = null;
+    }
+
+    let features = [partOfSpeech,
+      languageModel.features[types.number].getFromImporter('csv', data[i][1]),
+      languageModel.features[types.grmCase].getFromImporter('csv', data[i][2]),
+      languageModel.features[types.declension].getFromImporter('csv', data[i][3]),
+      languageModel.features[types.gender].getFromImporter('csv', data[i][4]),
+      languageModel.features[types.type].getFromImporter('csv', data[i][5])];
+    if (data[i][6]) {
+            // There can be multiple footnote indexes separated by spaces
+      let indexes = data[i][6].split(' ').map(function (index) {
+        return footnotes.get(index)
+      });
+      features.push(...indexes);
+    }
+    this.addSuffix(suffix, features);
+  }
+};
+
+// For verbs
+dataSet.addVerbSuffixes = function (partOfSpeech, data) {
+    // Some suffix values will mean a lack of suffix, they will be mapped to a null
+  let noSuffixValue = '-';
+
+    // First row are headers
+  for (let i = 1; i < data.length; i++) {
+    let suffix = data[i][0];
+        // Handle special suffix values
+    if (suffix === noSuffixValue) {
+      suffix = null;
+    }
+
+    let features = [partOfSpeech,
+      languageModel.features[types.conjugation].getFromImporter('csv', data[i][1]),
+      languageModel.features[types.voice].getFromImporter('csv', data[i][2]),
+      languageModel.features[types.mood].getFromImporter('csv', data[i][3]),
+      languageModel.features[types.tense].getFromImporter('csv', data[i][4]),
+      languageModel.features[types.number].getFromImporter('csv', data[i][5]),
+      languageModel.features[types.person].getFromImporter('csv', data[i][6])];
+
+    let grammartype = data[i][7];
+        // Type information can be empty if no ending is provided
+    if (grammartype) {
+      features.push(languageModel.features[types.type].getFromImporter('csv', grammartype));
+    }
+        // Footnotes
+    if (data[i][8]) {
+            // There can be multiple footnote indexes separated by spaces
+      let indexes = data[i][8].split(' ').map(function (index) {
+        return footnotes.get(index)
+      });
+      features.push(...indexes);
+    }
+    this.addSuffix(suffix, features);
+  }
+};
+
+dataSet.addFootnotes = function (partOfSpeech, data) {
+    // First row are headers
+  for (let i = 1; i < data.length; i++) {
+    this.addFootnote(partOfSpeech, data[i][0], data[i][1]);
+  }
+};
+
+dataSet.loadData = function () {
+    // Nouns
+  let partOfSpeech = languageModel.features[types.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_NOUN];
+  let suffixes = papaparse.parse(nounSuffixesCSV, {});
+  this.addSuffixes(partOfSpeech, suffixes.data);
+  let footnotes = papaparse.parse(nounFootnotesCSV, {});
+  this.addFootnotes(partOfSpeech, footnotes.data);
+
+    // Adjectives
+  partOfSpeech = languageModel.features[types.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_ADJECTIVE];
+  suffixes = papaparse.parse(adjectiveSuffixesCSV, {});
+  this.addSuffixes(partOfSpeech, suffixes.data);
+  footnotes = papaparse.parse(adjectiveFootnotesCSV, {});
+  this.addFootnotes(partOfSpeech, footnotes.data);
+
+    // Verbs
+  partOfSpeech = languageModel.features[types.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_VERB];
+  suffixes = papaparse.parse(verbSuffixesCSV, {});
+  this.addVerbSuffixes(partOfSpeech, suffixes.data);
+  footnotes = papaparse.parse(verbFootnotesCSV, {});
+  this.addFootnotes(partOfSpeech, footnotes.data);
+};
+
+/**
+ * Decides whether a suffix is a match to any of inflections, and if it is, what type of match it is.
+ * @param {Inflection[]} inflections - an array of inflection objects to be matched against a suffix.
+ * @param {Suffix} suffix - a suffix to be matched with inflections.
+ * @returns {Suffix | null} if a match is found, returns a suffix object modified with some
+ * additional information about a match. if no matches found, returns null.
+ */
+dataSet.matcher = function (inflections, suffix) {
+  'use strict';
+    // All of those features must match between an inflection and an ending
+  let obligatoryMatches = [types.part];
+
+    // Any of those features must match between an inflection and an ending
+  let optionalMatches = [types.grmCase, types.declension, types.gender, types.number];
+  let bestMatchData = null; // information about the best match we would be able to find
+
+    /*
+     There can be only one full match between an inflection and a suffix (except when suffix has multiple values?)
+     But there could be multiple partial matches. So we should try to find the best match possible and return it.
+     a fullFeature match is when one of inflections has all grammatical features fully matching those of a suffix
+     */
+  for (let inflection of inflections) {
+    let matchData = new MatchData(); // Create a match profile
+
+    if (inflection.suffix === suffix.value) {
+      matchData.suffixMatch = true;
+    }
+
+        // Check obligatory matches
+    for (let feature of obligatoryMatches) {
+      let featureMatch = suffix.featureMatch(feature, inflection[feature]);
+            // matchFound = matchFound && featureMatch;
+
+      if (!featureMatch) {
+                // If an obligatory match is not found, there is no reason to check other items
+        break
+      }
+            // Inflection's value of this feature is matching the one of the suffix
       matchData.matchedFeatures.push(feature);
     }
-    return matchData
-  }
-}
 
-class ExtendedLanguageData {
-  constructor () {
-    this._type = undefined; // This is a base class
-  }
-
-  static types () {
-    return {
-      EXTENDED_GREEK_DATA: 'ExtendedGreekData'
+    if (matchData.matchedFeatures.length < obligatoryMatches.length) {
+            // Not all obligatory matches are found, this is not a match
+      break
     }
+
+        // Check optional matches now
+    for (let feature of optionalMatches) {
+      let matchedValue = suffix.featureMatch(feature, inflection[feature]);
+      if (matchedValue) {
+        matchData.matchedFeatures.push(feature);
+      }
+    }
+
+    if (matchData.suffixMatch && (matchData.matchedFeatures.length === obligatoryMatches.length + optionalMatches.length)) {
+            // This is a full match
+      matchData.fullMatch = true;
+
+            // There can be only one full match, no need to search any further
+      suffix.match = matchData;
+      return suffix
+    }
+    bestMatchData = this.bestMatch(bestMatchData, matchData);
+  }
+  if (bestMatchData) {
+        // There is some match found
+    suffix.match = bestMatchData;
+    return suffix
+  }
+  return null
+};
+
+/**
+ * Decides whether matchA is 'better' (i.e. has more items matched) than matchB or not
+ * @param {MatchData} matchA
+ * @param {MatchData} matchB
+ * @returns {MatchData} A best of two matches
+ */
+dataSet.bestMatch = function (matchA, matchB) {
+    // If one of the arguments is not set, return the other one
+  if (!matchA && matchB) {
+    return matchB
   }
 
-  static readObject (jsonObject) {
-    if (!jsonObject._type) {
-      throw new Error('Extended language data has no type information. Unable to deserialize.')
-    } else if (jsonObject._type === ExtendedLanguageData.types().EXTENDED_GREEK_DATA) {
-      return ExtendedGreekData.readObject(jsonObject)
+  if (!matchB && matchA) {
+    return matchA
+  }
+
+    // Suffix match has a priority
+  if (matchA.suffixMatch !== matchB.suffixMatch) {
+    if (matchA.suffixMatch > matchB.suffixMatch) {
+      return matchA
     } else {
-      throw new Error(`Unsupported extended language data of type "${jsonObject._type}".`)
+      return matchB
     }
   }
-}
+
+    // If same on suffix matche, compare by how many features matched
+  if (matchA.matchedFeatures.length >= matchB.matchedFeatures.length) {
+        // Arbitrarily return matchA if matches are the same
+    return matchA
+  } else {
+    return matchB
+  }
+};
 
 class ExtendedGreekData extends ExtendedLanguageData {
   constructor () {
@@ -3337,82 +5212,302 @@ class ExtendedGreekData extends ExtendedLanguageData {
   }
 }
 
-class SelectedWord {
-  constructor (language, word) {
-    this.language = language;
-    this.word = word;
-  }
+var nounSuffixesCSV$1 = "Ending,Number,Case,Declension,Gender,Type,Primary,Footnote\r\nα,dual,accusative,1st,feminine,regular,primary,\r\nά,dual,accusative,1st,feminine,regular,,\r\nᾶ,dual,accusative,1st,feminine,regular,,2\r\nαιν,dual,dative,1st,feminine,regular,primary,\r\nαῖν,dual,dative,1st,feminine,regular,,\r\nαιιν,dual,dative,1st,feminine,irregular,,\r\nαιν,dual,genitive,1st,feminine,regular,primary,\r\nαῖν,dual,genitive,1st,feminine,regular,,\r\nαιιν,dual,genitive,1st,feminine,irregular,,\r\nα,dual,nominative,1st,feminine,regular,primary,\r\nά,dual,nominative,1st,feminine,regular,,\r\nᾶ,dual,nominative,1st,feminine,regular,,2\r\nα,dual,vocative,1st,feminine,regular,primary,\r\nά,dual,vocative,1st,feminine,regular,,\r\nᾶ,dual,vocative,1st,feminine,regular,,2\r\nα,dual,accusative,1st,masculine,regular,primary,\r\nά,dual,accusative,1st,masculine,regular,,\r\nᾶ,dual,accusative,1st,masculine,regular,,2\r\nαιν,dual,dative,1st,masculine,regular,primary,\r\nαῖν,dual,dative,1st,masculine,regular,,\r\nαιιν,dual,dative,1st,masculine,irregular,,\r\nαιν,dual,genitive,1st,masculine,regular,primary,\r\nαῖν,dual,genitive,1st,masculine,regular,,\r\nαιιν,dual,genitive,1st,masculine,irregular,,\r\nα,dual,nominative,1st,masculine,regular,primary,\r\nά,dual,nominative,1st,masculine,regular,,\r\nᾶ,dual,nominative,1st,masculine,regular,,2\r\nα,dual,vocative,1st,masculine,regular,primary,\r\nά,dual,vocative,1st,masculine,regular,,\r\nᾶ,dual,vocative,1st,masculine,regular,,2\r\nας,plural,accusative,1st,feminine,regular,primary,\r\nάς,plural,accusative,1st,feminine,regular,,\r\nᾶς,plural,accusative,1st,feminine,regular,,2\r\nανς,plural,accusative,1st,feminine,irregular,,\r\nαις,plural,accusative,1st,feminine,irregular,,\r\nαις,plural,dative,1st,feminine,regular,primary,\r\nαῖς,plural,dative,1st,feminine,regular,,\r\nῃσι,plural,dative,1st,feminine,irregular,,44\r\nῃσιν,plural,dative,1st,feminine,irregular,,4 44\r\nῃς,plural,dative,1st,feminine,irregular,,44\r\nαισι,plural,dative,1st,feminine,irregular,,44\r\nαισιν,plural,dative,1st,feminine,irregular,,4 44\r\nῶν,plural,genitive,1st,feminine,regular,primary,\r\nάων,plural,genitive,1st,feminine,irregular,,\r\nέων,plural,genitive,1st,feminine,irregular,,\r\nήων,plural,genitive,1st,feminine,irregular,,\r\nᾶν,plural,genitive,1st,feminine,irregular,,\r\nαι,plural,nominative,1st,feminine,regular,primary,\r\nαί,plural,nominative,1st,feminine,regular,,\r\nαῖ,plural,nominative,1st,feminine,regular,,2\r\nαι,plural,vocative,1st,feminine,regular,primary,\r\nαί,plural,vocative,1st,feminine,regular,,\r\nαῖ,plural,vocative,1st,feminine,regular,,2\r\nας,plural,accusative,1st,masculine,regular,primary,\r\nάς,plural,accusative,1st,masculine,regular,,\r\nᾶς,plural,accusative,1st,masculine,regular,,3\r\nανς,plural,accusative,1st,masculine,irregular,,\r\nαις,plural,accusative,1st,masculine,irregular,,\r\nαις,plural,dative,1st,masculine,regular,primary,\r\nαῖς,plural,dative,1st,masculine,regular,,\r\nῃσι,plural,dative,1st,masculine,irregular,,44\r\nῃσιν,plural,dative,1st,masculine,irregular,,4 44\r\nῃς,plural,dative,1st,masculine,irregular,,44\r\nαισι,plural,dative,1st,masculine,irregular,,44\r\nαισιν,plural,dative,1st,masculine,irregular,,4 44\r\nῶν,plural,genitive,1st,masculine,regular,primary,\r\nάων,plural,genitive,1st,masculine,irregular,,\r\nέων,plural,genitive,1st,masculine,irregular,,\r\nήων,plural,genitive,1st,masculine,irregular,,\r\nᾶν,plural,genitive,1st,masculine,irregular,,\r\nαι,plural,nominative,1st,masculine,regular,primary,\r\nαί,plural,nominative,1st,masculine,regular,,\r\nαῖ,plural,nominative,1st,masculine,regular,,3\r\nαι,plural,vocative,1st,masculine,regular,primary,\r\nαί,plural,vocative,1st,masculine,regular,,\r\nαῖ,plural,vocative,1st,masculine,regular,,3\r\nαν,singular,accusative,1st,feminine,regular,primary,\r\nην,singular,accusative,1st,feminine,regular,primary,\r\nήν,singular,accusative,1st,feminine,regular,,\r\nᾶν,singular,accusative,1st,feminine,regular,,2\r\nῆν,singular,accusative,1st,feminine,regular,,2\r\nάν,singular,accusative,1st,feminine,irregular,,63\r\nᾳ,singular,dative,1st,feminine,regular,primary,\r\nῃ,singular,dative,1st,feminine,regular,primary,\r\nῇ,singular,dative,1st,feminine,regular,,2\r\nᾷ,singular,dative,1st,feminine,regular,,2\r\nηφι,singular,dative,1st,feminine,irregular,,45\r\nηφιν,singular,dative,1st,feminine,irregular,,4 45\r\nῆφι,singular,dative,1st,feminine,irregular,,45\r\nῆφιv,singular,dative,1st,feminine,irregular,,4 45\r\nας,singular,genitive,1st,feminine,regular,primary,\r\nης,singular,genitive,1st,feminine,regular,primary,\r\nῆs,singular,genitive,1st,feminine,regular,,\r\nᾶs,singular,genitive,1st,feminine,regular,,2\r\nηφι,singular,genitive,1st,feminine,irregular,,45\r\nηφιν,singular,genitive,1st,feminine,irregular,,4 45\r\nῆφι,singular,genitive,1st,feminine,irregular,,45\r\nῆφιv,singular,genitive,1st,feminine,irregular,,4 45\r\nα,singular,nominative,1st,feminine,regular,primary,\r\nη,singular,nominative,1st,feminine,regular,primary,1\r\nή,singular,nominative,1st,feminine,regular,,\r\nᾶ,singular,nominative,1st,feminine,regular,,2\r\nῆ,singular,nominative,1st,feminine,regular,,2\r\nά,singular,nominative,1st,feminine,irregular,,63\r\nα,singular,vocative,1st,feminine,regular,primary,\r\nη,singular,vocative,1st,feminine,regular,primary,\r\nή,singular,vocative,1st,feminine,regular,,\r\nᾶ,singular,vocative,1st,feminine,regular,,2\r\nῆ,singular,vocative,1st,feminine,regular,,2\r\nά,singular,vocative,1st,feminine,irregular,,63\r\nαν,singular,accusative,1st,masculine,regular,primary,\r\nην,singular,accusative,1st,masculine,regular,primary,3\r\nήν,singular,accusative,1st,masculine,regular,,\r\nᾶν,singular,accusative,1st,masculine,regular,,3\r\nῆν,singular,accusative,1st,masculine,regular,,3\r\nεα,singular,accusative,1st,masculine,irregular,,\r\nᾳ,singular,dative,1st,masculine,regular,primary,\r\nῃ,singular,dative,1st,masculine,regular,primary,\r\nῇ,singular,dative,1st,masculine,regular,,\r\nᾷ,singular,dative,1st,masculine,regular,,3\r\nῆ,singular,dative,1st,masculine,regular,,3\r\nηφι,singular,dative,1st,masculine,irregular,,45\r\nηφιν,singular,dative,1st,masculine,irregular,,4 45\r\nῆφι,singular,dative,1st,masculine,irregular,,45\r\nῆφιv,singular,dative,1st,masculine,irregular,,4 45\r\nου,singular,genitive,1st,masculine,regular,primary,\r\nοῦ,singular,genitive,1st,masculine,regular,,\r\nαο,singular,genitive,1st,masculine,irregular,,\r\nεω,singular,genitive,1st,masculine,irregular,,\r\nηφι,singular,genitive,1st,masculine,irregular,,45\r\nηφιν,singular,genitive,1st,masculine,irregular,,4 45\r\nῆφι,singular,genitive,1st,masculine,irregular,,45\r\nῆφιv,singular,genitive,1st,masculine,irregular,,4 45\r\nω,singular,genitive,1st,masculine,irregular,,\r\nα,singular,genitive,1st,masculine,irregular,,\r\nας,singular,nominative,1st,masculine,regular,primary,\r\nης,singular,nominative,1st,masculine,regular,primary,\r\nής,singular,nominative,1st,masculine,regular,,\r\nᾶs,singular,nominative,1st,masculine,regular,,3\r\nῆs,singular,nominative,1st,masculine,regular,,3\r\nα,singular,vocative,1st,masculine,regular,primary,\r\nη,singular,vocative,1st,masculine,regular,primary,\r\nά,singular,vocative,1st,masculine,regular,,\r\nᾶ,singular,vocative,1st,masculine,regular,,3\r\nῆ,singular,vocative,1st,masculine,regular,,3\r\nω,dual,accusative,2nd,masculine feminine,regular,primary,\r\nώ,dual,accusative,2nd,masculine feminine,regular,,5\r\nοιν,dual,dative,2nd,masculine feminine,regular,primary,\r\nοῖν,dual,dative,2nd,masculine feminine,regular,,5\r\nοιιν,dual,dative,2nd,masculine feminine,irregular,,\r\nῴν,dual,dative,2nd,masculine feminine,irregular,,7\r\nοιν,dual,genitive,2nd,masculine feminine,regular,primary,\r\nοῖν,dual,genitive,2nd,masculine feminine,regular,,5\r\nοιιν,dual,genitive,2nd,masculine feminine,irregular,,\r\nῴν,dual,genitive,2nd,masculine feminine,irregular,,7\r\nω,dual,nominative,2nd,masculine feminine,regular,primary,60\r\nώ,dual,nominative,2nd,masculine feminine,regular,,60\r\nω,dual,vocative,2nd,masculine feminine,regular,primary,\r\nώ,dual,vocative,2nd,masculine feminine,regular,,5\r\nω,dual,accusative,2nd,neuter,regular,primary,\r\nώ,dual,accusative,2nd,neuter,regular,,6\r\nοιν,dual,dative,2nd,neuter,regular,primary,\r\nοῖν,dual,dative,2nd,neuter,regular,,6\r\nοιιν,dual,dative,2nd,neuter,irregular,,\r\nοιν,dual,genitive,2nd,neuter,regular,primary,\r\nοῖν,dual,genitive,2nd,neuter,regular,,6\r\nοιιν,dual,genitive,2nd,neuter,irregular,,\r\nω,dual,nominative,2nd,neuter,regular,primary,\r\nώ,dual,nominative,2nd,neuter,regular,,6\r\nω,dual,vocative,2nd,neuter,regular,primary,\r\nώ,dual,vocative,2nd,neuter,regular,,6\r\nους,plural,accusative,2nd,masculine feminine,regular,primary,\r\nούς,plural,accusative,2nd,masculine feminine,regular,,41\r\nοῦς,plural,accusative,2nd,masculine feminine,regular,,5\r\nονς,plural,accusative,2nd,masculine feminine,irregular,,\r\nος,plural,accusative,2nd,masculine feminine,irregular,,\r\nως,plural,accusative,2nd,masculine feminine,irregular,,\r\nοις,plural,accusative,2nd,masculine feminine,irregular,,\r\nώς,plural,accusative,2nd,masculine feminine,irregular,,7\r\nοις,plural,dative,2nd,masculine feminine,regular,primary,\r\nοῖς,plural,dative,2nd,masculine feminine,regular,,5\r\nοισι,plural,dative,2nd,masculine feminine,irregular,,\r\nοισιν,plural,dative,2nd,masculine feminine,irregular,,4\r\nῴς,plural,dative,2nd,masculine feminine,irregular,,7\r\nόφι,plural,dative,2nd,masculine feminine,irregular,,45\r\nόφιv,plural,dative,2nd,masculine feminine,irregular,,4 45\r\nων,plural,genitive,2nd,masculine feminine,regular,primary,\r\nῶν,plural,genitive,2nd,masculine feminine,regular,,5\r\nών,plural,genitive,2nd,masculine feminine,irregular,,7\r\nόφι,plural,genitive,2nd,masculine feminine,irregular,,45\r\nόφιv,plural,genitive,2nd,masculine feminine,irregular,,4 45\r\nοι,plural,nominative,2nd,masculine feminine,regular,primary,\r\nοί,plural,nominative,2nd,masculine feminine,regular,,41\r\nοῖ,plural,nominative,2nd,masculine feminine,regular,,5\r\nῴ,plural,nominative,2nd,masculine feminine,irregular,,7\r\nοι,plural,vocative,2nd,masculine feminine,regular,primary,\r\nοί,plural,vocative,2nd,masculine feminine,regular,,41\r\nοῖ,plural,vocative,2nd,masculine feminine,regular,,5\r\nα,plural,accusative,2nd,neuter,regular,primary,\r\nᾶ,plural,accusative,2nd,neuter,regular,,6\r\nοις,plural,dative,2nd,neuter,regular,primary,\r\nοῖς,plural,dative,2nd,neuter,regular,,6\r\nοισι,plural,dative,2nd,neuter,irregular,,\r\nοισιν,plural,dative,2nd,neuter,irregular,,4\r\nόφι,plural,dative,2nd,neuter,irregular,,45\r\nόφιv,plural,dative,2nd,neuter,irregular,,4 45\r\nων,plural,genitive,2nd,neuter,regular,primary,\r\nῶν,plural,genitive,2nd,neuter,regular,,6\r\nόφι,plural,genitive,2nd,neuter,irregular,,45\r\nόφιv,plural,genitive,2nd,neuter,irregular,,4 45\r\nα,plural,nominative,2nd,neuter,regular,primary,\r\nᾶ,plural,nominative,2nd,neuter,regular,,6\r\nα,plural,vocative,2nd,neuter,regular,primary,\r\nᾶ,plural,vocative,2nd,neuter,regular,,6\r\nον,singular,accusative,2nd,masculine feminine,regular,primary,\r\nόν,singular,accusative,2nd,masculine feminine,regular,primary,41\r\nουν,singular,accusative,2nd,masculine feminine,regular,,5\r\nοῦν,singular,accusative,2nd,masculine feminine,regular,,5\r\nω,singular,accusative,2nd,masculine feminine,irregular,,7 5\r\nωv,singular,accusative,2nd,masculine feminine,irregular,,7 59\r\nώ,singular,accusative,2nd,masculine feminine,irregular,,7 42 59\r\nών,singular,accusative,2nd,masculine feminine,irregular,,7 59\r\nῳ,singular,dative,2nd,masculine feminine,regular,primary,\r\nῷ,singular,dative,2nd,masculine feminine,regular,,5\r\nῴ,singular,dative,2nd,masculine feminine,irregular,,7\r\nόφι,singular,dative,2nd,masculine feminine,irregular,,45\r\nόφιv,singular,dative,2nd,masculine feminine,irregular,,4 45\r\nου,singular,genitive,2nd,masculine feminine,regular,primary,\r\nοῦ,singular,genitive,2nd,masculine feminine,regular,,5\r\nοιο,singular,genitive,2nd,masculine feminine,irregular,,\r\nοο,singular,genitive,2nd,masculine feminine,irregular,,\r\nω,singular,genitive,2nd,masculine feminine,irregular,,\r\nώ,singular,genitive,2nd,masculine feminine,irregular,,7\r\nόφι,singular,genitive,2nd,masculine feminine,irregular,,45\r\nόφιv,singular,genitive,2nd,masculine feminine,irregular,,4 45\r\nος,singular,nominative,2nd,masculine feminine,regular,primary,\r\nους,singular,nominative,2nd,masculine feminine,regular,,5\r\noῦς,singular,nominative,2nd,masculine feminine,regular,,5\r\nός,singular,nominative,2nd,masculine feminine,regular,,\r\nώς,singular,nominative,2nd,masculine feminine,irregular,,7 42\r\nως,singular,nominative,2nd,masculine feminine,irregular,,\r\nε,singular,vocative,2nd,masculine feminine,regular,primary,\r\nέ,singular,vocative,2nd,masculine feminine,regular,,\r\nοu,singular,vocative,2nd,masculine feminine,regular,,5\r\nοῦ,singular,vocative,2nd,masculine feminine,regular,,42\r\nός,singular,vocative,2nd,masculine feminine,irregular,,57\r\nον,singular,accusative,2nd,neuter,regular,primary,\r\nοῦν,singular,accusative,2nd,neuter,regular,,6\r\nῳ,singular,dative,2nd,neuter,regular,primary,\r\nῷ,singular,dative,2nd,neuter,regular,,6\r\nόφι,singular,dative,2nd,neuter,irregular,,45\r\nόφιv,singular,dative,2nd,neuter,irregular,,4 45\r\nου,singular,genitive,2nd,neuter,regular,primary,\r\nοῦ,singular,genitive,2nd,neuter,regular,,6\r\nοο,singular,genitive,2nd,neuter,irregular,,\r\nοιο,singular,genitive,2nd,neuter,irregular,,\r\nω,singular,genitive,2nd,neuter,irregular,,\r\nόφι,singular,genitive,2nd,neuter,irregular,,45\r\nόφιv,singular,genitive,2nd,neuter,irregular,,4 45\r\nον,singular,nominative,2nd,neuter,regular,primary,\r\nοῦν,singular,nominative,2nd,neuter,regular,,6\r\nον,singular,vocative,2nd,neuter,regular,primary,\r\nοῦν,singular,vocative,2nd,neuter,regular,,6\r\nε,dual,accusative,3rd,masculine feminine,regular,primary,\r\nει,dual,accusative,3rd,masculine feminine,regular,,\r\nῆ,dual,accusative,3rd,masculine feminine,regular,,18\r\nω,dual,accusative,3rd,masculine feminine,irregular,,32\r\nῖ,dual,accusative,3rd,masculine feminine,irregular,,33\r\nεε,dual,accusative,3rd,masculine feminine,irregular,,16 55 61\r\nοιν,dual,dative,3rd,masculine feminine,regular,primary,\r\nοῖν,dual,dative,3rd,masculine feminine,regular,,\r\nοιιν,dual,dative,3rd,masculine feminine,irregular,,54\r\nσι,dual,dative,3rd,masculine feminine,irregular,,33 37\r\nεσσι,dual,dative,3rd,masculine feminine,irregular,,33\r\nεσι,dual,dative,3rd,masculine feminine,irregular,,33\r\nέοιν,dual,dative,3rd,masculine feminine,irregular,,16 61\r\nῳν,dual,dative,3rd,masculine feminine,irregular,,49\r\nοιν,dual,genitive,3rd,masculine feminine,regular,primary,\r\nοῖν,dual,genitive,3rd,masculine feminine,regular,,\r\nοιιν,dual,genitive,3rd,masculine feminine,irregular,,54\r\nέοιν,dual,genitive,3rd,masculine feminine,irregular,,16 61\r\nῳν,dual,genitive,3rd,masculine feminine,irregular,,49\r\nε,dual,nominative,3rd,masculine feminine,regular,primary,\r\nει,dual,nominative,3rd,masculine feminine,regular,,\r\nῆ,dual,nominative,3rd,masculine feminine,regular,,18\r\nω,dual,nominative,3rd,masculine feminine,irregular,,32\r\nῖ,dual,nominative,3rd,masculine feminine,irregular,,33\r\nεε,dual,nominative,3rd,masculine feminine,irregular,,16 55 61\r\nε,dual,vocative,3rd,masculine feminine,regular,primary,\r\nει,dual,vocative,3rd,masculine feminine,regular,,\r\nῆ,dual,vocative,3rd,masculine feminine,regular,,18\r\nω,dual,vocative,3rd,masculine feminine,irregular,,32\r\nῖ,dual,vocative,3rd,masculine feminine,irregular,,33\r\nεε,dual,vocative,3rd,masculine feminine,irregular,,16 55 61\r\nε,dual,accusative,3rd,neuter,regular,primary,\r\nει,dual,accusative,3rd,neuter,regular,,\r\nα,dual,accusative,3rd,neuter,regular,,\r\nεε,dual,accusative,3rd,neuter,irregular,,16 61\r\nαε,dual,accusative,3rd,neuter,irregular,,16 61\r\nοιν,dual,dative,3rd,neuter,regular,primary,\r\nῷν,dual,dative,3rd,neuter,regular,,\r\nοις,dual,dative,3rd,neuter,irregular,,33 38\r\nοισι,dual,dative,3rd,neuter,irregular,,33 38\r\nοισι(ν),dual,dative,3rd,neuter,irregular,,4 33 38\r\nοιιν,dual,dative,3rd,neuter,irregular,,\r\nέοιν,dual,dative,3rd,neuter,irregular,,16 61\r\nάοιν,dual,dative,3rd,neuter,irregular,,16 61\r\nοιν,dual,genitive,3rd,neuter,regular,primary,\r\nῷν,dual,genitive,3rd,neuter,regular,,\r\nων,dual,genitive,3rd,neuter,irregular,,33 38\r\nοιιν,dual,genitive,3rd,neuter,irregular,,\r\nέοιν,dual,genitive,3rd,neuter,irregular,,16 61\r\nάοιν,dual,genitive,3rd,neuter,irregular,,16 61\r\nε,dual,nominative,3rd,neuter,regular,primary,\r\nει,dual,nominative,3rd,neuter,regular,,\r\nα,dual,nominative,3rd,neuter,regular,,\r\nεε,dual,nominative,3rd,neuter,irregular,,16 61\r\nαε,dual,nominative,3rd,neuter,irregular,,16 61\r\nε,dual,vocative,3rd,neuter,regular,primary,\r\nει,dual,vocative,3rd,neuter,regular,,\r\nα,dual,vocative,3rd,neuter,regular,,\r\nεε,dual,vocative,3rd,neuter,irregular,,16 61\r\nαε,dual,vocative,3rd,neuter,irregular,,16 61\r\nας,plural,accusative,3rd,masculine feminine,regular,primary,\r\nεις,plural,accusative,3rd,masculine feminine,regular,,17 41\r\nες,plural,accusative,3rd,masculine feminine,regular,,\r\nς,plural,accusative,3rd,masculine feminine,regular,,\r\nῦς,plural,accusative,3rd,masculine feminine,regular,,17 18 48\r\nως,plural,accusative,3rd,masculine feminine,regular,,30\r\nῆς,plural,accusative,3rd,masculine feminine,irregular,,56\r\nέας,plural,accusative,3rd,masculine feminine,irregular,,\r\nέος,plural,accusative,3rd,masculine feminine,irregular,,\r\nῆος,plural,accusative,3rd,masculine feminine,irregular,,\r\nῆες,plural,accusative,3rd,masculine feminine,irregular,,\r\nῆας,plural,accusative,3rd,masculine feminine,irregular,,\r\nους,plural,accusative,3rd,masculine feminine,irregular,,32\r\nούς,plural,accusative,3rd,masculine feminine,irregular,,32\r\nεῖς,plural,accusative,3rd,masculine feminine,irregular,,31 41\r\nεες,plural,accusative,3rd,masculine feminine,irregular,,55 61\r\nις,plural,accusative,3rd,masculine feminine,irregular,,\r\nινς,plural,accusative,3rd,masculine feminine,irregular,,\r\nῶς,plural,accusative,3rd,masculine feminine,irregular,,48\r\nσι,plural,dative,3rd,masculine feminine,regular,primary,\r\nσιν,plural,dative,3rd,masculine feminine,regular,primary,4\r\nσί,plural,dative,3rd,masculine feminine,regular,,41\r\nσίν,plural,dative,3rd,masculine feminine,regular,,4 41\r\nεσι,plural,dative,3rd,masculine feminine,regular,,41\r\nεσιν,plural,dative,3rd,masculine feminine,regular,,4 41\r\nέσι,plural,dative,3rd,masculine feminine,regular,,\r\nέσιν,plural,dative,3rd,masculine feminine,regular,,4\r\nψι,plural,dative,3rd,masculine feminine,regular,,\r\nψιν,plural,dative,3rd,masculine feminine,regular,,4\r\nψί,plural,dative,3rd,masculine feminine,regular,,\r\nψίν,plural,dative,3rd,masculine feminine,regular,,4\r\nξι,plural,dative,3rd,masculine feminine,regular,,\r\nξιν,plural,dative,3rd,masculine feminine,regular,,4\r\nξί,plural,dative,3rd,masculine feminine,regular,,\r\nξίν,plural,dative,3rd,masculine feminine,regular,,4\r\nφι,plural,dative,3rd,masculine feminine,irregular,,45\r\nφιν,plural,dative,3rd,masculine feminine,irregular,,4 45\r\nηφι,plural,dative,3rd,masculine feminine,irregular,,45\r\nηφιv,plural,dative,3rd,masculine feminine,irregular,,4 45\r\nῆφι,plural,dative,3rd,masculine feminine,irregular,,45\r\nῆφιν,plural,dative,3rd,masculine feminine,irregular,,4 45\r\nόφι,plural,dative,3rd,masculine feminine,irregular,,45\r\nόφιν,plural,dative,3rd,masculine feminine,irregular,,4 45\r\nαις,plural,dative,3rd,masculine feminine,irregular,,33 41\r\nοῖσι,plural,dative,3rd,masculine feminine,irregular,,33\r\nοῖσιv,plural,dative,3rd,masculine feminine,irregular,,4 33\r\nεσσι,plural,dative,3rd,masculine feminine,irregular,,16 61\r\nεσσιv,plural,dative,3rd,masculine feminine,irregular,,4 16 61\r\nυσσι,plural,dative,3rd,masculine feminine,irregular,,54\r\nυσσιv,plural,dative,3rd,masculine feminine,irregular,,4 54\r\nσσί,plural,dative,3rd,masculine feminine,irregular,,54\r\nσσίv,plural,dative,3rd,masculine feminine,irregular,,4 54\r\nων,plural,genitive,3rd,masculine feminine,regular,primary,\r\nῶν,plural,genitive,3rd,masculine feminine,regular,,\r\n-,plural,genitive,3rd,masculine feminine,irregular,,41\r\nφι,plural,genitive,3rd,masculine feminine,irregular,,45\r\nφιν,plural,genitive,3rd,masculine feminine,irregular,,4 45\r\nηφι,plural,genitive,3rd,masculine feminine,irregular,,45\r\nηφιv,plural,genitive,3rd,masculine feminine,irregular,,4 45\r\nῆφι,plural,genitive,3rd,masculine feminine,irregular,,45\r\nῆφιν,plural,genitive,3rd,masculine feminine,irregular,,4 45\r\nόφι,plural,genitive,3rd,masculine feminine,irregular,,45\r\nόφιν,plural,genitive,3rd,masculine feminine,irregular,,4 45\r\nέων,plural,genitive,3rd,masculine feminine,irregular,,16 61\r\nες,plural,nominative,3rd,masculine feminine,regular,primary,\r\nως,plural,nominative,3rd,masculine feminine,regular,,30\r\nεις,plural,nominative,3rd,masculine feminine,regular,,17\r\nεῖς,plural,nominative,3rd,masculine feminine,regular,,18\r\nοί,plural,nominative,3rd,masculine feminine,irregular,,32\r\nαί,plural,nominative,3rd,masculine feminine,irregular,,33\r\nῆς,plural,nominative,3rd,masculine feminine,irregular,,18\r\nῄς,plural,nominative,3rd,masculine feminine,irregular,,31 41\r\nεες,plural,nominative,3rd,masculine feminine,irregular,,16 55 61\r\nοι,plural,nominative,3rd,masculine feminine,irregular,,33\r\nες,plural,vocative,3rd,masculine feminine,regular,primary,\r\nεις,plural,vocative,3rd,masculine feminine,regular,,17\r\nεῖς,plural,vocative,3rd,masculine feminine,regular,,18\r\nῆς,plural,vocative,3rd,masculine feminine,regular,,18\r\nως,plural,vocative,3rd,masculine feminine,regular,,30\r\nεες,plural,vocative,3rd,masculine feminine,irregular,,16 55 61\r\nα,plural,accusative,3rd,neuter,regular,primary,\r\nη,plural,accusative,3rd,neuter,regular,,\r\nς,plural,accusative,3rd,neuter,regular,,\r\nά,plural,accusative,3rd,neuter,irregular,,33\r\nαα,plural,accusative,3rd,neuter,irregular,,16 61\r\nεα,plural,accusative,3rd,neuter,irregular,,16 61\r\nσι,plural,dative,3rd,neuter,regular,primary,\r\nσιν,plural,dative,3rd,neuter,regular,primary,4\r\nσί,plural,dative,3rd,neuter,regular,,\r\nσίv,plural,dative,3rd,neuter,regular,,4\r\nασι,plural,dative,3rd,neuter,regular,,\r\nασιν,plural,dative,3rd,neuter,regular,,4\r\nεσι,plural,dative,3rd,neuter,regular,,\r\nεσιν,plural,dative,3rd,neuter,regular,,4\r\nέσι,plural,dative,3rd,neuter,regular,,\r\nέσιv,plural,dative,3rd,neuter,regular,,4\r\nεσσι,plural,dative,3rd,neuter,irregular,,54\r\nεσσιν,plural,dative,3rd,neuter,irregular,,4 54\r\nσσί,plural,dative,3rd,neuter,irregular,,54\r\nσσίv,plural,dative,3rd,neuter,irregular,,4 54\r\nασσι,plural,dative,3rd,neuter,irregular,,54\r\nασσιν,plural,dative,3rd,neuter,irregular,,4 54\r\nφι,plural,dative,3rd,neuter,irregular,,45\r\nφιν,plural,dative,3rd,neuter,irregular,,4 45\r\nηφι,plural,dative,3rd,neuter,irregular,,45\r\nηφιv,plural,dative,3rd,neuter,irregular,,4 45\r\nῆφι,plural,dative,3rd,neuter,irregular,,45\r\nῆφιν,plural,dative,3rd,neuter,irregular,,4 45\r\nόφι,plural,dative,3rd,neuter,irregular,,45\r\nόφιν,plural,dative,3rd,neuter,irregular,,4 45\r\nων,plural,genitive,3rd,neuter,regular,primary,\r\nῶν,plural,genitive,3rd,neuter,regular,primary,\r\nφι,plural,genitive,3rd,neuter,irregular,,\r\nφιν,plural,genitive,3rd,neuter,irregular,,4 45\r\nηφι,plural,genitive,3rd,neuter,irregular,,45\r\nηφιv,plural,genitive,3rd,neuter,irregular,,4 45\r\nῆφι,plural,genitive,3rd,neuter,irregular,,45\r\nῆφιν,plural,genitive,3rd,neuter,irregular,,4 45\r\nόφι,plural,genitive,3rd,neuter,irregular,,45\r\nόφιν,plural,genitive,3rd,neuter,irregular,,4 45\r\nέων,plural,genitive,3rd,neuter,irregular,,16 61\r\nάων,plural,genitive,3rd,neuter,irregular,,16 61\r\nα,plural,nominative,3rd,neuter,regular,primary,\r\nη,plural,nominative,3rd,neuter,regular,,\r\nες,plural,nominative,3rd,neuter,regular,,\r\nά,plural,nominative,3rd,neuter,irregular,,33\r\nεα,plural,nominative,3rd,neuter,irregular,,16 61\r\nαα,plural,nominative,3rd,neuter,irregular,,16 61\r\nα,plural,vocative,3rd,neuter,regular,primary,\r\nη,plural,vocative,3rd,neuter,regular,,\r\nες,plural,vocative,3rd,neuter,regular,,\r\nαα,plural,vocative,3rd,neuter,irregular,,16 61\r\nεα,plural,vocative,3rd,neuter,irregular,,16 61\r\nα,singular,accusative,3rd,masculine feminine,regular,primary,\r\nη,singular,accusative,3rd,masculine feminine,regular,,16\r\nν,singular,accusative,3rd,masculine feminine,regular,,\r\nιν,singular,accusative,3rd,masculine feminine,regular,,41\r\nῦν,singular,accusative,3rd,masculine feminine,regular,,18\r\nῶ,singular,accusative,3rd,masculine feminine,regular,,23\r\nυν,singular,accusative,3rd,masculine feminine,regular,,\r\nῦν,singular,accusative,3rd,masculine feminine,regular,,17\r\nύν,singular,accusative,3rd,masculine feminine,regular,,17\r\nέα,singular,accusative,3rd,masculine feminine,regular,,20\r\nην,singular,accusative,3rd,masculine feminine,regular,,24\r\nώ,singular,accusative,3rd,masculine feminine,regular,,19 41\r\nω,singular,accusative,3rd,masculine feminine,regular,,23\r\nεῖν,singular,accusative,3rd,masculine feminine,irregular,,31 41\r\nων,singular,accusative,3rd,masculine feminine,irregular,,33 41 49\r\nαν,singular,accusative,3rd,masculine feminine,irregular,,33 41\r\nον,singular,accusative,3rd,masculine feminine,irregular,,39\r\nῖς,singular,accusative,3rd,masculine feminine,irregular,,33\r\nεα,singular,accusative,3rd,masculine feminine,irregular,,61\r\nι,singular,dative,3rd,masculine feminine,regular,primary,\r\nί,singular,dative,3rd,masculine feminine,regular,,\r\nϊ,singular,dative,3rd,masculine feminine,regular,,17\r\nΐ,singular,dative,3rd,masculine feminine,regular,,40\r\nει,singular,dative,3rd,masculine feminine,regular,,16 17\r\nεῖ,singular,dative,3rd,masculine feminine,regular,,18\r\nαι,singular,dative,3rd,masculine feminine,regular,,\r\noῖ,singular,dative,3rd,masculine feminine,regular,,28 41\r\nῖ,singular,dative,3rd,masculine feminine,irregular,,33 46\r\nῆι,singular,dative,3rd,masculine feminine,irregular,,18\r\nᾳ,singular,dative,3rd,masculine feminine,irregular,,25\r\nῳ,singular,dative,3rd,masculine feminine,irregular,,33 34\r\nῷ,singular,dative,3rd,masculine feminine,irregular,,33\r\nιί,singular,dative,3rd,masculine feminine,irregular,,62\r\nυί,singular,dative,3rd,masculine feminine,irregular,,62\r\nέϊ,singular,dative,3rd,masculine feminine,irregular,,18 61\r\nος,singular,genitive,3rd,masculine feminine,regular,primary,\r\nός,singular,genitive,3rd,masculine feminine,regular,,\r\nους,singular,genitive,3rd,masculine feminine,regular,,16\r\nοῦς,singular,genitive,3rd,masculine feminine,regular,,19 46\r\nως,singular,genitive,3rd,masculine feminine,regular,,17 18\r\nώς,singular,genitive,3rd,masculine feminine,regular,,17 18 41\r\nῶς,singular,genitive,3rd,masculine feminine,regular,,47\r\nεως,singular,genitive,3rd,masculine feminine,regular,,17\r\nέως,singular,genitive,3rd,masculine feminine,regular,,\r\nεώς,singular,genitive,3rd,masculine feminine,regular,,\r\nέους,singular,genitive,3rd,masculine feminine,regular,,20\r\nω,singular,genitive,3rd,masculine feminine,irregular,,\r\nεος,singular,genitive,3rd,masculine feminine,irregular,,61\r\nΰς,singular,genitive,3rd,masculine feminine,irregular,,41 48\r\nῦς,singular,genitive,3rd,masculine feminine,irregular,,48\r\nνος,singular,genitive,3rd,masculine feminine,irregular,,22\r\nοῦ,singular,genitive,3rd,masculine feminine,irregular,,33\r\nηος,singular,genitive,3rd,masculine feminine,irregular,,55\r\nιός,singular,genitive,3rd,masculine feminine,irregular,,62\r\nuός,singular,genitive,3rd,masculine feminine,irregular,,62\r\nς,singular,nominative,3rd,masculine feminine,regular,primary,\r\n-,singular,nominative,3rd,masculine feminine,regular,primary,\r\nηρ,singular,nominative,3rd,masculine feminine,regular,,41\r\nις,singular,nominative,3rd,masculine feminine,regular,,\r\nϊς,singular,nominative,3rd,masculine feminine,regular,,\r\nώ,singular,nominative,3rd,masculine feminine,regular,,41\r\nψ,singular,nominative,3rd,masculine feminine,regular,,\r\nξ,singular,nominative,3rd,masculine feminine,regular,,\r\nρ,singular,nominative,3rd,masculine feminine,regular,,\r\nήρ,singular,nominative,3rd,masculine feminine,regular,,\r\nήν,singular,nominative,3rd,masculine feminine,regular,,50\r\nν,singular,nominative,3rd,masculine feminine,regular,,\r\nωρ,singular,nominative,3rd,masculine feminine,regular,,\r\nων,singular,nominative,3rd,masculine feminine,regular,,\r\nών,singular,nominative,3rd,masculine feminine,regular,,\r\nης,singular,nominative,3rd,masculine feminine,regular,,\r\nῆς,singular,nominative,3rd,masculine feminine,regular,,\r\nυς,singular,nominative,3rd,masculine feminine,regular,,\r\nῦς,singular,nominative,3rd,masculine feminine,regular,,\r\nεῦς,singular,nominative,3rd,masculine feminine,regular,,\r\nύς,singular,nominative,3rd,masculine feminine,regular,,\r\nής,singular,nominative,3rd,masculine feminine,regular,,33\r\nας,singular,nominative,3rd,masculine feminine,irregular,,\r\nῴ,singular,nominative,3rd,masculine feminine,irregular,,29 41\r\nώς,singular,nominative,3rd,masculine feminine,irregular,,27 41\r\nϋς,singular,nominative,3rd,masculine feminine,irregular,,41\r\nῄς,singular,nominative,3rd,masculine feminine,irregular,,31 41\r\nῖς,singular,nominative,3rd,masculine feminine,irregular,,\r\nεῖς,singular,nominative,3rd,masculine feminine,irregular,,31 41\r\nῶς,singular,nominative,3rd,masculine feminine,irregular,,48\r\nος,singular,nominative,3rd,masculine feminine,irregular,,33\r\n-,singular,vocative,3rd,masculine feminine,regular,primary,52\r\nς,singular,vocative,3rd,masculine feminine,regular,,30\r\nι,singular,vocative,3rd,masculine feminine,regular,,41\r\nῦ,singular,vocative,3rd,masculine feminine,regular,,15 17 18\r\nοῖ,singular,vocative,3rd,masculine feminine,regular,,19 41\r\nψ,singular,vocative,3rd,masculine feminine,regular,,\r\nξ,singular,vocative,3rd,masculine feminine,regular,,\r\nν,singular,vocative,3rd,masculine feminine,regular,,\r\nρ,singular,vocative,3rd,masculine feminine,regular,,\r\nων,singular,vocative,3rd,masculine feminine,regular,,50\r\nών,singular,vocative,3rd,masculine feminine,regular,,\r\nήν,singular,vocative,3rd,masculine feminine,regular,,\r\nερ,singular,vocative,3rd,masculine feminine,regular,,\r\nες,singular,vocative,3rd,masculine feminine,regular,,\r\nί,singular,vocative,3rd,masculine feminine,regular,,\r\nως,singular,vocative,3rd,masculine feminine,regular,,\r\nἶ,singular,vocative,3rd,masculine feminine,regular,,\r\nούς,singular,vocative,3rd,masculine feminine,regular,,51\r\nύ,singular,vocative,3rd,masculine feminine,regular,,15\r\nυ,singular,vocative,3rd,masculine feminine,regular,,51\r\nεις,singular,vocative,3rd,masculine feminine,regular,,20\r\nαν,singular,vocative,3rd,masculine feminine,regular,,\r\nώς,singular,vocative,3rd,masculine feminine,irregular,,27 41 46\r\nον,singular,vocative,3rd,masculine feminine,irregular,,\r\nυς,singular,vocative,3rd,masculine feminine,irregular,,33\r\nα,singular,accusative,3rd,neuter,regular,primary,15\r\n-,singular,accusative,3rd,neuter,regular,,33\r\nος,singular,accusative,3rd,neuter,regular,,\r\nας,singular,accusative,3rd,neuter,regular,,\r\nαρ,singular,accusative,3rd,neuter,regular,,21\r\nυ,singular,accusative,3rd,neuter,regular,,\r\nι,singular,dative,3rd,neuter,regular,primary,\r\nει,singular,dative,3rd,neuter,regular,,16\r\nαι,singular,dative,3rd,neuter,regular,,16 21\r\nϊ,singular,dative,3rd,neuter,irregular,,17\r\nᾳ,singular,dative,3rd,neuter,irregular,,25 33\r\nυϊ,singular,dative,3rd,neuter,irregular,,17\r\nαϊ,singular,dative,3rd,neuter,irregular,,21 61\r\nος,singular,genitive,3rd,neuter,regular,primary,\r\nους,singular,genitive,3rd,neuter,regular,,16\r\nως,singular,genitive,3rd,neuter,regular,,16\r\nεως,singular,genitive,3rd,neuter,regular,,17\r\nυς,singular,genitive,3rd,neuter,irregular,,26\r\nου,singular,genitive,3rd,neuter,irregular,,33\r\nαος,singular,genitive,3rd,neuter,irregular,,21 61\r\nα,singular,nominative,3rd,neuter,regular,primary,\r\n-,singular,nominative,3rd,neuter,regular,,33\r\nος,singular,nominative,3rd,neuter,regular,,\r\nαρ,singular,nominative,3rd,neuter,regular,,\r\nας,singular,nominative,3rd,neuter,regular,,16 21\r\nυ,singular,nominative,3rd,neuter,regular,,\r\nον,singular,nominative,3rd,neuter,irregular,,33\r\nα,singular,vocative,3rd,neuter,regular,primary,15\r\n-,singular,vocative,3rd,neuter,regular,,\r\nος,singular,vocative,3rd,neuter,regular,,\r\nας,singular,vocative,3rd,neuter,regular,,\r\nαρ,singular,vocative,3rd,neuter,regular,,21\r\nυ,singular,vocative,3rd,neuter,regular,,";
 
-  static readObjects (jsonObject) {
-    return new SelectedWord(jsonObject.language, jsonObject.word)
+var nounFootnotesCSV$1 = "Index,Text\r\n1,See  for Rules of variance within regular endings\r\n2,See  for Table of α- and ε- stem feminine 1st declension contracts\r\n3,See  for Table of α- and ε- stem masculine 1st declension contracts\r\n4,\"Previous, with (ν)\"\r\n5,See  for Table of o- and ε- stem masculine  2nd declension contracts\r\n6,See  for Table of o- and ε- stem neuter 2nd declension contracts\r\n7,(Attic) contracts of o-stems preceded by a long vowel\r\n15,\"This is not actually an “ending,” but the last letter of the “pure stem”. See\"\r\n16,\"See  &  for Table of Sigma (ες,ας,ος) stem contracts\"\r\n17,See  for Table of  ι and υ - stem contracts\r\n18,\"See  for Table of  ευ,αυ,and ου - stem contracts\"\r\n19,See  for stems in οι feminine 3rd declension contracts\r\n20,See  for Table of 3rd declension contracts of stems in -εσ- preceded by ε\r\n21,See  for Table of stems in τ and ατ neuter 3rd declension contracts\r\n22,\"On stem ending in ν, ν doubled in gen. Sing Aeolic (e.g. μῆνς,μῆννος...)\"\r\n23,Also in inscriptions and expressions of swearing\r\n24,(Borrowed from 1st decl) Sometimes in proper names whose nominative ends in -ης\r\n25,From -ας-stems (properly αι)\r\n26,(ε)υς instead of (ε)ος or ους (gen) for (3rd decl) words whose nominative ends in -ος\r\n27,In 3rd decl. Only in the words αἰδώς (Attic) and ἠώς (Homer and Ionic)\r\n28,Contraction of a stem in οι  and an ι-ending\r\n29,Stronger form of Ionic contractions of οι-stems (in the nominative)\r\n30,See  for Table of ω - stem contracts (masculine only)\r\n31,Nominative plural contraction of  -ειδ+ες  after dropping the δ (used for accusative too). See .a\r\n32,\"Plurals & duals occur rarely (and w/ 2nd decl endings) for 3rd decl οι-stem nouns. See .D.a,b,c\"\r\n33,See  for description and examples of Irreg. Decl involving 3rd decl endings\r\n34,(Homer)  for Attic  (ῳτ)ι\r\n35,(Homer) for Cretan ινς\r\n36,Also an irregular ending for other stem(s)\r\n37,In inscriptions\r\n38,\"Plural endings for otherwise dual noun,οσσε (eyes)\"\r\n39,\"“Poetical” (acc for ἔρως). See ,11\"\r\n40,\"Poetic for χρωτι,dat. of ὁ χρως\"\r\n41,No Masculine of this Form\r\n42,No Feminine of this Form\r\n44,See  D.9 and #215 regarding dialectic alternate forms of the Dative Plural\r\n45,\"Surviving in Homer (See ) Not truly genitive or dative, but instrumental/locative/ablative, associated with the remaining oblique cases (genitive & dative) only after being lost as cases themselves in Greek\"\r\n46,See Smyth # 266 for only surviving ος-stem in Attic (fem. singular of αἰδως)\r\n47,See  for Substantives in -εύς preceded by a vowel.\r\n48,\"See Smyth,  #275 D.1,2,3\"\r\n49,\"See , List of Principal Irregular Substantives\"\r\n50,\"See  for Table of stems in a Liquid (λ,ρ) or a Nasal (ν), and Note #259D for variants including Κρονίων...\"\r\n51,\"See  for Table of stems in a Dental (τ,δ,θ) or a Nasal (ν), and its notes including Ν.κόρυς (Voc. Κόρυ) & ὀδούς\"\r\n52,See  for general rule re 3rd Declension Masc/Fem Singular Vocative\r\n54,See  D\r\n55,See\r\n56,\"See  for other forms of endings for contracts of ευ,αυ,and ου - stems\"\r\n57,Nominative form used as Vocative. See\r\n58,\"See ,b\"\r\n59,\"See ,d\"\r\n60,This (Feminine or Masculine) Form only Masculine when derived from ε- or ο- contraction\r\n61,See Smyth Note 264 D.1 regarding Homer's use of Open Forms\r\n62,See Smyth Note 269 for alternate i-stem and u-stem endings\r\n63,See  D.2\r\n64,See  D.1";
+
+/*
+ * Latin language data module
+ */
+/* import adjectiveSuffixesCSV from './data/adjective/suffixes.csv';
+import adjectiveFootnotesCSV from './data/adjective/footnotes.csv';
+import verbSuffixesCSV from './data/verb/suffixes.csv';
+import verbFootnotesCSV from './data/verb/footnotes.csv'; */
+// A language of this module
+const language$1 = languages.greek;
+// Create a language data set that will keep all language-related information
+let dataSet$1 = new LanguageDataset(language$1);
+
+// region Definition of grammatical features
+/*
+ Define grammatical features of a language. Those grammatical features definitions will also be used by morphological
+ analyzer's language modules as well.
+ */
+const importerName$1 = 'csv';
+const parts = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part, ['noun', 'adjective', 'verb'], language$1);
+const numbers = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number, ['singular', 'dual', 'plural'], language$1);
+numbers.addImporter(importerName$1)
+    .map('singular', numbers.singular)
+    .map('dual', numbers.dual)
+    .map('plural', numbers.plural);
+const cases = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase, ['nominative', 'genitive', 'dative', 'accusative', 'vocative'], language$1);
+cases.addImporter(importerName$1)
+    .map('nominative', cases.nominative)
+    .map('genitive', cases.genitive)
+    .map('dative', cases.dative)
+    .map('accusative', cases.accusative)
+    .map('vocative', cases.vocative);
+const declensions = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension, ['first', 'second', 'third'], language$1);
+declensions.addImporter(importerName$1)
+    .map('1st', declensions.first)
+    .map('2nd', declensions.second)
+    .map('3rd', declensions.third);
+const genders = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender, ['masculine', 'feminine', 'neuter'], language$1);
+genders.addImporter(importerName$1)
+    .map('masculine', genders.masculine)
+    .map('feminine', genders.feminine)
+    .map('neuter', genders.neuter)
+    .map('masculine feminine', [genders.masculine, genders.feminine]);
+const types$1 = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.type, ['regular', 'irregular'], language$1);
+types$1.addImporter(importerName$1)
+    .map('regular', types$1.regular)
+    .map('irregular', types$1.irregular);
+/*
+const conjugations = new Models.FeatureType(Lib.types.conjugation, ['first', 'second', 'third', 'fourth']);
+conjugations.addImporter(importerName)
+    .map('1st', conjugations.first)
+    .map('2nd', conjugations.second)
+    .map('3rd', conjugations.third)
+    .map('4th', conjugations.fourth);
+const tenses = new Models.FeatureType(Lib.types.tense, ['present', 'imperfect', 'future', 'perfect', 'pluperfect', 'future perfect']);
+tenses.addImporter(importerName)
+    .map('present', tenses.present)
+    .map('imperfect', tenses.imperfect)
+    .map('future', tenses.future)
+    .map('perfect', tenses.perfect)
+    .map('pluperfect', tenses.pluperfect)
+    .map('future_perfect', tenses['future perfect']);
+const voices = new Models.FeatureType(Lib.types.voice, ['passive', 'active'],language);
+voices.addImporter(importerName)
+    .map('passive', voices.passive)
+    .map('active', voices.active);
+const moods = new Models.FeatureType(Lib.types.mood, ['indicative', 'subjunctive']);
+moods.addImporter(importerName)
+    .map('indicative', moods.indicative)
+    .map('subjunctive', moods.subjunctive);
+const persons = new Models.FeatureType(Lib.types.person, ['first', 'second', 'third']);
+persons.addImporter(importerName)
+    .map('1st', persons.first)
+    .map('2nd', persons.second)
+    .map('3rd', persons.third); */
+const footnotes$1 = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote, [], {});
+
+// endregion Definition of grammatical features
+
+// For noun and adjectives
+dataSet$1.addSuffixes = function (partOfSpeech, data) {
+  // Some suffix values will mean a lack of suffix, they will be mapped to a null
+  let noSuffixValue = '-';
+
+  // First row are headers
+  for (let i = 1; i < data.length; i++) {
+    let dataItem = data[i];
+    let suffixValue = dataItem[0];
+    // Handle special suffix values
+    if (suffixValue === noSuffixValue) {
+      suffixValue = null;
+    }
+
+    let primary = false;
+    let features = [partOfSpeech,
+      numbers.importer.csv.get(dataItem[1]),
+      cases.importer.csv.get(dataItem[2]),
+      declensions.importer.csv.get(dataItem[3]),
+      genders.importer.csv.get(dataItem[4]),
+      types$1.importer.csv.get(dataItem[5])];
+    if (dataItem[6] === 'primary') {
+      primary = true;
+    }
+    if (dataItem[7]) {
+      // There can be multiple footnote indexes separated by spaces
+      let indexes = dataItem[7].split(' ').map(function (index) {
+        return footnotes$1.get(index)
+      });
+      features.push(...indexes);
+    }
+    let extendedGreekData = new ExtendedGreekData();
+    extendedGreekData.primary = primary;
+    let extendedLangData = {
+      [languages.greek]: extendedGreekData
+    };
+    this.addSuffix(suffixValue, features, extendedLangData);
   }
-}
+};
+
+// For verbs
+dataSet$1.addVerbSuffixes = function (partOfSpeech, data) {
+  // Some suffix values will mean a lack of suffix, they will be mapped to a null
+  let noSuffixValue = '-';
+
+  // First row are headers
+  for (let i = 1; i < data.length; i++) {
+    let suffix = data[i][0];
+    // Handle special suffix values
+    if (suffix === noSuffixValue) {
+      suffix = null;
+    }
+
+    let features = [partOfSpeech
+      /*
+      conjugations.importer.csv.get(data[i][1]),
+      voices.importer.csv.get(data[i][2]),
+      moods.importer.csv.get(data[i][3]),
+      tenses.importer.csv.get(data[i][4]),
+      numbers.importer.csv.get(data[i][5]),
+      persons.importer.csv.get(data[i][6]) */
+    ];
+
+    let grammarType = data[i][7];
+    // Type information can be empty if no ending is provided
+    if (grammarType) {
+      features.push(types$1.importer.csv.get(grammarType));
+    }
+    // Footnotes
+    if (data[i][8]) {
+      // There can be multiple footnote indexes separated by spaces
+      let indexes = data[i][8].split(' ').map(function (index) {
+        return footnotes$1.get(index)
+      });
+      features.push(...indexes);
+    }
+    this.addSuffix(suffix, features);
+  }
+};
+
+dataSet$1.addFootnotes = function (partOfSpeech, data) {
+  // First row are headers
+  for (let i = 1; i < data.length; i++) {
+    this.addFootnote(partOfSpeech, data[i][0], data[i][1]);
+  }
+};
+
+dataSet$1.loadData = function () {
+  // Nouns
+  let partOfSpeech = parts.noun;
+  let suffixes = papaparse.parse(nounSuffixesCSV$1, {});
+  this.addSuffixes(partOfSpeech, suffixes.data);
+  let footnotes = papaparse.parse(nounFootnotesCSV$1, {});
+  this.addFootnotes(partOfSpeech, footnotes.data);
+
+  // Adjectives
+  /* partOfSpeech = parts.adjective;
+  suffixes = papaparse.parse(adjectiveSuffixesCSV, {});
+  this.addSuffixes(partOfSpeech, suffixes.data);
+  footnotes = papaparse.parse(adjectiveFootnotesCSV, {});
+  this.addFootnotes(partOfSpeech, footnotes.data); */
+
+  // Verbs
+  /* partOfSpeech = parts.verb;
+  suffixes = papaparse.parse(verbSuffixesCSV, {});
+  this.addVerbSuffixes(partOfSpeech, suffixes.data);
+  footnotes = papaparse.parse(verbFootnotesCSV, {});
+  this.addFootnotes(partOfSpeech, footnotes.data); */
+};
 
 /**
- * A return value for inflection queries
+ * Decides whether a suffix is a match to any of inflections, and if it is, what type of match it is.
+ * @param {Inflection[]} inflections - An array of Inflection objects to be matched against a suffix.
+ * @param {Suffix} suffix - A suffix to be matched with inflections.
+ * @returns {Suffix | null} If a match is found, returns a Suffix object modified with some
+ * additional information about a match. If no matches found, returns null.
  */
-class LexicalData {
-  constructor (homonym) {
-    this.homonym = homonym;
-    this[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part] = []; // What parts of speech are represented by this object.
-  }
+dataSet$1.matcher = function (inflections, suffix) {
+  'use strict';
+    // All of those features must match between an inflection and an ending
+  let obligatoryMatches = [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part];
 
-  static readObject (jsonObject) {
-    let homonym = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["i" /* Homonym */].readObject(jsonObject.homonym);
+    // Any of those features must match between an inflection and an ending
+  let optionalMatches = [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number];
+  let bestMatchData = null; // Information about the best match we would be able to find
 
-    let lexicalData = new LexicalData(homonym);
-    lexicalData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part] = jsonObject[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part];
+  /*
+   There can be only one full match between an inflection and a suffix (except when suffix has multiple values?)
+   But there could be multiple partial matches. So we should try to find the best match possible and return it.
+   A fullFeature match is when one of inflections has all grammatical features fully matching those of a suffix
+   */
+  for (let inflection of inflections) {
+    let matchData = new MatchData(); // Create a match profile
 
-    for (let part of lexicalData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part]) {
-      let partData = jsonObject[part];
-      lexicalData[part] = {};
+    if (inflection.suffix === suffix.value) {
+      matchData.suffixMatch = true;
+    }
 
-      if (partData.suffixes) {
-        lexicalData[part].suffixes = [];
-        for (let suffix of partData.suffixes) {
-          lexicalData[part].suffixes.push(Suffix.readObject(suffix));
-        }
+    // Check obligatory matches
+    for (let feature of obligatoryMatches) {
+      let featureMatch = suffix.featureMatch(feature, inflection[feature]);
+      // matchFound = matchFound && featureMatch;
+
+      if (!featureMatch) {
+        // If an obligatory match is not found, there is no reason to check other items
+        break
       }
+      // Inflection's value of this feature is matching the one of the suffix
+      matchData.matchedFeatures.push(feature);
+    }
 
-      if (partData.footnotes) {
-        lexicalData[part].footnotes = [];
-        for (let footnote of partData.footnotes) {
-          lexicalData[part].footnotes.push(Footnote.readObject(footnote));
-        }
+    if (matchData.matchedFeatures.length < obligatoryMatches.length) {
+      // Not all obligatory matches are found, this is not a match
+      break
+    }
+
+    // Check optional matches now
+    for (let feature of optionalMatches) {
+      let matchedValue = suffix.featureMatch(feature, inflection[feature]);
+      if (matchedValue) {
+        matchData.matchedFeatures.push(feature);
       }
     }
 
-    return lexicalData
-  }
+    if (matchData.suffixMatch && (matchData.matchedFeatures.length === obligatoryMatches.length + optionalMatches.length)) {
+      // This is a full match
+      matchData.fullMatch = true;
 
-  get word () {
-    return this.homonym.targetWord
+      // There can be only one full match, no need to search any further
+      suffix.match = matchData;
+      return suffix
+    }
+    bestMatchData = this.bestMatch(bestMatchData, matchData);
   }
-
-  set word (word) {
-    this.homonym.targetWord = word;
+  if (bestMatchData) {
+    // There is some match found
+    suffix.match = bestMatchData;
+    return suffix
   }
-
-  get language () {
-    return this.homonym.language
-  }
-}
+  return null
+};
 
 /**
- * Load text data form an external fil with an asynchronous XHR request.
- * @param {string} filePath - A path to a file we need to load.
- * @returns {Promise} - A promise that will be resolved with either
- * file content (a string) in case of success of with a status message
- * in case of failure.
+ * Decides whether matchA is 'better' (i.e. has more items matched) than matchB or not
+ * @param {MatchData} matchA
+ * @param {MatchData} matchB
+ * @returns {MatchData} A best of two matches
  */
-let loadData = function loadData (filePath) {
-  return new Promise((resolve, reject) => {
-    const xhr = new window.XMLHttpRequest();
-    xhr.open('GET', filePath);
-    xhr.onload = () => resolve(xhr.responseText);
-    xhr.onerror = () => reject(xhr.statusText);
-    xhr.send();
-  })
+dataSet$1.bestMatch = function (matchA, matchB) {
+  // If one of the arguments is not set, return the other one
+  if (!matchA && matchB) {
+    return matchB
+  }
+
+  if (!matchB && matchA) {
+    return matchA
+  }
+
+  // Suffix match has a priority
+  if (matchA.suffixMatch !== matchB.suffixMatch) {
+    if (matchA.suffixMatch > matchB.suffixMatch) {
+      return matchA
+    } else {
+      return matchB
+    }
+  }
+
+  // If same on suffix matche, compare by how many features matched
+  if (matchA.matchedFeatures.length >= matchB.matchedFeatures.length) {
+    // Arbitrarily return matchA if matches are the same
+    return matchA
+  } else {
+    return matchB
+  }
 };
 
 let messages$1 = {
@@ -5481,1844 +7576,6 @@ const messages = [
   new MessageBundle('en-GB', messages$2)
 ];
 
-var nounSuffixesCSV = "Ending,Number,Case,Declension,Gender,Type,Footnote\r\na,singular,nominative,1st,feminine,regular,\r\nē,singular,nominative,1st,feminine,irregular,\r\nēs,singular,nominative,1st,feminine,irregular,\r\nā,singular,nominative,1st,feminine,irregular,7\r\nus,singular,nominative,2nd,masculine feminine,regular,\r\ner,singular,nominative,2nd,masculine feminine,regular,\r\nir,singular,nominative,2nd,masculine feminine,regular,\r\n-,singular,nominative,2nd,masculine feminine,irregular,\r\nos,singular,nominative,2nd,masculine feminine,irregular,1\r\nōs,singular,nominative,2nd,masculine feminine,irregular,\r\nō,singular,nominative,2nd,masculine feminine,irregular,7\r\num,singular,nominative,2nd,neuter,regular,\r\nus,singular,nominative,2nd,neuter,irregular,10\r\non,singular,nominative,2nd,neuter,irregular,7\r\n-,singular,nominative,3rd,masculine feminine,regular,\r\nos,singular,nominative,3rd,masculine feminine,irregular,\r\nōn,singular,nominative,3rd,masculine feminine,irregular,7\r\n-,singular,nominative,3rd,neuter,regular,\r\nus,singular,nominative,4th,masculine feminine,regular,\r\nū,singular,nominative,4th,neuter,regular,\r\nēs,singular,nominative,5th,feminine,regular,\r\nae,singular,genitive,1st,feminine,regular,\r\nāī,singular,genitive,1st,feminine,irregular,1\r\nās,singular,genitive,1st,feminine,irregular,2\r\nēs,singular,genitive,1st,feminine,irregular,7\r\nī,singular,genitive,2nd,masculine feminine,regular,\r\nō,singular,genitive,2nd,masculine feminine,irregular,7\r\nī,singular,genitive,2nd,neuter,regular,\r\nis,singular,genitive,3rd,masculine feminine,regular,\r\nis,singular,genitive,3rd,neuter,regular,\r\nūs,singular,genitive,4th,masculine feminine,regular,\r\nuis,singular,genitive,4th,masculine feminine,irregular,1\r\nuos,singular,genitive,4th,masculine feminine,irregular,1\r\nī,singular,genitive,4th,masculine feminine,irregular,15\r\nūs,singular,genitive,4th,neuter,regular,\r\nēī,singular,genitive,5th,feminine,regular,\r\neī,singular,genitive,5th,feminine,regular,\r\nī,singular,genitive,5th,feminine,irregular,\r\nē,singular,genitive,5th,feminine,irregular,\r\nēs,singular,genitive,5th,feminine,irregular,6\r\nae,singular,dative,1st,feminine,regular,\r\nāī,singular,dative,1st,feminine,irregular,1\r\nō,singular,dative,2nd,masculine feminine,regular,\r\nō,singular,dative,2nd,neuter,regular,\r\nī,singular,dative,3rd,masculine feminine,regular,\r\ne,singular,dative,3rd,masculine feminine,irregular,17\r\nī,singular,dative,3rd,neuter,regular,\r\nūī,singular,dative,4th,masculine feminine,regular,\r\nū,singular,dative,4th,masculine feminine,regular,\r\nū,singular,dative,4th,neuter,regular,\r\nēī,singular,dative,5th,feminine,regular,\r\neī,singular,dative,5th,feminine,regular,\r\nī,singular,dative,5th,feminine,irregular,\r\nē,singular,dative,5th,feminine,irregular,6\r\nam,singular,accusative,1st,feminine,regular,\r\nēn,singular,accusative,1st,feminine,irregular,\r\nān,singular,accusative,1st,feminine,irregular,7\r\num,singular,accusative,2nd,masculine feminine,regular,\r\nom,singular,accusative,2nd,masculine feminine,irregular,1\r\nōn,singular,accusative,2nd,masculine feminine,irregular,7\r\num,singular,accusative,2nd,neuter,regular,\r\nus,singular,accusative,2nd,neuter,irregular,10\r\non,singular,accusative,2nd,neuter,irregular,7\r\nem,singular,accusative,3rd,masculine feminine,regular,\r\nim,singular,accusative,3rd,masculine feminine,irregular,11\r\na,singular,accusative,3rd,masculine feminine,irregular,7\r\n-,singular,accusative,3rd,neuter,regular,\r\num,singular,accusative,4th,masculine feminine,regular,\r\nū,singular,accusative,4th,neuter,regular,\r\nem,singular,accusative,5th,feminine,regular,\r\nā,singular,ablative,1st,feminine,regular,\r\nād,singular,ablative,1st,feminine,irregular,5\r\nē,singular,ablative,1st,feminine,irregular,7\r\nō,singular,ablative,2nd,masculine feminine,regular,\r\nōd,singular,ablative,2nd,masculine feminine,irregular,1\r\nō,singular,ablative,2nd,neuter,regular,\r\ne,singular,ablative,3rd,masculine feminine,regular,\r\nī,singular,ablative,3rd,masculine feminine,irregular,11\r\ne,singular,ablative,3rd,neuter,regular,\r\nī,singular,ablative,3rd,neuter,irregular,11\r\nū,singular,ablative,4th,masculine feminine,regular,\r\nūd,singular,ablative,4th,masculine feminine,irregular,1\r\nū,singular,ablative,4th,neuter,regular,\r\nē,singular,ablative,5th,feminine,regular,\r\nae,singular,locative,1st,feminine,regular,\r\nō,singular,locative,2nd,masculine feminine,regular,\r\nō,singular,locative,2nd,neuter,regular,\r\ne,singular,locative,3rd,masculine feminine,regular,\r\nī,singular,locative,3rd,masculine feminine,regular,\r\nī,singular,locative,3rd,neuter,regular,\r\nū,singular,locative,4th,masculine feminine,regular,\r\nū,singular,locative,4th,neuter,regular,\r\nē,singular,locative,5th,feminine,regular,\r\na,singular,vocative,1st,feminine,regular,\r\nē,singular,vocative,1st,feminine,irregular,\r\nā,singular,vocative,1st,feminine,irregular,7\r\ne,singular,vocative,2nd,masculine feminine,regular,\r\ner,singular,vocative,2nd,masculine feminine,regular,\r\nir,singular,vocative,2nd,masculine feminine,regular,\r\n-,singular,vocative,2nd,masculine feminine,irregular,\r\nī,singular,vocative,2nd,masculine feminine,irregular,8\r\nōs,singular,vocative,2nd,masculine feminine,irregular,\r\ne,singular,vocative,2nd,masculine feminine,irregular,7\r\num,singular,vocative,2nd,neuter,regular,\r\non,singular,vocative,2nd,neuter,irregular,7\r\n-,singular,vocative,3rd,masculine feminine,regular,\r\n-,singular,vocative,3rd,neuter,regular,\r\nus,singular,vocative,4th,masculine feminine,regular,\r\nū,singular,vocative,4th,neuter,regular,\r\nēs,singular,vocative,5th,feminine,regular,\r\nae,plural,nominative,1st,feminine,regular,\r\nī,plural,nominative,2nd,masculine feminine,regular,\r\noe,plural,nominative,2nd,masculine feminine,irregular,7 9\r\na,plural,nominative,2nd,neuter,regular,\r\nēs,plural,nominative,3rd,masculine feminine,regular,\r\nes,plural,nominative,3rd,masculine feminine,irregular,7\r\na,plural,nominative,3rd,neuter,regular,\r\nia,plural,nominative,3rd,neuter,irregular,11\r\nūs,plural,nominative,4th,masculine feminine,regular,\r\nua,plural,nominative,4th,neuter,regular,\r\nēs,plural,nominative,5th,feminine,regular,\r\nārum,plural,genitive,1st,feminine,regular,\r\num,plural,genitive,1st,feminine,irregular,3\r\nōrum,plural,genitive,2nd,masculine feminine,regular,\r\num,plural,genitive,2nd,masculine feminine,irregular,\r\nom,plural,genitive,2nd,masculine feminine,irregular,8\r\nōrum,plural,genitive,2nd,neuter,regular,\r\num,plural,genitive,2nd,neuter,irregular,\r\num,plural,genitive,3rd,masculine feminine,regular,\r\nium,plural,genitive,3rd,masculine feminine,irregular,11\r\nōn,plural,genitive,3rd,masculine feminine,irregular,7\r\num,plural,genitive,3rd,neuter,regular,\r\nium,plural,genitive,3rd,neuter,irregular,11\r\nuum,plural,genitive,4th,masculine feminine,regular,\r\num,plural,genitive,4th,masculine feminine,irregular,16\r\nuom,plural,genitive,4th,masculine feminine,irregular,1\r\nuum,plural,genitive,4th,neuter,regular,\r\nērum,plural,genitive,5th,feminine,regular,\r\nīs,plural,dative,1st,feminine,regular,\r\nābus,plural,dative,1st,feminine,irregular,4\r\neis,plural,dative,1st,feminine,irregular,6\r\nīs,plural,dative,2nd,masculine feminine,regular,\r\nīs,plural,dative,2nd,neuter,regular,\r\nibus,plural,dative,3rd,masculine feminine,regular,\r\nibus,plural,dative,3rd,neuter,regular,\r\nibus,plural,dative,4th,masculine feminine,regular,\r\nubus,plural,dative,4th,masculine feminine,irregular,14\r\nibus,plural,dative,4th,neuter,regular,\r\nēbus,plural,dative,5th,feminine,regular,\r\nās,plural,accusative,1st,feminine,regular,\r\nōs,plural,accusative,2nd,masculine feminine,regular,\r\na,plural,accusative,2nd,neuter,regular,\r\nēs,plural,accusative,3rd,masculine feminine,regular,\r\nīs,plural,accusative,3rd,masculine feminine,irregular,11\r\nas,plural,accusative,3rd,masculine feminine,irregular,7\r\na,plural,accusative,3rd,neuter,regular,\r\nia,plural,accusative,3rd,neuter,irregular,11\r\nūs,plural,accusative,4th,masculine feminine,regular,\r\nua,plural,accusative,4th,neuter,regular,\r\nēs,plural,accusative,5th,feminine,regular,\r\nīs,plural,ablative,1st,feminine,regular,\r\nābus,plural,ablative,1st,feminine,irregular,4\r\neis,plural,ablative,1st,feminine,irregular,6\r\nīs,plural,ablative,2nd,masculine feminine,regular,\r\nīs,plural,ablative,2nd,neuter,regular,\r\nibus,plural,ablative,3rd,masculine feminine,regular,\r\nibus,plural,ablative,3rd,neuter,regular,\r\nibus,plural,ablative,4th,masculine feminine,regular,\r\nubus,plural,ablative,4th,masculine feminine,irregular,14\r\nibus,plural,ablative,4th,neuter,regular,\r\nēbus,plural,ablative,5th,feminine,regular,\r\nīs,plural,locative,1st,feminine,regular,\r\nīs,plural,locative,2nd,masculine feminine,regular,\r\nīs,plural,locative,2nd,neuter,regular,\r\nibus,plural,locative,3rd,masculine feminine,regular,\r\nibus,plural,locative,3rd,neuter,regular,\r\nibus,plural,locative,4th,masculine feminine,regular,\r\nibus,plural,locative,4th,neuter,regular,\r\nēbus,plural,locative,5th,feminine,regular,\r\nae,plural,vocative,1st,feminine,regular,\r\nī,plural,vocative,2nd,masculine feminine,regular,\r\na,plural,vocative,2nd,neuter,regular,\r\nēs,plural,vocative,3rd,masculine feminine,regular,\r\na,plural,vocative,3rd,neuter,regular,\r\nia,plural,vocative,3rd,neuter,irregular,11\r\nūs,plural,vocative,4th,masculine feminine,regular,\r\nua,plural,vocative,4th,neuter,regular,\r\nēs,plural,vocative,5th,feminine,regular,";
-
-var nounFootnotesCSV = "Index,Text\r\n1,archaic (final s and m of os and om may be omitted in inscriptions)\r\n2,only in familiās\r\n3,especially in Greek patronymics and compounds in -gena and -cola.\r\n4,always in deābus and filiābus; rarely with other words to distinguish the female\r\n5,archaic\r\n6,rare\r\n7,\"may occur in words of Greek origin. The forms of many Greek nouns vary among the first, second and third declensions.\"\r\n8,proper names in ius and filius and genius\r\n9,poetic\r\n10,\"only pelagus, vīrus, and sometimes vulgus\"\r\n11,may occur with i-stems\r\n12,several nouns (most commonly domus) show forms of both second and fourth declensions\r\n13,\"some nouns also have forms from the first declension (eg materia, saevitia) or the third declension (eg requiēs, satiēs, plēbēs, famēs)\"\r\n14,\"Always in partus and tribus, usually in artus and lacus, sometimes in other words, eg portus and specus\"\r\n15,Often in names of plants and trees and in nouns ending in -tus\r\n16,When pronounced as one syllable\r\n17,early\r\n18,dies and meridies are masculine";
-
-var adjectiveSuffixesCSV = "Ending,Number,Case,Declension,Gender,Type,Footnote\r\na,singular,nominative,1st 2nd,feminine,regular,\r\nus,singular,nominative,1st 2nd,masculine,regular,\r\num,singular,nominative,1st 2nd,neuter,regular,\r\nis,singular,nominative,3rd,feminine,regular,\r\n-,singular,nominative,3rd,feminine,irregular,6\r\n-,singular,nominative,3rd,masculine,regular,\r\nis,singular,nominative,3rd,masculine,irregular,5\r\ne,singular,nominative,3rd,neuter,regular,\r\n-,singular,nominative,3rd,neuter,irregular,6\r\nae,singular,genitive,1st 2nd,feminine,regular,\r\nīus,singular,genitive,1st 2nd,feminine,irregular,3\r\nī,singular,genitive,1st 2nd,masculine,regular,\r\nīus,singular,genitive,1st 2nd,masculine,irregular,3\r\nī,singular,genitive,1st 2nd,neuter,regular,\r\nīus,singular,genitive,1st 2nd,neuter,irregular,3\r\nis,singular,genitive,3rd,feminine,regular,\r\nis,singular,genitive,3rd,masculine,regular,\r\nis,singular,genitive,3rd,neuter,regular,\r\nae,singular,dative,1st 2nd,feminine,regular,\r\nī,singular,dative,1st 2nd,feminine,irregular,3\r\nō,singular,dative,1st 2nd,masculine,regular,\r\nī,singular,dative,1st 2nd,masculine,irregular,3\r\nō,singular,dative,1st 2nd,neuter,regular,\r\nī,singular,dative,1st 2nd,neuter,irregular,3\r\nī,singular,dative,3rd,feminine,regular,\r\nī,singular,dative,3rd,masculine,regular,\r\nī,singular,dative,3rd,neuter,regular,\r\nam,singular,accusative,1st 2nd,feminine,regular,\r\num,singular,accusative,1st 2nd,masculine,regular,\r\num,singular,accusative,1st 2nd,neuter,regular,\r\nem,singular,accusative,3rd,feminine,regular,\r\nem,singular,accusative,3rd,masculine,regular,\r\ne,singular,accusative,3rd,neuter,regular,\r\n-,singular,accusative,3rd,neuter,irregular,6\r\nā,singular,ablative,1st 2nd,feminine,regular,\r\nō,singular,ablative,1st 2nd,feminine,irregular,4\r\nō,singular,ablative,1st 2nd,masculine,regular,\r\nō,singular,ablative,1st 2nd,neuter,regular,\r\nī,singular,ablative,3rd,feminine,regular,\r\ne,singular,ablative,3rd,feminine,irregular,7\r\nī,singular,ablative,3rd,masculine,regular,\r\ne,singular,ablative,3rd,masculine,irregular,7\r\nī,singular,ablative,3rd,neuter,regular,\r\nae,singular,locative,1st 2nd,feminine,regular,\r\nī,singular,locative,1st 2nd,masculine,regular,\r\nī,singular,locative,1st 2nd,neuter,regular,\r\nī,singular,locative,3rd,feminine,regular,\r\ne,singular,locative,3rd,feminine,irregular,7\r\nī,singular,locative,3rd,masculine,regular,\r\nī,singular,locative,3rd,neuter,regular,\r\na,singular,vocative,1st 2nd,feminine,regular,\r\ne,singular,vocative,1st 2nd,masculine,regular,\r\nī,singular,vocative,1st 2nd,masculine,irregular,\r\num,singular,vocative,1st 2nd,neuter,regular,\r\nis,singular,vocative,3rd,feminine,regular,\r\n-,singular,vocative,3rd,masculine,regular,\r\ne,singular,vocative,3rd,neuter,regular,\r\n-,singular,vocative,3rd,neuter,irregular,6\r\nae,plural,nominative,1st 2nd,feminine,regular,\r\nī,plural,nominative,1st 2nd,masculine,regular,\r\na,plural,nominative,1st 2nd,neuter,regular,\r\nēs,plural,nominative,3rd,feminine,regular,\r\nēs,plural,nominative,3rd,masculine,regular,\r\nia,plural,nominative,3rd,neuter,regular,\r\nārum,plural,genitive,1st 2nd,feminine,regular,\r\nōrum,plural,genitive,1st 2nd,masculine,regular,\r\nōrum,plural,genitive,1st 2nd,neuter,regular,\r\nium,plural,genitive,3rd,feminine,regular,\r\num,plural,genitive,3rd,feminine,irregular,8\r\nium,plural,genitive,3rd,masculine,regular,\r\num,plural,genitive,3rd,masculine,irregular,8\r\nium,plural,genitive,3rd,neuter,regular,\r\num,plural,genitive,3rd,neuter,irregular,8\r\nīs,plural,dative,1st 2nd,feminine,regular,\r\nīs,plural,dative,1st 2nd,masculine,regular,\r\nīs,plural,dative,1st 2nd,neuter,regular,\r\nibus,plural,dative,3rd,feminine,regular,\r\nibus,plural,dative,3rd,masculine,regular,\r\nibus,plural,dative,3rd,neuter,regular,\r\nās,plural,accusative,1st 2nd,feminine,regular,\r\nōs,plural,accusative,1st 2nd,masculine,regular,\r\na,plural,accusative,1st 2nd,neuter,regular,\r\nīs,plural,accusative,3rd,feminine,regular,\r\nēs,plural,accusative,3rd,feminine,irregular,9\r\nīs,plural,accusative,3rd,masculine,regular,\r\nēs,plural,accusative,3rd,masculine,irregular,9\r\nia,plural,accusative,3rd,neuter,regular,\r\nīs,plural,ablative,1st 2nd,feminine,regular,\r\nīs,plural,ablative,1st 2nd,masculine,regular,\r\nīs,plural,ablative,1st 2nd,neuter,regular,\r\nibus,plural,ablative,3rd,feminine,regular,\r\nibus,plural,ablative,3rd,masculine,regular,\r\nibus,plural,ablative,3rd,neuter,regular,\r\nīs,plural,locative,1st 2nd,feminine,regular,\r\nīs,plural,locative,1st 2nd,masculine,regular,\r\nīs,plural,locative,1st 2nd,neuter,regular,\r\nibus,plural,locative,3rd,feminine,regular,\r\nibus,plural,locative,3rd,masculine,regular,\r\nibus,plural,locative,3rd,neuter,regular,\r\nae,plural,vocative,1st 2nd,feminine,regular,\r\nī,plural,vocative,1st 2nd,masculine,regular,\r\na,plural,vocative,1st 2nd,neuter,regular,\r\nēs,plural,vocative,3rd,feminine,regular,\r\nēs,plural,vocative,3rd,masculine,regular,\r\nia,plural,vocative,3rd,neuter,regular,";
-
-var adjectiveFootnotesCSV = "Index,Text\r\n1,\"Adjectives agree with the noun they modify in gender, number and case.\"\r\n2,Adjectives are inflected according to either\r\n3,\"Only nullus, sōlus, alius (alia, aliud), tōtus, ūllus, ūnus, alter, neuter (neutra,\r\n            neutrum) and uter (utra, utrum).\"\r\n4,In a few adjectives of Greek origin.\r\n5,\"The \"\"two-ending\"\" adjectives use \"\"-is\"\", for both masculine and feminine nominative\r\n            singular.\"\r\n6,\"The \"\"one-ending\"\" adjectives use the same consonant ending for all three genders in the\r\n            nominative singular and the neuter accusative and vocative singular.\"\r\n7,\"An ablative singular in \"\"e\"\" is common in one-ending adjectives, but is usually confined to\r\n            poetry in three and two-ending adjectives.\"\r\n8,\"In comparatives, poetry and some one-ending adjectives.\"\r\n9,Chiefly in comparatives.";
-
-var verbSuffixesCSV = "Ending,Conjugation,Voice,Mood,Tense,Number,Person,Type,Footnote\r\nō,1st,active,indicative,present,singular,1st,regular,\r\nās,1st,active,indicative,present,singular,2nd,regular,\r\nat,1st,active,indicative,present,singular,3rd,regular,\r\nāmus,1st,active,indicative,present,plural,1st,regular,\r\nātis,1st,active,indicative,present,plural,2nd,regular,\r\nant,1st,active,indicative,present,plural,3rd,regular,\r\nem,1st,active,subjunctive,present,singular,1st,regular,\r\nēs,1st,active,subjunctive,present,singular,2nd,regular,\r\net,1st,active,subjunctive,present,singular,3rd,regular,\r\nēmus,1st,active,subjunctive,present,plural,1st,regular,\r\nētis,1st,active,subjunctive,present,plural,2nd,regular,\r\nent,1st,active,subjunctive,present,plural,3rd,regular,\r\neō,2nd,active,indicative,present,singular,1st,regular,\r\nēs,2nd,active,indicative,present,singular,2nd,regular,\r\nēt,2nd,active,indicative,present,singular,3rd,regular,\r\nēmus,2nd,active,indicative,present,plural,1st,regular,\r\nētis,2nd,active,indicative,present,plural,2nd,regular,\r\nent,2nd,active,indicative,present,plural,3rd,regular,\r\neam,2nd,active,subjunctive,present,singular,1st,regular,\r\neās,2nd,active,subjunctive,present,singular,2nd,regular,\r\neat,2nd,active,subjunctive,present,singular,3rd,regular,\r\neāmus,2nd,active,subjunctive,present,plural,1st,regular,\r\neātis,2nd,active,subjunctive,present,plural,2nd,regular,\r\neant,2nd,active,subjunctive,present,plural,3rd,regular,\r\nō,3rd,active,indicative,present,singular,1st,regular,\r\nis,3rd,active,indicative,present,singular,2nd,regular,\r\nit,3rd,active,indicative,present,singular,3rd,regular,\r\nimus,3rd,active,indicative,present,plural,1st,regular,\r\nitis,3rd,active,indicative,present,plural,2nd,regular,\r\nunt,3rd,active,indicative,present,plural,3rd,regular,\r\nam,3rd,active,subjunctive,present,singular,1st,regular,\r\nās,3rd,active,subjunctive,present,singular,2nd,regular,\r\nat,3rd,active,subjunctive,present,singular,3rd,regular,\r\nāmus,3rd,active,subjunctive,present,plural,1st,regular,\r\nātis,3rd,active,subjunctive,present,plural,2nd,regular,\r\nant,3rd,active,subjunctive,present,plural,3rd,regular,\r\niō,4th,active,indicative,present,singular,1st,regular,\r\nīs,4th,active,indicative,present,singular,2nd,regular,\r\nit,4th,active,indicative,present,singular,3rd,regular,\r\nīmus,4th,active,indicative,present,plural,1st,regular,\r\nītis,4th,active,indicative,present,plural,2nd,regular,\r\niunt,4th,active,indicative,present,plural,3rd,regular,\r\niam,4th,active,subjunctive,present,singular,1st,regular,\r\niās,4th,active,subjunctive,present,singular,2nd,regular,\r\niat,4th,active,subjunctive,present,singular,3rd,regular,\r\niāmus,4th,active,subjunctive,present,plural,1st,regular,\r\niāatis,4th,active,subjunctive,present,plural,2nd,regular,\r\niant,4th,active,subjunctive,present,plural,3rd,regular,\r\nābam,1st,active,indicative,imperfect,singular,1st,regular,\r\nābas,1st,active,indicative,imperfect,singular,2nd,regular,\r\nābat,1st,active,indicative,imperfect,singular,3rd,regular,\r\nābāmus,1st,active,indicative,imperfect,plural,1st,regular,\r\nābātis,1st,active,indicative,imperfect,plural,2nd,regular,\r\nābant,1st,active,indicative,imperfect,plural,3rd,regular,\r\nārem,1st,active,subjunctive,imperfect,singular,1st,regular,\r\nārēs,1st,active,subjunctive,imperfect,singular,2nd,regular,\r\nāret,1st,active,subjunctive,imperfect,singular,3rd,regular,\r\nārēmus,1st,active,subjunctive,imperfect,plural,1st,regular,\r\nārētis,1st,active,subjunctive,imperfect,plural,2nd,regular,\r\nārent,1st,active,subjunctive,imperfect,plural,3rd,regular,\r\nēbam,2nd,active,indicative,imperfect,singular,1st,regular,\r\nēbās,2nd,active,indicative,imperfect,singular,2nd,regular,\r\nēbat,2nd,active,indicative,imperfect,singular,3rd,regular,\r\nēbāmus,2nd,active,indicative,imperfect,plural,1st,regular,\r\nēbātis,2nd,active,indicative,imperfect,plural,2nd,regular,\r\nēbant,2nd,active,indicative,imperfect,plural,3rd,regular,\r\nērem,2nd,active,subjunctive,imperfect,singular,1st,regular,\r\nērēs,2nd,active,subjunctive,imperfect,singular,2nd,regular,\r\nēret,2nd,active,subjunctive,imperfect,singular,3rd,regular,\r\nērēmus,2nd,active,subjunctive,imperfect,plural,1st,regular,\r\nērētis,2nd,active,subjunctive,imperfect,plural,2nd,regular,\r\nērēnt,2nd,active,subjunctive,imperfect,plural,3rd,regular,\r\nēbas,3rd,active,indicative,imperfect,singular,1st,regular,\r\nēbāt,3rd,active,indicative,imperfect,singular,2nd,regular,\r\nēbat,3rd,active,indicative,imperfect,singular,3rd,regular,\r\nēbāmus,3rd,active,indicative,imperfect,plural,1st,regular,\r\nēbātis,3rd,active,indicative,imperfect,plural,2nd,regular,\r\nēbant,3rd,active,indicative,imperfect,plural,3rd,regular,\r\nerem,3rd,active,subjunctive,imperfect,singular,1st,regular,\r\nerēs,3rd,active,subjunctive,imperfect,singular,2nd,regular,\r\neret,3rd,active,subjunctive,imperfect,singular,3rd,regular,\r\nerēmus,3rd,active,subjunctive,imperfect,plural,1st,regular,\r\nerētis,3rd,active,subjunctive,imperfect,plural,2nd,regular,\r\nerent,3rd,active,subjunctive,imperfect,plural,3rd,regular,\r\niēbam,4th,active,indicative,imperfect,singular,1st,regular,\r\nībam,4th,active,indicative,imperfect,singular,1st,irregular,2\r\niēbas,4th,active,indicative,imperfect,singular,2nd,regular,\r\nības,4th,active,indicative,imperfect,singular,2nd,irregular,\r\niēbat,4th,active,indicative,imperfect,singular,3rd,regular,\r\nībat,4th,active,indicative,imperfect,singular,3rd,irregular,\r\niēbāmus,4th,active,indicative,imperfect,plural,1st,regular,\r\nībāmus,4th,active,indicative,imperfect,plural,1st,irregular,\r\niēbātis,4th,active,indicative,imperfect,plural,2nd,regular,\r\nībātis,4th,active,indicative,imperfect,plural,2nd,irregular,\r\niēbant,4th,active,indicative,imperfect,plural,3rd,regular,\r\nībant,4th,active,indicative,imperfect,plural,3rd,irregular,\r\nīrem,4th,active,subjunctive,imperfect,singular,1st,regular,\r\nīrēs,4th,active,subjunctive,imperfect,singular,2nd,regular,\r\nīret,4th,active,subjunctive,imperfect,singular,3rd,regular,\r\nīrēmus,4th,active,subjunctive,imperfect,plural,1st,regular,\r\nīrētis,4th,active,subjunctive,imperfect,plural,2nd,regular,\r\nīrēnt,4th,active,subjunctive,imperfect,plural,3rd,regular,\r\nābo,1st,active,indicative,future,singular,1st,regular,\r\nābis,1st,active,indicative,future,singular,2nd,regular,\r\nābit,1st,active,indicative,future,singular,3rd,regular,\r\nābimus,1st,active,indicative,future,plural,1st,regular,\r\nābitis,1st,active,indicative,future,plural,2nd,regular,\r\nābunt,1st,active,indicative,future,plural,3rd,regular,\r\n,1st,active,subjunctive,future,singular,1st,,\r\n,1st,active,subjunctive,future,singular,2nd,,\r\n,1st,active,subjunctive,future,singular,3rd,,\r\n,1st,active,subjunctive,future,plural,1st,,\r\n,1st,active,subjunctive,future,plural,2nd,,\r\n,1st,active,subjunctive,future,plural,3rd,,\r\nēbō,2nd,active,indicative,future,singular,1st,regular,\r\nēbis,2nd,active,indicative,future,singular,2nd,regular,\r\nēbit,2nd,active,indicative,future,singular,3rd,regular,\r\nēbimus,2nd,active,indicative,future,plural,1st,regular,\r\nēbitis,2nd,active,indicative,future,plural,2nd,regular,\r\nēbunt,2nd,active,indicative,future,plural,3rd,regular,\r\n,2nd,active,subjunctive,future,singular,1st,regular,\r\n,2nd,active,subjunctive,future,singular,2nd,,\r\n,2nd,active,subjunctive,future,singular,3rd,,\r\n,2nd,active,subjunctive,future,plural,1st,,\r\n,2nd,active,subjunctive,future,plural,2nd,,\r\n,2nd,active,subjunctive,future,plural,3rd,,\r\nam,3rd,active,indicative,future,singular,1st,regular,\r\nēs,3rd,active,indicative,future,singular,2nd,regular,\r\net,3rd,active,indicative,future,singular,3rd,regular,\r\nēmus,3rd,active,indicative,future,plural,1st,regular,\r\nētis,3rd,active,indicative,future,plural,2nd,regular,\r\nent,3rd,active,indicative,future,plural,3rd,regular,\r\n,3rd,active,subjunctive,future,singular,1st,,\r\n,3rd,active,subjunctive,future,singular,2nd,,\r\n,3rd,active,subjunctive,future,singular,3rd,,\r\n,3rd,active,subjunctive,future,plural,1st,,\r\n,3rd,active,subjunctive,future,plural,2nd,,\r\n,3rd,active,subjunctive,future,plural,3rd,,\r\niam,4th,active,indicative,future,singular,1st,regular,\r\nībō,4th,active,indicative,future,singular,1st,irregular,2\r\niēs,4th,active,indicative,future,singular,2nd,regular,\r\nībis,4th,active,indicative,future,singular,2nd,irregular,\r\niet,4th,active,indicative,future,singular,3rd,regular,\r\nībit,4th,active,indicative,future,singular,3rd,irregular,\r\niēmus,4th,active,indicative,future,plural,1st,regular,\r\nībimus,4th,active,indicative,future,plural,1st,irregular,\r\niētis,4th,active,indicative,future,plural,2nd,regular,\r\nībitis,4th,active,indicative,future,plural,2nd,irregular,\r\nient,4th,active,indicative,future,plural,3rd,regular,\r\nībunt,4th,active,indicative,future,plural,3rd,irregular,\r\n,4th,active,subjunctive,future,singular,1st,,\r\n,4th,active,subjunctive,future,singular,2nd,,\r\n,4th,active,subjunctive,future,singular,3rd,,\r\n,4th,active,subjunctive,future,plural,1st,,\r\n,4th,active,subjunctive,future,plural,2nd,,\r\n,4th,active,subjunctive,future,plural,3rd,,\r\nāvī,1st,active,indicative,perfect,singular,1st,regular,\r\nāvistī,1st,active,indicative,perfect,singular,2nd,regular,\r\nāvit,1st,active,indicative,perfect,singular,3rd,regular,\r\nāvimus,1st,active,indicative,perfect,plural,1st,regular,\r\nāvistis,1st,active,indicative,perfect,plural,2nd,regular,\r\nāvērunt,1st,active,indicative,perfect,plural,3rd,regular,\r\nāvēre,1st,active,indicative,perfect,plural,3rd,irregular,6\r\nāverim,1st,active,subjunctive,perfect,singular,1st,regular,\r\nāveris,1st,active,subjunctive,perfect,singular,2nd,regular,\r\nāverit,1st,active,subjunctive,perfect,singular,3rd,regular,\r\nāverimus,1st,active,subjunctive,perfect,plural,1st,regular,\r\nāveritis,1st,active,subjunctive,perfect,plural,2nd,regular,\r\nāverint,1st,active,subjunctive,perfect,plural,3rd,regular,\r\nvī,2nd,active,indicative,perfect,singular,1st,regular,\r\nvistī,2nd,active,indicative,perfect,singular,2nd,regular,\r\nvit,2nd,active,indicative,perfect,singular,3rd,regular,\r\nvimus,2nd,active,indicative,perfect,plural,1st,regular,\r\nvistis,2nd,active,indicative,perfect,plural,2nd,regular,\r\nvērunt,2nd,active,indicative,perfect,plural,3rd,regular,\r\nvēre,2nd,active,indicative,perfect,plural,3rd,irregular,6\r\nverim,2nd,active,subjunctive,perfect,singular,1st,regular,\r\nveris,2nd,active,subjunctive,perfect,singular,2nd,regular,\r\nverit,2nd,active,subjunctive,perfect,singular,3rd,regular,\r\nverimus,2nd,active,subjunctive,perfect,plural,1st,regular,\r\nveritis,2nd,active,subjunctive,perfect,plural,2nd,regular,\r\nverint,2nd,active,subjunctive,perfect,plural,3rd,regular,\r\nī,3rd,active,indicative,perfect,singular,1st,regular,\r\nistī,3rd,active,indicative,perfect,singular,2nd,regular,\r\nit,3rd,active,indicative,perfect,singular,3rd,regular,\r\nimus,3rd,active,indicative,perfect,plural,1st,regular,\r\nistis,3rd,active,indicative,perfect,plural,2nd,regular,\r\nērunt,3rd,active,indicative,perfect,plural,3rd,regular,\r\nēre,3rd,active,indicative,perfect,plural,3rd,irregular,6\r\nerim,3rd,active,subjunctive,perfect,singular,1st,regular,\r\neris,3rd,active,subjunctive,perfect,singular,2nd,regular,\r\nerit,3rd,active,subjunctive,perfect,singular,3rd,regular,\r\nerimus,3rd,active,subjunctive,perfect,plural,1st,regular,\r\neritis,3rd,active,subjunctive,perfect,plural,2nd,regular,\r\nerint,3rd,active,subjunctive,perfect,plural,3rd,regular,\r\nīvi,4th,active,indicative,perfect,singular,1st,regular,\r\nīvistī,4th,active,indicative,perfect,singular,2nd,regular,\r\nīvit,4th,active,indicative,perfect,singular,3rd,regular,\r\nīvimus,4th,active,indicative,perfect,plural,1st,regular,\r\nīvistis,4th,active,indicative,perfect,plural,2nd,regular,\r\nīvērunt,4th,active,indicative,perfect,plural,3rd,regular,\r\nīvēre,4th,active,indicative,perfect,plural,3rd,irregular,6\r\nīverim,4th,active,subjunctive,perfect,singular,1st,regular,\r\niveris,4th,active,subjunctive,perfect,singular,2nd,regular,\r\nīverit,4th,active,subjunctive,perfect,singular,3rd,regular,\r\nīverimus,4th,active,subjunctive,perfect,plural,1st,regular,\r\nīveritis,4th,active,subjunctive,perfect,plural,2nd,regular,\r\nīverint,4th,active,subjunctive,perfect,plural,3rd,regular,\r\nāveram,1st,active,indicative,pluperfect,singular,1st,regular,\r\nāverās,1st,active,indicative,pluperfect,singular,2nd,regular,\r\nāverat,1st,active,indicative,pluperfect,singular,3rd,regular,\r\nāverāmus,1st,active,indicative,pluperfect,plural,1st,regular,\r\nāverātis,1st,active,indicative,pluperfect,plural,2nd,regular,\r\nāverant,1st,active,indicative,pluperfect,plural,3rd,regular,\r\nāvissem,1st,active,subjunctive,pluperfect,singular,1st,regular,\r\nāvissēs,1st,active,subjunctive,pluperfect,singular,2nd,regular,\r\nāvisset,1st,active,subjunctive,pluperfect,singular,3rd,regular,\r\nāvissēm,1st,active,subjunctive,pluperfect,plural,1st,regular,\r\nāvissēs,1st,active,subjunctive,pluperfect,plural,2nd,regular,\r\nāvisset,1st,active,subjunctive,pluperfect,plural,3rd,regular,\r\nveram,2nd,active,indicative,pluperfect,singular,1st,regular,\r\nverās,2nd,active,indicative,pluperfect,singular,2nd,regular,\r\nverat,2nd,active,indicative,pluperfect,singular,3rd,regular,\r\nverāmus,2nd,active,indicative,pluperfect,plural,1st,regular,\r\nverātis,2nd,active,indicative,pluperfect,plural,2nd,regular,\r\nverant,2nd,active,indicative,pluperfect,plural,3rd,regular,\r\nvissem,2nd,active,subjunctive,pluperfect,singular,1st,regular,\r\nvissēs,2nd,active,subjunctive,pluperfect,singular,2nd,regular,\r\nvisset,2nd,active,subjunctive,pluperfect,singular,3rd,regular,\r\nvissēmus,2nd,active,subjunctive,pluperfect,plural,1st,regular,\r\nvissētis,2nd,active,subjunctive,pluperfect,plural,2nd,regular,\r\nvissent,2nd,active,subjunctive,pluperfect,plural,3rd,regular,\r\neram,3rd,active,indicative,pluperfect,singular,1st,regular,\r\nerās,3rd,active,indicative,pluperfect,singular,2nd,regular,\r\nerat,3rd,active,indicative,pluperfect,singular,3rd,regular,\r\nerāmus,3rd,active,indicative,pluperfect,plural,1st,regular,\r\nerātis,3rd,active,indicative,pluperfect,plural,2nd,regular,\r\nerant,3rd,active,indicative,pluperfect,plural,3rd,regular,\r\nissem,3rd,active,subjunctive,pluperfect,singular,1st,regular,\r\nissēs,3rd,active,subjunctive,pluperfect,singular,2nd,regular,\r\nisset,3rd,active,subjunctive,pluperfect,singular,3rd,regular,\r\nissēmus,3rd,active,subjunctive,pluperfect,plural,1st,regular,\r\nissētis,3rd,active,subjunctive,pluperfect,plural,2nd,regular,\r\nissent,3rd,active,subjunctive,pluperfect,plural,3rd,regular,\r\nīveram,4th,active,indicative,pluperfect,singular,1st,regular,\r\nīverās,4th,active,indicative,pluperfect,singular,2nd,regular,\r\nīverat,4th,active,indicative,pluperfect,singular,3rd,regular,\r\nīverāmus,4th,active,indicative,pluperfect,plural,1st,regular,\r\nīverātis,4th,active,indicative,pluperfect,plural,2nd,regular,\r\nīverant,4th,active,indicative,pluperfect,plural,3rd,regular,\r\nīvissem,4th,active,subjunctive,pluperfect,singular,1st,regular,\r\nīvissēs,4th,active,subjunctive,pluperfect,singular,2nd,regular,\r\nīvisset,4th,active,subjunctive,pluperfect,singular,3rd,regular,\r\nīvissēmus,4th,active,subjunctive,pluperfect,plural,1st,regular,\r\nīvissētis,4th,active,subjunctive,pluperfect,plural,2nd,regular,\r\nīvissent,4th,active,subjunctive,pluperfect,plural,3rd,regular,\r\nāverō,1st,active,indicative,future_perfect,singular,1st,regular,\r\nāveris,1st,active,indicative,future_perfect,singular,2nd,regular,\r\nāverit,1st,active,indicative,future_perfect,singular,3rd,regular,\r\nāverimus,1st,active,indicative,future_perfect,plural,1st,regular,\r\nāveritis,1st,active,indicative,future_perfect,plural,2nd,regular,\r\nāverint,1st,active,indicative,future_perfect,plural,3rd,regular,\r\n,1st,active,subjunctive,future_perfect,singular,1st,,\r\n,1st,active,subjunctive,future_perfect,singular,2nd,,\r\n,1st,active,subjunctive,future_perfect,singular,3rd,,\r\n,1st,active,subjunctive,future_perfect,plural,1st,,\r\n,1st,active,subjunctive,future_perfect,plural,2nd,,\r\n,1st,active,subjunctive,future_perfect,plural,3rd,,\r\nverō,2nd,active,indicative,future_perfect,singular,1st,regular,\r\nvēris,2nd,active,indicative,future_perfect,singular,2nd,regular,\r\nvērit,2nd,active,indicative,future_perfect,singular,3rd,regular,\r\nvērimus,2nd,active,indicative,future_perfect,plural,1st,regular,\r\nvēritis,2nd,active,indicative,future_perfect,plural,2nd,regular,\r\nvērint,2nd,active,indicative,future_perfect,plural,3rd,regular,\r\n,2nd,active,subjunctive,future_perfect,singular,1st,,\r\n,2nd,active,subjunctive,future_perfect,singular,2nd,,\r\n,2nd,active,subjunctive,future_perfect,singular,3rd,,\r\n,2nd,active,subjunctive,future_perfect,plural,1st,,\r\n,2nd,active,subjunctive,future_perfect,plural,2nd,,\r\n,2nd,active,subjunctive,future_perfect,plural,3rd,,\r\nerō,3rd,active,indicative,future_perfect,singular,1st,regular,\r\neris,3rd,active,indicative,future_perfect,singular,2nd,regular,\r\nerit,3rd,active,indicative,future_perfect,singular,3rd,regular,\r\nerimus,3rd,active,indicative,future_perfect,plural,1st,regular,\r\neritis,3rd,active,indicative,future_perfect,plural,2nd,regular,\r\nerint,3rd,active,indicative,future_perfect,plural,3rd,regular,\r\n,3rd,active,subjunctive,future_perfect,singular,1st,,\r\n,3rd,active,subjunctive,future_perfect,singular,2nd,,\r\n,3rd,active,subjunctive,future_perfect,singular,3rd,,\r\n,3rd,active,subjunctive,future_perfect,plural,1st,,\r\n,3rd,active,subjunctive,future_perfect,plural,2nd,,\r\n,3rd,active,subjunctive,future_perfect,plural,3rd,,\r\nīverō,4th,active,indicative,future_perfect,singular,1st,regular,\r\nīveris,4th,active,indicative,future_perfect,singular,2nd,regular,\r\nīverit,4th,active,indicative,future_perfect,singular,3rd,regular,\r\nīverimus,4th,active,indicative,future_perfect,plural,1st,regular,\r\nīveritis,4th,active,indicative,future_perfect,plural,2nd,regular,\r\nīverint,4th,active,indicative,future_perfect,plural,3rd,regular,\r\n,4th,active,subjunctive,future_perfect,singular,1st,,\r\n,4th,active,subjunctive,future_perfect,singular,2nd,,\r\n,4th,active,subjunctive,future_perfect,singular,3rd,,\r\n,4th,active,subjunctive,future_perfect,plural,1st,,\r\n,4th,active,subjunctive,future_perfect,plural,2nd,,\r\n,4th,active,subjunctive,future_perfect,plural,3rd,,\r\nor,1st,passive,indicative,present,singular,1st,regular,\r\nāris,1st,passive,indicative,present,singular,2nd,regular,\r\nāre,1st,passive,indicative,present,singular,2nd,irregular,5\r\nātur,1st,passive,indicative,present,singular,3rd,regular,\r\nāmur,1st,passive,indicative,present,plural,1st,regular,\r\nāminiī,1st,passive,indicative,present,plural,2nd,regular,\r\nantur,1st,passive,indicative,present,plural,3rd,regular,\r\ner,1st,passive,subjunctive,present,singular,1st,regular,\r\nēris,1st,passive,subjunctive,present,singular,2nd,regular,\r\nēre,1st,passive,subjunctive,present,singular,2nd,regular,\r\nētur,1st,passive,subjunctive,present,singular,3rd,regular,\r\nēmur,1st,passive,subjunctive,present,plural,1st,regular,\r\nēminī,1st,passive,subjunctive,present,plural,2nd,regular,\r\nentur,1st,passive,subjunctive,present,plural,3rd,regular,\r\neor,2nd,passive,indicative,present,singular,1st,regular,\r\nēris,2nd,passive,indicative,present,singular,2nd,regular,\r\nēre,2nd,passive,indicative,present,singular,2nd,regular,\r\nētur,2nd,passive,indicative,present,singular,3rd,regular,\r\nēmur,2nd,passive,indicative,present,plural,1st,regular,\r\nēmini,2nd,passive,indicative,present,plural,2nd,regular,\r\nentur,2nd,passive,indicative,present,plural,3rd,regular,\r\near,2nd,passive,subjunctive,present,singular,1st,regular,\r\neāris,2nd,passive,subjunctive,present,singular,2nd,regular,\r\neāre,2nd,passive,subjunctive,present,singular,2nd,regular,\r\neātur,2nd,passive,subjunctive,present,singular,3rd,regular,\r\neāmur,2nd,passive,subjunctive,present,plural,1st,regular,\r\neāminī,2nd,passive,subjunctive,present,plural,2nd,regular,\r\neantur,2nd,passive,subjunctive,present,plural,3rd,regular,\r\nor,3rd,passive,indicative,present,singular,1st,regular,\r\neris,3rd,passive,indicative,present,singular,2nd,regular,\r\nere,3rd,passive,indicative,present,singular,2nd,regular,\r\nitur,3rd,passive,indicative,present,singular,3rd,regular,\r\nimur,3rd,passive,indicative,present,plural,1st,regular,\r\niminī,3rd,passive,indicative,present,plural,2nd,regular,\r\nuntur,3rd,passive,indicative,present,plural,3rd,regular,\r\nar,3rd,passive,subjunctive,present,singular,1st,regular,\r\nāris,3rd,passive,subjunctive,present,singular,2nd,regular,\r\nāre,3rd,passive,subjunctive,present,singular,2nd,regular,\r\nātur,3rd,passive,subjunctive,present,singular,3rd,regular,\r\nāmur,3rd,passive,subjunctive,present,plural,1st,regular,\r\nāminī,3rd,passive,subjunctive,present,plural,2nd,regular,\r\nantur,3rd,passive,subjunctive,present,plural,3rd,regular,\r\nior,4th,passive,indicative,present,singular,1st,regular,\r\nīris,4th,passive,indicative,present,singular,2nd,regular,\r\nīre,4th,passive,indicative,present,singular,2nd,regular,\r\nītur,4th,passive,indicative,present,singular,3rd,regular,\r\nīmur,4th,passive,indicative,present,plural,1st,regular,\r\nīminī,4th,passive,indicative,present,plural,2nd,regular,\r\niuntur,4th,passive,indicative,present,plural,3rd,regular,\r\niar,4th,passive,subjunctive,present,singular,1st,regular,\r\niāris,4th,passive,subjunctive,present,singular,2nd,regular,\r\niāre,4th,passive,subjunctive,present,singular,2nd,regular,\r\niātur,4th,passive,subjunctive,present,singular,3rd,regular,\r\niāmur,4th,passive,subjunctive,present,plural,1st,regular,\r\niāminī,4th,passive,subjunctive,present,plural,2nd,regular,\r\niantur,4th,passive,subjunctive,present,plural,3rd,regular,\r\nābar,1st,passive,indicative,imperfect,singular,1st,regular,\r\nābāaris,1st,passive,indicative,imperfect,singular,2nd,regular,\r\nābāre,1st,passive,indicative,imperfect,singular,2nd,regular,\r\nābātur,1st,passive,indicative,imperfect,singular,3rd,regular,\r\nābāmur,1st,passive,indicative,imperfect,plural,1st,regular,\r\nābāminī,1st,passive,indicative,imperfect,plural,2nd,regular,\r\nābantur,1st,passive,indicative,imperfect,plural,3rd,regular,\r\nārer,1st,passive,subjunctive,imperfect,singular,1st,regular,\r\nārēris,1st,passive,subjunctive,imperfect,singular,2nd,regular,\r\nārēre,1st,passive,subjunctive,imperfect,singular,2nd,regular,\r\nārētur,1st,passive,subjunctive,imperfect,singular,3rd,regular,\r\nārēmur,1st,passive,subjunctive,imperfect,plural,1st,regular,\r\nārēminī,1st,passive,subjunctive,imperfect,plural,2nd,regular,\r\nārentur,1st,passive,subjunctive,imperfect,plural,3rd,regular,\r\nēbar,2nd,passive,indicative,imperfect,singular,1st,regular,\r\nēbāris,2nd,passive,indicative,imperfect,singular,2nd,regular,\r\nēbāre,2nd,passive,indicative,imperfect,singular,2nd,regular,\r\nēbātur,2nd,passive,indicative,imperfect,singular,3rd,regular,\r\nēbāmur,2nd,passive,indicative,imperfect,plural,1st,regular,\r\nēbāmini,2nd,passive,indicative,imperfect,plural,2nd,regular,\r\nēbantur,2nd,passive,indicative,imperfect,plural,3rd,regular,\r\nērer,2nd,passive,subjunctive,imperfect,singular,1st,regular,\r\nērēris,2nd,passive,subjunctive,imperfect,singular,2nd,regular,\r\nērēre,2nd,passive,subjunctive,imperfect,singular,2nd,regular,\r\nērētur,2nd,passive,subjunctive,imperfect,singular,3rd,regular,\r\nērēmur,2nd,passive,subjunctive,imperfect,plural,1st,regular,\r\nērēminī,2nd,passive,subjunctive,imperfect,plural,2nd,regular,\r\nērentur,2nd,passive,subjunctive,imperfect,plural,3rd,regular,\r\nēbar,3rd,passive,indicative,imperfect,singular,1st,regular,\r\nēbāris,3rd,passive,indicative,imperfect,singular,2nd,regular,\r\nēbāre,3rd,passive,indicative,imperfect,singular,2nd,regular,\r\nēbatur,3rd,passive,indicative,imperfect,singular,3rd,regular,\r\nēbāmur,3rd,passive,indicative,imperfect,plural,1st,regular,\r\nēbāminī,3rd,passive,indicative,imperfect,plural,2nd,regular,\r\nēbantur,3rd,passive,indicative,imperfect,plural,3rd,regular,\r\nerer,3rd,passive,subjunctive,imperfect,singular,1st,regular,\r\nerēris,3rd,passive,subjunctive,imperfect,singular,2nd,regular,\r\nerēre,3rd,passive,subjunctive,imperfect,singular,2nd,regular,\r\nerētur,3rd,passive,subjunctive,imperfect,singular,3rd,regular,\r\nerēmur,3rd,passive,subjunctive,imperfect,plural,1st,regular,\r\nerēminī,3rd,passive,subjunctive,imperfect,plural,2nd,regular,\r\nerentur,3rd,passive,subjunctive,imperfect,plural,3rd,regular,\r\niēbar,4th,passive,indicative,imperfect,singular,1st,regular,\r\niēbāris,4th,passive,indicative,imperfect,singular,2nd,regular,\r\niēbāre,4th,passive,indicative,imperfect,singular,2nd,regular,\r\niēbātur,4th,passive,indicative,imperfect,singular,3rd,regular,\r\niēbāmur,4th,passive,indicative,imperfect,plural,1st,regular,\r\niēbāminī,4th,passive,indicative,imperfect,plural,2nd,regular,\r\niēbantur,4th,passive,indicative,imperfect,plural,3rd,regular,\r\nīrer,4th,passive,subjunctive,imperfect,singular,1st,regular,\r\nīrēris,4th,passive,subjunctive,imperfect,singular,2nd,regular,\r\nīrēre,4th,passive,subjunctive,imperfect,singular,2nd,regular,\r\nīrētur,4th,passive,subjunctive,imperfect,singular,3rd,regular,\r\nīrēmur,4th,passive,subjunctive,imperfect,plural,1st,regular,\r\nīrēminī,4th,passive,subjunctive,imperfect,plural,2nd,regular,\r\nīrentur,4th,passive,subjunctive,imperfect,plural,3rd,regular,\r\nābor,1st,passive,indicative,future,singular,1st,regular,\r\nāberis,1st,passive,indicative,future,singular,2nd,regular,\r\nābere,1st,passive,indicative,future,singular,2nd,irregular,\r\nābitur,1st,passive,indicative,future,singular,3rd,regular,\r\nābimur,1st,passive,indicative,future,plural,1st,regular,\r\nābiminī,1st,passive,indicative,future,plural,2nd,regular,\r\nābuntur,1st,passive,indicative,future,plural,3rd,regular,\r\n,1st,passive,subjunctive,future,singular,1st,,\r\n,1st,passive,subjunctive,future,singular,2nd,,\r\n,1st,passive,subjunctive,future,singular,3rd,,\r\n,1st,passive,subjunctive,future,plural,1st,,\r\n,1st,passive,subjunctive,future,plural,2nd,,\r\n,1st,passive,subjunctive,future,plural,3rd,,\r\nēbor,2nd,passive,indicative,future,singular,1st,regular,\r\nēberis,2nd,passive,indicative,future,singular,2nd,regular,\r\nēbere,2nd,passive,indicative,future,singular,2nd,regular,\r\nēbitur,2nd,passive,indicative,future,singular,3rd,regular,\r\nēbimur,2nd,passive,indicative,future,plural,1st,regular,\r\nēbiminī,2nd,passive,indicative,future,plural,2nd,regular,\r\nēbuntur,2nd,passive,indicative,future,plural,3rd,regular,\r\n,2nd,passive,subjunctive,future,singular,1st,,\r\n,2nd,passive,subjunctive,future,singular,2nd,,\r\n,2nd,passive,subjunctive,future,singular,3rd,,\r\n,2nd,passive,subjunctive,future,plural,1st,,\r\n,2nd,passive,subjunctive,future,plural,2nd,,\r\n,2nd,passive,subjunctive,future,plural,3rd,,\r\nar,3rd,passive,indicative,future,singular,1st,regular,\r\nēris,3rd,passive,indicative,future,singular,2nd,regular,\r\nēre,3rd,passive,indicative,future,singular,2nd,irregular,\r\nētur,3rd,passive,indicative,future,singular,3rd,regular,\r\nēmur,3rd,passive,indicative,future,plural,1st,regular,\r\nēminī,3rd,passive,indicative,future,plural,2nd,regular,\r\nentur,3rd,passive,indicative,future,plural,3rd,regular,\r\n,3rd,passive,subjunctive,future,singular,1st,,\r\n,3rd,passive,subjunctive,future,singular,2nd,,\r\n,3rd,passive,subjunctive,future,singular,3rd,,\r\n,3rd,passive,subjunctive,future,plural,1st,,\r\n,3rd,passive,subjunctive,future,plural,2nd,,\r\n,3rd,passive,subjunctive,future,plural,3rd,,\r\niar,4th,passive,indicative,future,singular,1st,regular,\r\niēris,4th,passive,indicative,future,singular,2nd,regular,\r\nīēre,4th,passive,indicative,future,singular,2nd,irregular,\r\niētur,4th,passive,indicative,future,singular,3rd,regular,\r\niēmur,4th,passive,indicative,future,plural,1st,regular,\r\niēminī,4th,passive,indicative,future,plural,2nd,regular,\r\nientur,4th,passive,indicative,future,plural,3rd,regular,\r\n,4th,passive,subjunctive,future,singular,1st,,\r\n,4th,passive,subjunctive,future,singular,2nd,,\r\n,4th,passive,subjunctive,future,singular,3rd,,\r\n,4th,passive,subjunctive,future,plural,1st,,\r\n,4th,passive,subjunctive,future,plural,2nd,,\r\n,4th,passive,subjunctive,future,plural,3rd,,\r\nātus sum,1st,passive,indicative,perfect,singular,1st,regular,\r\nātus fui,1st,passive,indicative,perfect,singular,1st,regular,\r\nātus es,1st,passive,indicative,perfect,singular,2nd,regular,\r\nātus fuisti,1st,passive,indicative,perfect,singular,2nd,regular,\r\nātus est,1st,passive,indicative,perfect,singular,3rd,regular,\r\nātus fuit,1st,passive,indicative,perfect,singular,3rd,regular,\r\nāti sumus,1st,passive,indicative,perfect,plural,1st,regular,\r\nāti fuimus,1st,passive,indicative,perfect,plural,1st,irregular,\r\nāti estis,1st,passive,indicative,perfect,plural,2nd,regular,\r\nāti fuistis,1st,passive,indicative,perfect,plural,2nd,irregular,\r\nāti sunt,1st,passive,indicative,perfect,plural,3rd,regular,\r\nāti fuerunt,1st,passive,indicative,perfect,plural,3rd,irregular,\r\nātus sim,1st,passive,subjunctive,perfect,singular,1st,regular,\r\nātus fuerim,1st,passive,subjunctive,perfect,singular,1st,irregular,\r\nātus sis,1st,passive,subjunctive,perfect,singular,2nd,regular,\r\nātus fueris,1st,passive,subjunctive,perfect,singular,2nd,irregular,\r\nātus sit,1st,passive,subjunctive,perfect,singular,3rd,regular,\r\nātus fuerit,1st,passive,subjunctive,perfect,singular,3rd,regular,\r\nāti sīmus,1st,passive,subjunctive,perfect,plural,1st,regular,\r\nāti fuerimus,1st,passive,subjunctive,perfect,plural,1st,irregular,\r\nāti sītis,1st,passive,subjunctive,perfect,plural,2nd,regular,\r\nāti fueritis,1st,passive,subjunctive,perfect,plural,2nd,irregular,\r\nāti sint,1st,passive,subjunctive,perfect,plural,3rd,regular,\r\nāti fuerint,1st,passive,subjunctive,perfect,plural,3rd,irregular,\r\nitus sum,2nd,passive,indicative,perfect,singular,1st,regular,\r\nitus es,2nd,passive,indicative,perfect,singular,2nd,regular,\r\nitus est,2nd,passive,indicative,perfect,singular,3rd,regular,\r\nitī sumus,2nd,passive,indicative,perfect,plural,1st,regular,\r\nitī estis,2nd,passive,indicative,perfect,plural,2nd,regular,\r\nitī sunt,2nd,passive,indicative,perfect,plural,3rd,regular,\r\nitus sim,2nd,passive,subjunctive,perfect,singular,1st,regular,\r\nitus sīs,2nd,passive,subjunctive,perfect,singular,2nd,regular,\r\nitus sit,2nd,passive,subjunctive,perfect,singular,3rd,regular,\r\nitī sīmus,2nd,passive,subjunctive,perfect,plural,1st,regular,\r\nitī sītis,2nd,passive,subjunctive,perfect,plural,2nd,regular,\r\nitī sint,2nd,passive,subjunctive,perfect,plural,3rd,regular,\r\nus sum,3rd,passive,indicative,perfect,singular,1st,regular,\r\nus es,3rd,passive,indicative,perfect,singular,2nd,regular,\r\nus est,3rd,passive,indicative,perfect,singular,3rd,regular,\r\nī sumus,3rd,passive,indicative,perfect,plural,1st,regular,\r\nī estis,3rd,passive,indicative,perfect,plural,2nd,regular,\r\nī sunt,3rd,passive,indicative,perfect,plural,3rd,regular,\r\nus sim,3rd,passive,subjunctive,perfect,singular,1st,regular,\r\nus sīs,3rd,passive,subjunctive,perfect,singular,2nd,regular,\r\nus sit,3rd,passive,subjunctive,perfect,singular,3rd,regular,\r\nus sīmus,3rd,passive,subjunctive,perfect,plural,1st,regular,\r\nus sītis,3rd,passive,subjunctive,perfect,plural,2nd,regular,\r\nus sint,3rd,passive,subjunctive,perfect,plural,3rd,regular,\r\nītus sum,4th,passive,indicative,perfect,singular,1st,regular,\r\nītus es,4th,passive,indicative,perfect,singular,2nd,regular,\r\nītus est,4th,passive,indicative,perfect,singular,3rd,regular,\r\nītī sumus,4th,passive,indicative,perfect,plural,1st,regular,\r\nīti estis,4th,passive,indicative,perfect,plural,2nd,regular,\r\nīti sunt,4th,passive,indicative,perfect,plural,3rd,regular,\r\nītus sim,4th,passive,subjunctive,perfect,singular,1st,regular,\r\nītus sīs,4th,passive,subjunctive,perfect,singular,2nd,regular,\r\nītus sit,4th,passive,subjunctive,perfect,singular,3rd,regular,\r\nītī sīmus,4th,passive,subjunctive,perfect,plural,1st,regular,\r\nīti sītis,4th,passive,subjunctive,perfect,plural,2nd,regular,\r\nīti sint,4th,passive,subjunctive,perfect,plural,3rd,regular,\r\nātus eram,1st,passive,indicative,pluperfect,singular,1st,regular,\r\nātus fueram,1st,passive,indicative,pluperfect,singular,1st,irregular,\r\nātus eras,1st,passive,indicative,pluperfect,singular,2nd,regular,\r\nātus fueras,1st,passive,indicative,pluperfect,singular,2nd,irregular,\r\nātus erat,1st,passive,indicative,pluperfect,singular,3rd,regular,\r\nātus fuerat,1st,passive,indicative,pluperfect,singular,3rd,irregular,\r\nātī erāmus,1st,passive,indicative,pluperfect,plural,1st,regular,\r\nātī fueramus,1st,passive,indicative,pluperfect,plural,1st,irregular,\r\nātī erātis,1st,passive,indicative,pluperfect,plural,2nd,regular,\r\nātī fueratis,1st,passive,indicative,pluperfect,plural,2nd,irregular,\r\nātī erant,1st,passive,indicative,pluperfect,plural,3rd,regular,\r\nātī fuerant,1st,passive,indicative,pluperfect,plural,3rd,irregular,\r\nātus essem,1st,passive,subjunctive,pluperfect,singular,1st,regular,\r\nātus fuissem,1st,passive,subjunctive,pluperfect,singular,1st,irregular,\r\nātus esses,1st,passive,subjunctive,pluperfect,singular,2nd,regular,\r\nātus fuissēs,1st,passive,subjunctive,pluperfect,singular,2nd,irregular,\r\nātus esset,1st,passive,subjunctive,pluperfect,singular,3rd,regular,\r\nātus fuisset,1st,passive,subjunctive,pluperfect,singular,3rd,irregular,\r\nāti essēmus,1st,passive,subjunctive,pluperfect,plural,1st,regular,\r\nāti fuissēmus,1st,passive,subjunctive,pluperfect,plural,1st,irregular,\r\nāti essētis,1st,passive,subjunctive,pluperfect,plural,2nd,regular,\r\nāti fuissētis,1st,passive,subjunctive,pluperfect,plural,2nd,regular,\r\nāti essent,1st,passive,subjunctive,pluperfect,plural,3rd,regular,\r\nāti fuissent,1st,passive,subjunctive,pluperfect,plural,3rd,regular,\r\nitus eram,2nd,passive,indicative,pluperfect,singular,1st,regular,\r\nitus erās,2nd,passive,indicative,pluperfect,singular,2nd,regular,\r\nitus erat,2nd,passive,indicative,pluperfect,singular,3rd,regular,\r\nitī erāmus,2nd,passive,indicative,pluperfect,plural,1st,regular,\r\nitī erātis,2nd,passive,indicative,pluperfect,plural,2nd,regular,\r\nitī erant,2nd,passive,indicative,pluperfect,plural,3rd,regular,\r\nitus essem,2nd,passive,subjunctive,pluperfect,singular,1st,regular,\r\nitus essēs,2nd,passive,subjunctive,pluperfect,singular,2nd,regular,\r\nitus esset,2nd,passive,subjunctive,pluperfect,singular,3rd,regular,\r\nitī essēmus,2nd,passive,subjunctive,pluperfect,plural,1st,regular,\r\nīti essētis,2nd,passive,subjunctive,pluperfect,plural,2nd,regular,\r\nīti essent,2nd,passive,subjunctive,pluperfect,plural,3rd,regular,\r\nus eram,3rd,passive,indicative,pluperfect,singular,1st,regular,\r\nus erās,3rd,passive,indicative,pluperfect,singular,2nd,regular,\r\nus erat,3rd,passive,indicative,pluperfect,singular,3rd,regular,\r\nī erāmus,3rd,passive,indicative,pluperfect,plural,1st,regular,\r\nī erātis,3rd,passive,indicative,pluperfect,plural,2nd,regular,\r\nī erant,3rd,passive,indicative,pluperfect,plural,3rd,regular,\r\nus essem,3rd,passive,subjunctive,pluperfect,singular,1st,regular,\r\nus essēs,3rd,passive,subjunctive,pluperfect,singular,2nd,regular,\r\nus esset,3rd,passive,subjunctive,pluperfect,singular,3rd,regular,\r\nī essēmus,3rd,passive,subjunctive,pluperfect,plural,1st,regular,\r\nī essētis,3rd,passive,subjunctive,pluperfect,plural,2nd,regular,\r\nī essent,3rd,passive,subjunctive,pluperfect,plural,3rd,regular,\r\nītus eram,4th,passive,indicative,pluperfect,singular,1st,regular,\r\nītus erās,4th,passive,indicative,pluperfect,singular,2nd,regular,\r\nītus erat,4th,passive,indicative,pluperfect,singular,3rd,regular,\r\nītī erāmus,4th,passive,indicative,pluperfect,plural,1st,regular,\r\nīti erātis,4th,passive,indicative,pluperfect,plural,2nd,regular,\r\nītī erant,4th,passive,indicative,pluperfect,plural,3rd,regular,\r\nītus essem,4th,passive,subjunctive,pluperfect,singular,1st,regular,\r\nītus essēs,4th,passive,subjunctive,pluperfect,singular,2nd,regular,\r\nītus esset,4th,passive,subjunctive,pluperfect,singular,3rd,regular,\r\nītī essēmus,4th,passive,subjunctive,pluperfect,plural,1st,regular,\r\nīti essētis,4th,passive,subjunctive,pluperfect,plural,2nd,regular,\r\nīti essent,4th,passive,subjunctive,pluperfect,plural,3rd,regular,\r\nātus erō,1st,passive,indicative,future_perfect,singular,1st,regular,\r\nātus eris,1st,passive,indicative,future_perfect,singular,2nd,regular,\r\nātus erit,1st,passive,indicative,future_perfect,singular,3rd,regular,\r\nāti erimus,1st,passive,indicative,future_perfect,plural,1st,regular,\r\nāti eritis,1st,passive,indicative,future_perfect,plural,2nd,regular,\r\nāti erunt,1st,passive,indicative,future_perfect,plural,3rd,regular,\r\n,1st,passive,subjunctive,future_perfect,singular,1st,,\r\n,1st,passive,subjunctive,future_perfect,singular,2nd,,\r\n,1st,passive,subjunctive,future_perfect,singular,3rd,,\r\n,1st,passive,subjunctive,future_perfect,plural,1st,,\r\n,1st,passive,subjunctive,future_perfect,plural,2nd,,\r\n,1st,passive,subjunctive,future_perfect,plural,3rd,,\r\nitus erō,2nd,passive,indicative,future_perfect,singular,1st,regular,\r\nitus eris,2nd,passive,indicative,future_perfect,singular,2nd,regular,\r\nitus erit,2nd,passive,indicative,future_perfect,singular,3rd,regular,\r\nitī erimus,2nd,passive,indicative,future_perfect,plural,1st,regular,\r\nitī eritis,2nd,passive,indicative,future_perfect,plural,2nd,regular,\r\nitī erunt,2nd,passive,indicative,future_perfect,plural,3rd,regular,\r\n,2nd,passive,subjunctive,future_perfect,singular,1st,,\r\n,2nd,passive,subjunctive,future_perfect,singular,2nd,,\r\n,2nd,passive,subjunctive,future_perfect,singular,3rd,,\r\n,2nd,passive,subjunctive,future_perfect,plural,1st,,\r\n,2nd,passive,subjunctive,future_perfect,plural,2nd,,\r\n,2nd,passive,subjunctive,future_perfect,plural,3rd,,\r\nus erō,3rd,passive,indicative,future_perfect,singular,1st,regular,\r\nus eris,3rd,passive,indicative,future_perfect,singular,2nd,regular,\r\nus erit,3rd,passive,indicative,future_perfect,singular,3rd,regular,\r\nī erimus,3rd,passive,indicative,future_perfect,plural,1st,regular,\r\nī eritis,3rd,passive,indicative,future_perfect,plural,2nd,regular,\r\nī erunt,3rd,passive,indicative,future_perfect,plural,3rd,regular,\r\n,3rd,passive,subjunctive,future_perfect,singular,1st,,\r\n,3rd,passive,subjunctive,future_perfect,singular,2nd,,\r\n,3rd,passive,subjunctive,future_perfect,singular,3rd,,\r\n,3rd,passive,subjunctive,future_perfect,plural,1st,,\r\n,3rd,passive,subjunctive,future_perfect,plural,2nd,,\r\n,3rd,passive,subjunctive,future_perfect,plural,3rd,,\r\nītus erō,4th,passive,indicative,future_perfect,singular,1st,regular,\r\nītus eris,4th,passive,indicative,future_perfect,singular,2nd,regular,\r\nītus erit,4th,passive,indicative,future_perfect,singular,3rd,regular,\r\nītī erimus,4th,passive,indicative,future_perfect,plural,1st,regular,\r\nītī eritis,4th,passive,indicative,future_perfect,plural,2nd,regular,\r\nītī erunt,4th,passive,indicative,future_perfect,plural,3rd,regular,\r\n,4th,passive,subjunctive,future_perfect,singular,1st,,\r\n,4th,passive,subjunctive,future_perfect,singular,2nd,,\r\n,4th,passive,subjunctive,future_perfect,singular,3rd,,\r\n,4th,passive,subjunctive,future_perfect,plural,1st,,\r\n,4th,passive,subjunctive,future_perfect,plural,2nd,,\r\n,4th,passive,subjunctive,future_perfect,plural,3rd,,";
-
-var verbFootnotesCSV = "Index,Text\r\n2,Chiefly in poetry.\r\n3,\"In tenses based on the perfect stem (the perfect, pluperfect and future perfect of the Active voice) a v between two vowels is often lost with contraction of the two vowels, thus āvī to ā, ēvī to ē, ōvi to ō. Perfects in īvī often omit the v but rarely contract the vowels, except before ss or st, and sometimes in the third person. In addition to the use of v or u, the Active perfect stem can also be formed in a number of other ways, such as the addition of s to the root (eg carpsi), reduplication of the root (eg cecidi from cado), and simple lengthening of the vowel (eg vidī from video or legī from lego).\"\r\n4,\"Dic, duc, fac, and fer lack a final vowel in the imperative in classical Latin. The singular imperative of the verb sciō is always scītō, and the plural is usually scītōte.\"\r\n5,Common in epic poetry.\r\n6,Present in early Latin but chiefly confined to popular use until Livy and later writers.\r\n7,The verb fīō is a 4th conjugation verb that is irregular in only two forms: the present infinitive fierī and the imperfect subjunctive fierem.";
-
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
-
-var papaparse = createCommonjsModule(function (module, exports) {
-/*!
-	Papa Parse
-	v4.3.6
-	https://github.com/mholt/PapaParse
-	License: MIT
-*/
-(function(root, factory)
-{
-	if (false)
-	{
-		// AMD. Register as an anonymous module.
-		undefined([], factory);
-	}
-	else {
-		// Node. Does not work with strict CommonJS, but
-		// only CommonJS-like environments that support module.exports,
-		// like Node.
-		module.exports = factory();
-	}
-}(this, function()
-{
-	'use strict';
-
-	var global = (function () {
-		// alternative method, similar to `Function('return this')()`
-		// but without using `eval` (which is disabled when
-		// using Content Security Policy).
-
-		if (typeof self !== 'undefined') { return self; }
-		if (typeof window !== 'undefined') { return window; }
-		if (typeof global !== 'undefined') { return global; }
-
-		// When running tests none of the above have been defined
-		return {};
-	})();
-
-
-	var IS_WORKER = !global.document && !!global.postMessage,
-		IS_PAPA_WORKER = IS_WORKER && /(\?|&)papaworker(=|&|$)/.test(global.location.search),
-		LOADED_SYNC = false, AUTO_SCRIPT_PATH;
-	var workers = {}, workerIdCounter = 0;
-
-	var Papa = {};
-
-	Papa.parse = CsvToJson;
-	Papa.unparse = JsonToCsv;
-
-	Papa.RECORD_SEP = String.fromCharCode(30);
-	Papa.UNIT_SEP = String.fromCharCode(31);
-	Papa.BYTE_ORDER_MARK = '\ufeff';
-	Papa.BAD_DELIMITERS = ['\r', '\n', '"', Papa.BYTE_ORDER_MARK];
-	Papa.WORKERS_SUPPORTED = !IS_WORKER && !!global.Worker;
-	Papa.SCRIPT_PATH = null;	// Must be set by your code if you use workers and this lib is loaded asynchronously
-
-	// Configurable chunk sizes for local and remote files, respectively
-	Papa.LocalChunkSize = 1024 * 1024 * 10;	// 10 MB
-	Papa.RemoteChunkSize = 1024 * 1024 * 5;	// 5 MB
-	Papa.DefaultDelimiter = ',';			// Used if not specified and detection fails
-
-	// Exposed for testing and development only
-	Papa.Parser = Parser;
-	Papa.ParserHandle = ParserHandle;
-	Papa.NetworkStreamer = NetworkStreamer;
-	Papa.FileStreamer = FileStreamer;
-	Papa.StringStreamer = StringStreamer;
-	Papa.ReadableStreamStreamer = ReadableStreamStreamer;
-
-	if (global.jQuery)
-	{
-		var $ = global.jQuery;
-		$.fn.parse = function(options)
-		{
-			var config = options.config || {};
-			var queue = [];
-
-			this.each(function(idx)
-			{
-				var supported = $(this).prop('tagName').toUpperCase() === 'INPUT'
-								&& $(this).attr('type').toLowerCase() === 'file'
-								&& global.FileReader;
-
-				if (!supported || !this.files || this.files.length === 0)
-					return true;	// continue to next input element
-
-				for (var i = 0; i < this.files.length; i++)
-				{
-					queue.push({
-						file: this.files[i],
-						inputElem: this,
-						instanceConfig: $.extend({}, config)
-					});
-				}
-			});
-
-			parseNextFile();	// begin parsing
-			return this;		// maintains chainability
-
-
-			function parseNextFile()
-			{
-				if (queue.length === 0)
-				{
-					if (isFunction(options.complete))
-						options.complete();
-					return;
-				}
-
-				var f = queue[0];
-
-				if (isFunction(options.before))
-				{
-					var returned = options.before(f.file, f.inputElem);
-
-					if (typeof returned === 'object')
-					{
-						if (returned.action === 'abort')
-						{
-							error('AbortError', f.file, f.inputElem, returned.reason);
-							return;	// Aborts all queued files immediately
-						}
-						else if (returned.action === 'skip')
-						{
-							fileComplete();	// parse the next file in the queue, if any
-							return;
-						}
-						else if (typeof returned.config === 'object')
-							f.instanceConfig = $.extend(f.instanceConfig, returned.config);
-					}
-					else if (returned === 'skip')
-					{
-						fileComplete();	// parse the next file in the queue, if any
-						return;
-					}
-				}
-
-				// Wrap up the user's complete callback, if any, so that ours also gets executed
-				var userCompleteFunc = f.instanceConfig.complete;
-				f.instanceConfig.complete = function(results)
-				{
-					if (isFunction(userCompleteFunc))
-						userCompleteFunc(results, f.file, f.inputElem);
-					fileComplete();
-				};
-
-				Papa.parse(f.file, f.instanceConfig);
-			}
-
-			function error(name, file, elem, reason)
-			{
-				if (isFunction(options.error))
-					options.error({name: name}, file, elem, reason);
-			}
-
-			function fileComplete()
-			{
-				queue.splice(0, 1);
-				parseNextFile();
-			}
-		};
-	}
-
-
-	if (IS_PAPA_WORKER)
-	{
-		global.onmessage = workerThreadReceivedMessage;
-	}
-	else if (Papa.WORKERS_SUPPORTED)
-	{
-		AUTO_SCRIPT_PATH = getScriptPath();
-
-		// Check if the script was loaded synchronously
-		if (!document.body)
-		{
-			// Body doesn't exist yet, must be synchronous
-			LOADED_SYNC = true;
-		}
-		else
-		{
-			document.addEventListener('DOMContentLoaded', function () {
-				LOADED_SYNC = true;
-			}, true);
-		}
-	}
-
-
-
-
-	function CsvToJson(_input, _config)
-	{
-		_config = _config || {};
-		var dynamicTyping = _config.dynamicTyping || false;
-		if (isFunction(dynamicTyping)) {
-			_config.dynamicTypingFunction = dynamicTyping;
-			// Will be filled on first row call
-			dynamicTyping = {};
-		}
-		_config.dynamicTyping = dynamicTyping;
-
-		if (_config.worker && Papa.WORKERS_SUPPORTED)
-		{
-			var w = newWorker();
-
-			w.userStep = _config.step;
-			w.userChunk = _config.chunk;
-			w.userComplete = _config.complete;
-			w.userError = _config.error;
-
-			_config.step = isFunction(_config.step);
-			_config.chunk = isFunction(_config.chunk);
-			_config.complete = isFunction(_config.complete);
-			_config.error = isFunction(_config.error);
-			delete _config.worker;	// prevent infinite loop
-
-			w.postMessage({
-				input: _input,
-				config: _config,
-				workerId: w.id
-			});
-
-			return;
-		}
-
-		var streamer = null;
-		if (typeof _input === 'string')
-		{
-			if (_config.download)
-				streamer = new NetworkStreamer(_config);
-			else
-				streamer = new StringStreamer(_config);
-		}
-		else if (_input.readable === true && isFunction(_input.read) && isFunction(_input.on))
-		{
-			streamer = new ReadableStreamStreamer(_config);
-		}
-		else if ((global.File && _input instanceof File) || _input instanceof Object)	// ...Safari. (see issue #106)
-			streamer = new FileStreamer(_config);
-
-		return streamer.stream(_input);
-	}
-
-
-
-
-
-
-	function JsonToCsv(_input, _config)
-	{
-		var _output = '';
-		var _fields = [];
-
-		// Default configuration
-
-		/** whether to surround every datum with quotes */
-		var _quotes = false;
-
-		/** whether to write headers */
-		var _writeHeader = true;
-
-		/** delimiting character */
-		var _delimiter = ',';
-
-		/** newline character(s) */
-		var _newline = '\r\n';
-
-		/** quote character */
-		var _quoteChar = '"';
-
-		unpackConfig();
-
-		var quoteCharRegex = new RegExp(_quoteChar, 'g');
-
-		if (typeof _input === 'string')
-			_input = JSON.parse(_input);
-
-		if (_input instanceof Array)
-		{
-			if (!_input.length || _input[0] instanceof Array)
-				return serialize(null, _input);
-			else if (typeof _input[0] === 'object')
-				return serialize(objectKeys(_input[0]), _input);
-		}
-		else if (typeof _input === 'object')
-		{
-			if (typeof _input.data === 'string')
-				_input.data = JSON.parse(_input.data);
-
-			if (_input.data instanceof Array)
-			{
-				if (!_input.fields)
-					_input.fields =  _input.meta && _input.meta.fields;
-
-				if (!_input.fields)
-					_input.fields =  _input.data[0] instanceof Array
-									? _input.fields
-									: objectKeys(_input.data[0]);
-
-				if (!(_input.data[0] instanceof Array) && typeof _input.data[0] !== 'object')
-					_input.data = [_input.data];	// handles input like [1,2,3] or ['asdf']
-			}
-
-			return serialize(_input.fields || [], _input.data || []);
-		}
-
-		// Default (any valid paths should return before this)
-		throw 'exception: Unable to serialize unrecognized input';
-
-
-		function unpackConfig()
-		{
-			if (typeof _config !== 'object')
-				return;
-
-			if (typeof _config.delimiter === 'string'
-				&& _config.delimiter.length === 1
-				&& Papa.BAD_DELIMITERS.indexOf(_config.delimiter) === -1)
-			{
-				_delimiter = _config.delimiter;
-			}
-
-			if (typeof _config.quotes === 'boolean'
-				|| _config.quotes instanceof Array)
-				_quotes = _config.quotes;
-
-			if (typeof _config.newline === 'string')
-				_newline = _config.newline;
-
-			if (typeof _config.quoteChar === 'string')
-				_quoteChar = _config.quoteChar;
-
-			if (typeof _config.header === 'boolean')
-				_writeHeader = _config.header;
-		}
-
-
-		/** Turns an object's keys into an array */
-		function objectKeys(obj)
-		{
-			if (typeof obj !== 'object')
-				return [];
-			var keys = [];
-			for (var key in obj)
-				keys.push(key);
-			return keys;
-		}
-
-		/** The double for loop that iterates the data and writes out a CSV string including header row */
-		function serialize(fields, data)
-		{
-			var csv = '';
-
-			if (typeof fields === 'string')
-				fields = JSON.parse(fields);
-			if (typeof data === 'string')
-				data = JSON.parse(data);
-
-			var hasHeader = fields instanceof Array && fields.length > 0;
-			var dataKeyedByField = !(data[0] instanceof Array);
-
-			// If there a header row, write it first
-			if (hasHeader && _writeHeader)
-			{
-				for (var i = 0; i < fields.length; i++)
-				{
-					if (i > 0)
-						csv += _delimiter;
-					csv += safe(fields[i], i);
-				}
-				if (data.length > 0)
-					csv += _newline;
-			}
-
-			// Then write out the data
-			for (var row = 0; row < data.length; row++)
-			{
-				var maxCol = hasHeader ? fields.length : data[row].length;
-
-				for (var col = 0; col < maxCol; col++)
-				{
-					if (col > 0)
-						csv += _delimiter;
-					var colIdx = hasHeader && dataKeyedByField ? fields[col] : col;
-					csv += safe(data[row][colIdx], col);
-				}
-
-				if (row < data.length - 1)
-					csv += _newline;
-			}
-
-			return csv;
-		}
-
-		/** Encloses a value around quotes if needed (makes a value safe for CSV insertion) */
-		function safe(str, col)
-		{
-			if (typeof str === 'undefined' || str === null)
-				return '';
-
-			str = str.toString().replace(quoteCharRegex, _quoteChar+_quoteChar);
-
-			var needsQuotes = (typeof _quotes === 'boolean' && _quotes)
-							|| (_quotes instanceof Array && _quotes[col])
-							|| hasAny(str, Papa.BAD_DELIMITERS)
-							|| str.indexOf(_delimiter) > -1
-							|| str.charAt(0) === ' '
-							|| str.charAt(str.length - 1) === ' ';
-
-			return needsQuotes ? _quoteChar + str + _quoteChar : str;
-		}
-
-		function hasAny(str, substrings)
-		{
-			for (var i = 0; i < substrings.length; i++)
-				if (str.indexOf(substrings[i]) > -1)
-					return true;
-			return false;
-		}
-	}
-
-	/** ChunkStreamer is the base prototype for various streamer implementations. */
-	function ChunkStreamer(config)
-	{
-		this._handle = null;
-		this._paused = false;
-		this._finished = false;
-		this._input = null;
-		this._baseIndex = 0;
-		this._partialLine = '';
-		this._rowCount = 0;
-		this._start = 0;
-		this._nextChunk = null;
-		this.isFirstChunk = true;
-		this._completeResults = {
-			data: [],
-			errors: [],
-			meta: {}
-		};
-		replaceConfig.call(this, config);
-
-		this.parseChunk = function(chunk)
-		{
-			// First chunk pre-processing
-			if (this.isFirstChunk && isFunction(this._config.beforeFirstChunk))
-			{
-				var modifiedChunk = this._config.beforeFirstChunk(chunk);
-				if (modifiedChunk !== undefined)
-					chunk = modifiedChunk;
-			}
-			this.isFirstChunk = false;
-
-			// Rejoin the line we likely just split in two by chunking the file
-			var aggregate = this._partialLine + chunk;
-			this._partialLine = '';
-
-			var results = this._handle.parse(aggregate, this._baseIndex, !this._finished);
-
-			if (this._handle.paused() || this._handle.aborted())
-				return;
-
-			var lastIndex = results.meta.cursor;
-
-			if (!this._finished)
-			{
-				this._partialLine = aggregate.substring(lastIndex - this._baseIndex);
-				this._baseIndex = lastIndex;
-			}
-
-			if (results && results.data)
-				this._rowCount += results.data.length;
-
-			var finishedIncludingPreview = this._finished || (this._config.preview && this._rowCount >= this._config.preview);
-
-			if (IS_PAPA_WORKER)
-			{
-				global.postMessage({
-					results: results,
-					workerId: Papa.WORKER_ID,
-					finished: finishedIncludingPreview
-				});
-			}
-			else if (isFunction(this._config.chunk))
-			{
-				this._config.chunk(results, this._handle);
-				if (this._paused)
-					return;
-				results = undefined;
-				this._completeResults = undefined;
-			}
-
-			if (!this._config.step && !this._config.chunk) {
-				this._completeResults.data = this._completeResults.data.concat(results.data);
-				this._completeResults.errors = this._completeResults.errors.concat(results.errors);
-				this._completeResults.meta = results.meta;
-			}
-
-			if (finishedIncludingPreview && isFunction(this._config.complete) && (!results || !results.meta.aborted))
-				this._config.complete(this._completeResults, this._input);
-
-			if (!finishedIncludingPreview && (!results || !results.meta.paused))
-				this._nextChunk();
-
-			return results;
-		};
-
-		this._sendError = function(error)
-		{
-			if (isFunction(this._config.error))
-				this._config.error(error);
-			else if (IS_PAPA_WORKER && this._config.error)
-			{
-				global.postMessage({
-					workerId: Papa.WORKER_ID,
-					error: error,
-					finished: false
-				});
-			}
-		};
-
-		function replaceConfig(config)
-		{
-			// Deep-copy the config so we can edit it
-			var configCopy = copy(config);
-			configCopy.chunkSize = parseInt(configCopy.chunkSize);	// parseInt VERY important so we don't concatenate strings!
-			if (!config.step && !config.chunk)
-				configCopy.chunkSize = null;  // disable Range header if not streaming; bad values break IIS - see issue #196
-			this._handle = new ParserHandle(configCopy);
-			this._handle.streamer = this;
-			this._config = configCopy;	// persist the copy to the caller
-		}
-	}
-
-
-	function NetworkStreamer(config)
-	{
-		config = config || {};
-		if (!config.chunkSize)
-			config.chunkSize = Papa.RemoteChunkSize;
-		ChunkStreamer.call(this, config);
-
-		var xhr;
-
-		if (IS_WORKER)
-		{
-			this._nextChunk = function()
-			{
-				this._readChunk();
-				this._chunkLoaded();
-			};
-		}
-		else
-		{
-			this._nextChunk = function()
-			{
-				this._readChunk();
-			};
-		}
-
-		this.stream = function(url)
-		{
-			this._input = url;
-			this._nextChunk();	// Starts streaming
-		};
-
-		this._readChunk = function()
-		{
-			if (this._finished)
-			{
-				this._chunkLoaded();
-				return;
-			}
-
-			xhr = new XMLHttpRequest();
-
-			if (this._config.withCredentials)
-			{
-				xhr.withCredentials = this._config.withCredentials;
-			}
-
-			if (!IS_WORKER)
-			{
-				xhr.onload = bindFunction(this._chunkLoaded, this);
-				xhr.onerror = bindFunction(this._chunkError, this);
-			}
-
-			xhr.open('GET', this._input, !IS_WORKER);
-			// Headers can only be set when once the request state is OPENED
-			if (this._config.downloadRequestHeaders)
-			{
-				var headers = this._config.downloadRequestHeaders;
-
-				for (var headerName in headers)
-				{
-					xhr.setRequestHeader(headerName, headers[headerName]);
-				}
-			}
-
-			if (this._config.chunkSize)
-			{
-				var end = this._start + this._config.chunkSize - 1;	// minus one because byte range is inclusive
-				xhr.setRequestHeader('Range', 'bytes='+this._start+'-'+end);
-				xhr.setRequestHeader('If-None-Match', 'webkit-no-cache'); // https://bugs.webkit.org/show_bug.cgi?id=82672
-			}
-
-			try {
-				xhr.send();
-			}
-			catch (err) {
-				this._chunkError(err.message);
-			}
-
-			if (IS_WORKER && xhr.status === 0)
-				this._chunkError();
-			else
-				this._start += this._config.chunkSize;
-		};
-
-		this._chunkLoaded = function()
-		{
-			if (xhr.readyState != 4)
-				return;
-
-			if (xhr.status < 200 || xhr.status >= 400)
-			{
-				this._chunkError();
-				return;
-			}
-
-			this._finished = !this._config.chunkSize || this._start > getFileSize(xhr);
-			this.parseChunk(xhr.responseText);
-		};
-
-		this._chunkError = function(errorMessage)
-		{
-			var errorText = xhr.statusText || errorMessage;
-			this._sendError(errorText);
-		};
-
-		function getFileSize(xhr)
-		{
-			var contentRange = xhr.getResponseHeader('Content-Range');
-			if (contentRange === null) { // no content range, then finish!
-					return -1;
-					}
-			return parseInt(contentRange.substr(contentRange.lastIndexOf('/') + 1));
-		}
-	}
-	NetworkStreamer.prototype = Object.create(ChunkStreamer.prototype);
-	NetworkStreamer.prototype.constructor = NetworkStreamer;
-
-
-	function FileStreamer(config)
-	{
-		config = config || {};
-		if (!config.chunkSize)
-			config.chunkSize = Papa.LocalChunkSize;
-		ChunkStreamer.call(this, config);
-
-		var reader, slice;
-
-		// FileReader is better than FileReaderSync (even in worker) - see http://stackoverflow.com/q/24708649/1048862
-		// But Firefox is a pill, too - see issue #76: https://github.com/mholt/PapaParse/issues/76
-		var usingAsyncReader = typeof FileReader !== 'undefined';	// Safari doesn't consider it a function - see issue #105
-
-		this.stream = function(file)
-		{
-			this._input = file;
-			slice = file.slice || file.webkitSlice || file.mozSlice;
-
-			if (usingAsyncReader)
-			{
-				reader = new FileReader();		// Preferred method of reading files, even in workers
-				reader.onload = bindFunction(this._chunkLoaded, this);
-				reader.onerror = bindFunction(this._chunkError, this);
-			}
-			else
-				reader = new FileReaderSync();	// Hack for running in a web worker in Firefox
-
-			this._nextChunk();	// Starts streaming
-		};
-
-		this._nextChunk = function()
-		{
-			if (!this._finished && (!this._config.preview || this._rowCount < this._config.preview))
-				this._readChunk();
-		};
-
-		this._readChunk = function()
-		{
-			var input = this._input;
-			if (this._config.chunkSize)
-			{
-				var end = Math.min(this._start + this._config.chunkSize, this._input.size);
-				input = slice.call(input, this._start, end);
-			}
-			var txt = reader.readAsText(input, this._config.encoding);
-			if (!usingAsyncReader)
-				this._chunkLoaded({ target: { result: txt } });	// mimic the async signature
-		};
-
-		this._chunkLoaded = function(event)
-		{
-			// Very important to increment start each time before handling results
-			this._start += this._config.chunkSize;
-			this._finished = !this._config.chunkSize || this._start >= this._input.size;
-			this.parseChunk(event.target.result);
-		};
-
-		this._chunkError = function()
-		{
-			this._sendError(reader.error);
-		};
-
-	}
-	FileStreamer.prototype = Object.create(ChunkStreamer.prototype);
-	FileStreamer.prototype.constructor = FileStreamer;
-
-
-	function StringStreamer(config)
-	{
-		config = config || {};
-		ChunkStreamer.call(this, config);
-
-		var string;
-		var remaining;
-		this.stream = function(s)
-		{
-			string = s;
-			remaining = s;
-			return this._nextChunk();
-		};
-		this._nextChunk = function()
-		{
-			if (this._finished) return;
-			var size = this._config.chunkSize;
-			var chunk = size ? remaining.substr(0, size) : remaining;
-			remaining = size ? remaining.substr(size) : '';
-			this._finished = !remaining;
-			return this.parseChunk(chunk);
-		};
-	}
-	StringStreamer.prototype = Object.create(StringStreamer.prototype);
-	StringStreamer.prototype.constructor = StringStreamer;
-
-
-	function ReadableStreamStreamer(config)
-	{
-		config = config || {};
-
-		ChunkStreamer.call(this, config);
-
-		var queue = [];
-		var parseOnData = true;
-
-		this.stream = function(stream)
-		{
-			this._input = stream;
-
-			this._input.on('data', this._streamData);
-			this._input.on('end', this._streamEnd);
-			this._input.on('error', this._streamError);
-		};
-
-		this._nextChunk = function()
-		{
-			if (queue.length)
-			{
-				this.parseChunk(queue.shift());
-			}
-			else
-			{
-				parseOnData = true;
-			}
-		};
-
-		this._streamData = bindFunction(function(chunk)
-		{
-			try
-			{
-				queue.push(typeof chunk === 'string' ? chunk : chunk.toString(this._config.encoding));
-
-				if (parseOnData)
-				{
-					parseOnData = false;
-					this.parseChunk(queue.shift());
-				}
-			}
-			catch (error)
-			{
-				this._streamError(error);
-			}
-		}, this);
-
-		this._streamError = bindFunction(function(error)
-		{
-			this._streamCleanUp();
-			this._sendError(error.message);
-		}, this);
-
-		this._streamEnd = bindFunction(function()
-		{
-			this._streamCleanUp();
-			this._finished = true;
-			this._streamData('');
-		}, this);
-
-		this._streamCleanUp = bindFunction(function()
-		{
-			this._input.removeListener('data', this._streamData);
-			this._input.removeListener('end', this._streamEnd);
-			this._input.removeListener('error', this._streamError);
-		}, this);
-	}
-	ReadableStreamStreamer.prototype = Object.create(ChunkStreamer.prototype);
-	ReadableStreamStreamer.prototype.constructor = ReadableStreamStreamer;
-
-
-	// Use one ParserHandle per entire CSV file or string
-	function ParserHandle(_config)
-	{
-		// One goal is to minimize the use of regular expressions...
-		var FLOAT = /^\s*-?(\d*\.?\d+|\d+\.?\d*)(e[-+]?\d+)?\s*$/i;
-
-		var self = this;
-		var _stepCounter = 0;	// Number of times step was called (number of rows parsed)
-		var _input;				// The input being parsed
-		var _parser;			// The core parser being used
-		var _paused = false;	// Whether we are paused or not
-		var _aborted = false;	// Whether the parser has aborted or not
-		var _delimiterError;	// Temporary state between delimiter detection and processing results
-		var _fields = [];		// Fields are from the header row of the input, if there is one
-		var _results = {		// The last results returned from the parser
-			data: [],
-			errors: [],
-			meta: {}
-		};
-
-		if (isFunction(_config.step))
-		{
-			var userStep = _config.step;
-			_config.step = function(results)
-			{
-				_results = results;
-
-				if (needsHeaderRow())
-					processResults();
-				else	// only call user's step function after header row
-				{
-					processResults();
-
-					// It's possbile that this line was empty and there's no row here after all
-					if (_results.data.length === 0)
-						return;
-
-					_stepCounter += results.data.length;
-					if (_config.preview && _stepCounter > _config.preview)
-						_parser.abort();
-					else
-						userStep(_results, self);
-				}
-			};
-		}
-
-		/**
-		 * Parses input. Most users won't need, and shouldn't mess with, the baseIndex
-		 * and ignoreLastRow parameters. They are used by streamers (wrapper functions)
-		 * when an input comes in multiple chunks, like from a file.
-		 */
-		this.parse = function(input, baseIndex, ignoreLastRow)
-		{
-			if (!_config.newline)
-				_config.newline = guessLineEndings(input);
-
-			_delimiterError = false;
-			if (!_config.delimiter)
-			{
-				var delimGuess = guessDelimiter(input, _config.newline, _config.skipEmptyLines);
-				if (delimGuess.successful)
-					_config.delimiter = delimGuess.bestDelimiter;
-				else
-				{
-					_delimiterError = true;	// add error after parsing (otherwise it would be overwritten)
-					_config.delimiter = Papa.DefaultDelimiter;
-				}
-				_results.meta.delimiter = _config.delimiter;
-			}
-			else if(isFunction(_config.delimiter))
-			{
-				_config.delimiter = _config.delimiter(input);
-				_results.meta.delimiter = _config.delimiter;
-			}
-
-			var parserConfig = copy(_config);
-			if (_config.preview && _config.header)
-				parserConfig.preview++;	// to compensate for header row
-
-			_input = input;
-			_parser = new Parser(parserConfig);
-			_results = _parser.parse(_input, baseIndex, ignoreLastRow);
-			processResults();
-			return _paused ? { meta: { paused: true } } : (_results || { meta: { paused: false } });
-		};
-
-		this.paused = function()
-		{
-			return _paused;
-		};
-
-		this.pause = function()
-		{
-			_paused = true;
-			_parser.abort();
-			_input = _input.substr(_parser.getCharIndex());
-		};
-
-		this.resume = function()
-		{
-			_paused = false;
-			self.streamer.parseChunk(_input);
-		};
-
-		this.aborted = function ()
-		{
-			return _aborted;
-		};
-
-		this.abort = function()
-		{
-			_aborted = true;
-			_parser.abort();
-			_results.meta.aborted = true;
-			if (isFunction(_config.complete))
-				_config.complete(_results);
-			_input = '';
-		};
-
-		function processResults()
-		{
-			if (_results && _delimiterError)
-			{
-				addError('Delimiter', 'UndetectableDelimiter', 'Unable to auto-detect delimiting character; defaulted to \''+Papa.DefaultDelimiter+'\'');
-				_delimiterError = false;
-			}
-
-			if (_config.skipEmptyLines)
-			{
-				for (var i = 0; i < _results.data.length; i++)
-					if (_results.data[i].length === 1 && _results.data[i][0] === '')
-						_results.data.splice(i--, 1);
-			}
-
-			if (needsHeaderRow())
-				fillHeaderFields();
-
-			return applyHeaderAndDynamicTyping();
-		}
-
-		function needsHeaderRow()
-		{
-			return _config.header && _fields.length === 0;
-		}
-
-		function fillHeaderFields()
-		{
-			if (!_results)
-				return;
-			for (var i = 0; needsHeaderRow() && i < _results.data.length; i++)
-				for (var j = 0; j < _results.data[i].length; j++)
-					_fields.push(_results.data[i][j]);
-			_results.data.splice(0, 1);
-		}
-
-		function shouldApplyDynamicTyping(field) {
-			// Cache function values to avoid calling it for each row
-			if (_config.dynamicTypingFunction && _config.dynamicTyping[field] === undefined) {
-				_config.dynamicTyping[field] = _config.dynamicTypingFunction(field);
-			}
-			return (_config.dynamicTyping[field] || _config.dynamicTyping) === true
-		}
-
-		function parseDynamic(field, value)
-		{
-			if (shouldApplyDynamicTyping(field))
-			{
-				if (value === 'true' || value === 'TRUE')
-					return true;
-				else if (value === 'false' || value === 'FALSE')
-					return false;
-				else
-					return tryParseFloat(value);
-			}
-			return value;
-		}
-
-		function applyHeaderAndDynamicTyping()
-		{
-			if (!_results || (!_config.header && !_config.dynamicTyping))
-				return _results;
-
-			for (var i = 0; i < _results.data.length; i++)
-			{
-				var row = _config.header ? {} : [];
-
-				for (var j = 0; j < _results.data[i].length; j++)
-				{
-					var field = j;
-					var value = _results.data[i][j];
-
-					if (_config.header)
-						field = j >= _fields.length ? '__parsed_extra' : _fields[j];
-
-					value = parseDynamic(field, value);
-
-					if (field === '__parsed_extra')
-					{
-						row[field] = row[field] || [];
-						row[field].push(value);
-					}
-					else
-						row[field] = value;
-				}
-
-				_results.data[i] = row;
-
-				if (_config.header)
-				{
-					if (j > _fields.length)
-						addError('FieldMismatch', 'TooManyFields', 'Too many fields: expected ' + _fields.length + ' fields but parsed ' + j, i);
-					else if (j < _fields.length)
-						addError('FieldMismatch', 'TooFewFields', 'Too few fields: expected ' + _fields.length + ' fields but parsed ' + j, i);
-				}
-			}
-
-			if (_config.header && _results.meta)
-				_results.meta.fields = _fields;
-			return _results;
-		}
-
-		function guessDelimiter(input, newline, skipEmptyLines)
-		{
-			var delimChoices = [',', '\t', '|', ';', Papa.RECORD_SEP, Papa.UNIT_SEP];
-			var bestDelim, bestDelta, fieldCountPrevRow;
-
-			for (var i = 0; i < delimChoices.length; i++)
-			{
-				var delim = delimChoices[i];
-				var delta = 0, avgFieldCount = 0, emptyLinesCount = 0;
-				fieldCountPrevRow = undefined;
-
-				var preview = new Parser({
-					delimiter: delim,
-					newline: newline,
-					preview: 10
-				}).parse(input);
-
-				for (var j = 0; j < preview.data.length; j++)
-				{
-					if (skipEmptyLines && preview.data[j].length === 1 && preview.data[j][0].length === 0) {
-						emptyLinesCount++;
-						continue
-					}
-					var fieldCount = preview.data[j].length;
-					avgFieldCount += fieldCount;
-
-					if (typeof fieldCountPrevRow === 'undefined')
-					{
-						fieldCountPrevRow = fieldCount;
-						continue;
-					}
-					else if (fieldCount > 1)
-					{
-						delta += Math.abs(fieldCount - fieldCountPrevRow);
-						fieldCountPrevRow = fieldCount;
-					}
-				}
-
-				if (preview.data.length > 0)
-					avgFieldCount /= (preview.data.length - emptyLinesCount);
-
-				if ((typeof bestDelta === 'undefined' || delta < bestDelta)
-					&& avgFieldCount > 1.99)
-				{
-					bestDelta = delta;
-					bestDelim = delim;
-				}
-			}
-
-			_config.delimiter = bestDelim;
-
-			return {
-				successful: !!bestDelim,
-				bestDelimiter: bestDelim
-			}
-		}
-
-		function guessLineEndings(input)
-		{
-			input = input.substr(0, 1024*1024);	// max length 1 MB
-
-			var r = input.split('\r');
-
-			var n = input.split('\n');
-
-			var nAppearsFirst = (n.length > 1 && n[0].length < r[0].length);
-
-			if (r.length === 1 || nAppearsFirst)
-				return '\n';
-
-			var numWithN = 0;
-			for (var i = 0; i < r.length; i++)
-			{
-				if (r[i][0] === '\n')
-					numWithN++;
-			}
-
-			return numWithN >= r.length / 2 ? '\r\n' : '\r';
-		}
-
-		function tryParseFloat(val)
-		{
-			var isNumber = FLOAT.test(val);
-			return isNumber ? parseFloat(val) : val;
-		}
-
-		function addError(type, code, msg, row)
-		{
-			_results.errors.push({
-				type: type,
-				code: code,
-				message: msg,
-				row: row
-			});
-		}
-	}
-
-
-
-
-
-	/** The core parser implements speedy and correct CSV parsing */
-	function Parser(config)
-	{
-		// Unpack the config object
-		config = config || {};
-		var delim = config.delimiter;
-		var newline = config.newline;
-		var comments = config.comments;
-		var step = config.step;
-		var preview = config.preview;
-		var fastMode = config.fastMode;
-		var quoteChar = config.quoteChar || '"';
-
-		// Delimiter must be valid
-		if (typeof delim !== 'string'
-			|| Papa.BAD_DELIMITERS.indexOf(delim) > -1)
-			delim = ',';
-
-		// Comment character must be valid
-		if (comments === delim)
-			throw 'Comment character same as delimiter';
-		else if (comments === true)
-			comments = '#';
-		else if (typeof comments !== 'string'
-			|| Papa.BAD_DELIMITERS.indexOf(comments) > -1)
-			comments = false;
-
-		// Newline must be valid: \r, \n, or \r\n
-		if (newline != '\n' && newline != '\r' && newline != '\r\n')
-			newline = '\n';
-
-		// We're gonna need these at the Parser scope
-		var cursor = 0;
-		var aborted = false;
-
-		this.parse = function(input, baseIndex, ignoreLastRow)
-		{
-			// For some reason, in Chrome, this speeds things up (!?)
-			if (typeof input !== 'string')
-				throw 'Input must be a string';
-
-			// We don't need to compute some of these every time parse() is called,
-			// but having them in a more local scope seems to perform better
-			var inputLen = input.length,
-				delimLen = delim.length,
-				newlineLen = newline.length,
-				commentsLen = comments.length;
-			var stepIsFunction = isFunction(step);
-
-			// Establish starting state
-			cursor = 0;
-			var data = [], errors = [], row = [], lastCursor = 0;
-
-			if (!input)
-				return returnable();
-
-			if (fastMode || (fastMode !== false && input.indexOf(quoteChar) === -1))
-			{
-				var rows = input.split(newline);
-				for (var i = 0; i < rows.length; i++)
-				{
-					var row = rows[i];
-					cursor += row.length;
-					if (i !== rows.length - 1)
-						cursor += newline.length;
-					else if (ignoreLastRow)
-						return returnable();
-					if (comments && row.substr(0, commentsLen) === comments)
-						continue;
-					if (stepIsFunction)
-					{
-						data = [];
-						pushRow(row.split(delim));
-						doStep();
-						if (aborted)
-							return returnable();
-					}
-					else
-						pushRow(row.split(delim));
-					if (preview && i >= preview)
-					{
-						data = data.slice(0, preview);
-						return returnable(true);
-					}
-				}
-				return returnable();
-			}
-
-			var nextDelim = input.indexOf(delim, cursor);
-			var nextNewline = input.indexOf(newline, cursor);
-			var quoteCharRegex = new RegExp(quoteChar+quoteChar, 'g');
-
-			// Parser loop
-			for (;;)
-			{
-				// Field has opening quote
-				if (input[cursor] === quoteChar)
-				{
-					// Start our search for the closing quote where the cursor is
-					var quoteSearch = cursor;
-
-					// Skip the opening quote
-					cursor++;
-
-					for (;;)
-					{
-						// Find closing quote
-						var quoteSearch = input.indexOf(quoteChar, quoteSearch+1);
-
-						//No other quotes are found - no other delimiters
-						if (quoteSearch === -1)
-						{
-							if (!ignoreLastRow) {
-								// No closing quote... what a pity
-								errors.push({
-									type: 'Quotes',
-									code: 'MissingQuotes',
-									message: 'Quoted field unterminated',
-									row: data.length,	// row has yet to be inserted
-									index: cursor
-								});
-							}
-							return finish();
-						}
-
-						// Closing quote at EOF
-						if (quoteSearch === inputLen-1)
-						{
-							var value = input.substring(cursor, quoteSearch).replace(quoteCharRegex, quoteChar);
-							return finish(value);
-						}
-
-						// If this quote is escaped, it's part of the data; skip it
-						if (input[quoteSearch+1] === quoteChar)
-						{
-							quoteSearch++;
-							continue;
-						}
-
-						// Closing quote followed by delimiter
-						if (input[quoteSearch+1] === delim)
-						{
-							row.push(input.substring(cursor, quoteSearch).replace(quoteCharRegex, quoteChar));
-							cursor = quoteSearch + 1 + delimLen;
-							nextDelim = input.indexOf(delim, cursor);
-							nextNewline = input.indexOf(newline, cursor);
-							break;
-						}
-
-						// Closing quote followed by newline
-						if (input.substr(quoteSearch+1, newlineLen) === newline)
-						{
-							row.push(input.substring(cursor, quoteSearch).replace(quoteCharRegex, quoteChar));
-							saveRow(quoteSearch + 1 + newlineLen);
-							nextDelim = input.indexOf(delim, cursor);	// because we may have skipped the nextDelim in the quoted field
-
-							if (stepIsFunction)
-							{
-								doStep();
-								if (aborted)
-									return returnable();
-							}
-
-							if (preview && data.length >= preview)
-								return returnable(true);
-
-							break;
-						}
-
-
-						// Checks for valid closing quotes are complete (escaped quotes or quote followed by EOF/delimiter/newline) -- assume these quotes are part of an invalid text string
-						errors.push({
-							type: 'Quotes',
-							code: 'InvalidQuotes',
-							message: 'Trailing quote on quoted field is malformed',
-							row: data.length,	// row has yet to be inserted
-							index: cursor
-						});
-
-						quoteSearch++;
-						continue;
-
-					}
-
-					continue;
-				}
-
-				// Comment found at start of new line
-				if (comments && row.length === 0 && input.substr(cursor, commentsLen) === comments)
-				{
-					if (nextNewline === -1)	// Comment ends at EOF
-						return returnable();
-					cursor = nextNewline + newlineLen;
-					nextNewline = input.indexOf(newline, cursor);
-					nextDelim = input.indexOf(delim, cursor);
-					continue;
-				}
-
-				// Next delimiter comes before next newline, so we've reached end of field
-				if (nextDelim !== -1 && (nextDelim < nextNewline || nextNewline === -1))
-				{
-					row.push(input.substring(cursor, nextDelim));
-					cursor = nextDelim + delimLen;
-					nextDelim = input.indexOf(delim, cursor);
-					continue;
-				}
-
-				// End of row
-				if (nextNewline !== -1)
-				{
-					row.push(input.substring(cursor, nextNewline));
-					saveRow(nextNewline + newlineLen);
-
-					if (stepIsFunction)
-					{
-						doStep();
-						if (aborted)
-							return returnable();
-					}
-
-					if (preview && data.length >= preview)
-						return returnable(true);
-
-					continue;
-				}
-
-				break;
-			}
-
-
-			return finish();
-
-
-			function pushRow(row)
-			{
-				data.push(row);
-				lastCursor = cursor;
-			}
-
-			/**
-			 * Appends the remaining input from cursor to the end into
-			 * row, saves the row, calls step, and returns the results.
-			 */
-			function finish(value)
-			{
-				if (ignoreLastRow)
-					return returnable();
-				if (typeof value === 'undefined')
-					value = input.substr(cursor);
-				row.push(value);
-				cursor = inputLen;	// important in case parsing is paused
-				pushRow(row);
-				if (stepIsFunction)
-					doStep();
-				return returnable();
-			}
-
-			/**
-			 * Appends the current row to the results. It sets the cursor
-			 * to newCursor and finds the nextNewline. The caller should
-			 * take care to execute user's step function and check for
-			 * preview and end parsing if necessary.
-			 */
-			function saveRow(newCursor)
-			{
-				cursor = newCursor;
-				pushRow(row);
-				row = [];
-				nextNewline = input.indexOf(newline, cursor);
-			}
-
-			/** Returns an object with the results, errors, and meta. */
-			function returnable(stopped)
-			{
-				return {
-					data: data,
-					errors: errors,
-					meta: {
-						delimiter: delim,
-						linebreak: newline,
-						aborted: aborted,
-						truncated: !!stopped,
-						cursor: lastCursor + (baseIndex || 0)
-					}
-				};
-			}
-
-			/** Executes the user's step function and resets data & errors. */
-			function doStep()
-			{
-				step(returnable());
-				data = [], errors = [];
-			}
-		};
-
-		/** Sets the abort flag */
-		this.abort = function()
-		{
-			aborted = true;
-		};
-
-		/** Gets the cursor position */
-		this.getCharIndex = function()
-		{
-			return cursor;
-		};
-	}
-
-
-	// If you need to load Papa Parse asynchronously and you also need worker threads, hard-code
-	// the script path here. See: https://github.com/mholt/PapaParse/issues/87#issuecomment-57885358
-	function getScriptPath()
-	{
-		var scripts = document.getElementsByTagName('script');
-		return scripts.length ? scripts[scripts.length - 1].src : '';
-	}
-
-	function newWorker()
-	{
-		if (!Papa.WORKERS_SUPPORTED)
-			return false;
-		if (!LOADED_SYNC && Papa.SCRIPT_PATH === null)
-			throw new Error(
-				'Script path cannot be determined automatically when Papa Parse is loaded asynchronously. ' +
-				'You need to set Papa.SCRIPT_PATH manually.'
-			);
-		var workerUrl = Papa.SCRIPT_PATH || AUTO_SCRIPT_PATH;
-		// Append 'papaworker' to the search string to tell papaparse that this is our worker.
-		workerUrl += (workerUrl.indexOf('?') !== -1 ? '&' : '?') + 'papaworker';
-		var w = new global.Worker(workerUrl);
-		w.onmessage = mainThreadReceivedMessage;
-		w.id = workerIdCounter++;
-		workers[w.id] = w;
-		return w;
-	}
-
-	/** Callback when main thread receives a message */
-	function mainThreadReceivedMessage(e)
-	{
-		var msg = e.data;
-		var worker = workers[msg.workerId];
-		var aborted = false;
-
-		if (msg.error)
-			worker.userError(msg.error, msg.file);
-		else if (msg.results && msg.results.data)
-		{
-			var abort = function() {
-				aborted = true;
-				completeWorker(msg.workerId, { data: [], errors: [], meta: { aborted: true } });
-			};
-
-			var handle = {
-				abort: abort,
-				pause: notImplemented,
-				resume: notImplemented
-			};
-
-			if (isFunction(worker.userStep))
-			{
-				for (var i = 0; i < msg.results.data.length; i++)
-				{
-					worker.userStep({
-						data: [msg.results.data[i]],
-						errors: msg.results.errors,
-						meta: msg.results.meta
-					}, handle);
-					if (aborted)
-						break;
-				}
-				delete msg.results;	// free memory ASAP
-			}
-			else if (isFunction(worker.userChunk))
-			{
-				worker.userChunk(msg.results, handle, msg.file);
-				delete msg.results;
-			}
-		}
-
-		if (msg.finished && !aborted)
-			completeWorker(msg.workerId, msg.results);
-	}
-
-	function completeWorker(workerId, results) {
-		var worker = workers[workerId];
-		if (isFunction(worker.userComplete))
-			worker.userComplete(results);
-		worker.terminate();
-		delete workers[workerId];
-	}
-
-	function notImplemented() {
-		throw 'Not implemented.';
-	}
-
-	/** Callback when worker thread receives a message */
-	function workerThreadReceivedMessage(e)
-	{
-		var msg = e.data;
-
-		if (typeof Papa.WORKER_ID === 'undefined' && msg)
-			Papa.WORKER_ID = msg.workerId;
-
-		if (typeof msg.input === 'string')
-		{
-			global.postMessage({
-				workerId: Papa.WORKER_ID,
-				results: Papa.parse(msg.input, msg.config),
-				finished: true
-			});
-		}
-		else if ((global.File && msg.input instanceof File) || msg.input instanceof Object)	// thank you, Safari (see issue #106)
-		{
-			var results = Papa.parse(msg.input, msg.config);
-			if (results)
-				global.postMessage({
-					workerId: Papa.WORKER_ID,
-					results: results,
-					finished: true
-				});
-		}
-	}
-
-	/** Makes a deep copy of an array or object (mostly) */
-	function copy(obj)
-	{
-		if (typeof obj !== 'object')
-			return obj;
-		var cpy = obj instanceof Array ? [] : {};
-		for (var key in obj)
-			cpy[key] = copy(obj[key]);
-		return cpy;
-	}
-
-	function bindFunction(f, self)
-	{
-		return function() { f.apply(self, arguments); };
-	}
-
-	function isFunction(func)
-	{
-		return typeof func === 'function';
-	}
-
-	return Papa;
-}));
-});
-
-/*
- * Latin language data module
- */
-let languageModel = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */]();
-let types = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types;
-// A language of this module
-const language = languages.latin;
-// Create a language data set that will keep all language-related information
-let dataSet = new LanguageDataset(language);
-
-// region Definition of grammatical features
-/*
- Define grammatical features of a language. Those grammatical features definitions will also be used by morphological
- analyzer's language modules as well.
- */
-const importerName = 'csv';
-languageModel.features[types.declension].addImporter(importerName)
-    .map('1st 2nd',
-  [ languageModel.features[types.declension][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_1ST],
-    languageModel.features[types.declension][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_2ND]
-  ]);
-languageModel.features[types.gender].addImporter(importerName)
-    .map('masculine feminine',
-  [ languageModel.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_MASCULINE],
-    languageModel.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_FEMININE]
-  ]);
-languageModel.features[types.tense].addImporter(importerName)
-    .map('future_perfect', languageModel.features[types.tense][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE_PERFECT]);
-const footnotes = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](types.footnote, [], language);
-
-// endregion Definition of grammatical features
-
-// For noun and adjectives
-dataSet.addSuffixes = function (partOfSpeech, data) {
-    // Some suffix values will mean a lack of suffix, they will be mapped to a null
-  let noSuffixValue = '-';
-
-    // First row are headers
-  for (let i = 1; i < data.length; i++) {
-    let suffix = data[i][0];
-        // Handle special suffix values
-    if (suffix === noSuffixValue) {
-      suffix = null;
-    }
-
-    let features = [partOfSpeech,
-      languageModel.features[types.number].getFromImporter('csv', data[i][1]),
-      languageModel.features[types.grmCase].getFromImporter('csv', data[i][2]),
-      languageModel.features[types.declension].getFromImporter('csv', data[i][3]),
-      languageModel.features[types.gender].getFromImporter('csv', data[i][4]),
-      languageModel.features[types.type].getFromImporter('csv', data[i][5])];
-    if (data[i][6]) {
-            // There can be multiple footnote indexes separated by spaces
-      let indexes = data[i][6].split(' ').map(function (index) {
-        return footnotes.get(index)
-      });
-      features.push(...indexes);
-    }
-    this.addSuffix(suffix, features);
-  }
-};
-
-// For verbs
-dataSet.addVerbSuffixes = function (partOfSpeech, data) {
-    // Some suffix values will mean a lack of suffix, they will be mapped to a null
-  let noSuffixValue = '-';
-
-    // First row are headers
-  for (let i = 1; i < data.length; i++) {
-    let suffix = data[i][0];
-        // Handle special suffix values
-    if (suffix === noSuffixValue) {
-      suffix = null;
-    }
-
-    let features = [partOfSpeech,
-      languageModel.features[types.conjugation].getFromImporter('csv', data[i][1]),
-      languageModel.features[types.voice].getFromImporter('csv', data[i][2]),
-      languageModel.features[types.mood].getFromImporter('csv', data[i][3]),
-      languageModel.features[types.tense].getFromImporter('csv', data[i][4]),
-      languageModel.features[types.number].getFromImporter('csv', data[i][5]),
-      languageModel.features[types.person].getFromImporter('csv', data[i][6])];
-
-    let grammartype = data[i][7];
-        // Type information can be empty if no ending is provided
-    if (grammartype) {
-      features.push(languageModel.features[types.type].getFromImporter('csv', grammartype));
-    }
-        // Footnotes
-    if (data[i][8]) {
-            // There can be multiple footnote indexes separated by spaces
-      let indexes = data[i][8].split(' ').map(function (index) {
-        return footnotes.get(index)
-      });
-      features.push(...indexes);
-    }
-    this.addSuffix(suffix, features);
-  }
-};
-
-dataSet.addFootnotes = function (partOfSpeech, data) {
-    // First row are headers
-  for (let i = 1; i < data.length; i++) {
-    this.addFootnote(partOfSpeech, data[i][0], data[i][1]);
-  }
-};
-
-dataSet.loadData = function () {
-    // Nouns
-  let partOfSpeech = languageModel.features[types.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_NOUN];
-  let suffixes = papaparse.parse(nounSuffixesCSV, {});
-  this.addSuffixes(partOfSpeech, suffixes.data);
-  let footnotes = papaparse.parse(nounFootnotesCSV, {});
-  this.addFootnotes(partOfSpeech, footnotes.data);
-
-    // Adjectives
-  partOfSpeech = languageModel.features[types.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_ADJECTIVE];
-  suffixes = papaparse.parse(adjectiveSuffixesCSV, {});
-  this.addSuffixes(partOfSpeech, suffixes.data);
-  footnotes = papaparse.parse(adjectiveFootnotesCSV, {});
-  this.addFootnotes(partOfSpeech, footnotes.data);
-
-    // Verbs
-  partOfSpeech = languageModel.features[types.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_VERB];
-  suffixes = papaparse.parse(verbSuffixesCSV, {});
-  this.addVerbSuffixes(partOfSpeech, suffixes.data);
-  footnotes = papaparse.parse(verbFootnotesCSV, {});
-  this.addFootnotes(partOfSpeech, footnotes.data);
-};
-
-/**
- * Decides whether a suffix is a match to any of inflections, and if it is, what type of match it is.
- * @param {Inflection[]} inflections - an array of inflection objects to be matched against a suffix.
- * @param {Suffix} suffix - a suffix to be matched with inflections.
- * @returns {Suffix | null} if a match is found, returns a suffix object modified with some
- * additional information about a match. if no matches found, returns null.
- */
-dataSet.matcher = function (inflections, suffix) {
-  'use strict';
-    // All of those features must match between an inflection and an ending
-  let obligatoryMatches = [types.part];
-
-    // Any of those features must match between an inflection and an ending
-  let optionalMatches = [types.grmCase, types.declension, types.gender, types.number];
-  let bestMatchData = null; // information about the best match we would be able to find
-
-    /*
-     There can be only one full match between an inflection and a suffix (except when suffix has multiple values?)
-     But there could be multiple partial matches. So we should try to find the best match possible and return it.
-     a fullFeature match is when one of inflections has all grammatical features fully matching those of a suffix
-     */
-  for (let inflection of inflections) {
-    let matchData = new MatchData(); // Create a match profile
-
-    if (inflection.suffix === suffix.value) {
-      matchData.suffixMatch = true;
-    }
-
-        // Check obligatory matches
-    for (let feature of obligatoryMatches) {
-      let featureMatch = suffix.featureMatch(feature, inflection[feature]);
-            // matchFound = matchFound && featureMatch;
-
-      if (!featureMatch) {
-                // If an obligatory match is not found, there is no reason to check other items
-        break
-      }
-            // Inflection's value of this feature is matching the one of the suffix
-      matchData.matchedFeatures.push(feature);
-    }
-
-    if (matchData.matchedFeatures.length < obligatoryMatches.length) {
-            // Not all obligatory matches are found, this is not a match
-      break
-    }
-
-        // Check optional matches now
-    for (let feature of optionalMatches) {
-      let matchedValue = suffix.featureMatch(feature, inflection[feature]);
-      if (matchedValue) {
-        matchData.matchedFeatures.push(feature);
-      }
-    }
-
-    if (matchData.suffixMatch && (matchData.matchedFeatures.length === obligatoryMatches.length + optionalMatches.length)) {
-            // This is a full match
-      matchData.fullMatch = true;
-
-            // There can be only one full match, no need to search any further
-      suffix.match = matchData;
-      return suffix
-    }
-    bestMatchData = this.bestMatch(bestMatchData, matchData);
-  }
-  if (bestMatchData) {
-        // There is some match found
-    suffix.match = bestMatchData;
-    return suffix
-  }
-  return null
-};
-
-/**
- * Decides whether matchA is 'better' (i.e. has more items matched) than matchB or not
- * @param {MatchData} matchA
- * @param {MatchData} matchB
- * @returns {MatchData} A best of two matches
- */
-dataSet.bestMatch = function (matchA, matchB) {
-    // If one of the arguments is not set, return the other one
-  if (!matchA && matchB) {
-    return matchB
-  }
-
-  if (!matchB && matchA) {
-    return matchA
-  }
-
-    // Suffix match has a priority
-  if (matchA.suffixMatch !== matchB.suffixMatch) {
-    if (matchA.suffixMatch > matchB.suffixMatch) {
-      return matchA
-    } else {
-      return matchB
-    }
-  }
-
-    // If same on suffix matche, compare by how many features matched
-  if (matchA.matchedFeatures.length >= matchB.matchedFeatures.length) {
-        // Arbitrarily return matchA if matches are the same
-    return matchA
-  } else {
-    return matchB
-  }
-};
-
 let classNames = {
   cell: 'infl-cell',
   widthPrefix: 'infl-cell--sp',
@@ -7350,7 +7607,7 @@ let narrowView = {
   }
 };
 
-let footnotes$1 = {
+let footnotes$2 = {
   id: 'inlection-table-footer'
 };
 
@@ -7366,12 +7623,417 @@ let pageHeader = {
   showNoSuffixGroupsBtnSel: '#show-no-suffix-groups'
 };
 
+/**
+ * Represents a list of footnotes.
+ */
+class Footnotes {
+  /**
+   * Initialises a Footnotes object.
+   * @param {Footnote[]} footnotes - An array of footnote objects.
+   */
+  constructor (footnotes) {
+    this.footnotes = footnotes;
+
+    this.nodes = document.createElement('dl');
+    this.nodes.id = footnotes$2.id;
+    this.nodes.classList.add(classNames.footnotesContainer);
+    for (let footnote of footnotes) {
+      let index = document.createElement('dt');
+      index.innerHTML = footnote.index;
+      this.nodes.appendChild(index);
+      let text = document.createElement('dd');
+      text.innerHTML = footnote.text;
+      this.nodes.appendChild(text);
+    }
+  }
+
+  /**
+   * Returns an HTML representation of a Footnotes object.
+   * @returns {HTMLElement} An HTML representation of a Footnotes object.
+   */
+  get html () {
+    return this.nodes
+  }
+}
+
+/**
+ * Represents a single view.
+ */
+class View {
+  /**
+   * Initializes a View object with options. There is at least one view per part of speech,
+   * but there could be several views for the same part of speech that show different table representation of a view.
+   * @param {Object} viewOptions
+   */
+  constructor () {
+    // this.options = viewOptions;
+    this.pageHeader = {};
+
+    // An HTML element where this view is rendered
+    this.container = undefined;
+
+    // Must be implemented in a descendant
+    this.id = 'baseView';
+    this.name = 'base view';
+    this.title = 'Base View';
+    this.language = undefined;
+    this.partOfSpeech = undefined;
+  }
+
+  /**
+   * Converts a WordData, returned from inflection tables library, into an HTML representation of an inflection table
+   * and inserts that HTML into a `container` HTML element. `messages` provides a translation for view's texts.
+   * @param {HTMLElement} container - An HTML element where this view will be inserted.
+   * @param {InflectionData} wordData - A result set from inflection tables library.
+   * @param {MessageBundle} messages - A message bundle with message translations.
+   */
+  render (container, wordData, messages) {
+    'use strict';
+
+    this.messages = messages;
+    this.container = container;
+    this.inflectionData = wordData;
+    let selection = wordData[this.partOfSpeech];
+
+    this.footnotes = new Footnotes(selection.footnotes);
+
+    // this.table = new Table(selection.suffixes, this.groupingFeatures, messages);
+    // this.table = new Table();
+    // this.setTableData();
+    this.table.messages = messages;
+    this.table.construct(selection.suffixes).constructViews();
+    this.display();
+  }
+
+  /**
+   * Renders a view's HTML representation and inserts it into `container` HTML element.
+   */
+  display () {
+    // Clear the container
+    this.container.innerHTML = '';
+
+    let title = document.createElement('h3');
+    title.innerHTML = this.title;
+    this.container.appendChild(title);
+
+    this.pageHeader = {nodes: document.createElement('div')};
+    this.pageHeader.nodes.innerHTML = pageHeader.html;
+    this.pageHeader.hideEmptyColumnsBtn = this.pageHeader.nodes.querySelector(pageHeader.hideEmptyColumnsBtnSel);
+    this.pageHeader.showEmptyColumnsBtn = this.pageHeader.nodes.querySelector(pageHeader.showEmptyColumnsBtnSel);
+    this.pageHeader.hideNoSuffixGroupsBtn = this.pageHeader.nodes.querySelector(pageHeader.hideNoSuffixGroupsBtnSel);
+    this.pageHeader.showNoSuffixGroupsBtn = this.pageHeader.nodes.querySelector(pageHeader.showNoSuffixGroupsBtnSel);
+    this.container.appendChild(this.pageHeader.nodes);
+
+    // Insert a wide view
+    this.container.appendChild(this.table.wideView.render());
+    // Insert narrow views
+    this.container.appendChild(this.table.narrowView.render());
+
+    this.table.addEventListeners();
+
+    this.container.appendChild(this.footnotes.html);
+
+    this.pageHeader.hideEmptyColumnsBtn.addEventListener('click', this.hideEmptyColumns.bind(this));
+    this.pageHeader.showEmptyColumnsBtn.addEventListener('click', this.showEmptyColumns.bind(this));
+
+    this.pageHeader.hideNoSuffixGroupsBtn.addEventListener('click', this.hideNoSuffixGroups.bind(this));
+    this.pageHeader.showNoSuffixGroupsBtn.addEventListener('click', this.showNoSuffixGroups.bind(this));
+  }
+
+  /**
+   * Hides all empty columns of the view.
+   */
+  hideEmptyColumns () {
+    this.table.hideEmptyColumns();
+    this.display();
+    this.pageHeader.hideEmptyColumnsBtn.classList.add(classNames.hidden);
+    this.pageHeader.showEmptyColumnsBtn.classList.remove(classNames.hidden);
+  }
+
+  /**
+   * Displays all previously hidden columns.
+   */
+  showEmptyColumns () {
+    this.table.showEmptyColumns();
+    this.display();
+    this.pageHeader.showEmptyColumnsBtn.classList.add(classNames.hidden);
+    this.pageHeader.hideEmptyColumnsBtn.classList.remove(classNames.hidden);
+  }
+
+  /**
+   * Hides groups (formed by first column feature) that have no suffix matches.
+   */
+  hideNoSuffixGroups () {
+    this.table.hideNoSuffixGroups();
+    this.display();
+    this.pageHeader.hideNoSuffixGroupsBtn.classList.add(classNames.hidden);
+    this.pageHeader.showNoSuffixGroupsBtn.classList.remove(classNames.hidden);
+  }
+
+  /**
+   * Displays previously hidden groups with no suffix matches.
+   */
+  showNoSuffixGroups () {
+    this.table.showNoSuffixGroups();
+    this.display();
+    this.pageHeader.hideNoSuffixGroupsBtn.classList.add(classNames.hidden);
+    this.pageHeader.showNoSuffixGroupsBtn.classList.remove(classNames.hidden);
+  }
+}
+
+/**
+ * A cell that specifies a title for a row in an inflection table.
+ */
+class RowTitleCell {
+  /**
+   * Initializes a row title cell.
+   * @param {string} title - A text that will be shown within the cell.
+   * @param {GroupFeatureType} groupingFeature - A grouping feature that specifies a row for which a title cell
+   * is created.
+   * @param {number} nvGroupQty - A number of narrow view groups. Because each group will be shown separately
+   * and will have its own title cells, we need to create a copy of a title cell for each such group.
+   */
+  constructor (title, groupingFeature, nvGroupQty) {
+    this.parent = undefined;
+    this.title = title;
+    this.feature = groupingFeature;
+    this.nvGroupQty = nvGroupQty;
+
+    this.render();
+  }
+
+  /**
+   * Renders an element's HTML representation.
+   */
+  render () {
+    // Generate HTML representation for a wide view node
+    this.wNode = document.createElement('div');
+    this.wNode.classList.add(classNames.cell);
+    if (this.feature.formsColumn) {
+      this.wNode.classList.add(classNames.header);
+    }
+    if (this.feature.hasFullWidthRowTitle) {
+      // This cell is taking an entire row
+      this.wNode.classList.add(classNames.fullWidth);
+    }
+    if (this.feature.formsColumn && this.feature.groupFeatureList.titleColumnsQuantity > 1) {
+      this.wNode.classList.add(classNames.widthPrefix + this.feature.groupFeatureList.titleColumnsQuantity);
+    }
+    this.wNode.innerHTML = this.title;
+
+    // Copy HTML representation to all narrow view nodes (each narrow view group has its own node)
+    this.nNodes = []; // Narrow nodes, one for each group
+    for (let i = 0; i < this.nvGroupQty; i++) {
+      this.nNodes.push(this.wNode.cloneNode(true));
+    }
+  }
+
+  /**
+   * Returns an HTML element for a wide view
+   * @returns {HTMLElement} HTML element for a wide view's cell.
+   */
+  get wvNode () {
+    return this.wNode
+  }
+
+  /**
+   * Returns an array HTML element for narrow view groups
+   * @returns {HTMLElement[]} Array of HTML elements for narrow view group's cells.
+   */
+  getNvNode (index) {
+    return this.nNodes[index]
+  }
+
+  /**
+   * Generates an empty cell placeholder of a certain width. Useful for situation when empty title cells need to be
+   * inserted into a table structure (i.e. when title cells occupy multiple columns.
+   * @param {number} width - A number of columns placeholder cell will occupy.
+   * @returns {HTMLElement} HTML element of a placeholder cell.
+   */
+  static placeholder (width = 1) {
+    let placeholder = document.createElement('div');
+    placeholder.classList.add(classNames.cell, classNames.widthPrefix + width);
+    return placeholder
+  }
+
+  /**
+   * Some table layouts require multiple title cells to be shown for a row. These could be, for example, a title
+   * cell for a parent category that will follow a title cell for a category that defines a row. In such situation a
+   * title cell will have a parent, which will represent a parent cell object.
+   * This function returns an array of title cells for a row, starting from the topmost parent and moving down
+   * tot the current title cell.
+   * @returns {RowTitleCell[]} An array of title row cells representing a title cell hierarchy list.
+   */
+  get hierarchyList () {
+    let parentCells = [];
+    if (this.parent) {
+      parentCells = this.parent.hierarchyList;
+    }
+    return parentCells.concat(this)
+  }
+
+  /**
+   * Highlights this row title cell
+   */
+  highlight () {
+    this.wNode.classList.add(classNames.highlight);
+    for (let nNode of this.nNodes) {
+      nNode.classList.add(classNames.highlight);
+    }
+  }
+
+  /**
+   * Removes highlighting from this row title cell
+   */
+  clearHighlighting () {
+    this.wNode.classList.remove(classNames.highlight);
+    for (let nNode of this.nNodes) {
+      nNode.classList.remove(classNames.highlight);
+    }
+  }
+}
+
+/**
+ * This is a wrapper around a FeatureType object. When a Table object creates a
+ * hierarchical tree of suffixes, it uses grammatical features as tree nodes.
+ * GroupFeatureType extends a Feature object so that it'll be able to store additional information
+ * that is required for that.
+ */
+class GroupFeatureType extends __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */] {
+  /**
+   * GroupFeatureType extends FeatureType to serve as a grouping feature (i.e. a feature that forms
+   * either a column or a row in an inflection table). For that, it adds some additional functionality,
+   * such as custom feature orders that will allow to combine suffixes from several grammatical features
+   * (i.e. masculine and feminine) into a one column of a table.
+   * @param {FeatureType} featureType - A feature that defines a type of this item.
+   * @param {string} titleMessageID - A message ID of a title, used to get a formatted title from a
+   * language-specific message bundle.
+   * @param {Feature[]} order - A custom sort order for this feature that redefines
+   * a default one stored in FeatureType object (optional).
+   * Use this parameter to redefine a deafult sort order for a type.
+   */
+  constructor (featureType, titleMessageID, order = featureType.orderedFeatures) {
+    super(featureType.type, GroupFeatureType.featuresToValues(order), featureType.language);
+
+    this.groupTitle = titleMessageID;
+    this._groupType = undefined;
+
+    this.groupFeatureList = undefined;
+
+    // Properties below are required to store information during tree creation
+    this.subgroups = []; // Each value of the feature
+    this.cells = []; // All cells within this group and below
+    this.parent = undefined;
+    this.header = undefined;
+
+    this._formsColumn = false;
+    this._formsRow = false;
+    this.hasColumnRowTitle = false; // Whether this feature has a title of a suffix row in the left-side column.
+    this.hasFullWidthRowTitle = false; // Whether this feature has a title of suffix rows that spans the whole table width.
+  }
+
+  /**
+   * Converts a list of Feature objects into a list of strings that represent their values. Keeps tha original
+   * array structure intact (work with up two two array levels).
+   * @param {Feature[] | Feature[][]} features - An array of feature objects.
+   * @return {string[] | strings[][]} A matching array of strings with feature values.
+   */
+  static featuresToValues (features) {
+    return features.map((feature) => {
+      if (Array.isArray(feature)) {
+        return feature.map((feature) => feature.value)
+      } else {
+        return feature.value
+      }
+    })
+  }
+
+  /**
+   * This is a wrapper around orderedFeatures() that allows to set a custom feature order for particular columns.
+   * @returns {Feature[] | Feature[][]} A sorted array of feature values.
+   */
+  getOrderedFeatures (ancestorFeatures) {
+    return this.getOrderedValues(ancestorFeatures).map((value) => new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */](value, this.type, this.language))
+  }
+
+  /**
+   * This is a wrapper around orderedValues() that allows to set a custom feature order for particular columns.
+   * By default it returns features in the same order that is defined in a base FeatureType class.
+   * Redefine it to provide a custom grouping and sort order.
+   * @returns {string[] | string[][]} A sorted array of feature values.
+   */
+  getOrderedValues (ancestorFeatures) {
+    return this._orderIndex
+  }
+
+  /**
+   * Whether this feature forms a columns group.
+   * @returns {boolean} True if this feature forms a column.
+   */
+  get formsColumn () {
+    return this._formsColumn
+  }
+
+  /**
+   * Sets that this feature would form a column.
+   * @param {boolean} value
+   */
+  set formsColumn (value) {
+    this._formsColumn = value;
+    this._formsRow = !value; // Can't do both
+  }
+
+  /**
+   * Whether this feature forms a row group.
+   * @returns {boolean} True if this feature forms a row.
+   */
+  get formsRow () {
+    return this._formsRow
+  }
+
+  /**
+   * Sets that this feature would form a row.
+   * @param {boolean} value
+   */
+  set formsRow (value) {
+    this._formsRow = value;
+    this._formsColumn = !value; // Can't do both
+  }
+
+  /**
+   * How many groups this feature would form.
+   * @returns {Number} A number of groupes formed by this feature.
+   */
+  get size () {
+    return this.orderedValues.length
+  }
+
+  /**
+   * Checks if two grouping features are of the same type.
+   * @param {GroupFeatureType} groupingFeature - A grouping feature to compare with the current one.
+   * @returns {boolean} True if grouping features are of the same type.
+   */
+  isSameType (groupingFeature) {
+    return this.type === groupingFeature.type
+  }
+
+  /**
+   * Creates a title cell for a feature from the current group.
+   * @param {string} title - A text that will be shown within a cell.
+   * @param {number} nvGroupQty - A number of narrow view groups.
+   * @returns {RowTitleCell} A created RowTitleCell object.
+   */
+  createTitleCell (title, nvGroupQty) {
+    return new RowTitleCell(title, this, nvGroupQty)
+  }
+}
+
 class Cell {
-    /**
-     * Creates a cell for an inflection table.
-     * @param {Suffix[]} suffixes - A list of suffixes that belongs to this cell.
-     * @param {Feature[]} features - A list of features this cell corresponds to.
-     */
+  /**
+   * Creates a cell for an inflection table.
+   * @param {Suffix[]} suffixes - A list of suffixes that belongs to this cell.
+   * @param {Feature[]} features - A list of features this cell corresponds to.
+   */
   constructor (suffixes, features) {
     this.suffixes = suffixes;
     if (!this.suffixes) {
@@ -7393,14 +8055,14 @@ class Cell {
     this.render();
   }
 
-    /**
-     * Renders an element's HTML representation.
-     */
+  /**
+   * Renders an element's HTML representation.
+   */
   render () {
     let element = document.createElement('div');
     element.classList.add(classNames.cell);
     for (let [index, suffix] of this.suffixes.entries()) {
-            // Render each suffix
+      // Render each suffix
       let suffixElement = document.createElement('a');
       suffixElement.classList.add(classNames.suffix);
       if (suffix.match && suffix.match.suffixMatch) {
@@ -7423,45 +8085,45 @@ class Cell {
     this.nNode = element.cloneNode(true);
   }
 
-    /**
-     * Returns an HTML element for a wide view.
-     * @returns {HTMLElement}
-     */
+  /**
+   * Returns an HTML element for a wide view.
+   * @returns {HTMLElement}
+   */
   get wvNode () {
     return this.wNode
   }
 
-    /**
-     * Returns an HTML element for a narrow view.
-     * @returns {HTMLElement}
-     */
+  /**
+   * Returns an HTML element for a narrow view.
+   * @returns {HTMLElement}
+   */
   get nvNode () {
     return this.nNode
   }
 
-    /**
-     * Sets a unique index of the cell that can be used for cell identification via 'data-index' attribute.
-     * @param {number} index - A unique cell index.
-     */
+  /**
+   * Sets a unique index of the cell that can be used for cell identification via 'data-index' attribute.
+   * @param {number} index - A unique cell index.
+   */
   set index (index) {
     this._index = index;
     this.wNode.dataset.index = this._index;
     this.nNode.dataset.index = this._index;
   }
 
-    /**
-     * A proxy for adding an event listener for both wide and narrow view HTML elements.
-     * @param {string} type - Listener type.
-     * @param {EventListener} listener - Event listener function.
-     */
+  /**
+   * A proxy for adding an event listener for both wide and narrow view HTML elements.
+   * @param {string} type - Listener type.
+   * @param {EventListener} listener - Event listener function.
+   */
   addEventListener (type, listener) {
     this.wNode.addEventListener(type, listener);
     this.nNode.addEventListener(type, listener);
   }
 
-    /**
-     * Hides an element.
-     */
+  /**
+   * Hides an element.
+   */
   hide () {
     if (!this.wNode.classList.contains(classNames.hidden)) {
       this.wNode.classList.add(classNames.hidden);
@@ -7469,9 +8131,9 @@ class Cell {
     }
   }
 
-    /**
-     * Shows a previously hidden element.
-     */
+  /**
+   * Shows a previously hidden element.
+   */
   show () {
     if (this.wNode.classList.contains(classNames.hidden)) {
       this.wNode.classList.remove(classNames.hidden);
@@ -7479,9 +8141,9 @@ class Cell {
     }
   }
 
-    /**
-     * Highlights a cell with color.
-     */
+  /**
+   * Highlights a cell with color.
+   */
   highlight () {
     if (!this.wNode.classList.contains(classNames.highlight)) {
       this.wNode.classList.add(classNames.highlight);
@@ -7489,9 +8151,9 @@ class Cell {
     }
   }
 
-    /**
-     * Removes highlighting from a previously highlighted cell.
-     */
+  /**
+   * Removes highlighting from a previously highlighted cell.
+   */
   clearHighlighting () {
     if (this.wNode.classList.contains(classNames.highlight)) {
       this.wNode.classList.remove(classNames.highlight);
@@ -7499,9 +8161,9 @@ class Cell {
     }
   }
 
-    /**
-     * Highlights a row and a column this cell belongs to.
-     */
+  /**
+   * Highlights a row and a column this cell belongs to.
+   */
   highlightRowAndColumn () {
     if (!this.column) {
       throw new Error('Column is undefined.')
@@ -7513,9 +8175,9 @@ class Cell {
     this.row.highlight();
   }
 
-    /**
-     * Removes highlighting form a previously highlighted row and column.
-     */
+  /**
+   * Removes highlighting form a previously highlighted row and column.
+   */
   clearRowAndColumnHighlighting () {
     if (!this.column) {
       throw new Error('Column is undefined.')
@@ -7529,127 +8191,15 @@ class Cell {
 }
 
 /**
- * A cell that specifies a title for a row in an inflection table.
- */
-class RowTitleCell {
-    /**
-     * Initializes a row title cell.
-     * @param {string} title - A text that will be shown within the cell.
-     * @param {GroupFeatureType} groupingFeature - A grouping feature that specifies a row for which a title cell
-     * is created.
-     * @param {number} nvGroupQty - A number of narrow view groups. Because each group will be shown separately
-     * and will have its own title cells, we need to create a copy of a title cell for each such group.
-     */
-  constructor (title, groupingFeature, nvGroupQty) {
-    this.parent = undefined;
-    this.title = title;
-    this.feature = groupingFeature;
-    this.nvGroupQty = nvGroupQty;
-
-    this.render();
-  }
-
-    /**
-     * Renders an element's HTML representation.
-     */
-  render () {
-        // Generate HTML representation for a wide view node
-    this.wNode = document.createElement('div');
-    this.wNode.classList.add(classNames.cell);
-    if (this.feature.formsColumn) {
-      this.wNode.classList.add(classNames.header);
-    }
-    if (this.feature.hasFullWidthRowTitle) {
-            // This cell is taking an entire row
-      this.wNode.classList.add(classNames.fullWidth);
-    }
-    if (this.feature.formsColumn && this.feature.groupFeatureList.titleColumnsQuantity > 1) {
-      this.wNode.classList.add(classNames.widthPrefix + this.feature.groupFeatureList.titleColumnsQuantity);
-    }
-    this.wNode.innerHTML = this.title;
-
-        // Copy HTML representation to all narrow view nodes (each narrow view group has its own node)
-    this.nNodes = []; // Narrow nodes, one for each group
-    for (let i = 0; i < this.nvGroupQty; i++) {
-      this.nNodes.push(this.wNode.cloneNode(true));
-    }
-  }
-
-    /**
-     * Returns an HTML element for a wide view
-     * @returns {HTMLElement} HTML element for a wide view's cell.
-     */
-  get wvNode () {
-    return this.wNode
-  }
-
-    /**
-     * Returns an array HTML element for narrow view groups
-     * @returns {HTMLElement[]} Array of HTML elements for narrow view group's cells.
-     */
-  getNvNode (index) {
-    return this.nNodes[index]
-  }
-
-    /**
-     * Generates an empty cell placeholder of a certain width. Useful for situation when empty title cells need to be
-     * inserted into a table structure (i.e. when title cells occupy multiple columns.
-     * @param {number} width - A number of columns placeholder cell will occupy.
-     * @returns {HTMLElement} HTML element of a placeholder cell.
-     */
-  static placeholder (width = 1) {
-    let placeholder = document.createElement('div');
-    placeholder.classList.add(classNames.cell, classNames.widthPrefix + width);
-    return placeholder
-  }
-
-    /**
-     * Some table layouts require multiple title cells to be shown for a row. These could be, for example, a title
-     * cell for a parent category that will follow a title cell for a category that defines a row. In such situation a
-     * title cell will have a parent, which will represent a parent cell object.
-     * This function returns an array of title cells for a row, starting from the topmost parent and moving down
-     * tot the current title cell.
-     * @returns {RowTitleCell[]} An array of title row cells representing a title cell hierarchy list.
-     */
-  get hierarchyList () {
-    let parentCells = [];
-    if (this.parent) {
-      parentCells = this.parent.hierarchyList;
-    }
-    return parentCells.concat(this)
-  }
-
-    /**
-     * Highlights this row title cell
-     */
-  highlight () {
-    this.wNode.classList.add(classNames.highlight);
-    for (let nNode of this.nNodes) {
-      nNode.classList.add(classNames.highlight);
-    }
-  }
-
-    /**
-     * Removes highlighting from this row title cell
-     */
-  clearHighlighting () {
-    this.wNode.classList.remove(classNames.highlight);
-    for (let nNode of this.nNodes) {
-      nNode.classList.remove(classNames.highlight);
-    }
-  }
-}
-
-/**
  * A cell in a header row, a column title cell.
  */
 class HeaderCell {
-    /**
-     * Initializes a header cell.
-     * @param {string} title - A title text that will be shown in the header cell.
-     * @param {GroupFeatureType} groupingFeature - A feature that defines one or several columns this header forms.
-     * @param {number} [span=1] - How many columns in a table this header cell forms.
-     */
+  /**
+   * Initializes a header cell.
+   * @param {string} title - A title text that will be shown in the header cell.
+   * @param {GroupFeatureType} groupingFeature - A feature that defines one or several columns this header forms.
+   * @param {number} [span=1] - How many columns in a table this header cell forms.
+   */
   constructor (title, groupingFeature, span = 1) {
     this.feature = groupingFeature;
     this.title = title;
@@ -7662,9 +8212,9 @@ class HeaderCell {
     this.render();
   }
 
-    /**
-     * Renders an element's HTML representation.
-     */
+  /**
+   * Renders an element's HTML representation.
+   */
   render () {
     let element = document.createElement('div');
     element.classList.add(classNames.cell, classNames.header, classNames.widthPrefix + this.span);
@@ -7673,26 +8223,26 @@ class HeaderCell {
     this.nNode = element.cloneNode(true);
   }
 
-    /**
-     * Returns an HTML element for a wide view
-     * @returns {HTMLElement} HTML element for a wide view's cell.
-     */
+  /**
+   * Returns an HTML element for a wide view
+   * @returns {HTMLElement} HTML element for a wide view's cell.
+   */
   get wvNode () {
     return this.wNode
   }
 
-    /**
-     * Returns an HTML element for a narrow view
-     * @returns {HTMLElement} HTML element for a narrow view's cell.
-     */
+  /**
+   * Returns an HTML element for a narrow view
+   * @returns {HTMLElement} HTML element for a narrow view's cell.
+   */
   get nvNode () {
     return this.nNode
   }
 
-    /**
-     * Registers a column that's being formed by this header cell. Adds column to itself and to its parent(s).
-     * @param {Column} column - A column that is formed by this header cell.
-     */
+  /**
+   * Registers a column that's being formed by this header cell. Adds column to itself and to its parent(s).
+   * @param {Column} column - A column that is formed by this header cell.
+   */
   addColumn (column) {
     this.columns = this.columns.concat([column]);
 
@@ -7701,11 +8251,11 @@ class HeaderCell {
     }
   }
 
-    /**
-     * Temporary changes a width of a header cell. This happens when one or several columns
-     * that this header forms are hidden or shown.
-     * @param value
-     */
+  /**
+   * Temporary changes a width of a header cell. This happens when one or several columns
+   * that this header forms are hidden or shown.
+   * @param value
+   */
   changeSpan (value) {
     let currentWidthClass = classNames.widthPrefix + this.span;
     this.span += value;
@@ -7714,11 +8264,11 @@ class HeaderCell {
     this.nNode.classList.replace(currentWidthClass, newWidthClass);
   }
 
-    /**
-     * This function will notify all parents and children of a title column that some columns under this headers cell
-     * changed their state (i.e. were hidden or shown). This way parents and children will be able to update their
-     * states accordingly.
-     */
+  /**
+   * This function will notify all parents and children of a title column that some columns under this headers cell
+   * changed their state (i.e. were hidden or shown). This way parents and children will be able to update their
+   * states accordingly.
+   */
   columnStateChange () {
     let visibleColumns = 0;
     for (let column of this.columns) {
@@ -7727,11 +8277,11 @@ class HeaderCell {
       }
     }
     if (this.span !== visibleColumns) {
-            // Number of visible columns has been changed
+      // Number of visible columns has been changed
       let change = visibleColumns - this.span;
       this.changeSpan(change);
 
-            // Notify parents and children
+      // Notify parents and children
       if (this.children.length) {
         for (let child of this.children) {
           child.columnStateChange();
@@ -7743,9 +8293,9 @@ class HeaderCell {
     }
   }
 
-    /**
-     * Highlights a header cell, its parent and children
-     */
+  /**
+   * Highlights a header cell, its parent and children
+   */
   highlight () {
     if (!this.wNode.classList.contains(classNames.highlight)) {
       this.wNode.classList.add(classNames.highlight);
@@ -7757,9 +8307,9 @@ class HeaderCell {
     }
   }
 
-    /**
-     * Removes highlighting from a header cell, its parent and children
-     */
+  /**
+   * Removes highlighting from a header cell, its parent and children
+   */
   clearHighlighting () {
     if (this.wNode.classList.contains(classNames.highlight)) {
       this.wNode.classList.remove(classNames.highlight);
@@ -7776,10 +8326,10 @@ class HeaderCell {
  * Represent a column of cells in an inflection table.
  */
 class Column {
-    /**
-     * Initializes column with a provided set of cells.
-     * @param {Cell} cells - Cells that are within this column.
-     */
+  /**
+   * Initializes column with a provided set of cells.
+   * @param {Cell} cells - Cells that are within this column.
+   */
   constructor (cells) {
     this.cells = cells;
     if (!cells) {
@@ -7795,26 +8345,26 @@ class Column {
     }
   }
 
-    /**
-     * Assigns a header cell to the column.
-     * @param {HeaderCell} headerCell - A header cell of this column.
-     */
+  /**
+   * Assigns a header cell to the column.
+   * @param {HeaderCell} headerCell - A header cell of this column.
+   */
   set headerCell (headerCell) {
     this._headerCell = headerCell;
     headerCell.addColumn(this);
   }
 
-    /**
-     * Returns a number of cells within this column.
-     * @returns {Number} A number of cells this column contains.
-     */
+  /**
+   * Returns a number of cells within this column.
+   * @returns {Number} A number of cells this column contains.
+   */
   get length () {
     return this.cells.length
   }
 
-    /**
-     * Hides the column. Notifies a header about a state change.
-     */
+  /**
+   * Hides the column. Notifies a header about a state change.
+   */
   hide () {
     if (!this.hidden) {
       this.hidden = true;
@@ -7828,9 +8378,9 @@ class Column {
     }
   }
 
-    /**
-     * Shows the column. Notifies a header about a state change.
-     */
+  /**
+   * Shows the column. Notifies a header about a state change.
+   */
   show () {
     if (this.hidden) {
       this.hidden = false;
@@ -7844,9 +8394,9 @@ class Column {
     }
   }
 
-    /**
-     * Highlights a column and its header.
-     */
+  /**
+   * Highlights a column and its header.
+   */
   highlight () {
     for (let cell of this.cells) {
       cell.highlight();
@@ -7856,9 +8406,9 @@ class Column {
     }
   }
 
-    /**
-     * Removes highlighting from a column and its header.
-     */
+  /**
+   * Removes highlighting from a column and its header.
+   */
   clearHighlighting () {
     for (let cell of this.cells) {
       cell.clearHighlighting();
@@ -7873,10 +8423,10 @@ class Column {
  * Represents a row of cells
  */
 class Row {
-    /**
-     * Populates row with cells
-     * @param {Cell[]} cells - Cells that belong to this row
-     */
+  /**
+   * Populates row with cells
+   * @param {Cell[]} cells - Cells that belong to this row
+   */
   constructor (cells) {
     this.cells = cells;
     if (!cells) {
@@ -7889,35 +8439,35 @@ class Row {
     }
   }
 
-    /**
-     * Adds a cell to the row.
-     * This is a chainable function.
-     * @param {Cell} cell - A cell to be added to the row
-     */
+  /**
+   * Adds a cell to the row.
+   * This is a chainable function.
+   * @param {Cell} cell - A cell to be added to the row
+   */
   add (cell) {
     cell.row = this;
     this.cells.push(cell);
     return this
   }
 
-    /**
-     * Returns a number of cells in a row
-     * @returns {Number} A number of cells in a row
-     */
+  /**
+   * Returns a number of cells in a row
+   * @returns {Number} A number of cells in a row
+   */
   get length () {
     return this.cells.length
   }
 
-    /**
-     * Returns a portion of a cells array starting from `from` item and up to, but not including, `upto` element.
-     * It does not create new copies of cells to populate a newly created array; this array contains references to
-     * the same cells that original Row refers to. It also does not update row reference within Cell objects.
-     *
-     * This function presents a way to create another structure of existing table's cells.
-     * It can be useful for views that have a different structure (i.e. narrow view).
-     * @param {number} from
-     * @param {number} upto
-     */
+  /**
+   * Returns a portion of a cells array starting from `from` item and up to, but not including, `upto` element.
+   * It does not create new copies of cells to populate a newly created array; this array contains references to
+   * the same cells that original Row refers to. It also does not update row reference within Cell objects.
+   *
+   * This function presents a way to create another structure of existing table's cells.
+   * It can be useful for views that have a different structure (i.e. narrow view).
+   * @param {number} from
+   * @param {number} upto
+   */
   slice (from, upto) {
     let slice = new Row();
     if (from < 0 && from > this.cells.length) {
@@ -7933,9 +8483,9 @@ class Row {
     return slice
   }
 
-    /**
-     * Highlights all cells in a row, and a title cells
-     */
+  /**
+   * Highlights all cells in a row, and a title cells
+   */
   highlight () {
     for (let cell of this.cells) {
       cell.highlight();
@@ -7945,9 +8495,9 @@ class Row {
     }
   }
 
-    /**
-     * Removes highlighting from all cells in a row, and from a title cell
-     */
+  /**
+   * Removes highlighting from all cells in a row, and from a title cell
+   */
   clearHighlighting () {
     for (let cell of this.cells) {
       cell.clearHighlighting();
@@ -7959,149 +8509,14 @@ class Row {
 }
 
 /**
- * This is a wrapper around a FeatureType object. When a Table object creates a
- * hierarchical tree of suffixes, it uses grammatical features as tree nodes.
- * GroupFeatureType extends a Feature object so that it'll be able to store additional information
- * that is required for that.
- */
-class GroupFeatureType extends __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */] {
-    /**
-     * GroupFeatureType extends FeatureType to serve as a grouping feature (i.e. a feature that forms
-     * either a column or a row in an inflection table). For that, it adds some additional functionality,
-     * such as custom feature orders that will allow to combine suffixes from several grammatical features
-     * (i.e. masculine and feminine) into a one column of a table.
-     * @param {FeatureType} featureType - A feature that defines a type of this item.
-     * @param {string} titleMessageID - A message ID of a title, used to get a formatted title from a
-     * language-specific message bundle.
-     * @param {Feature[]} order - A custom sort order for this feature that redefines
-     * a default one stored in FeatureType object (optional).
-     * Use this parameter to redefine a deafult sort order for a type.
-     */
-  constructor (featureType, titleMessageID, order = featureType.orderedFeatures) {
-    super(featureType.type, GroupFeatureType.featuresToValues(order), featureType.language);
-
-    this.groupTitle = titleMessageID;
-    this._groupType = undefined;
-
-    this.groupFeatureList = undefined;
-
-        // Properties below are required to store information during tree creation
-    this.subgroups = []; // Each value of the feature
-    this.cells = []; // All cells within this group and below
-    this.parent = undefined;
-    this.header = undefined;
-
-    this._formsColumn = false;
-    this._formsRow = false;
-    this.hasColumnRowTitle = false; // Whether this feature has a title of a suffix row in the left-side column.
-    this.hasFullWidthRowTitle = false; // Whether this feature has a title of suffix rows that spans the whole table width.
-  }
-
-    /**
-     * Converts a list of Feature objects into a list of strings that represent their values. Keeps tha original
-     * array structure intact (work with up two two array levels).
-     * @param {Feature[] | Feature[][]} features - An array of feature objects.
-     * @return {string[] | strings[][]} A matching array of strings with feature values.
-     */
-  static featuresToValues (features) {
-    return features.map((feature) => {
-      if (Array.isArray(feature)) {
-        return feature.map((feature) => feature.value)
-      } else {
-        return feature.value
-      }
-    })
-  }
-
-    /**
-     * This is a wrapper around orderedFeatures() that allows to set a custom feature order for particular columns.
-     * @returns {Feature[] | Feature[][]} A sorted array of feature values.
-     */
-  getOrderedFeatures (ancestorFeatures) {
-    return this.getOrderedValues(ancestorFeatures).map((value) => new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */](value, this.type, this.language))
-  }
-
-    /**
-     * This is a wrapper around orderedValues() that allows to set a custom feature order for particular columns.
-     * By default it returns features in the same order that is defined in a base FeatureType class.
-     * Redefine it to provide a custom grouping and sort order.
-     * @returns {string[] | string[][]} A sorted array of feature values.
-     */
-  getOrderedValues (ancestorFeatures) {
-    return this._orderIndex
-  }
-
-    /**
-     * Whether this feature forms a columns group.
-     * @returns {boolean} True if this feature forms a column.
-     */
-  get formsColumn () {
-    return this._formsColumn
-  }
-
-    /**
-     * Sets that this feature would form a column.
-     * @param {boolean} value
-     */
-  set formsColumn (value) {
-    this._formsColumn = value;
-    this._formsRow = !value; // Can't do both
-  }
-
-    /**
-     * Whether this feature forms a row group.
-     * @returns {boolean} True if this feature forms a row.
-     */
-  get formsRow () {
-    return this._formsRow
-  }
-
-    /**
-     * Sets that this feature would form a row.
-     * @param {boolean} value
-     */
-  set formsRow (value) {
-    this._formsRow = value;
-    this._formsColumn = !value; // Can't do both
-  }
-
-    /**
-     * How many groups this feature would form.
-     * @returns {Number} A number of groupes formed by this feature.
-     */
-  get size () {
-    return this.orderedValues.length
-  }
-
-    /**
-     * Checks if two grouping features are of the same type.
-     * @param {GroupFeatureType} groupingFeature - A grouping feature to compare with the current one.
-     * @returns {boolean} True if grouping features are of the same type.
-     */
-  isSameType (groupingFeature) {
-    return this.type === groupingFeature.type
-  }
-
-    /**
-     * Creates a title cell for a feature from the current group.
-     * @param {string} title - A text that will be shown within a cell.
-     * @param {number} nvGroupQty - A number of narrow view groups.
-     * @returns {RowTitleCell} A created RowTitleCell object.
-     */
-  createTitleCell (title, nvGroupQty) {
-    return new RowTitleCell(title, this, nvGroupQty)
-  }
-}
-
-/**
  * Holds a list of all grouping features of a table.
  */
 class GroupFeatureList extends __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["f" /* FeatureList */] {
-    /**
-     * Initializes object with an array of grouping feature objects.
-     * @param {GroupFeatureType[]} features - An array of features that form a table.
-     * An order of features defines in what order a table tree would be built.
-     */
+  /**
+   * Initializes object with an array of grouping feature objects.
+   * @param {GroupFeatureType[]} features - An array of features that form a table.
+   * An order of features defines in what order a table tree would be built.
+   */
   constructor (features) {
     super(features);
     this._columnFeatures = []; // Features that group cells into columns
@@ -8110,19 +8525,19 @@ class GroupFeatureList extends __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models_
     this.forEach((feature) => { feature.groupFeatureList = this; });
   }
 
-    /**
-     * Return a list of all grouping features that form columns.
-     * @returns {GroupFeatureType[]} - An array of grouping features.
-     */
+  /**
+   * Return a list of all grouping features that form columns.
+   * @returns {GroupFeatureType[]} - An array of grouping features.
+   */
   get columnFeatures () {
     return this._columnFeatures
   }
 
-    /**
-     * Defines what features form columns. An order of items specifies an order in which columns be shown.
-     * @param {Feature[] | GroupingFeature[]} features - What features form columns and what order
-     * these columns would follow.
-     */
+  /**
+   * Defines what features form columns. An order of items specifies an order in which columns be shown.
+   * @param {Feature[] | GroupingFeature[]} features - What features form columns and what order
+   * these columns would follow.
+   */
   set columns (features) {
     for (let feature of features) {
       let matchingFeature = this.ofType(feature.type);
@@ -8134,39 +8549,39 @@ class GroupFeatureList extends __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models_
     }
   }
 
-    /**
-     * Returns a first column feature item.
-     * @returns {GroupFeatureType} A fist column feature.
-     */
+  /**
+   * Returns a first column feature item.
+   * @returns {GroupFeatureType} A fist column feature.
+   */
   get firstColumnFeature () {
     if (this._columnFeatures && this._columnFeatures.length) {
       return this._columnFeatures[0]
     }
   }
 
-    /**
-     * Returns a last column feature item.
-     * @returns {GroupFeatureType} A last column feature.
-     */
+  /**
+   * Returns a last column feature item.
+   * @returns {GroupFeatureType} A last column feature.
+   */
   get lastColumnFeature () {
     if (this._columnFeatures && this._columnFeatures.length) {
       return this._columnFeatures[this._columnFeatures.length - 1]
     }
   }
 
-    /**
-     * Return a list of all grouping features that form rows.
-     * @returns {GroupFeatureType[]} - An array of grouping rows.
-     */
+  /**
+   * Return a list of all grouping features that form rows.
+   * @returns {GroupFeatureType[]} - An array of grouping rows.
+   */
   get rowFeatures () {
     return this._rowFeatures
   }
 
-    /**
-     * Defines what features form rows. An order of items specifies an order in which columns be shown.
-     * @param {Feature[] | GroupingFeature[]} features - What features form rows and what order
-     * these rows would follow.
-     */
+  /**
+   * Defines what features form rows. An order of items specifies an order in which columns be shown.
+   * @param {Feature[] | GroupingFeature[]} features - What features form rows and what order
+   * these rows would follow.
+   */
   set rows (features) {
     for (let feature of features) {
       let matchingFeature = this.ofType(feature.type);
@@ -8179,32 +8594,32 @@ class GroupFeatureList extends __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models_
     return this
   }
 
-    /**
-     * Returns a first row feature item.
-     * @returns {GroupFeatureType} A fist row feature.
-     */
+  /**
+   * Returns a first row feature item.
+   * @returns {GroupFeatureType} A fist row feature.
+   */
   get firstRowFeature () {
     if (this._rowFeatures && this._rowFeatures.length) {
       return this._rowFeatures[0]
     }
   }
 
-    /**
-     * Returns a last row feature item.
-     * @returns {GroupFeatureType} A last row feature.
-     */
+  /**
+   * Returns a last row feature item.
+   * @returns {GroupFeatureType} A last row feature.
+   */
   get lastRowFeature () {
     if (this._rowFeatures && this._rowFeatures.length) {
       return this._rowFeatures[this._rowFeatures.length - 1]
     }
   }
 
-    /**
-     * Defines what are the titles of suffix cell rows within a table body.
-     * The number of such items defines how many left-side title columns this table would have (default is one).
-     * Full width titles (see below) does not need to be specified here.
-     * @param {Feature | GroupingFeature} features - What suffix row titles this table would have.
-     */
+  /**
+   * Defines what are the titles of suffix cell rows within a table body.
+   * The number of such items defines how many left-side title columns this table would have (default is one).
+   * Full width titles (see below) does not need to be specified here.
+   * @param {Feature | GroupingFeature} features - What suffix row titles this table would have.
+   */
   set columnRowTitles (features) {
     for (let feature of features) {
       let matchingFeature = this.ofType(feature.type);
@@ -8215,12 +8630,12 @@ class GroupFeatureList extends __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models_
     }
   }
 
-    /**
-     * In inflection tables, titles of features are usually located in left-side columns. However, some titles that
-     * group several rows together may span the whole table width. This setters defines
-     * what those features are.
-     * @param {Feature | GroupingFeature} features - What feature titles would take a whole row
-     */
+  /**
+   * In inflection tables, titles of features are usually located in left-side columns. However, some titles that
+   * group several rows together may span the whole table width. This setters defines
+   * what those features are.
+   * @param {Feature | GroupingFeature} features - What feature titles would take a whole row
+   */
   set fullWidthRowTitles (features) {
     for (let feature of features) {
       let matchingFeature = this.ofType(feature.type);
@@ -8231,18 +8646,18 @@ class GroupFeatureList extends __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models_
     }
   }
 
-    /**
-     * Returns a quantity of grouping features.
-     * @returns {number} - A number of grouping features.
-     */
+  /**
+   * Returns a quantity of grouping features.
+   * @returns {number} - A number of grouping features.
+   */
   get length () {
     return this._features.length
   }
 
-    /**
-     * Calculate a number of title columns.
-     * @returns {number} A number of title columns.
-     */
+  /**
+   * Calculate a number of title columns.
+   * @returns {number} A number of title columns.
+   */
   get titleColumnsQuantity () {
     let quantity = 0;
     for (let feature of this._features) {
@@ -8258,9 +8673,9 @@ class GroupFeatureList extends __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models_
  * Stores group data during feature tree construction.
  */
 class NodeGroup {
-    /**
-     * Creates feature group data structures.
-     */
+  /**
+   * Creates feature group data structures.
+   */
   constructor () {
     this.subgroups = []; // Each value of the feature
     this.cells = []; // All cells within this group and below
@@ -8273,29 +8688,61 @@ class NodeGroup {
 }
 
 /**
- * A representation of a table that is shown on wide screens (desktops).
+ * Represents a group within a narrow view. A narrow view is split into separate sub tables
+ * by values of a first grammatical feature that forms columns. Then each sub table would contain
+ * a suffixes that belong to that grammatical feature value only. Each sub table becomes a
+ * separated object and can be reflown on devices with narrow screens.
  */
-class WideView {
+class NarrowViewGroup {
+  // TODO: Review constructor parameters
+
+  /**
+   * Initializes a narrow view group. Please note that column, rows, and headers are those of a whole table,
+   * not of this particular group. NarrowViewGroup constructor will use this data to build
+   * the corresponding objects of the group itself.
+   * @param {number} index - An index of this group within a groups array, starting from zero.
+   * @param {Row[]} headers - Table headers.
+   * @param {Row[]} rows - Table rows.
+   * @param {number} titleColumnQty - Number of title columns in a table.
+   */
+  constructor (index, headers, rows, titleColumnQty) {
+    this.index = index;
+    this.columns = headers[0].cells[index].columns;
+    this.groupSize = this.columns.length;
+    let columnsStartIndex = this.columns[0].index;
+    let columnsEndIndex = this.columns[this.columns.length - 1].index;
+
+    this.rows = [];
+    for (let row of rows) {
+      this.rows.push(row.slice(columnsStartIndex, columnsEndIndex + 1));
+    }
+    this.headers = [];
     /**
-     * Initializes a wide view.
-     * @param {Column[]} columns - Table columns.
-     * @param {Row[]} rows - Table rows.
-     * @param {Row[]} headers - Table headers.
-     * @param {number} titleColumnQty - Number of title columns in a table.
+     * Since we group by the first column feature, there will be a single feature in a first header row,
+     * its children in the second row, children of its children in a third row and so on.
      */
-  constructor (columns, rows, headers, titleColumnQty) {
-    this.columns = columns;
-    this.rows = rows;
-    this.headers = headers;
+    for (let [headerIndex, headerRow] of headers.entries()) {
+      let row = new Row();
+      row.titleCell = headerRow.titleCell;
+      if (headerIndex === 0) {
+        row.cells.push(headerRow.cells[index]);
+      } else {
+        for (let headerCell of this.headers[headerIndex - 1].cells) {
+          row.cells = row.cells.concat(headerCell.children);
+        }
+      }
+      this.headers.push(row);
+    }
     this.titleColumnQty = titleColumnQty;
+
     this.nodes = document.createElement('div');
-    this.nodes.classList.add(classNames.inflectionTable, classNames.wideView);
+    this.nodes.classList.add(classNames.inflectionTable, classNames.narrowView);
   }
 
-    /**
-     * Calculates a number of visible columns in this view.
-     * @returns {number} A number of visible columns.
-     */
+  /**
+   * Calculates a number of visible columns in this view.
+   * @returns {number} A number of visible columns.
+   */
   get visibleColumnQty () {
     let qty = 0;
     for (let column of this.columns) {
@@ -8306,12 +8753,140 @@ class WideView {
     return qty
   }
 
-    /**
-     * Renders an HTML representation of a wide table view.
-     * @returns {HTMLElement} A rendered HTML Element.
-     */
+  /**
+   * Renders an HTML representation of a narrow view group.
+   */
   render () {
-        // Remove any previously inserted nodes
+    this.nodes.innerHTML = '';
+
+    if (this.visibleColumnQty) {
+      // This group is visible
+      for (let headerRow of this.headers) {
+        this.nodes.appendChild(headerRow.titleCell.getNvNode(this.index));
+        for (let headerCell of headerRow.cells) {
+          this.nodes.appendChild(headerCell.nvNode);
+        }
+      }
+
+      for (let row of this.rows) {
+        let titleCells = row.titleCell.hierarchyList;
+        if (titleCells.length < this.titleColumnQty) {
+          this.nodes.appendChild(RowTitleCell.placeholder(this.titleColumnQty - titleCells.length));
+        }
+        for (let titleCell of titleCells) {
+          this.nodes.appendChild(titleCell.getNvNode(this.index));
+        }
+
+        for (let cell of row.cells) {
+          this.nodes.appendChild(cell.nvNode);
+        }
+      }
+      this.nodes.classList.remove(classNames.hidden);
+      this.nodes.style.gridTemplateColumns = 'repeat(' + (this.visibleColumnQty + this.titleColumnQty) + ', ' +
+        narrowView.column.width + narrowView.column.unit + ')';
+      this.nodes.style.width = (this.visibleColumnQty + this.titleColumnQty) * narrowView.column.width +
+        narrowView.column.unit;
+    } else {
+      // This group is hidden
+      this.nodes.classList.add(classNames.hidden);
+    }
+  }
+}
+
+/**
+ * A representation of a table that is shown on narrow screens (mobile devices).
+ */
+class NarrowView {
+  /**
+   * Initializes a narrow view.
+   * @param {number} groupQty - A number of visible groups (sub tables) within a narrow view.
+   * @param {Column[]} columns - Table columns.
+   * @param {Row[]} rows - Table rows.
+   * @param {Row[]} headers - Table headers.
+   * @param {number} titleColumnQty - Number of title columns in a table.
+   */
+  constructor (groupQty, columns, rows, headers, titleColumnQty) {
+    this.columns = columns;
+    this.rows = rows;
+    this.headers = headers;
+    this.titleColumnQty = titleColumnQty;
+    this.groups = [];
+    this.groupQty = groupQty;
+    this.groupSize = 0;
+    if (groupQty) {
+      this.groupSize = this.columns.length / groupQty;
+    }
+
+    this.nodes = document.createElement('div');
+    this.nodes.classList.add(classNames.narrowViewsContainer);
+
+    for (let [index, headerCell] of this.headers[0].cells.entries()) {
+      this.createGroup(index, headerCell);
+    }
+  }
+
+  /**
+   * Creates a group within a table.
+   * @returns {NarrowViewGroup} A newly created group.
+   */
+  createGroup (index, headerCell) {
+    let group = new NarrowViewGroup(index, this.headers, this.rows, this.titleColumnQty);
+    this.nodes.appendChild(group.nodes);
+    this.groups.push(group);
+  }
+
+  /**
+   * Generates an HTML representation of a view.
+   * @returns {HTMLElement} - HTML representation of a view.
+   */
+  render () {
+    for (let group of this.groups) {
+      group.render();
+    }
+    return this.nodes
+  }
+}
+
+/**
+ * A representation of a table that is shown on wide screens (desktops).
+ */
+class WideView {
+  /**
+   * Initializes a wide view.
+   * @param {Column[]} columns - Table columns.
+   * @param {Row[]} rows - Table rows.
+   * @param {Row[]} headers - Table headers.
+   * @param {number} titleColumnQty - Number of title columns in a table.
+   */
+  constructor (columns, rows, headers, titleColumnQty) {
+    this.columns = columns;
+    this.rows = rows;
+    this.headers = headers;
+    this.titleColumnQty = titleColumnQty;
+    this.nodes = document.createElement('div');
+    this.nodes.classList.add(classNames.inflectionTable, classNames.wideView);
+  }
+
+  /**
+   * Calculates a number of visible columns in this view.
+   * @returns {number} A number of visible columns.
+   */
+  get visibleColumnQty () {
+    let qty = 0;
+    for (let column of this.columns) {
+      if (!column.hidden) {
+        qty++;
+      }
+    }
+    return qty
+  }
+
+  /**
+   * Renders an HTML representation of a wide table view.
+   * @returns {HTMLElement} A rendered HTML Element.
+   */
+  render () {
+    // Remove any previously inserted nodes
     this.nodes.innerHTML = '';
 
     for (let row of this.headers) {
@@ -8335,169 +8910,9 @@ class WideView {
       }
     }
     this.nodes.style.gridTemplateColumns = 'repeat(' + (this.visibleColumnQty + this.titleColumnQty) + ', ' +
-            wideView.column.width + wideView.column.unit + ')';
+      wideView.column.width + wideView.column.unit + ')';
 
     return this.nodes
-  }
-}
-
-/**
- * A representation of a table that is shown on narrow screens (mobile devices).
- */
-class NarrowView {
-    /**
-     * Initializes a narrow view.
-     * @param {number} groupQty - A number of visible groups (sub tables) within a narrow view.
-     * @param {Column[]} columns - Table columns.
-     * @param {Row[]} rows - Table rows.
-     * @param {Row[]} headers - Table headers.
-     * @param {number} titleColumnQty - Number of title columns in a table.
-     */
-  constructor (groupQty, columns, rows, headers, titleColumnQty) {
-    this.columns = columns;
-    this.rows = rows;
-    this.headers = headers;
-    this.titleColumnQty = titleColumnQty;
-    this.groups = [];
-    this.groupQty = groupQty;
-    this.groupSize = 0;
-    if (groupQty) {
-      this.groupSize = this.columns.length / groupQty;
-    }
-
-    this.nodes = document.createElement('div');
-    this.nodes.classList.add(classNames.narrowViewsContainer);
-
-    for (let [index, headerCell] of this.headers[0].cells.entries()) {
-      this.createGroup(index, headerCell);
-    }
-  }
-
-    /**
-     * Creates a group within a table.
-     * @returns {NarrowViewGroup} A newly created group.
-     */
-  createGroup (index, headerCell) {
-    let group = new NarrowViewGroup(index, this.headers, this.rows, this.titleColumnQty);
-    this.nodes.appendChild(group.nodes);
-    this.groups.push(group);
-  }
-
-    /**
-     * Generates an HTML representation of a view.
-     * @returns {HTMLElement} - HTML representation of a view.
-     */
-  render () {
-    for (let group of this.groups) {
-      group.render();
-    }
-    return this.nodes
-  }
-}
-
-/**
- * Represents a group within a narrow view. A narrow view is split into separate sub tables
- * by values of a first grammatical feature that forms columns. Then each sub table would contain
- * a suffixes that belong to that grammatical feature value only. Each sub table becomes a
- * separated object and can be reflown on devices with narrow screens.
- */
-class NarrowViewGroup {
-    // TODO: Review constructor parameters
-
-    /**
-     * Initializes a narrow view group. Please note that column, rows, and headers are those of a whole table,
-     * not of this particular group. NarrowViewGroup constructor will use this data to build
-     * the corresponding objects of the group itself.
-     * @param {number} index - An index of this group within a groups array, starting from zero.
-     * @param {Row[]} headers - Table headers.
-     * @param {Row[]} rows - Table rows.
-     * @param {number} titleColumnQty - Number of title columns in a table.
-     */
-  constructor (index, headers, rows, titleColumnQty) {
-    this.index = index;
-    this.columns = headers[0].cells[index].columns;
-    this.groupSize = this.columns.length;
-    let columnsStartIndex = this.columns[0].index;
-    let columnsEndIndex = this.columns[this.columns.length - 1].index;
-
-    this.rows = [];
-    for (let row of rows) {
-      this.rows.push(row.slice(columnsStartIndex, columnsEndIndex + 1));
-    }
-    this.headers = [];
-        /**
-         * Since we group by the first column feature, there will be a single feature in a first header row,
-         * its children in the second row, children of its children in a third row and so on.
-         */
-    for (let [headerIndex, headerRow] of headers.entries()) {
-      let row = new Row();
-      row.titleCell = headerRow.titleCell;
-      if (headerIndex === 0) {
-        row.cells.push(headerRow.cells[index]);
-      } else {
-        for (let headerCell of this.headers[headerIndex - 1].cells) {
-          row.cells = row.cells.concat(headerCell.children);
-        }
-      }
-      this.headers.push(row);
-    }
-    this.titleColumnQty = titleColumnQty;
-
-    this.nodes = document.createElement('div');
-    this.nodes.classList.add(classNames.inflectionTable, classNames.narrowView);
-  }
-
-    /**
-     * Calculates a number of visible columns in this view.
-     * @returns {number} A number of visible columns.
-     */
-  get visibleColumnQty () {
-    let qty = 0;
-    for (let column of this.columns) {
-      if (!column.hidden) {
-        qty++;
-      }
-    }
-    return qty
-  }
-
-    /**
-     * Renders an HTML representation of a narrow view group.
-     */
-  render () {
-    this.nodes.innerHTML = '';
-
-    if (this.visibleColumnQty) {
-            // This group is visible
-      for (let headerRow of this.headers) {
-        this.nodes.appendChild(headerRow.titleCell.getNvNode(this.index));
-        for (let headerCell of headerRow.cells) {
-          this.nodes.appendChild(headerCell.nvNode);
-        }
-      }
-
-      for (let row of this.rows) {
-        let titleCells = row.titleCell.hierarchyList;
-        if (titleCells.length < this.titleColumnQty) {
-          this.nodes.appendChild(RowTitleCell.placeholder(this.titleColumnQty - titleCells.length));
-        }
-        for (let titleCell of titleCells) {
-          this.nodes.appendChild(titleCell.getNvNode(this.index));
-        }
-
-        for (let cell of row.cells) {
-          this.nodes.appendChild(cell.nvNode);
-        }
-      }
-      this.nodes.classList.remove(classNames.hidden);
-      this.nodes.style.gridTemplateColumns = 'repeat(' + (this.visibleColumnQty + this.titleColumnQty) + ', ' +
-                narrowView.column.width + narrowView.column.unit + ')';
-      this.nodes.style.width = (this.visibleColumnQty + this.titleColumnQty) * narrowView.column.width +
-                narrowView.column.unit;
-    } else {
-            // This group is hidden
-      this.nodes.classList.add(classNames.hidden);
-    }
   }
 }
 
@@ -8505,27 +8920,27 @@ class NarrowViewGroup {
  * Represents an inflection table.
  */
 class Table {
-    /**
-     * Initializes an inflection table.
-     * @param {GroupFeatureType[]} features - An array of grouping features. An order of elements in this array
-     */
+  /**
+   * Initializes an inflection table.
+   * @param {GroupFeatureType[]} features - An array of grouping features. An order of elements in this array
+   */
   constructor (features) {
     this.features = new GroupFeatureList(features);
     this.emptyColumnsHidden = false;
     this.cells = []; // Will be populated by groupByFeature()
 
-        /*
-        This is a special filter function that, if defined will do additional filtering of suffixes within a cell.
-         */
+    /*
+    This is a special filter function that, if defined will do additional filtering of suffixes within a cell.
+     */
     this.suffixCellFilter = undefined;
   }
 
-    /**
-     * Creates a table tree and other data structures (columns, rows, headers).
-     * This function is chainabe.
-     * @param {Suffix[]} suffixes - An array of suffixes to build table from.
-     * @returns {Table} Reference to self for chaining.
-     */
+  /**
+   * Creates a table tree and other data structures (columns, rows, headers).
+   * This function is chainabe.
+   * @param {Suffix[]} suffixes - An array of suffixes to build table from.
+   * @returns {Table} Reference to self for chaining.
+   */
   construct (suffixes) {
     this.suffixes = suffixes;
     this.tree = this.groupByFeature(suffixes);
@@ -8536,22 +8951,22 @@ class Table {
     return this
   }
 
-    /**
-     * Builds wide and narrow views of the table.
-     * This function is chainabe.
-     * @returns {Table} Reference to self for chaining.
-     */
+  /**
+   * Builds wide and narrow views of the table.
+   * This function is chainabe.
+   * @returns {Table} Reference to self for chaining.
+   */
   constructViews () {
     this.wideView = new WideView(this.columns, this.rows, this.headers, this.titleColumnQty);
     this.narrowView = new NarrowView(
-            this.features.firstColumnFeature.size, this.columns, this.rows, this.headers, this.titleColumnQty);
+      this.features.firstColumnFeature.size, this.columns, this.rows, this.headers, this.titleColumnQty);
     return this
   }
 
-    /**
-     * Returns a number of columns with suffix cells in a table.
-     * @returns {number} A number of columns with suffix cells in a table.
-     */
+  /**
+   * Returns a number of columns with suffix cells in a table.
+   * @returns {number} A number of columns with suffix cells in a table.
+   */
   get suffixColumnQty () {
     if (!this.columns) {
       throw new Error('Columns are not populated yet.')
@@ -8559,10 +8974,10 @@ class Table {
     return this.columns.length
   }
 
-    /**
-     * Returns a number of columns with row titles in a table.
-     * @returns {number} A number of columns with row titles.
-     */
+  /**
+   * Returns a number of columns with row titles in a table.
+   * @returns {number} A number of columns with row titles.
+   */
   get titleColumnQty () {
     if (!this.features) {
       throw new Error('Features are not defined.')
@@ -8570,10 +8985,10 @@ class Table {
     return this.features.titleColumnsQuantity
   }
 
-    /**
-     * Returns a number of rows with suffix cells in a table.
-     * @returns {number} A number of rows with suffix cells.
-     */
+  /**
+   * Returns a number of rows with suffix cells in a table.
+   * @returns {number} A number of rows with suffix cells.
+   */
   get suffixRowQty () {
     if (!this.columns) {
       throw new Error('Columns are not populated yet.')
@@ -8581,19 +8996,19 @@ class Table {
     return this.columns[0].length
   }
 
-    /**
-     * Returns true if an ending grammatical feature defined by featureType has a value that is listed in a featureValues array.
-     * This function is for use with Array.prototype.filter().
-     * @param {string} featureType - a grammatical feature type we need to filter on.
-     * @param {string | string[]} featureValues - a list of possible values of a type specified by featureType that
-     * this ending should have.
-     * @param {Suffix} suffix - an ending we need to filter out.
-     * @returns {boolean} True if suffix has a value of a grammatical feature specified.
-     */
+  /**
+   * Returns true if an ending grammatical feature defined by featureType has a value that is listed in a featureValues array.
+   * This function is for use with Array.prototype.filter().
+   * @param {string} featureType - a grammatical feature type we need to filter on.
+   * @param {string | string[]} featureValues - a list of possible values of a type specified by featureType that
+   * this ending should have.
+   * @param {Suffix} suffix - an ending we need to filter out.
+   * @returns {boolean} True if suffix has a value of a grammatical feature specified.
+   */
   static filter (featureType, featureValues, suffix) {
     'use strict';
 
-        // If not an array, convert it to array for uniformity
+    // If not an array, convert it to array for uniformity
     if (!Array.isArray(featureValues)) {
       featureValues = [featureValues];
     }
@@ -8606,42 +9021,42 @@ class Table {
     return false
   };
 
-    /**
-     * Groups all suffixes into a tree according to their grammatical features. There are several levels in this tree.
-     * Each level corresponds to a one grouping feature. The order of items in GroupingFeatures List object
-     * defines an order of those levels.
-     * Nodes on each level are values of a grammatical feature that forms this level. An order of those values
-     * is determined by the order of values within a GroupFeatureType object of each feature.
-     * This is a recursive function.
-     * @param {Suffix[]} suffixes - Suffixes to be grouped.
-     * @param {Feature[]} ancestorFeatures - A list of feature values on levels above the current.
-     * @param {number} currentLevel - At what level in a tree we are now. Used to stop recursion.
-     * @returns {NodeGroup} A top level group of suffixes that contain subgroups all way down to the last group.
-     */
+  /**
+   * Groups all suffixes into a tree according to their grammatical features. There are several levels in this tree.
+   * Each level corresponds to a one grouping feature. The order of items in GroupingFeatures List object
+   * defines an order of those levels.
+   * Nodes on each level are values of a grammatical feature that forms this level. An order of those values
+   * is determined by the order of values within a GroupFeatureType object of each feature.
+   * This is a recursive function.
+   * @param {Suffix[]} suffixes - Suffixes to be grouped.
+   * @param {Feature[]} ancestorFeatures - A list of feature values on levels above the current.
+   * @param {number} currentLevel - At what level in a tree we are now. Used to stop recursion.
+   * @returns {NodeGroup} A top level group of suffixes that contain subgroups all way down to the last group.
+   */
   groupByFeature (suffixes, ancestorFeatures = [], currentLevel = 0) {
     let group = new NodeGroup();
     group.groupFeatureType = this.features.items[currentLevel];
     group.ancestorFeatures = ancestorFeatures.slice();
 
-        // Iterate over each value of the feature
+    // Iterate over each value of the feature
     for (const featureValue of group.groupFeatureType.getOrderedFeatures(ancestorFeatures)) {
       if (ancestorFeatures.length > 0 && ancestorFeatures[ancestorFeatures.length - 1].type === group.groupFeatureType.type) {
-                // Remove previously inserted feature of the same type
+        // Remove previously inserted feature of the same type
         ancestorFeatures.pop();
       }
       ancestorFeatures.push(featureValue);
 
-            // Suffixes that are selected for current combination of feature values
+      // Suffixes that are selected for current combination of feature values
       let selectedSuffixes = suffixes.filter(Table.filter.bind(this, group.groupFeatureType.type, featureValue.value));
 
       if (currentLevel < this.features.length - 1) {
-                // Divide to further groups
+        // Divide to further groups
         let subGroup = this.groupByFeature(selectedSuffixes, ancestorFeatures, currentLevel + 1);
         group.subgroups.push(subGroup);
         group.cells = group.cells.concat(subGroup.cells);
       } else {
-                // This is the last level. This represent a cell with suffixes
-                // Split result has a list of suffixes in a table cell. We need to combine items with same endings.
+        // This is the last level. This represent a cell with suffixes
+        // Split result has a list of suffixes in a table cell. We need to combine items with same endings.
         if (selectedSuffixes.length > 0) {
           if (this.suffixCellFilter) {
             selectedSuffixes = selectedSuffixes.filter(this.suffixCellFilter);
@@ -8661,14 +9076,14 @@ class Table {
     return group
   }
 
-    /**
-     * Create columns out of a suffixes organized into a tree.
-     * This is a recursive function.
-     * @param {NodeGroup} tree - A tree of suffixes.
-     * @param {Column[]} columns - An array of columns to be constructed.
-     * @param {number} currentLevel - Current recursion level.
-     * @returns {Array} An array of columns of suffix cells.
-     */
+  /**
+   * Create columns out of a suffixes organized into a tree.
+   * This is a recursive function.
+   * @param {NodeGroup} tree - A tree of suffixes.
+   * @param {Column[]} columns - An array of columns to be constructed.
+   * @param {number} currentLevel - Current recursion level.
+   * @returns {Array} An array of columns of suffix cells.
+   */
   constructColumns (tree = this.tree, columns = [], currentLevel = 0) {
     let currentFeature = this.features.items[currentLevel];
 
@@ -8676,11 +9091,11 @@ class Table {
     for (let [index, featureValue] of currentFeature.getOrderedValues(tree.ancestorFeatures).entries()) {
       let cellGroup = tree.subgroups[index];
 
-            // Iterate until it is the last row feature
+      // Iterate until it is the last row feature
       if (!currentFeature.isSameType(this.features.lastRowFeature)) {
         let currentResult = this.constructColumns(cellGroup, columns, currentLevel + 1);
         if (currentFeature.formsRow) {
-                    // TODO: Avoid creating extra cells
+          // TODO: Avoid creating extra cells
 
           let group = {
             titleText: featureValue,
@@ -8698,7 +9113,7 @@ class Table {
           column.headerCell = this.headers[this.headers.length - 1].cells[columns.length - 1];
         }
       } else {
-                // Last level
+        // Last level
         cellGroup.titleCell = currentFeature.createTitleCell(featureValue, this.features.firstColumnFeature.size);
         let group = {
           titleText: featureValue,
@@ -8714,14 +9129,14 @@ class Table {
     return columns
   }
 
-    /**
-     * Creates an array of header cell rows.
-     * This is a recursive function.
-     * @param {NodeGroup} tree - A tree of suffixes.
-     * @param {Row[]} headers - An array of rows with header cells.
-     * @param {number} currentLevel - Current recursion level.
-     * @returns {Array} A two-dimensional array of header cell rows.
-     */
+  /**
+   * Creates an array of header cell rows.
+   * This is a recursive function.
+   * @param {NodeGroup} tree - A tree of suffixes.
+   * @param {Row[]} headers - An array of rows with header cells.
+   * @param {number} currentLevel - Current recursion level.
+   * @returns {Array} A two-dimensional array of header cell rows.
+   */
   constructHeaders (tree = this.tree, headers = [], currentLevel = 0) {
     let currentFeature = this.features.columnFeatures[currentLevel];
 
@@ -8729,7 +9144,7 @@ class Table {
     for (let [index, featureValue] of currentFeature.getOrderedValues(tree.ancestorFeatures).entries()) {
       let cellGroup = tree.subgroups[index];
 
-            // Iterate over all column features (features that form columns)
+      // Iterate over all column features (features that form columns)
       if (currentLevel < this.features.columnFeatures.length - 1) {
         let subCells = this.constructHeaders(cellGroup, headers, currentLevel + 1);
 
@@ -8748,12 +9163,12 @@ class Table {
           headers[currentLevel] = new Row();
         }
         headers[currentLevel].titleCell = currentFeature.createTitleCell(
-                    this.messages.get(currentFeature.groupTitle), this.features.firstColumnFeature.size);
+          this.messages.get(currentFeature.groupTitle), this.features.firstColumnFeature.size);
 
         headers[currentLevel].add(headerCell);
         cells.push(headerCell);
       } else {
-                // Last level
+        // Last level
         let headerCell = new HeaderCell(featureValue, currentFeature);
 
         if (!headers[currentLevel]) {
@@ -8762,7 +9177,7 @@ class Table {
 
         headers[currentLevel].add(headerCell);
         headers[currentLevel].titleCell = currentFeature.createTitleCell(
-                    this.messages.get(currentFeature.groupTitle), this.features.firstColumnFeature.size);
+          this.messages.get(currentFeature.groupTitle), this.features.firstColumnFeature.size);
         cells.push(headerCell);
       }
     }
@@ -8773,10 +9188,10 @@ class Table {
     }
   }
 
-    /**
-     * Creates an array of rows by parsing an array of columns.
-     * @returns {Row[]} An array of rows.
-     */
+  /**
+   * Creates an array of rows by parsing an array of columns.
+   * @returns {Row[]} An array of rows.
+   */
   constructRows () {
     let rows = [];
     for (let rowIndex = 0; rowIndex < this.suffixRowQty; rowIndex++) {
@@ -8789,9 +9204,9 @@ class Table {
     return rows
   }
 
-    /**
-     * Adds event listeners to each cell object.
-     */
+  /**
+   * Adds event listeners to each cell object.
+   */
   addEventListeners () {
     for (let cell of this.cells) {
       cell.addEventListener('mouseenter', this.highlightRowAndColumn.bind(this));
@@ -8799,27 +9214,27 @@ class Table {
     }
   }
 
-    /**
-     * Highlights a row and a column this cell is in.
-     * @param {Event} event - An event that triggers this function.
-     */
+  /**
+   * Highlights a row and a column this cell is in.
+   * @param {Event} event - An event that triggers this function.
+   */
   highlightRowAndColumn (event) {
     let index = event.currentTarget.dataset.index;
     this.cells[index].highlightRowAndColumn();
   }
 
-    /**
-     * Removes highlighting from row and a column this cell is in.
-     * @param {Event} event - An event that triggers this function.
-     */
+  /**
+   * Removes highlighting from row and a column this cell is in.
+   * @param {Event} event - An event that triggers this function.
+   */
   clearRowAndColumnHighlighting (event) {
     let index = event.currentTarget.dataset.index;
     this.cells[index].clearRowAndColumnHighlighting();
   }
 
-    /**
-     * Hides empty columns in a table.
-     */
+  /**
+   * Hides empty columns in a table.
+   */
   hideEmptyColumns () {
     for (let column of this.columns) {
       if (column.empty) {
@@ -8829,9 +9244,9 @@ class Table {
     this.emptyColumnsHidden = true;
   }
 
-    /**
-     * Show all empty columns that were previously hidden.
-     */
+  /**
+   * Show all empty columns that were previously hidden.
+   */
   showEmptyColumns () {
     for (let column of this.columns) {
       if (column.hidden) {
@@ -8841,9 +9256,9 @@ class Table {
     this.emptyColumnsHidden = false;
   }
 
-    /**
-     * Hide groups that have no suffix matches.
-     */
+  /**
+   * Hide groups that have no suffix matches.
+   */
   hideNoSuffixGroups () {
     for (let headerCell of this.headers[0].cells) {
       let matches = !!headerCell.columns.find(column => column.suffixMatches);
@@ -8856,9 +9271,9 @@ class Table {
     this.suffixMatchesHidden = true;
   }
 
-    /**
-     * Show groups that have no suffix matches.
-     */
+  /**
+   * Show groups that have no suffix matches.
+   */
   showNoSuffixGroups () {
     for (let column of this.columns) {
       column.show();
@@ -8867,168 +9282,6 @@ class Table {
       this.hideEmptyColumns();
     }
     this.suffixMatchesHidden = false;
-  }
-}
-
-/**
- * Represents a list of footnotes.
- */
-class Footnotes {
-    /**
-     * Initialises a Footnotes object.
-     * @param {Footnote[]} footnotes - An array of footnote objects.
-     */
-  constructor (footnotes) {
-    this.footnotes = footnotes;
-
-    this.nodes = document.createElement('dl');
-    this.nodes.id = footnotes$1.id;
-    this.nodes.classList.add(classNames.footnotesContainer);
-    for (let footnote of footnotes) {
-      let index = document.createElement('dt');
-      index.innerHTML = footnote.index;
-      this.nodes.appendChild(index);
-      let text = document.createElement('dd');
-      text.innerHTML = footnote.text;
-      this.nodes.appendChild(text);
-    }
-  }
-
-    /**
-     * Returns an HTML representation of a Footnotes object.
-     * @returns {HTMLElement} An HTML representation of a Footnotes object.
-     */
-  get html () {
-    return this.nodes
-  }
-}
-
-/**
- * Represents a single view.
- */
-class View {
-    /**
-     * Initializes a View object with options. There is at least one view per part of speech,
-     * but there could be several views for the same part of speech that show different table representation of a view.
-     * @param {Object} viewOptions
-     */
-  constructor () {
-        // this.options = viewOptions;
-    this.pageHeader = {};
-
-        // An HTML element where this view is rendered
-    this.container = undefined;
-
-        // Must be implemented in a descendant
-    this.id = 'baseView';
-    this.name = 'base view';
-    this.title = 'Base View';
-    this.language = undefined;
-    this.partOfSpeech = undefined;
-  }
-
-    /**
-     * Converts a WordData, returned from inflection tables library, into an HTML representation of an inflection table
-     * and inserts that HTML into a `container` HTML element. `messages` provides a translation for view's texts.
-     * @param {HTMLElement} container - An HTML element where this view will be inserted.
-     * @param {LexicalData} wordData - A result set from inflection tables library.
-     * @param {MessageBundle} messages - A message bundle with message translations.
-     */
-  render (container, wordData, messages) {
-    'use strict';
-
-    this.messages = messages;
-    this.container = container;
-    this.wordData = wordData;
-    let selection = wordData[this.partOfSpeech];
-
-    this.footnotes = new Footnotes(selection.footnotes);
-
-        // this.table = new Table(selection.suffixes, this.groupingFeatures, messages);
-        // this.table = new Table();
-        // this.setTableData();
-    this.table.messages = messages;
-    this.table.construct(selection.suffixes).constructViews();
-    this.display();
-  }
-
-    /**
-     * Renders a view's HTML representation and inserts it into `container` HTML element.
-     */
-  display () {
-        // Clear the container
-    this.container.innerHTML = '';
-
-    let word = document.createElement('h2');
-    word.innerHTML = this.wordData.homonym.targetWord;
-    this.container.appendChild(word);
-
-    let title = document.createElement('h3');
-    title.innerHTML = this.title;
-    this.container.appendChild(title);
-
-    this.pageHeader = { nodes: document.createElement('div') };
-    this.pageHeader.nodes.innerHTML = pageHeader.html;
-    this.pageHeader.hideEmptyColumnsBtn = this.pageHeader.nodes.querySelector(pageHeader.hideEmptyColumnsBtnSel);
-    this.pageHeader.showEmptyColumnsBtn = this.pageHeader.nodes.querySelector(pageHeader.showEmptyColumnsBtnSel);
-    this.pageHeader.hideNoSuffixGroupsBtn = this.pageHeader.nodes.querySelector(pageHeader.hideNoSuffixGroupsBtnSel);
-    this.pageHeader.showNoSuffixGroupsBtn = this.pageHeader.nodes.querySelector(pageHeader.showNoSuffixGroupsBtnSel);
-    this.container.appendChild(this.pageHeader.nodes);
-
-        // Insert a wide view
-    this.container.appendChild(this.table.wideView.render());
-        // Insert narrow views
-    this.container.appendChild(this.table.narrowView.render());
-
-    this.table.addEventListeners();
-
-    this.container.appendChild(this.footnotes.html);
-
-    this.pageHeader.hideEmptyColumnsBtn.addEventListener('click', this.hideEmptyColumns.bind(this));
-    this.pageHeader.showEmptyColumnsBtn.addEventListener('click', this.showEmptyColumns.bind(this));
-
-    this.pageHeader.hideNoSuffixGroupsBtn.addEventListener('click', this.hideNoSuffixGroups.bind(this));
-    this.pageHeader.showNoSuffixGroupsBtn.addEventListener('click', this.showNoSuffixGroups.bind(this));
-  }
-
-    /**
-     * Hides all empty columns of the view.
-     */
-  hideEmptyColumns () {
-    this.table.hideEmptyColumns();
-    this.display();
-    this.pageHeader.hideEmptyColumnsBtn.classList.add(classNames.hidden);
-    this.pageHeader.showEmptyColumnsBtn.classList.remove(classNames.hidden);
-  }
-
-    /**
-     * Displays all previously hidden columns.
-     */
-  showEmptyColumns () {
-    this.table.showEmptyColumns();
-    this.display();
-    this.pageHeader.showEmptyColumnsBtn.classList.add(classNames.hidden);
-    this.pageHeader.hideEmptyColumnsBtn.classList.remove(classNames.hidden);
-  }
-
-    /**
-     * Hides groups (formed by first column feature) that have no suffix matches.
-     */
-  hideNoSuffixGroups () {
-    this.table.hideNoSuffixGroups();
-    this.display();
-    this.pageHeader.hideNoSuffixGroupsBtn.classList.add(classNames.hidden);
-    this.pageHeader.showNoSuffixGroupsBtn.classList.remove(classNames.hidden);
-  }
-
-    /**
-     * Displays previously hidden groups with no suffix matches.
-     */
-  showNoSuffixGroups () {
-    this.table.showNoSuffixGroups();
-    this.display();
-    this.pageHeader.hideNoSuffixGroupsBtn.classList.add(classNames.hidden);
-    this.pageHeader.showNoSuffixGroupsBtn.classList.remove(classNames.hidden);
   }
 }
 
@@ -9280,311 +9533,13 @@ var viewsLatin = [new NounView(), new AdjectiveView(),
   new VoiceConjugationMoodView(), new VoiceMoodConjugationView(), new ConjugationVoiceMoodView(),
   new ConjugationMoodVoiceView(), new MoodVoiceConjugationView(), new MoodConjugationVoiceView()];
 
-var nounSuffixesCSV$1 = "Ending,Number,Case,Declension,Gender,Type,Primary,Footnote\r\nα,dual,accusative,1st,feminine,regular,primary,\r\nά,dual,accusative,1st,feminine,regular,,\r\nᾶ,dual,accusative,1st,feminine,regular,,2\r\nαιν,dual,dative,1st,feminine,regular,primary,\r\nαῖν,dual,dative,1st,feminine,regular,,\r\nαιιν,dual,dative,1st,feminine,irregular,,\r\nαιν,dual,genitive,1st,feminine,regular,primary,\r\nαῖν,dual,genitive,1st,feminine,regular,,\r\nαιιν,dual,genitive,1st,feminine,irregular,,\r\nα,dual,nominative,1st,feminine,regular,primary,\r\nά,dual,nominative,1st,feminine,regular,,\r\nᾶ,dual,nominative,1st,feminine,regular,,2\r\nα,dual,vocative,1st,feminine,regular,primary,\r\nά,dual,vocative,1st,feminine,regular,,\r\nᾶ,dual,vocative,1st,feminine,regular,,2\r\nα,dual,accusative,1st,masculine,regular,primary,\r\nά,dual,accusative,1st,masculine,regular,,\r\nᾶ,dual,accusative,1st,masculine,regular,,2\r\nαιν,dual,dative,1st,masculine,regular,primary,\r\nαῖν,dual,dative,1st,masculine,regular,,\r\nαιιν,dual,dative,1st,masculine,irregular,,\r\nαιν,dual,genitive,1st,masculine,regular,primary,\r\nαῖν,dual,genitive,1st,masculine,regular,,\r\nαιιν,dual,genitive,1st,masculine,irregular,,\r\nα,dual,nominative,1st,masculine,regular,primary,\r\nά,dual,nominative,1st,masculine,regular,,\r\nᾶ,dual,nominative,1st,masculine,regular,,2\r\nα,dual,vocative,1st,masculine,regular,primary,\r\nά,dual,vocative,1st,masculine,regular,,\r\nᾶ,dual,vocative,1st,masculine,regular,,2\r\nας,plural,accusative,1st,feminine,regular,primary,\r\nάς,plural,accusative,1st,feminine,regular,,\r\nᾶς,plural,accusative,1st,feminine,regular,,2\r\nανς,plural,accusative,1st,feminine,irregular,,\r\nαις,plural,accusative,1st,feminine,irregular,,\r\nαις,plural,dative,1st,feminine,regular,primary,\r\nαῖς,plural,dative,1st,feminine,regular,,\r\nῃσι,plural,dative,1st,feminine,irregular,,44\r\nῃσιν,plural,dative,1st,feminine,irregular,,4 44\r\nῃς,plural,dative,1st,feminine,irregular,,44\r\nαισι,plural,dative,1st,feminine,irregular,,44\r\nαισιν,plural,dative,1st,feminine,irregular,,4 44\r\nῶν,plural,genitive,1st,feminine,regular,primary,\r\nάων,plural,genitive,1st,feminine,irregular,,\r\nέων,plural,genitive,1st,feminine,irregular,,\r\nήων,plural,genitive,1st,feminine,irregular,,\r\nᾶν,plural,genitive,1st,feminine,irregular,,\r\nαι,plural,nominative,1st,feminine,regular,primary,\r\nαί,plural,nominative,1st,feminine,regular,,\r\nαῖ,plural,nominative,1st,feminine,regular,,2\r\nαι,plural,vocative,1st,feminine,regular,primary,\r\nαί,plural,vocative,1st,feminine,regular,,\r\nαῖ,plural,vocative,1st,feminine,regular,,2\r\nας,plural,accusative,1st,masculine,regular,primary,\r\nάς,plural,accusative,1st,masculine,regular,,\r\nᾶς,plural,accusative,1st,masculine,regular,,3\r\nανς,plural,accusative,1st,masculine,irregular,,\r\nαις,plural,accusative,1st,masculine,irregular,,\r\nαις,plural,dative,1st,masculine,regular,primary,\r\nαῖς,plural,dative,1st,masculine,regular,,\r\nῃσι,plural,dative,1st,masculine,irregular,,44\r\nῃσιν,plural,dative,1st,masculine,irregular,,4 44\r\nῃς,plural,dative,1st,masculine,irregular,,44\r\nαισι,plural,dative,1st,masculine,irregular,,44\r\nαισιν,plural,dative,1st,masculine,irregular,,4 44\r\nῶν,plural,genitive,1st,masculine,regular,primary,\r\nάων,plural,genitive,1st,masculine,irregular,,\r\nέων,plural,genitive,1st,masculine,irregular,,\r\nήων,plural,genitive,1st,masculine,irregular,,\r\nᾶν,plural,genitive,1st,masculine,irregular,,\r\nαι,plural,nominative,1st,masculine,regular,primary,\r\nαί,plural,nominative,1st,masculine,regular,,\r\nαῖ,plural,nominative,1st,masculine,regular,,3\r\nαι,plural,vocative,1st,masculine,regular,primary,\r\nαί,plural,vocative,1st,masculine,regular,,\r\nαῖ,plural,vocative,1st,masculine,regular,,3\r\nαν,singular,accusative,1st,feminine,regular,primary,\r\nην,singular,accusative,1st,feminine,regular,primary,\r\nήν,singular,accusative,1st,feminine,regular,,\r\nᾶν,singular,accusative,1st,feminine,regular,,2\r\nῆν,singular,accusative,1st,feminine,regular,,2\r\nάν,singular,accusative,1st,feminine,irregular,,63\r\nᾳ,singular,dative,1st,feminine,regular,primary,\r\nῃ,singular,dative,1st,feminine,regular,primary,\r\nῇ,singular,dative,1st,feminine,regular,,2\r\nᾷ,singular,dative,1st,feminine,regular,,2\r\nηφι,singular,dative,1st,feminine,irregular,,45\r\nηφιν,singular,dative,1st,feminine,irregular,,4 45\r\nῆφι,singular,dative,1st,feminine,irregular,,45\r\nῆφιv,singular,dative,1st,feminine,irregular,,4 45\r\nας,singular,genitive,1st,feminine,regular,primary,\r\nης,singular,genitive,1st,feminine,regular,primary,\r\nῆs,singular,genitive,1st,feminine,regular,,\r\nᾶs,singular,genitive,1st,feminine,regular,,2\r\nηφι,singular,genitive,1st,feminine,irregular,,45\r\nηφιν,singular,genitive,1st,feminine,irregular,,4 45\r\nῆφι,singular,genitive,1st,feminine,irregular,,45\r\nῆφιv,singular,genitive,1st,feminine,irregular,,4 45\r\nα,singular,nominative,1st,feminine,regular,primary,\r\nη,singular,nominative,1st,feminine,regular,primary,1\r\nή,singular,nominative,1st,feminine,regular,,\r\nᾶ,singular,nominative,1st,feminine,regular,,2\r\nῆ,singular,nominative,1st,feminine,regular,,2\r\nά,singular,nominative,1st,feminine,irregular,,63\r\nα,singular,vocative,1st,feminine,regular,primary,\r\nη,singular,vocative,1st,feminine,regular,primary,\r\nή,singular,vocative,1st,feminine,regular,,\r\nᾶ,singular,vocative,1st,feminine,regular,,2\r\nῆ,singular,vocative,1st,feminine,regular,,2\r\nά,singular,vocative,1st,feminine,irregular,,63\r\nαν,singular,accusative,1st,masculine,regular,primary,\r\nην,singular,accusative,1st,masculine,regular,primary,3\r\nήν,singular,accusative,1st,masculine,regular,,\r\nᾶν,singular,accusative,1st,masculine,regular,,3\r\nῆν,singular,accusative,1st,masculine,regular,,3\r\nεα,singular,accusative,1st,masculine,irregular,,\r\nᾳ,singular,dative,1st,masculine,regular,primary,\r\nῃ,singular,dative,1st,masculine,regular,primary,\r\nῇ,singular,dative,1st,masculine,regular,,\r\nᾷ,singular,dative,1st,masculine,regular,,3\r\nῆ,singular,dative,1st,masculine,regular,,3\r\nηφι,singular,dative,1st,masculine,irregular,,45\r\nηφιν,singular,dative,1st,masculine,irregular,,4 45\r\nῆφι,singular,dative,1st,masculine,irregular,,45\r\nῆφιv,singular,dative,1st,masculine,irregular,,4 45\r\nου,singular,genitive,1st,masculine,regular,primary,\r\nοῦ,singular,genitive,1st,masculine,regular,,\r\nαο,singular,genitive,1st,masculine,irregular,,\r\nεω,singular,genitive,1st,masculine,irregular,,\r\nηφι,singular,genitive,1st,masculine,irregular,,45\r\nηφιν,singular,genitive,1st,masculine,irregular,,4 45\r\nῆφι,singular,genitive,1st,masculine,irregular,,45\r\nῆφιv,singular,genitive,1st,masculine,irregular,,4 45\r\nω,singular,genitive,1st,masculine,irregular,,\r\nα,singular,genitive,1st,masculine,irregular,,\r\nας,singular,nominative,1st,masculine,regular,primary,\r\nης,singular,nominative,1st,masculine,regular,primary,\r\nής,singular,nominative,1st,masculine,regular,,\r\nᾶs,singular,nominative,1st,masculine,regular,,3\r\nῆs,singular,nominative,1st,masculine,regular,,3\r\nα,singular,vocative,1st,masculine,regular,primary,\r\nη,singular,vocative,1st,masculine,regular,primary,\r\nά,singular,vocative,1st,masculine,regular,,\r\nᾶ,singular,vocative,1st,masculine,regular,,3\r\nῆ,singular,vocative,1st,masculine,regular,,3\r\nω,dual,accusative,2nd,masculine feminine,regular,primary,\r\nώ,dual,accusative,2nd,masculine feminine,regular,,5\r\nοιν,dual,dative,2nd,masculine feminine,regular,primary,\r\nοῖν,dual,dative,2nd,masculine feminine,regular,,5\r\nοιιν,dual,dative,2nd,masculine feminine,irregular,,\r\nῴν,dual,dative,2nd,masculine feminine,irregular,,7\r\nοιν,dual,genitive,2nd,masculine feminine,regular,primary,\r\nοῖν,dual,genitive,2nd,masculine feminine,regular,,5\r\nοιιν,dual,genitive,2nd,masculine feminine,irregular,,\r\nῴν,dual,genitive,2nd,masculine feminine,irregular,,7\r\nω,dual,nominative,2nd,masculine feminine,regular,primary,60\r\nώ,dual,nominative,2nd,masculine feminine,regular,,60\r\nω,dual,vocative,2nd,masculine feminine,regular,primary,\r\nώ,dual,vocative,2nd,masculine feminine,regular,,5\r\nω,dual,accusative,2nd,neuter,regular,primary,\r\nώ,dual,accusative,2nd,neuter,regular,,6\r\nοιν,dual,dative,2nd,neuter,regular,primary,\r\nοῖν,dual,dative,2nd,neuter,regular,,6\r\nοιιν,dual,dative,2nd,neuter,irregular,,\r\nοιν,dual,genitive,2nd,neuter,regular,primary,\r\nοῖν,dual,genitive,2nd,neuter,regular,,6\r\nοιιν,dual,genitive,2nd,neuter,irregular,,\r\nω,dual,nominative,2nd,neuter,regular,primary,\r\nώ,dual,nominative,2nd,neuter,regular,,6\r\nω,dual,vocative,2nd,neuter,regular,primary,\r\nώ,dual,vocative,2nd,neuter,regular,,6\r\nους,plural,accusative,2nd,masculine feminine,regular,primary,\r\nούς,plural,accusative,2nd,masculine feminine,regular,,41\r\nοῦς,plural,accusative,2nd,masculine feminine,regular,,5\r\nονς,plural,accusative,2nd,masculine feminine,irregular,,\r\nος,plural,accusative,2nd,masculine feminine,irregular,,\r\nως,plural,accusative,2nd,masculine feminine,irregular,,\r\nοις,plural,accusative,2nd,masculine feminine,irregular,,\r\nώς,plural,accusative,2nd,masculine feminine,irregular,,7\r\nοις,plural,dative,2nd,masculine feminine,regular,primary,\r\nοῖς,plural,dative,2nd,masculine feminine,regular,,5\r\nοισι,plural,dative,2nd,masculine feminine,irregular,,\r\nοισιν,plural,dative,2nd,masculine feminine,irregular,,4\r\nῴς,plural,dative,2nd,masculine feminine,irregular,,7\r\nόφι,plural,dative,2nd,masculine feminine,irregular,,45\r\nόφιv,plural,dative,2nd,masculine feminine,irregular,,4 45\r\nων,plural,genitive,2nd,masculine feminine,regular,primary,\r\nῶν,plural,genitive,2nd,masculine feminine,regular,,5\r\nών,plural,genitive,2nd,masculine feminine,irregular,,7\r\nόφι,plural,genitive,2nd,masculine feminine,irregular,,45\r\nόφιv,plural,genitive,2nd,masculine feminine,irregular,,4 45\r\nοι,plural,nominative,2nd,masculine feminine,regular,primary,\r\nοί,plural,nominative,2nd,masculine feminine,regular,,41\r\nοῖ,plural,nominative,2nd,masculine feminine,regular,,5\r\nῴ,plural,nominative,2nd,masculine feminine,irregular,,7\r\nοι,plural,vocative,2nd,masculine feminine,regular,primary,\r\nοί,plural,vocative,2nd,masculine feminine,regular,,41\r\nοῖ,plural,vocative,2nd,masculine feminine,regular,,5\r\nα,plural,accusative,2nd,neuter,regular,primary,\r\nᾶ,plural,accusative,2nd,neuter,regular,,6\r\nοις,plural,dative,2nd,neuter,regular,primary,\r\nοῖς,plural,dative,2nd,neuter,regular,,6\r\nοισι,plural,dative,2nd,neuter,irregular,,\r\nοισιν,plural,dative,2nd,neuter,irregular,,4\r\nόφι,plural,dative,2nd,neuter,irregular,,45\r\nόφιv,plural,dative,2nd,neuter,irregular,,4 45\r\nων,plural,genitive,2nd,neuter,regular,primary,\r\nῶν,plural,genitive,2nd,neuter,regular,,6\r\nόφι,plural,genitive,2nd,neuter,irregular,,45\r\nόφιv,plural,genitive,2nd,neuter,irregular,,4 45\r\nα,plural,nominative,2nd,neuter,regular,primary,\r\nᾶ,plural,nominative,2nd,neuter,regular,,6\r\nα,plural,vocative,2nd,neuter,regular,primary,\r\nᾶ,plural,vocative,2nd,neuter,regular,,6\r\nον,singular,accusative,2nd,masculine feminine,regular,primary,\r\nόν,singular,accusative,2nd,masculine feminine,regular,primary,41\r\nουν,singular,accusative,2nd,masculine feminine,regular,,5\r\nοῦν,singular,accusative,2nd,masculine feminine,regular,,5\r\nω,singular,accusative,2nd,masculine feminine,irregular,,7 5\r\nωv,singular,accusative,2nd,masculine feminine,irregular,,7 59\r\nώ,singular,accusative,2nd,masculine feminine,irregular,,7 42 59\r\nών,singular,accusative,2nd,masculine feminine,irregular,,7 59\r\nῳ,singular,dative,2nd,masculine feminine,regular,primary,\r\nῷ,singular,dative,2nd,masculine feminine,regular,,5\r\nῴ,singular,dative,2nd,masculine feminine,irregular,,7\r\nόφι,singular,dative,2nd,masculine feminine,irregular,,45\r\nόφιv,singular,dative,2nd,masculine feminine,irregular,,4 45\r\nου,singular,genitive,2nd,masculine feminine,regular,primary,\r\nοῦ,singular,genitive,2nd,masculine feminine,regular,,5\r\nοιο,singular,genitive,2nd,masculine feminine,irregular,,\r\nοο,singular,genitive,2nd,masculine feminine,irregular,,\r\nω,singular,genitive,2nd,masculine feminine,irregular,,\r\nώ,singular,genitive,2nd,masculine feminine,irregular,,7\r\nόφι,singular,genitive,2nd,masculine feminine,irregular,,45\r\nόφιv,singular,genitive,2nd,masculine feminine,irregular,,4 45\r\nος,singular,nominative,2nd,masculine feminine,regular,primary,\r\nους,singular,nominative,2nd,masculine feminine,regular,,5\r\noῦς,singular,nominative,2nd,masculine feminine,regular,,5\r\nός,singular,nominative,2nd,masculine feminine,regular,,\r\nώς,singular,nominative,2nd,masculine feminine,irregular,,7 42\r\nως,singular,nominative,2nd,masculine feminine,irregular,,\r\nε,singular,vocative,2nd,masculine feminine,regular,primary,\r\nέ,singular,vocative,2nd,masculine feminine,regular,,\r\nοu,singular,vocative,2nd,masculine feminine,regular,,5\r\nοῦ,singular,vocative,2nd,masculine feminine,regular,,42\r\nός,singular,vocative,2nd,masculine feminine,irregular,,57\r\nον,singular,accusative,2nd,neuter,regular,primary,\r\nοῦν,singular,accusative,2nd,neuter,regular,,6\r\nῳ,singular,dative,2nd,neuter,regular,primary,\r\nῷ,singular,dative,2nd,neuter,regular,,6\r\nόφι,singular,dative,2nd,neuter,irregular,,45\r\nόφιv,singular,dative,2nd,neuter,irregular,,4 45\r\nου,singular,genitive,2nd,neuter,regular,primary,\r\nοῦ,singular,genitive,2nd,neuter,regular,,6\r\nοο,singular,genitive,2nd,neuter,irregular,,\r\nοιο,singular,genitive,2nd,neuter,irregular,,\r\nω,singular,genitive,2nd,neuter,irregular,,\r\nόφι,singular,genitive,2nd,neuter,irregular,,45\r\nόφιv,singular,genitive,2nd,neuter,irregular,,4 45\r\nον,singular,nominative,2nd,neuter,regular,primary,\r\nοῦν,singular,nominative,2nd,neuter,regular,,6\r\nον,singular,vocative,2nd,neuter,regular,primary,\r\nοῦν,singular,vocative,2nd,neuter,regular,,6\r\nε,dual,accusative,3rd,masculine feminine,regular,primary,\r\nει,dual,accusative,3rd,masculine feminine,regular,,\r\nῆ,dual,accusative,3rd,masculine feminine,regular,,18\r\nω,dual,accusative,3rd,masculine feminine,irregular,,32\r\nῖ,dual,accusative,3rd,masculine feminine,irregular,,33\r\nεε,dual,accusative,3rd,masculine feminine,irregular,,16 55 61\r\nοιν,dual,dative,3rd,masculine feminine,regular,primary,\r\nοῖν,dual,dative,3rd,masculine feminine,regular,,\r\nοιιν,dual,dative,3rd,masculine feminine,irregular,,54\r\nσι,dual,dative,3rd,masculine feminine,irregular,,33 37\r\nεσσι,dual,dative,3rd,masculine feminine,irregular,,33\r\nεσι,dual,dative,3rd,masculine feminine,irregular,,33\r\nέοιν,dual,dative,3rd,masculine feminine,irregular,,16 61\r\nῳν,dual,dative,3rd,masculine feminine,irregular,,49\r\nοιν,dual,genitive,3rd,masculine feminine,regular,primary,\r\nοῖν,dual,genitive,3rd,masculine feminine,regular,,\r\nοιιν,dual,genitive,3rd,masculine feminine,irregular,,54\r\nέοιν,dual,genitive,3rd,masculine feminine,irregular,,16 61\r\nῳν,dual,genitive,3rd,masculine feminine,irregular,,49\r\nε,dual,nominative,3rd,masculine feminine,regular,primary,\r\nει,dual,nominative,3rd,masculine feminine,regular,,\r\nῆ,dual,nominative,3rd,masculine feminine,regular,,18\r\nω,dual,nominative,3rd,masculine feminine,irregular,,32\r\nῖ,dual,nominative,3rd,masculine feminine,irregular,,33\r\nεε,dual,nominative,3rd,masculine feminine,irregular,,16 55 61\r\nε,dual,vocative,3rd,masculine feminine,regular,primary,\r\nει,dual,vocative,3rd,masculine feminine,regular,,\r\nῆ,dual,vocative,3rd,masculine feminine,regular,,18\r\nω,dual,vocative,3rd,masculine feminine,irregular,,32\r\nῖ,dual,vocative,3rd,masculine feminine,irregular,,33\r\nεε,dual,vocative,3rd,masculine feminine,irregular,,16 55 61\r\nε,dual,accusative,3rd,neuter,regular,primary,\r\nει,dual,accusative,3rd,neuter,regular,,\r\nα,dual,accusative,3rd,neuter,regular,,\r\nεε,dual,accusative,3rd,neuter,irregular,,16 61\r\nαε,dual,accusative,3rd,neuter,irregular,,16 61\r\nοιν,dual,dative,3rd,neuter,regular,primary,\r\nῷν,dual,dative,3rd,neuter,regular,,\r\nοις,dual,dative,3rd,neuter,irregular,,33 38\r\nοισι,dual,dative,3rd,neuter,irregular,,33 38\r\nοισι(ν),dual,dative,3rd,neuter,irregular,,4 33 38\r\nοιιν,dual,dative,3rd,neuter,irregular,,\r\nέοιν,dual,dative,3rd,neuter,irregular,,16 61\r\nάοιν,dual,dative,3rd,neuter,irregular,,16 61\r\nοιν,dual,genitive,3rd,neuter,regular,primary,\r\nῷν,dual,genitive,3rd,neuter,regular,,\r\nων,dual,genitive,3rd,neuter,irregular,,33 38\r\nοιιν,dual,genitive,3rd,neuter,irregular,,\r\nέοιν,dual,genitive,3rd,neuter,irregular,,16 61\r\nάοιν,dual,genitive,3rd,neuter,irregular,,16 61\r\nε,dual,nominative,3rd,neuter,regular,primary,\r\nει,dual,nominative,3rd,neuter,regular,,\r\nα,dual,nominative,3rd,neuter,regular,,\r\nεε,dual,nominative,3rd,neuter,irregular,,16 61\r\nαε,dual,nominative,3rd,neuter,irregular,,16 61\r\nε,dual,vocative,3rd,neuter,regular,primary,\r\nει,dual,vocative,3rd,neuter,regular,,\r\nα,dual,vocative,3rd,neuter,regular,,\r\nεε,dual,vocative,3rd,neuter,irregular,,16 61\r\nαε,dual,vocative,3rd,neuter,irregular,,16 61\r\nας,plural,accusative,3rd,masculine feminine,regular,primary,\r\nεις,plural,accusative,3rd,masculine feminine,regular,,17 41\r\nες,plural,accusative,3rd,masculine feminine,regular,,\r\nς,plural,accusative,3rd,masculine feminine,regular,,\r\nῦς,plural,accusative,3rd,masculine feminine,regular,,17 18 48\r\nως,plural,accusative,3rd,masculine feminine,regular,,30\r\nῆς,plural,accusative,3rd,masculine feminine,irregular,,56\r\nέας,plural,accusative,3rd,masculine feminine,irregular,,\r\nέος,plural,accusative,3rd,masculine feminine,irregular,,\r\nῆος,plural,accusative,3rd,masculine feminine,irregular,,\r\nῆες,plural,accusative,3rd,masculine feminine,irregular,,\r\nῆας,plural,accusative,3rd,masculine feminine,irregular,,\r\nους,plural,accusative,3rd,masculine feminine,irregular,,32\r\nούς,plural,accusative,3rd,masculine feminine,irregular,,32\r\nεῖς,plural,accusative,3rd,masculine feminine,irregular,,31 41\r\nεες,plural,accusative,3rd,masculine feminine,irregular,,55 61\r\nις,plural,accusative,3rd,masculine feminine,irregular,,\r\nινς,plural,accusative,3rd,masculine feminine,irregular,,\r\nῶς,plural,accusative,3rd,masculine feminine,irregular,,48\r\nσι,plural,dative,3rd,masculine feminine,regular,primary,\r\nσιν,plural,dative,3rd,masculine feminine,regular,primary,4\r\nσί,plural,dative,3rd,masculine feminine,regular,,41\r\nσίν,plural,dative,3rd,masculine feminine,regular,,4 41\r\nεσι,plural,dative,3rd,masculine feminine,regular,,41\r\nεσιν,plural,dative,3rd,masculine feminine,regular,,4 41\r\nέσι,plural,dative,3rd,masculine feminine,regular,,\r\nέσιν,plural,dative,3rd,masculine feminine,regular,,4\r\nψι,plural,dative,3rd,masculine feminine,regular,,\r\nψιν,plural,dative,3rd,masculine feminine,regular,,4\r\nψί,plural,dative,3rd,masculine feminine,regular,,\r\nψίν,plural,dative,3rd,masculine feminine,regular,,4\r\nξι,plural,dative,3rd,masculine feminine,regular,,\r\nξιν,plural,dative,3rd,masculine feminine,regular,,4\r\nξί,plural,dative,3rd,masculine feminine,regular,,\r\nξίν,plural,dative,3rd,masculine feminine,regular,,4\r\nφι,plural,dative,3rd,masculine feminine,irregular,,45\r\nφιν,plural,dative,3rd,masculine feminine,irregular,,4 45\r\nηφι,plural,dative,3rd,masculine feminine,irregular,,45\r\nηφιv,plural,dative,3rd,masculine feminine,irregular,,4 45\r\nῆφι,plural,dative,3rd,masculine feminine,irregular,,45\r\nῆφιν,plural,dative,3rd,masculine feminine,irregular,,4 45\r\nόφι,plural,dative,3rd,masculine feminine,irregular,,45\r\nόφιν,plural,dative,3rd,masculine feminine,irregular,,4 45\r\nαις,plural,dative,3rd,masculine feminine,irregular,,33 41\r\nοῖσι,plural,dative,3rd,masculine feminine,irregular,,33\r\nοῖσιv,plural,dative,3rd,masculine feminine,irregular,,4 33\r\nεσσι,plural,dative,3rd,masculine feminine,irregular,,16 61\r\nεσσιv,plural,dative,3rd,masculine feminine,irregular,,4 16 61\r\nυσσι,plural,dative,3rd,masculine feminine,irregular,,54\r\nυσσιv,plural,dative,3rd,masculine feminine,irregular,,4 54\r\nσσί,plural,dative,3rd,masculine feminine,irregular,,54\r\nσσίv,plural,dative,3rd,masculine feminine,irregular,,4 54\r\nων,plural,genitive,3rd,masculine feminine,regular,primary,\r\nῶν,plural,genitive,3rd,masculine feminine,regular,,\r\n-,plural,genitive,3rd,masculine feminine,irregular,,41\r\nφι,plural,genitive,3rd,masculine feminine,irregular,,45\r\nφιν,plural,genitive,3rd,masculine feminine,irregular,,4 45\r\nηφι,plural,genitive,3rd,masculine feminine,irregular,,45\r\nηφιv,plural,genitive,3rd,masculine feminine,irregular,,4 45\r\nῆφι,plural,genitive,3rd,masculine feminine,irregular,,45\r\nῆφιν,plural,genitive,3rd,masculine feminine,irregular,,4 45\r\nόφι,plural,genitive,3rd,masculine feminine,irregular,,45\r\nόφιν,plural,genitive,3rd,masculine feminine,irregular,,4 45\r\nέων,plural,genitive,3rd,masculine feminine,irregular,,16 61\r\nες,plural,nominative,3rd,masculine feminine,regular,primary,\r\nως,plural,nominative,3rd,masculine feminine,regular,,30\r\nεις,plural,nominative,3rd,masculine feminine,regular,,17\r\nεῖς,plural,nominative,3rd,masculine feminine,regular,,18\r\nοί,plural,nominative,3rd,masculine feminine,irregular,,32\r\nαί,plural,nominative,3rd,masculine feminine,irregular,,33\r\nῆς,plural,nominative,3rd,masculine feminine,irregular,,18\r\nῄς,plural,nominative,3rd,masculine feminine,irregular,,31 41\r\nεες,plural,nominative,3rd,masculine feminine,irregular,,16 55 61\r\nοι,plural,nominative,3rd,masculine feminine,irregular,,33\r\nες,plural,vocative,3rd,masculine feminine,regular,primary,\r\nεις,plural,vocative,3rd,masculine feminine,regular,,17\r\nεῖς,plural,vocative,3rd,masculine feminine,regular,,18\r\nῆς,plural,vocative,3rd,masculine feminine,regular,,18\r\nως,plural,vocative,3rd,masculine feminine,regular,,30\r\nεες,plural,vocative,3rd,masculine feminine,irregular,,16 55 61\r\nα,plural,accusative,3rd,neuter,regular,primary,\r\nη,plural,accusative,3rd,neuter,regular,,\r\nς,plural,accusative,3rd,neuter,regular,,\r\nά,plural,accusative,3rd,neuter,irregular,,33\r\nαα,plural,accusative,3rd,neuter,irregular,,16 61\r\nεα,plural,accusative,3rd,neuter,irregular,,16 61\r\nσι,plural,dative,3rd,neuter,regular,primary,\r\nσιν,plural,dative,3rd,neuter,regular,primary,4\r\nσί,plural,dative,3rd,neuter,regular,,\r\nσίv,plural,dative,3rd,neuter,regular,,4\r\nασι,plural,dative,3rd,neuter,regular,,\r\nασιν,plural,dative,3rd,neuter,regular,,4\r\nεσι,plural,dative,3rd,neuter,regular,,\r\nεσιν,plural,dative,3rd,neuter,regular,,4\r\nέσι,plural,dative,3rd,neuter,regular,,\r\nέσιv,plural,dative,3rd,neuter,regular,,4\r\nεσσι,plural,dative,3rd,neuter,irregular,,54\r\nεσσιν,plural,dative,3rd,neuter,irregular,,4 54\r\nσσί,plural,dative,3rd,neuter,irregular,,54\r\nσσίv,plural,dative,3rd,neuter,irregular,,4 54\r\nασσι,plural,dative,3rd,neuter,irregular,,54\r\nασσιν,plural,dative,3rd,neuter,irregular,,4 54\r\nφι,plural,dative,3rd,neuter,irregular,,45\r\nφιν,plural,dative,3rd,neuter,irregular,,4 45\r\nηφι,plural,dative,3rd,neuter,irregular,,45\r\nηφιv,plural,dative,3rd,neuter,irregular,,4 45\r\nῆφι,plural,dative,3rd,neuter,irregular,,45\r\nῆφιν,plural,dative,3rd,neuter,irregular,,4 45\r\nόφι,plural,dative,3rd,neuter,irregular,,45\r\nόφιν,plural,dative,3rd,neuter,irregular,,4 45\r\nων,plural,genitive,3rd,neuter,regular,primary,\r\nῶν,plural,genitive,3rd,neuter,regular,primary,\r\nφι,plural,genitive,3rd,neuter,irregular,,\r\nφιν,plural,genitive,3rd,neuter,irregular,,4 45\r\nηφι,plural,genitive,3rd,neuter,irregular,,45\r\nηφιv,plural,genitive,3rd,neuter,irregular,,4 45\r\nῆφι,plural,genitive,3rd,neuter,irregular,,45\r\nῆφιν,plural,genitive,3rd,neuter,irregular,,4 45\r\nόφι,plural,genitive,3rd,neuter,irregular,,45\r\nόφιν,plural,genitive,3rd,neuter,irregular,,4 45\r\nέων,plural,genitive,3rd,neuter,irregular,,16 61\r\nάων,plural,genitive,3rd,neuter,irregular,,16 61\r\nα,plural,nominative,3rd,neuter,regular,primary,\r\nη,plural,nominative,3rd,neuter,regular,,\r\nες,plural,nominative,3rd,neuter,regular,,\r\nά,plural,nominative,3rd,neuter,irregular,,33\r\nεα,plural,nominative,3rd,neuter,irregular,,16 61\r\nαα,plural,nominative,3rd,neuter,irregular,,16 61\r\nα,plural,vocative,3rd,neuter,regular,primary,\r\nη,plural,vocative,3rd,neuter,regular,,\r\nες,plural,vocative,3rd,neuter,regular,,\r\nαα,plural,vocative,3rd,neuter,irregular,,16 61\r\nεα,plural,vocative,3rd,neuter,irregular,,16 61\r\nα,singular,accusative,3rd,masculine feminine,regular,primary,\r\nη,singular,accusative,3rd,masculine feminine,regular,,16\r\nν,singular,accusative,3rd,masculine feminine,regular,,\r\nιν,singular,accusative,3rd,masculine feminine,regular,,41\r\nῦν,singular,accusative,3rd,masculine feminine,regular,,18\r\nῶ,singular,accusative,3rd,masculine feminine,regular,,23\r\nυν,singular,accusative,3rd,masculine feminine,regular,,\r\nῦν,singular,accusative,3rd,masculine feminine,regular,,17\r\nύν,singular,accusative,3rd,masculine feminine,regular,,17\r\nέα,singular,accusative,3rd,masculine feminine,regular,,20\r\nην,singular,accusative,3rd,masculine feminine,regular,,24\r\nώ,singular,accusative,3rd,masculine feminine,regular,,19 41\r\nω,singular,accusative,3rd,masculine feminine,regular,,23\r\nεῖν,singular,accusative,3rd,masculine feminine,irregular,,31 41\r\nων,singular,accusative,3rd,masculine feminine,irregular,,33 41 49\r\nαν,singular,accusative,3rd,masculine feminine,irregular,,33 41\r\nον,singular,accusative,3rd,masculine feminine,irregular,,39\r\nῖς,singular,accusative,3rd,masculine feminine,irregular,,33\r\nεα,singular,accusative,3rd,masculine feminine,irregular,,61\r\nι,singular,dative,3rd,masculine feminine,regular,primary,\r\nί,singular,dative,3rd,masculine feminine,regular,,\r\nϊ,singular,dative,3rd,masculine feminine,regular,,17\r\nΐ,singular,dative,3rd,masculine feminine,regular,,40\r\nει,singular,dative,3rd,masculine feminine,regular,,16 17\r\nεῖ,singular,dative,3rd,masculine feminine,regular,,18\r\nαι,singular,dative,3rd,masculine feminine,regular,,\r\noῖ,singular,dative,3rd,masculine feminine,regular,,28 41\r\nῖ,singular,dative,3rd,masculine feminine,irregular,,33 46\r\nῆι,singular,dative,3rd,masculine feminine,irregular,,18\r\nᾳ,singular,dative,3rd,masculine feminine,irregular,,25\r\nῳ,singular,dative,3rd,masculine feminine,irregular,,33 34\r\nῷ,singular,dative,3rd,masculine feminine,irregular,,33\r\nιί,singular,dative,3rd,masculine feminine,irregular,,62\r\nυί,singular,dative,3rd,masculine feminine,irregular,,62\r\nέϊ,singular,dative,3rd,masculine feminine,irregular,,18 61\r\nος,singular,genitive,3rd,masculine feminine,regular,primary,\r\nός,singular,genitive,3rd,masculine feminine,regular,,\r\nους,singular,genitive,3rd,masculine feminine,regular,,16\r\nοῦς,singular,genitive,3rd,masculine feminine,regular,,19 46\r\nως,singular,genitive,3rd,masculine feminine,regular,,17 18\r\nώς,singular,genitive,3rd,masculine feminine,regular,,17 18 41\r\nῶς,singular,genitive,3rd,masculine feminine,regular,,47\r\nεως,singular,genitive,3rd,masculine feminine,regular,,17\r\nέως,singular,genitive,3rd,masculine feminine,regular,,\r\nεώς,singular,genitive,3rd,masculine feminine,regular,,\r\nέους,singular,genitive,3rd,masculine feminine,regular,,20\r\nω,singular,genitive,3rd,masculine feminine,irregular,,\r\nεος,singular,genitive,3rd,masculine feminine,irregular,,61\r\nΰς,singular,genitive,3rd,masculine feminine,irregular,,41 48\r\nῦς,singular,genitive,3rd,masculine feminine,irregular,,48\r\nνος,singular,genitive,3rd,masculine feminine,irregular,,22\r\nοῦ,singular,genitive,3rd,masculine feminine,irregular,,33\r\nηος,singular,genitive,3rd,masculine feminine,irregular,,55\r\nιός,singular,genitive,3rd,masculine feminine,irregular,,62\r\nuός,singular,genitive,3rd,masculine feminine,irregular,,62\r\nς,singular,nominative,3rd,masculine feminine,regular,primary,\r\n-,singular,nominative,3rd,masculine feminine,regular,primary,\r\nηρ,singular,nominative,3rd,masculine feminine,regular,,41\r\nις,singular,nominative,3rd,masculine feminine,regular,,\r\nϊς,singular,nominative,3rd,masculine feminine,regular,,\r\nώ,singular,nominative,3rd,masculine feminine,regular,,41\r\nψ,singular,nominative,3rd,masculine feminine,regular,,\r\nξ,singular,nominative,3rd,masculine feminine,regular,,\r\nρ,singular,nominative,3rd,masculine feminine,regular,,\r\nήρ,singular,nominative,3rd,masculine feminine,regular,,\r\nήν,singular,nominative,3rd,masculine feminine,regular,,50\r\nν,singular,nominative,3rd,masculine feminine,regular,,\r\nωρ,singular,nominative,3rd,masculine feminine,regular,,\r\nων,singular,nominative,3rd,masculine feminine,regular,,\r\nών,singular,nominative,3rd,masculine feminine,regular,,\r\nης,singular,nominative,3rd,masculine feminine,regular,,\r\nῆς,singular,nominative,3rd,masculine feminine,regular,,\r\nυς,singular,nominative,3rd,masculine feminine,regular,,\r\nῦς,singular,nominative,3rd,masculine feminine,regular,,\r\nεῦς,singular,nominative,3rd,masculine feminine,regular,,\r\nύς,singular,nominative,3rd,masculine feminine,regular,,\r\nής,singular,nominative,3rd,masculine feminine,regular,,33\r\nας,singular,nominative,3rd,masculine feminine,irregular,,\r\nῴ,singular,nominative,3rd,masculine feminine,irregular,,29 41\r\nώς,singular,nominative,3rd,masculine feminine,irregular,,27 41\r\nϋς,singular,nominative,3rd,masculine feminine,irregular,,41\r\nῄς,singular,nominative,3rd,masculine feminine,irregular,,31 41\r\nῖς,singular,nominative,3rd,masculine feminine,irregular,,\r\nεῖς,singular,nominative,3rd,masculine feminine,irregular,,31 41\r\nῶς,singular,nominative,3rd,masculine feminine,irregular,,48\r\nος,singular,nominative,3rd,masculine feminine,irregular,,33\r\n-,singular,vocative,3rd,masculine feminine,regular,primary,52\r\nς,singular,vocative,3rd,masculine feminine,regular,,30\r\nι,singular,vocative,3rd,masculine feminine,regular,,41\r\nῦ,singular,vocative,3rd,masculine feminine,regular,,15 17 18\r\nοῖ,singular,vocative,3rd,masculine feminine,regular,,19 41\r\nψ,singular,vocative,3rd,masculine feminine,regular,,\r\nξ,singular,vocative,3rd,masculine feminine,regular,,\r\nν,singular,vocative,3rd,masculine feminine,regular,,\r\nρ,singular,vocative,3rd,masculine feminine,regular,,\r\nων,singular,vocative,3rd,masculine feminine,regular,,50\r\nών,singular,vocative,3rd,masculine feminine,regular,,\r\nήν,singular,vocative,3rd,masculine feminine,regular,,\r\nερ,singular,vocative,3rd,masculine feminine,regular,,\r\nες,singular,vocative,3rd,masculine feminine,regular,,\r\nί,singular,vocative,3rd,masculine feminine,regular,,\r\nως,singular,vocative,3rd,masculine feminine,regular,,\r\nἶ,singular,vocative,3rd,masculine feminine,regular,,\r\nούς,singular,vocative,3rd,masculine feminine,regular,,51\r\nύ,singular,vocative,3rd,masculine feminine,regular,,15\r\nυ,singular,vocative,3rd,masculine feminine,regular,,51\r\nεις,singular,vocative,3rd,masculine feminine,regular,,20\r\nαν,singular,vocative,3rd,masculine feminine,regular,,\r\nώς,singular,vocative,3rd,masculine feminine,irregular,,27 41 46\r\nον,singular,vocative,3rd,masculine feminine,irregular,,\r\nυς,singular,vocative,3rd,masculine feminine,irregular,,33\r\nα,singular,accusative,3rd,neuter,regular,primary,15\r\n-,singular,accusative,3rd,neuter,regular,,33\r\nος,singular,accusative,3rd,neuter,regular,,\r\nας,singular,accusative,3rd,neuter,regular,,\r\nαρ,singular,accusative,3rd,neuter,regular,,21\r\nυ,singular,accusative,3rd,neuter,regular,,\r\nι,singular,dative,3rd,neuter,regular,primary,\r\nει,singular,dative,3rd,neuter,regular,,16\r\nαι,singular,dative,3rd,neuter,regular,,16 21\r\nϊ,singular,dative,3rd,neuter,irregular,,17\r\nᾳ,singular,dative,3rd,neuter,irregular,,25 33\r\nυϊ,singular,dative,3rd,neuter,irregular,,17\r\nαϊ,singular,dative,3rd,neuter,irregular,,21 61\r\nος,singular,genitive,3rd,neuter,regular,primary,\r\nους,singular,genitive,3rd,neuter,regular,,16\r\nως,singular,genitive,3rd,neuter,regular,,16\r\nεως,singular,genitive,3rd,neuter,regular,,17\r\nυς,singular,genitive,3rd,neuter,irregular,,26\r\nου,singular,genitive,3rd,neuter,irregular,,33\r\nαος,singular,genitive,3rd,neuter,irregular,,21 61\r\nα,singular,nominative,3rd,neuter,regular,primary,\r\n-,singular,nominative,3rd,neuter,regular,,33\r\nος,singular,nominative,3rd,neuter,regular,,\r\nαρ,singular,nominative,3rd,neuter,regular,,\r\nας,singular,nominative,3rd,neuter,regular,,16 21\r\nυ,singular,nominative,3rd,neuter,regular,,\r\nον,singular,nominative,3rd,neuter,irregular,,33\r\nα,singular,vocative,3rd,neuter,regular,primary,15\r\n-,singular,vocative,3rd,neuter,regular,,\r\nος,singular,vocative,3rd,neuter,regular,,\r\nας,singular,vocative,3rd,neuter,regular,,\r\nαρ,singular,vocative,3rd,neuter,regular,,21\r\nυ,singular,vocative,3rd,neuter,regular,,";
-
-var nounFootnotesCSV$1 = "Index,Text\r\n1,See  for Rules of variance within regular endings\r\n2,See  for Table of α- and ε- stem feminine 1st declension contracts\r\n3,See  for Table of α- and ε- stem masculine 1st declension contracts\r\n4,\"Previous, with (ν)\"\r\n5,See  for Table of o- and ε- stem masculine  2nd declension contracts\r\n6,See  for Table of o- and ε- stem neuter 2nd declension contracts\r\n7,(Attic) contracts of o-stems preceded by a long vowel\r\n15,\"This is not actually an “ending,” but the last letter of the “pure stem”. See\"\r\n16,\"See  &  for Table of Sigma (ες,ας,ος) stem contracts\"\r\n17,See  for Table of  ι and υ - stem contracts\r\n18,\"See  for Table of  ευ,αυ,and ου - stem contracts\"\r\n19,See  for stems in οι feminine 3rd declension contracts\r\n20,See  for Table of 3rd declension contracts of stems in -εσ- preceded by ε\r\n21,See  for Table of stems in τ and ατ neuter 3rd declension contracts\r\n22,\"On stem ending in ν, ν doubled in gen. Sing Aeolic (e.g. μῆνς,μῆννος...)\"\r\n23,Also in inscriptions and expressions of swearing\r\n24,(Borrowed from 1st decl) Sometimes in proper names whose nominative ends in -ης\r\n25,From -ας-stems (properly αι)\r\n26,(ε)υς instead of (ε)ος or ους (gen) for (3rd decl) words whose nominative ends in -ος\r\n27,In 3rd decl. Only in the words αἰδώς (Attic) and ἠώς (Homer and Ionic)\r\n28,Contraction of a stem in οι  and an ι-ending\r\n29,Stronger form of Ionic contractions of οι-stems (in the nominative)\r\n30,See  for Table of ω - stem contracts (masculine only)\r\n31,Nominative plural contraction of  -ειδ+ες  after dropping the δ (used for accusative too). See .a\r\n32,\"Plurals & duals occur rarely (and w/ 2nd decl endings) for 3rd decl οι-stem nouns. See .D.a,b,c\"\r\n33,See  for description and examples of Irreg. Decl involving 3rd decl endings\r\n34,(Homer)  for Attic  (ῳτ)ι\r\n35,(Homer) for Cretan ινς\r\n36,Also an irregular ending for other stem(s)\r\n37,In inscriptions\r\n38,\"Plural endings for otherwise dual noun,οσσε (eyes)\"\r\n39,\"“Poetical” (acc for ἔρως). See ,11\"\r\n40,\"Poetic for χρωτι,dat. of ὁ χρως\"\r\n41,No Masculine of this Form\r\n42,No Feminine of this Form\r\n44,See  D.9 and #215 regarding dialectic alternate forms of the Dative Plural\r\n45,\"Surviving in Homer (See ) Not truly genitive or dative, but instrumental/locative/ablative, associated with the remaining oblique cases (genitive & dative) only after being lost as cases themselves in Greek\"\r\n46,See Smyth # 266 for only surviving ος-stem in Attic (fem. singular of αἰδως)\r\n47,See  for Substantives in -εύς preceded by a vowel.\r\n48,\"See Smyth,  #275 D.1,2,3\"\r\n49,\"See , List of Principal Irregular Substantives\"\r\n50,\"See  for Table of stems in a Liquid (λ,ρ) or a Nasal (ν), and Note #259D for variants including Κρονίων...\"\r\n51,\"See  for Table of stems in a Dental (τ,δ,θ) or a Nasal (ν), and its notes including Ν.κόρυς (Voc. Κόρυ) & ὀδούς\"\r\n52,See  for general rule re 3rd Declension Masc/Fem Singular Vocative\r\n54,See  D\r\n55,See\r\n56,\"See  for other forms of endings for contracts of ευ,αυ,and ου - stems\"\r\n57,Nominative form used as Vocative. See\r\n58,\"See ,b\"\r\n59,\"See ,d\"\r\n60,This (Feminine or Masculine) Form only Masculine when derived from ε- or ο- contraction\r\n61,See Smyth Note 264 D.1 regarding Homer's use of Open Forms\r\n62,See Smyth Note 269 for alternate i-stem and u-stem endings\r\n63,See  D.2\r\n64,See  D.1";
-
-/*
- * Latin language data module
- */
-/* import adjectiveSuffixesCSV from './data/adjective/suffixes.csv';
-import adjectiveFootnotesCSV from './data/adjective/footnotes.csv';
-import verbSuffixesCSV from './data/verb/suffixes.csv';
-import verbFootnotesCSV from './data/verb/footnotes.csv'; */
-// A language of this module
-const language$1 = languages.greek;
-// Create a language data set that will keep all language-related information
-let dataSet$1 = new LanguageDataset(language$1);
-
-// region Definition of grammatical features
-/*
- Define grammatical features of a language. Those grammatical features definitions will also be used by morphological
- analyzer's language modules as well.
- */
-const importerName$1 = 'csv';
-const parts = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part, ['noun', 'adjective', 'verb'], language$1);
-const numbers = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number, ['singular', 'dual', 'plural'], language$1);
-numbers.addImporter(importerName$1)
-    .map('singular', numbers.singular)
-    .map('dual', numbers.dual)
-    .map('plural', numbers.plural);
-const cases = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase, ['nominative', 'genitive', 'dative', 'accusative', 'vocative'], language$1);
-cases.addImporter(importerName$1)
-    .map('nominative', cases.nominative)
-    .map('genitive', cases.genitive)
-    .map('dative', cases.dative)
-    .map('accusative', cases.accusative)
-    .map('vocative', cases.vocative);
-const declensions = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension, ['first', 'second', 'third'], language$1);
-declensions.addImporter(importerName$1)
-    .map('1st', declensions.first)
-    .map('2nd', declensions.second)
-    .map('3rd', declensions.third);
-const genders = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender, ['masculine', 'feminine', 'neuter'], language$1);
-genders.addImporter(importerName$1)
-    .map('masculine', genders.masculine)
-    .map('feminine', genders.feminine)
-    .map('neuter', genders.neuter)
-    .map('masculine feminine', [genders.masculine, genders.feminine]);
-const types$1 = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.type, ['regular', 'irregular'], language$1);
-types$1.addImporter(importerName$1)
-    .map('regular', types$1.regular)
-    .map('irregular', types$1.irregular);
-/*
-const conjugations = new Models.FeatureType(Lib.types.conjugation, ['first', 'second', 'third', 'fourth']);
-conjugations.addImporter(importerName)
-    .map('1st', conjugations.first)
-    .map('2nd', conjugations.second)
-    .map('3rd', conjugations.third)
-    .map('4th', conjugations.fourth);
-const tenses = new Models.FeatureType(Lib.types.tense, ['present', 'imperfect', 'future', 'perfect', 'pluperfect', 'future perfect']);
-tenses.addImporter(importerName)
-    .map('present', tenses.present)
-    .map('imperfect', tenses.imperfect)
-    .map('future', tenses.future)
-    .map('perfect', tenses.perfect)
-    .map('pluperfect', tenses.pluperfect)
-    .map('future_perfect', tenses['future perfect']);
-const voices = new Models.FeatureType(Lib.types.voice, ['passive', 'active'],language);
-voices.addImporter(importerName)
-    .map('passive', voices.passive)
-    .map('active', voices.active);
-const moods = new Models.FeatureType(Lib.types.mood, ['indicative', 'subjunctive']);
-moods.addImporter(importerName)
-    .map('indicative', moods.indicative)
-    .map('subjunctive', moods.subjunctive);
-const persons = new Models.FeatureType(Lib.types.person, ['first', 'second', 'third']);
-persons.addImporter(importerName)
-    .map('1st', persons.first)
-    .map('2nd', persons.second)
-    .map('3rd', persons.third); */
-const footnotes$2 = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.footnote, [], {});
-
-// endregion Definition of grammatical features
-
-// For noun and adjectives
-dataSet$1.addSuffixes = function (partOfSpeech, data) {
-  // Some suffix values will mean a lack of suffix, they will be mapped to a null
-  let noSuffixValue = '-';
-
-  // First row are headers
-  for (let i = 1; i < data.length; i++) {
-    let dataItem = data[i];
-    let suffixValue = dataItem[0];
-    // Handle special suffix values
-    if (suffixValue === noSuffixValue) {
-      suffixValue = null;
-    }
-
-    let primary = false;
-    let features = [partOfSpeech,
-      numbers.importer.csv.get(dataItem[1]),
-      cases.importer.csv.get(dataItem[2]),
-      declensions.importer.csv.get(dataItem[3]),
-      genders.importer.csv.get(dataItem[4]),
-      types$1.importer.csv.get(dataItem[5])];
-    if (dataItem[6] === 'primary') {
-      primary = true;
-    }
-    if (dataItem[7]) {
-      // There can be multiple footnote indexes separated by spaces
-      let indexes = dataItem[7].split(' ').map(function (index) {
-        return footnotes$2.get(index)
-      });
-      features.push(...indexes);
-    }
-    let extendedGreekData = new ExtendedGreekData();
-    extendedGreekData.primary = primary;
-    let extendedLangData = {
-      [languages.greek]: extendedGreekData
-    };
-    this.addSuffix(suffixValue, features, extendedLangData);
-  }
-};
-
-// For verbs
-dataSet$1.addVerbSuffixes = function (partOfSpeech, data) {
-  // Some suffix values will mean a lack of suffix, they will be mapped to a null
-  let noSuffixValue = '-';
-
-  // First row are headers
-  for (let i = 1; i < data.length; i++) {
-    let suffix = data[i][0];
-    // Handle special suffix values
-    if (suffix === noSuffixValue) {
-      suffix = null;
-    }
-
-    let features = [partOfSpeech
-      /*
-      conjugations.importer.csv.get(data[i][1]),
-      voices.importer.csv.get(data[i][2]),
-      moods.importer.csv.get(data[i][3]),
-      tenses.importer.csv.get(data[i][4]),
-      numbers.importer.csv.get(data[i][5]),
-      persons.importer.csv.get(data[i][6]) */
-    ];
-
-    let grammarType = data[i][7];
-    // Type information can be empty if no ending is provided
-    if (grammarType) {
-      features.push(types$1.importer.csv.get(grammarType));
-    }
-    // Footnotes
-    if (data[i][8]) {
-      // There can be multiple footnote indexes separated by spaces
-      let indexes = data[i][8].split(' ').map(function (index) {
-        return footnotes$2.get(index)
-      });
-      features.push(...indexes);
-    }
-    this.addSuffix(suffix, features);
-  }
-};
-
-dataSet$1.addFootnotes = function (partOfSpeech, data) {
-  // First row are headers
-  for (let i = 1; i < data.length; i++) {
-    this.addFootnote(partOfSpeech, data[i][0], data[i][1]);
-  }
-};
-
-dataSet$1.loadData = function () {
-  // Nouns
-  let partOfSpeech = parts.noun;
-  let suffixes = papaparse.parse(nounSuffixesCSV$1, {});
-  this.addSuffixes(partOfSpeech, suffixes.data);
-  let footnotes = papaparse.parse(nounFootnotesCSV$1, {});
-  this.addFootnotes(partOfSpeech, footnotes.data);
-
-  // Adjectives
-  /* partOfSpeech = parts.adjective;
-  suffixes = papaparse.parse(adjectiveSuffixesCSV, {});
-  this.addSuffixes(partOfSpeech, suffixes.data);
-  footnotes = papaparse.parse(adjectiveFootnotesCSV, {});
-  this.addFootnotes(partOfSpeech, footnotes.data); */
-
-  // Verbs
-  /* partOfSpeech = parts.verb;
-  suffixes = papaparse.parse(verbSuffixesCSV, {});
-  this.addVerbSuffixes(partOfSpeech, suffixes.data);
-  footnotes = papaparse.parse(verbFootnotesCSV, {});
-  this.addFootnotes(partOfSpeech, footnotes.data); */
-};
-
-/**
- * Decides whether a suffix is a match to any of inflections, and if it is, what type of match it is.
- * @param {Inflection[]} inflections - An array of Inflection objects to be matched against a suffix.
- * @param {Suffix} suffix - A suffix to be matched with inflections.
- * @returns {Suffix | null} If a match is found, returns a Suffix object modified with some
- * additional information about a match. If no matches found, returns null.
- */
-dataSet$1.matcher = function (inflections, suffix) {
-  'use strict';
-    // All of those features must match between an inflection and an ending
-  let obligatoryMatches = [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part];
-
-    // Any of those features must match between an inflection and an ending
-  let optionalMatches = [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number];
-  let bestMatchData = null; // Information about the best match we would be able to find
-
-  /*
-   There can be only one full match between an inflection and a suffix (except when suffix has multiple values?)
-   But there could be multiple partial matches. So we should try to find the best match possible and return it.
-   A fullFeature match is when one of inflections has all grammatical features fully matching those of a suffix
-   */
-  for (let inflection of inflections) {
-    let matchData = new MatchData(); // Create a match profile
-
-    if (inflection.suffix === suffix.value) {
-      matchData.suffixMatch = true;
-    }
-
-    // Check obligatory matches
-    for (let feature of obligatoryMatches) {
-      let featureMatch = suffix.featureMatch(feature, inflection[feature]);
-      // matchFound = matchFound && featureMatch;
-
-      if (!featureMatch) {
-        // If an obligatory match is not found, there is no reason to check other items
-        break
-      }
-      // Inflection's value of this feature is matching the one of the suffix
-      matchData.matchedFeatures.push(feature);
-    }
-
-    if (matchData.matchedFeatures.length < obligatoryMatches.length) {
-      // Not all obligatory matches are found, this is not a match
-      break
-    }
-
-    // Check optional matches now
-    for (let feature of optionalMatches) {
-      let matchedValue = suffix.featureMatch(feature, inflection[feature]);
-      if (matchedValue) {
-        matchData.matchedFeatures.push(feature);
-      }
-    }
-
-    if (matchData.suffixMatch && (matchData.matchedFeatures.length === obligatoryMatches.length + optionalMatches.length)) {
-      // This is a full match
-      matchData.fullMatch = true;
-
-      // There can be only one full match, no need to search any further
-      suffix.match = matchData;
-      return suffix
-    }
-    bestMatchData = this.bestMatch(bestMatchData, matchData);
-  }
-  if (bestMatchData) {
-    // There is some match found
-    suffix.match = bestMatchData;
-    return suffix
-  }
-  return null
-};
-
-/**
- * Decides whether matchA is 'better' (i.e. has more items matched) than matchB or not
- * @param {MatchData} matchA
- * @param {MatchData} matchB
- * @returns {MatchData} A best of two matches
- */
-dataSet$1.bestMatch = function (matchA, matchB) {
-  // If one of the arguments is not set, return the other one
-  if (!matchA && matchB) {
-    return matchB
-  }
-
-  if (!matchB && matchA) {
-    return matchA
-  }
-
-  // Suffix match has a priority
-  if (matchA.suffixMatch !== matchB.suffixMatch) {
-    if (matchA.suffixMatch > matchB.suffixMatch) {
-      return matchA
-    } else {
-      return matchB
-    }
-  }
-
-  // If same on suffix matche, compare by how many features matched
-  if (matchA.matchedFeatures.length >= matchB.matchedFeatures.length) {
-    // Arbitrarily return matchA if matches are the same
-    return matchA
-  } else {
-    return matchB
-  }
-};
-
 class GreekView extends View {
   constructor () {
     super();
     this.language = languages.greek;
 
     /*
-    Default grammatical features of a view. It child views need to have different feature values, redefine
+    Default grammatical features of a View. It child views need to have different feature values, redefine
     those values in child objects.
      */
     this.features = {
@@ -9670,11 +9625,11 @@ var viewsGreek = [new NounView$1(), new NounViewSimplified()];
  * directory under /presenter/views/view-name
  */
 class Presenter {
-  constructor (viewContainer, viewSelectorContainer, localeSelectorContainer, wordData, locale = 'en-US') {
+  constructor (viewContainer, viewSelectorContainer, localeSelectorContainer, inflectionData, locale = 'en-US') {
     this.viewContainer = viewContainer;
     this.viewSelectorContainer = viewSelectorContainer;
     this.localeSelectorContainer = localeSelectorContainer;
-    this.wordData = wordData;
+    this.inflectionData = inflectionData;
 
         // All views registered by the Presenter
     this.views = [];
@@ -9688,7 +9643,7 @@ class Presenter {
     }
 
         // Views available for parts of speech that are present in a Result Set
-    this.availableViews = this.getViews(this.wordData);
+    this.availableViews = this.getViews(this.inflectionData);
 
     this.defaultView = this.availableViews[0];
     this.activeView = undefined;
@@ -9707,13 +9662,13 @@ class Presenter {
 
   setLocale (locale) {
     this.locale = locale;
-    this.activeView.render(this.viewContainer, this.wordData, this.l10n.messages(this.locale));
+    this.activeView.render(this.viewContainer, this.inflectionData, this.l10n.messages(this.locale));
   }
 
   render () {
         // Show a default view
     if (this.defaultView) {
-      this.defaultView.render(this.viewContainer, this.wordData, this.l10n.messages(this.locale));
+      this.defaultView.render(this.viewContainer, this.inflectionData, this.l10n.messages(this.locale));
       this.activeView = this.defaultView;
 
       this.appendViewSelector(this.viewSelectorContainer);
@@ -9747,7 +9702,7 @@ class Presenter {
   viewSelectorEventListener (event) {
     let viewID = event.target.value;
     let view = this.viewIndex[viewID];
-    view.render(this.viewContainer, this.wordData, this.l10n.messages(this.locale));
+    view.render(this.viewContainer, this.inflectionData, this.l10n.messages(this.locale));
     this.activeView = view;
   }
 
@@ -12361,7 +12316,7 @@ class Service {
     browser.tabs.sendMessage(tabID, request).then(
       () => { console.log(`Successfully sent a request to a tab`) },
       (error) => {
-        console.error(`tabs.sendMessage() failed: ${error.message}`,error)
+        console.error(`tabs.sendMessage() failed: ${error.message}`, error)
         this.rejectRequest(request.ID, error)
       }
     )
@@ -12369,7 +12324,6 @@ class Service {
   }
 
   sendRequestToBg (request, timeout) {
-    console.log(request)
     let promise = this.registerRequest(request, timeout)
     browser.runtime.sendMessage(request).then(
       () => { console.log(`Successfully sent a request to a background`) },
@@ -12408,6 +12362,14 @@ class Service {
       this.messages.delete(requestID) // Remove request from a map
       console.log(`Map length is ${this.messages.size}`)
     }
+  }
+
+  sendMessageToTab (request, tabID) {
+    return browser.tabs.sendMessage(tabID, request)
+  }
+
+  sendMessageToBg (request) {
+    return browser.runtime.sendMessage(request)
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Service;
@@ -12510,8 +12472,11 @@ class StatusResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a"
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_interactjs__);
 
 
+ // Interact.js (for resizability)
 
 /**
  * This is a singleton component.
@@ -12520,11 +12485,11 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
   constructor (options) {
     super(Panel.defaults, options)
 
-    this.activeClassName = 'active'
     this.hiddenClassName = 'hidden'
     this.panelOpenedClassName = 'opened'
     this.panelFullWidthClassName = 'full-width'
     this.bodyNormalWidthClassName = 'alpheios-panel-opened'
+    this.resizableSel = '[data-resizable="true"]' // for Interact.js
 
     this.setPositionTo(this.options.position)
     this.width = Panel.widths.zero // Sets initial width to zero because panel is closed initially
@@ -12533,6 +12498,31 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
     this.innerElements.normalWidthButton.element.addEventListener('click', this.open.bind(this, Panel.widths.normal))
     this.innerElements.fullWidthButton.element.addEventListener('click', this.open.bind(this, Panel.widths.full))
     this.innerElements.closeButton.element.addEventListener('click', this.close.bind(this))
+
+    // Initialize Interact.js: make panel resizable
+    __WEBPACK_IMPORTED_MODULE_2_interactjs___default()(this.resizableSel)
+      .resizable({
+        // resize from all edges and corners
+        edges: { left: true, right: true, bottom: false, top: false },
+
+        // keep the edges inside the parent
+        restrictEdges: {
+          outer: 'parent',
+          endOnly: true
+        },
+
+        // minimum size
+        restrictSize: {
+          min: { width: 400, height: 800 }
+        },
+
+        inertia: true
+      })
+      .on('resizemove', event => {
+        let target = event.target
+        // update the element's style
+        target.style.width = `${event.rect.width}px`
+      })
   }
 
   static get defaults () {
@@ -12776,7 +12766,7 @@ class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default *
 /* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\">\r\n  <div class=\"alpheios-panel__wrapper\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(24) + "\"></div>\r\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\" id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n  </div>\r\n</div>\r\n";
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\r\n  <!--<div class=\"alpheios-panel__wrapper\">-->\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(24) + "\"></div>\r\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\" id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n  <!--</div>-->\r\n</div>\r\n";
 
 /***/ }),
 /* 24 */
@@ -12786,11 +12776,7166 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAz
 
 /***/ }),
 /* 25 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var require;var require;/**
+ * interact.js v1.3.2
+ *
+ * Copyright (c) 2012-2017 Taye Adeyemi <dev@taye.me>
+ * Released under the MIT License.
+ * https://raw.github.com/taye/interact.js/master/LICENSE
+ */
+(function(f){if(true){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.interact = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return require(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+'use strict';
+
+/*
+ * In a (windowless) server environment this file exports a factory function
+ * that takes the window to use.
+ *
+ *     var interact = require('interact.js')(windowObject);
+ *
+ * See https://github.com/taye/interact.js/issues/187
+ */
+if (typeof window === 'undefined') {
+  module.exports = function (window) {
+    require('./src/utils/window').init(window);
+
+    return require('./src/index');
+  };
+} else {
+  module.exports = require('./src/index');
+}
+
+},{"./src/index":19,"./src/utils/window":51}],2:[function(require,module,exports){
+'use strict';
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var extend = require('./utils/extend.js');
+
+function fireUntilImmediateStopped(event, listeners) {
+  for (var _i = 0; _i < listeners.length; _i++) {
+    var _ref;
+
+    _ref = listeners[_i];
+    var listener = _ref;
+
+    if (event.immediatePropagationStopped) {
+      break;
+    }
+
+    listener(event);
+  }
+}
+
+var Eventable = function () {
+  function Eventable(options) {
+    _classCallCheck(this, Eventable);
+
+    this.options = extend({}, options || {});
+  }
+
+  Eventable.prototype.fire = function fire(event) {
+    var listeners = void 0;
+    var onEvent = 'on' + event.type;
+    var global = this.global;
+
+    // Interactable#on() listeners
+    if (listeners = this[event.type]) {
+      fireUntilImmediateStopped(event, listeners);
+    }
+
+    // interactable.onevent listener
+    if (this[onEvent]) {
+      this[onEvent](event);
+    }
+
+    // interact.on() listeners
+    if (!event.propagationStopped && global && (listeners = global[event.type])) {
+      fireUntilImmediateStopped(event, listeners);
+    }
+  };
+
+  Eventable.prototype.on = function on(eventType, listener) {
+    // if this type of event was never bound
+    if (this[eventType]) {
+      this[eventType].push(listener);
+    } else {
+      this[eventType] = [listener];
+    }
+  };
+
+  Eventable.prototype.off = function off(eventType, listener) {
+    // if it is an action event type
+    var eventList = this[eventType];
+    var index = eventList ? eventList.indexOf(listener) : -1;
+
+    if (index !== -1) {
+      eventList.splice(index, 1);
+    }
+
+    if (eventList && eventList.length === 0 || !listener) {
+      this[eventType] = undefined;
+    }
+  };
+
+  return Eventable;
+}();
+
+module.exports = Eventable;
+
+},{"./utils/extend.js":40}],3:[function(require,module,exports){
+'use strict';
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var extend = require('./utils/extend');
+var getOriginXY = require('./utils/getOriginXY');
+var defaults = require('./defaultOptions');
+var signals = require('./utils/Signals').new();
+
+var InteractEvent = function () {
+  /** */
+  function InteractEvent(interaction, event, action, phase, element, related) {
+    var preEnd = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
+
+    _classCallCheck(this, InteractEvent);
+
+    var target = interaction.target;
+    var deltaSource = (target && target.options || defaults).deltaSource;
+    var origin = getOriginXY(target, element, action);
+    var starting = phase === 'start';
+    var ending = phase === 'end';
+    var coords = starting ? interaction.startCoords : interaction.curCoords;
+    var prevEvent = interaction.prevEvent;
+
+    element = element || interaction.element;
+
+    var page = extend({}, coords.page);
+    var client = extend({}, coords.client);
+
+    page.x -= origin.x;
+    page.y -= origin.y;
+
+    client.x -= origin.x;
+    client.y -= origin.y;
+
+    this.ctrlKey = event.ctrlKey;
+    this.altKey = event.altKey;
+    this.shiftKey = event.shiftKey;
+    this.metaKey = event.metaKey;
+    this.button = event.button;
+    this.buttons = event.buttons;
+    this.target = element;
+    this.currentTarget = element;
+    this.relatedTarget = related || null;
+    this.preEnd = preEnd;
+    this.type = action + (phase || '');
+    this.interaction = interaction;
+    this.interactable = target;
+
+    this.t0 = starting ? interaction.downTimes[interaction.downTimes.length - 1] : prevEvent.t0;
+
+    var signalArg = {
+      interaction: interaction,
+      event: event,
+      action: action,
+      phase: phase,
+      element: element,
+      related: related,
+      page: page,
+      client: client,
+      coords: coords,
+      starting: starting,
+      ending: ending,
+      deltaSource: deltaSource,
+      iEvent: this
+    };
+
+    signals.fire('set-xy', signalArg);
+
+    if (ending) {
+      // use previous coords when ending
+      this.pageX = prevEvent.pageX;
+      this.pageY = prevEvent.pageY;
+      this.clientX = prevEvent.clientX;
+      this.clientY = prevEvent.clientY;
+    } else {
+      this.pageX = page.x;
+      this.pageY = page.y;
+      this.clientX = client.x;
+      this.clientY = client.y;
+    }
+
+    this.x0 = interaction.startCoords.page.x - origin.x;
+    this.y0 = interaction.startCoords.page.y - origin.y;
+    this.clientX0 = interaction.startCoords.client.x - origin.x;
+    this.clientY0 = interaction.startCoords.client.y - origin.y;
+
+    signals.fire('set-delta', signalArg);
+
+    this.timeStamp = coords.timeStamp;
+    this.dt = interaction.pointerDelta.timeStamp;
+    this.duration = this.timeStamp - this.t0;
+
+    // speed and velocity in pixels per second
+    this.speed = interaction.pointerDelta[deltaSource].speed;
+    this.velocityX = interaction.pointerDelta[deltaSource].vx;
+    this.velocityY = interaction.pointerDelta[deltaSource].vy;
+
+    this.swipe = ending || phase === 'inertiastart' ? this.getSwipe() : null;
+
+    signals.fire('new', signalArg);
+  }
+
+  InteractEvent.prototype.getSwipe = function getSwipe() {
+    var interaction = this.interaction;
+
+    if (interaction.prevEvent.speed < 600 || this.timeStamp - interaction.prevEvent.timeStamp > 150) {
+      return null;
+    }
+
+    var angle = 180 * Math.atan2(interaction.prevEvent.velocityY, interaction.prevEvent.velocityX) / Math.PI;
+    var overlap = 22.5;
+
+    if (angle < 0) {
+      angle += 360;
+    }
+
+    var left = 135 - overlap <= angle && angle < 225 + overlap;
+    var up = 225 - overlap <= angle && angle < 315 + overlap;
+
+    var right = !left && (315 - overlap <= angle || angle < 45 + overlap);
+    var down = !up && 45 - overlap <= angle && angle < 135 + overlap;
+
+    return {
+      up: up,
+      down: down,
+      left: left,
+      right: right,
+      angle: angle,
+      speed: interaction.prevEvent.speed,
+      velocity: {
+        x: interaction.prevEvent.velocityX,
+        y: interaction.prevEvent.velocityY
+      }
+    };
+  };
+
+  InteractEvent.prototype.preventDefault = function preventDefault() {};
+
+  /** */
+
+
+  InteractEvent.prototype.stopImmediatePropagation = function stopImmediatePropagation() {
+    this.immediatePropagationStopped = this.propagationStopped = true;
+  };
+
+  /** */
+
+
+  InteractEvent.prototype.stopPropagation = function stopPropagation() {
+    this.propagationStopped = true;
+  };
+
+  return InteractEvent;
+}();
+
+signals.on('set-delta', function (_ref) {
+  var iEvent = _ref.iEvent,
+      interaction = _ref.interaction,
+      starting = _ref.starting,
+      deltaSource = _ref.deltaSource;
+
+  var prevEvent = starting ? iEvent : interaction.prevEvent;
+
+  if (deltaSource === 'client') {
+    iEvent.dx = iEvent.clientX - prevEvent.clientX;
+    iEvent.dy = iEvent.clientY - prevEvent.clientY;
+  } else {
+    iEvent.dx = iEvent.pageX - prevEvent.pageX;
+    iEvent.dy = iEvent.pageY - prevEvent.pageY;
+  }
+});
+
+InteractEvent.signals = signals;
+
+module.exports = InteractEvent;
+
+},{"./defaultOptions":18,"./utils/Signals":34,"./utils/extend":40,"./utils/getOriginXY":41}],4:[function(require,module,exports){
+'use strict';
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var is = require('./utils/is');
+var events = require('./utils/events');
+var extend = require('./utils/extend');
+var actions = require('./actions/base');
+var scope = require('./scope');
+var Eventable = require('./Eventable');
+var defaults = require('./defaultOptions');
+var signals = require('./utils/Signals').new();
+
+var _require = require('./utils/domUtils'),
+    getElementRect = _require.getElementRect,
+    nodeContains = _require.nodeContains,
+    trySelector = _require.trySelector,
+    matchesSelector = _require.matchesSelector;
+
+var _require2 = require('./utils/window'),
+    getWindow = _require2.getWindow;
+
+var _require3 = require('./utils/arr'),
+    contains = _require3.contains;
+
+var _require4 = require('./utils/browser'),
+    wheelEvent = _require4.wheelEvent;
+
+// all set interactables
+
+
+scope.interactables = [];
+
+var Interactable = function () {
+  /** */
+  function Interactable(target, options) {
+    _classCallCheck(this, Interactable);
+
+    options = options || {};
+
+    this.target = target;
+    this.events = new Eventable();
+    this._context = options.context || scope.document;
+    this._win = getWindow(trySelector(target) ? this._context : target);
+    this._doc = this._win.document;
+
+    signals.fire('new', {
+      target: target,
+      options: options,
+      interactable: this,
+      win: this._win
+    });
+
+    scope.addDocument(this._doc, this._win);
+
+    scope.interactables.push(this);
+
+    this.set(options);
+  }
+
+  Interactable.prototype.setOnEvents = function setOnEvents(action, phases) {
+    var onAction = 'on' + action;
+
+    if (is.function(phases.onstart)) {
+      this.events[onAction + 'start'] = phases.onstart;
+    }
+    if (is.function(phases.onmove)) {
+      this.events[onAction + 'move'] = phases.onmove;
+    }
+    if (is.function(phases.onend)) {
+      this.events[onAction + 'end'] = phases.onend;
+    }
+    if (is.function(phases.oninertiastart)) {
+      this.events[onAction + 'inertiastart'] = phases.oninertiastart;
+    }
+
+    return this;
+  };
+
+  Interactable.prototype.setPerAction = function setPerAction(action, options) {
+    // for all the default per-action options
+    for (var option in options) {
+      // if this option exists for this action
+      if (option in defaults[action]) {
+        // if the option in the options arg is an object value
+        if (is.object(options[option])) {
+          // duplicate the object
+          this.options[action][option] = extend(this.options[action][option] || {}, options[option]);
+
+          if (is.object(defaults.perAction[option]) && 'enabled' in defaults.perAction[option]) {
+            this.options[action][option].enabled = options[option].enabled === false ? false : true;
+          }
+        } else if (is.bool(options[option]) && is.object(defaults.perAction[option])) {
+          this.options[action][option].enabled = options[option];
+        } else if (options[option] !== undefined) {
+          // or if it's not undefined, do a plain assignment
+          this.options[action][option] = options[option];
+        }
+      }
+    }
+  };
+
+  /**
+   * The default function to get an Interactables bounding rect. Can be
+   * overridden using {@link Interactable.rectChecker}.
+   *
+   * @param {Element} [element] The element to measure.
+   * @return {object} The object's bounding rectangle.
+   */
+
+
+  Interactable.prototype.getRect = function getRect(element) {
+    element = element || this.target;
+
+    if (is.string(this.target) && !is.element(element)) {
+      element = this._context.querySelector(this.target);
+    }
+
+    return getElementRect(element);
+  };
+
+  /**
+   * Returns or sets the function used to calculate the interactable's
+   * element's rectangle
+   *
+   * @param {function} [checker] A function which returns this Interactable's
+   * bounding rectangle. See {@link Interactable.getRect}
+   * @return {function | object} The checker function or this Interactable
+   */
+
+
+  Interactable.prototype.rectChecker = function rectChecker(checker) {
+    if (is.function(checker)) {
+      this.getRect = checker;
+
+      return this;
+    }
+
+    if (checker === null) {
+      delete this.options.getRect;
+
+      return this;
+    }
+
+    return this.getRect;
+  };
+
+  Interactable.prototype._backCompatOption = function _backCompatOption(optionName, newValue) {
+    if (trySelector(newValue) || is.object(newValue)) {
+      this.options[optionName] = newValue;
+
+      for (var _i = 0; _i < actions.names.length; _i++) {
+        var _ref;
+
+        _ref = actions.names[_i];
+        var action = _ref;
+
+        this.options[action][optionName] = newValue;
+      }
+
+      return this;
+    }
+
+    return this.options[optionName];
+  };
+
+  /**
+   * Gets or sets the origin of the Interactable's element.  The x and y
+   * of the origin will be subtracted from action event coordinates.
+   *
+   * @param {Element | object | string} [origin] An HTML or SVG Element whose
+   * rect will be used, an object eg. { x: 0, y: 0 } or string 'parent', 'self'
+   * or any CSS selector
+   *
+   * @return {object} The current origin or this Interactable
+   */
+
+
+  Interactable.prototype.origin = function origin(newValue) {
+    return this._backCompatOption('origin', newValue);
+  };
+
+  /**
+   * Returns or sets the mouse coordinate types used to calculate the
+   * movement of the pointer.
+   *
+   * @param {string} [newValue] Use 'client' if you will be scrolling while
+   * interacting; Use 'page' if you want autoScroll to work
+   * @return {string | object} The current deltaSource or this Interactable
+   */
+
+
+  Interactable.prototype.deltaSource = function deltaSource(newValue) {
+    if (newValue === 'page' || newValue === 'client') {
+      this.options.deltaSource = newValue;
+
+      return this;
+    }
+
+    return this.options.deltaSource;
+  };
+
+  /**
+   * Gets the selector context Node of the Interactable. The default is
+   * `window.document`.
+   *
+   * @return {Node} The context Node of this Interactable
+   */
+
+
+  Interactable.prototype.context = function context() {
+    return this._context;
+  };
+
+  Interactable.prototype.inContext = function inContext(element) {
+    return this._context === element.ownerDocument || nodeContains(this._context, element);
+  };
+
+  /**
+   * Calls listeners for the given InteractEvent type bound globally
+   * and directly to this Interactable
+   *
+   * @param {InteractEvent} iEvent The InteractEvent object to be fired on this
+   * Interactable
+   * @return {Interactable} this Interactable
+   */
+
+
+  Interactable.prototype.fire = function fire(iEvent) {
+    this.events.fire(iEvent);
+
+    return this;
+  };
+
+  Interactable.prototype._onOffMultiple = function _onOffMultiple(method, eventType, listener, options) {
+    if (is.string(eventType) && eventType.search(' ') !== -1) {
+      eventType = eventType.trim().split(/ +/);
+    }
+
+    if (is.array(eventType)) {
+      for (var _i2 = 0; _i2 < eventType.length; _i2++) {
+        var _ref2;
+
+        _ref2 = eventType[_i2];
+        var type = _ref2;
+
+        this[method](type, listener, options);
+      }
+
+      return true;
+    }
+
+    if (is.object(eventType)) {
+      for (var prop in eventType) {
+        this[method](prop, eventType[prop], listener);
+      }
+
+      return true;
+    }
+  };
+
+  /**
+   * Binds a listener for an InteractEvent, pointerEvent or DOM event.
+   *
+   * @param {string | array | object} eventType  The types of events to listen
+   * for
+   * @param {function} listener   The function event (s)
+   * @param {object | boolean} [options]    options object or useCapture flag
+   * for addEventListener
+   * @return {object} This Interactable
+   */
+
+
+  Interactable.prototype.on = function on(eventType, listener, options) {
+    if (this._onOffMultiple('on', eventType, listener, options)) {
+      return this;
+    }
+
+    if (eventType === 'wheel') {
+      eventType = wheelEvent;
+    }
+
+    if (contains(Interactable.eventTypes, eventType)) {
+      this.events.on(eventType, listener);
+    }
+    // delegated event for selector
+    else if (is.string(this.target)) {
+        events.addDelegate(this.target, this._context, eventType, listener, options);
+      } else {
+        events.add(this.target, eventType, listener, options);
+      }
+
+    return this;
+  };
+
+  /**
+   * Removes an InteractEvent, pointerEvent or DOM event listener
+   *
+   * @param {string | array | object} eventType The types of events that were
+   * listened for
+   * @param {function} listener The listener function to be removed
+   * @param {object | boolean} [options] options object or useCapture flag for
+   * removeEventListener
+   * @return {object} This Interactable
+   */
+
+
+  Interactable.prototype.off = function off(eventType, listener, options) {
+    if (this._onOffMultiple('off', eventType, listener, options)) {
+      return this;
+    }
+
+    if (eventType === 'wheel') {
+      eventType = wheelEvent;
+    }
+
+    // if it is an action event type
+    if (contains(Interactable.eventTypes, eventType)) {
+      this.events.off(eventType, listener);
+    }
+    // delegated event
+    else if (is.string(this.target)) {
+        events.removeDelegate(this.target, this._context, eventType, listener, options);
+      }
+      // remove listener from this Interatable's element
+      else {
+          events.remove(this.target, eventType, listener, options);
+        }
+
+    return this;
+  };
+
+  /**
+   * Reset the options of this Interactable
+   *
+   * @param {object} options The new settings to apply
+   * @return {object} This Interactable
+   */
+
+
+  Interactable.prototype.set = function set(options) {
+    if (!is.object(options)) {
+      options = {};
+    }
+
+    this.options = extend({}, defaults.base);
+
+    var perActions = extend({}, defaults.perAction);
+
+    for (var actionName in actions.methodDict) {
+      var methodName = actions.methodDict[actionName];
+
+      this.options[actionName] = extend({}, defaults[actionName]);
+
+      this.setPerAction(actionName, perActions);
+
+      this[methodName](options[actionName]);
+    }
+
+    for (var _i3 = 0; _i3 < Interactable.settingsMethods.length; _i3++) {
+      var _ref3;
+
+      _ref3 = Interactable.settingsMethods[_i3];
+      var setting = _ref3;
+
+      this.options[setting] = defaults.base[setting];
+
+      if (setting in options) {
+        this[setting](options[setting]);
+      }
+    }
+
+    signals.fire('set', {
+      options: options,
+      interactable: this
+    });
+
+    return this;
+  };
+
+  /**
+   * Remove this interactable from the list of interactables and remove it's
+   * action capabilities and event listeners
+   *
+   * @return {interact}
+   */
+
+
+  Interactable.prototype.unset = function unset() {
+    events.remove(this.target, 'all');
+
+    if (is.string(this.target)) {
+      // remove delegated events
+      for (var type in events.delegatedEvents) {
+        var delegated = events.delegatedEvents[type];
+
+        if (delegated.selectors[0] === this.target && delegated.contexts[0] === this._context) {
+
+          delegated.selectors.splice(0, 1);
+          delegated.contexts.splice(0, 1);
+          delegated.listeners.splice(0, 1);
+
+          // remove the arrays if they are empty
+          if (!delegated.selectors.length) {
+            delegated[type] = null;
+          }
+        }
+
+        events.remove(this._context, type, events.delegateListener);
+        events.remove(this._context, type, events.delegateUseCapture, true);
+      }
+    } else {
+      events.remove(this, 'all');
+    }
+
+    signals.fire('unset', { interactable: this });
+
+    scope.interactables.splice(scope.interactables.indexOf(this), 1);
+
+    // Stop related interactions when an Interactable is unset
+    for (var _i4 = 0; _i4 < (scope.interactions || []).length; _i4++) {
+      var _ref4;
+
+      _ref4 = (scope.interactions || [])[_i4];
+      var interaction = _ref4;
+
+      if (interaction.target === this && interaction.interacting() && !interaction._ending) {
+        interaction.stop();
+      }
+    }
+
+    return scope.interact;
+  };
+
+  return Interactable;
+}();
+
+scope.interactables.indexOfElement = function indexOfElement(target, context) {
+  context = context || scope.document;
+
+  for (var i = 0; i < this.length; i++) {
+    var interactable = this[i];
+
+    if (interactable.target === target && interactable._context === context) {
+      return i;
+    }
+  }
+  return -1;
+};
+
+scope.interactables.get = function interactableGet(element, options, dontCheckInContext) {
+  var ret = this[this.indexOfElement(element, options && options.context)];
+
+  return ret && (is.string(element) || dontCheckInContext || ret.inContext(element)) ? ret : null;
+};
+
+scope.interactables.forEachMatch = function (element, callback) {
+  for (var _i5 = 0; _i5 < this.length; _i5++) {
+    var _ref5;
+
+    _ref5 = this[_i5];
+    var interactable = _ref5;
+
+    var ret = void 0;
+
+    if ((is.string(interactable.target)
+    // target is a selector and the element matches
+    ? is.element(element) && matchesSelector(element, interactable.target) :
+    // target is the element
+    element === interactable.target) &&
+    // the element is in context
+    interactable.inContext(element)) {
+      ret = callback(interactable);
+    }
+
+    if (ret !== undefined) {
+      return ret;
+    }
+  }
+};
+
+// all interact.js eventTypes
+Interactable.eventTypes = scope.eventTypes = [];
+
+Interactable.signals = signals;
+
+Interactable.settingsMethods = ['deltaSource', 'origin', 'preventDefault', 'rectChecker'];
+
+module.exports = Interactable;
+
+},{"./Eventable":2,"./actions/base":6,"./defaultOptions":18,"./scope":33,"./utils/Signals":34,"./utils/arr":35,"./utils/browser":36,"./utils/domUtils":38,"./utils/events":39,"./utils/extend":40,"./utils/is":45,"./utils/window":51}],5:[function(require,module,exports){
+'use strict';
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var scope = require('./scope');
+var utils = require('./utils');
+var events = require('./utils/events');
+var browser = require('./utils/browser');
+var domObjects = require('./utils/domObjects');
+var finder = require('./utils/interactionFinder');
+var signals = require('./utils/Signals').new();
+
+var listeners = {};
+var methodNames = ['pointerDown', 'pointerMove', 'pointerUp', 'updatePointer', 'removePointer'];
+
+// for ignoring browser's simulated mouse events
+var prevTouchTime = 0;
+
+// all active and idle interactions
+scope.interactions = [];
+
+var Interaction = function () {
+  /** */
+  function Interaction(_ref) {
+    var pointerType = _ref.pointerType;
+
+    _classCallCheck(this, Interaction);
+
+    this.target = null; // current interactable being interacted with
+    this.element = null; // the target element of the interactable
+
+    this.prepared = { // action that's ready to be fired on next move event
+      name: null,
+      axis: null,
+      edges: null
+    };
+
+    // keep track of added pointers
+    this.pointers = [];
+    this.pointerIds = [];
+    this.downTargets = [];
+    this.downTimes = [];
+
+    // Previous native pointer move event coordinates
+    this.prevCoords = {
+      page: { x: 0, y: 0 },
+      client: { x: 0, y: 0 },
+      timeStamp: 0
+    };
+    // current native pointer move event coordinates
+    this.curCoords = {
+      page: { x: 0, y: 0 },
+      client: { x: 0, y: 0 },
+      timeStamp: 0
+    };
+
+    // Starting InteractEvent pointer coordinates
+    this.startCoords = {
+      page: { x: 0, y: 0 },
+      client: { x: 0, y: 0 },
+      timeStamp: 0
+    };
+
+    // Change in coordinates and time of the pointer
+    this.pointerDelta = {
+      page: { x: 0, y: 0, vx: 0, vy: 0, speed: 0 },
+      client: { x: 0, y: 0, vx: 0, vy: 0, speed: 0 },
+      timeStamp: 0
+    };
+
+    this.downEvent = null; // pointerdown/mousedown/touchstart event
+    this.downPointer = {};
+
+    this._eventTarget = null;
+    this._curEventTarget = null;
+
+    this.prevEvent = null; // previous action event
+
+    this.pointerIsDown = false;
+    this.pointerWasMoved = false;
+    this._interacting = false;
+    this._ending = false;
+
+    this.pointerType = pointerType;
+
+    signals.fire('new', this);
+
+    scope.interactions.push(this);
+  }
+
+  Interaction.prototype.pointerDown = function pointerDown(pointer, event, eventTarget) {
+    var pointerIndex = this.updatePointer(pointer, event, true);
+
+    signals.fire('down', {
+      pointer: pointer,
+      event: event,
+      eventTarget: eventTarget,
+      pointerIndex: pointerIndex,
+      interaction: this
+    });
+  };
+
+  /**
+   * ```js
+   * interact(target)
+   *   .draggable({
+   *     // disable the default drag start by down->move
+   *     manualStart: true
+   *   })
+   *   // start dragging after the user holds the pointer down
+   *   .on('hold', function (event) {
+   *     var interaction = event.interaction;
+   *
+   *     if (!interaction.interacting()) {
+   *       interaction.start({ name: 'drag' },
+   *                         event.interactable,
+   *                         event.currentTarget);
+   *     }
+   * });
+   * ```
+   *
+   * Start an action with the given Interactable and Element as tartgets. The
+   * action must be enabled for the target Interactable and an appropriate
+   * number of pointers must be held down - 1 for drag/resize, 2 for gesture.
+   *
+   * Use it with `interactable.<action>able({ manualStart: false })` to always
+   * [start actions manually](https://github.com/taye/interact.js/issues/114)
+   *
+   * @param {object} action   The action to be performed - drag, resize, etc.
+   * @param {Interactable} target  The Interactable to target
+   * @param {Element} element The DOM Element to target
+   * @return {object} interact
+   */
+
+
+  Interaction.prototype.start = function start(action, target, element) {
+    if (this.interacting() || !this.pointerIsDown || this.pointerIds.length < (action.name === 'gesture' ? 2 : 1)) {
+      return;
+    }
+
+    // if this interaction had been removed after stopping
+    // add it back
+    if (scope.interactions.indexOf(this) === -1) {
+      scope.interactions.push(this);
+    }
+
+    utils.copyAction(this.prepared, action);
+    this.target = target;
+    this.element = element;
+
+    signals.fire('action-start', {
+      interaction: this,
+      event: this.downEvent
+    });
+  };
+
+  Interaction.prototype.pointerMove = function pointerMove(pointer, event, eventTarget) {
+    if (!this.simulation) {
+      this.updatePointer(pointer);
+      utils.setCoords(this.curCoords, this.pointers);
+    }
+
+    var duplicateMove = this.curCoords.page.x === this.prevCoords.page.x && this.curCoords.page.y === this.prevCoords.page.y && this.curCoords.client.x === this.prevCoords.client.x && this.curCoords.client.y === this.prevCoords.client.y;
+
+    var dx = void 0;
+    var dy = void 0;
+
+    // register movement greater than pointerMoveTolerance
+    if (this.pointerIsDown && !this.pointerWasMoved) {
+      dx = this.curCoords.client.x - this.startCoords.client.x;
+      dy = this.curCoords.client.y - this.startCoords.client.y;
+
+      this.pointerWasMoved = utils.hypot(dx, dy) > Interaction.pointerMoveTolerance;
+    }
+
+    var signalArg = {
+      pointer: pointer,
+      pointerIndex: this.getPointerIndex(pointer),
+      event: event,
+      eventTarget: eventTarget,
+      dx: dx,
+      dy: dy,
+      duplicate: duplicateMove,
+      interaction: this,
+      interactingBeforeMove: this.interacting()
+    };
+
+    if (!duplicateMove) {
+      // set pointer coordinate, time changes and speeds
+      utils.setCoordDeltas(this.pointerDelta, this.prevCoords, this.curCoords);
+    }
+
+    signals.fire('move', signalArg);
+
+    if (!duplicateMove) {
+      // if interacting, fire an 'action-move' signal etc
+      if (this.interacting()) {
+        this.doMove(signalArg);
+      }
+
+      if (this.pointerWasMoved) {
+        utils.copyCoords(this.prevCoords, this.curCoords);
+      }
+    }
+  };
+
+  /**
+   * ```js
+   * interact(target)
+   *   .draggable(true)
+   *   .on('dragmove', function (event) {
+   *     if (someCondition) {
+   *       // change the snap settings
+   *       event.interactable.draggable({ snap: { targets: [] }});
+   *       // fire another move event with re-calculated snap
+   *       event.interaction.doMove();
+   *     }
+   *   });
+   * ```
+   *
+   * Force a move of the current action at the same coordinates. Useful if
+   * snap/restrict has been changed and you want a movement with the new
+   * settings.
+   */
+
+
+  Interaction.prototype.doMove = function doMove(signalArg) {
+    signalArg = utils.extend({
+      pointer: this.pointers[0],
+      event: this.prevEvent,
+      eventTarget: this._eventTarget,
+      interaction: this
+    }, signalArg || {});
+
+    signals.fire('before-action-move', signalArg);
+
+    if (!this._dontFireMove) {
+      signals.fire('action-move', signalArg);
+    }
+
+    this._dontFireMove = false;
+  };
+
+  // End interact move events and stop auto-scroll unless simulation is running
+
+
+  Interaction.prototype.pointerUp = function pointerUp(pointer, event, eventTarget, curEventTarget) {
+    var pointerIndex = this.getPointerIndex(pointer);
+
+    signals.fire(/cancel$/i.test(event.type) ? 'cancel' : 'up', {
+      pointer: pointer,
+      pointerIndex: pointerIndex,
+      event: event,
+      eventTarget: eventTarget,
+      curEventTarget: curEventTarget,
+      interaction: this
+    });
+
+    if (!this.simulation) {
+      this.end(event);
+    }
+
+    this.pointerIsDown = false;
+    this.removePointer(pointer, event);
+  };
+
+  /**
+   * ```js
+   * interact(target)
+   *   .draggable(true)
+   *   .on('move', function (event) {
+   *     if (event.pageX > 1000) {
+   *       // end the current action
+   *       event.interaction.end();
+   *       // stop all further listeners from being called
+   *       event.stopImmediatePropagation();
+   *     }
+   *   });
+   * ```
+   *
+   * Stop the current action and fire an end event. Inertial movement does
+   * not happen.
+   *
+   * @param {PointerEvent} [event]
+   */
+
+
+  Interaction.prototype.end = function end(event) {
+    this._ending = true;
+
+    event = event || this.prevEvent;
+
+    if (this.interacting()) {
+      signals.fire('action-end', {
+        event: event,
+        interaction: this
+      });
+    }
+
+    this.stop();
+    this._ending = false;
+  };
+
+  Interaction.prototype.currentAction = function currentAction() {
+    return this._interacting ? this.prepared.name : null;
+  };
+
+  Interaction.prototype.interacting = function interacting() {
+    return this._interacting;
+  };
+
+  /** */
+
+
+  Interaction.prototype.stop = function stop() {
+    signals.fire('stop', { interaction: this });
+
+    if (this._interacting) {
+      signals.fire('stop-active', { interaction: this });
+      signals.fire('stop-' + this.prepared.name, { interaction: this });
+    }
+
+    this.target = this.element = null;
+
+    this._interacting = false;
+    this.prepared.name = this.prevEvent = null;
+  };
+
+  Interaction.prototype.getPointerIndex = function getPointerIndex(pointer) {
+    // mouse and pen interactions may have only one pointer
+    if (this.pointerType === 'mouse' || this.pointerType === 'pen') {
+      return 0;
+    }
+
+    return this.pointerIds.indexOf(utils.getPointerId(pointer));
+  };
+
+  Interaction.prototype.updatePointer = function updatePointer(pointer, event) {
+    var down = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : event && /(down|start)$/i.test(event.type);
+
+    var id = utils.getPointerId(pointer);
+    var index = this.getPointerIndex(pointer);
+
+    if (index === -1) {
+      index = this.pointerIds.length;
+      this.pointerIds[index] = id;
+    }
+
+    if (down) {
+      signals.fire('update-pointer-down', {
+        pointer: pointer,
+        event: event,
+        down: down,
+        pointerId: id,
+        pointerIndex: index,
+        interaction: this
+      });
+    }
+
+    this.pointers[index] = pointer;
+
+    return index;
+  };
+
+  Interaction.prototype.removePointer = function removePointer(pointer, event) {
+    var index = this.getPointerIndex(pointer);
+
+    if (index === -1) {
+      return;
+    }
+
+    signals.fire('remove-pointer', {
+      pointer: pointer,
+      event: event,
+      pointerIndex: index,
+      interaction: this
+    });
+
+    this.pointers.splice(index, 1);
+    this.pointerIds.splice(index, 1);
+    this.downTargets.splice(index, 1);
+    this.downTimes.splice(index, 1);
+  };
+
+  Interaction.prototype._updateEventTargets = function _updateEventTargets(target, currentTarget) {
+    this._eventTarget = target;
+    this._curEventTarget = currentTarget;
+  };
+
+  return Interaction;
+}();
+
+for (var _i = 0; _i < methodNames.length; _i++) {
+  var method = methodNames[_i];
+  listeners[method] = doOnInteractions(method);
+}
+
+function doOnInteractions(method) {
+  return function (event) {
+    var pointerType = utils.getPointerType(event);
+
+    var _utils$getEventTarget = utils.getEventTargets(event),
+        eventTarget = _utils$getEventTarget[0],
+        curEventTarget = _utils$getEventTarget[1];
+
+    var matches = []; // [ [pointer, interaction], ...]
+
+    if (browser.supportsTouch && /touch/.test(event.type)) {
+      prevTouchTime = new Date().getTime();
+
+      for (var _i2 = 0; _i2 < event.changedTouches.length; _i2++) {
+        var _ref2;
+
+        _ref2 = event.changedTouches[_i2];
+        var changedTouch = _ref2;
+
+        var pointer = changedTouch;
+        var interaction = finder.search(pointer, event.type, eventTarget);
+
+        matches.push([pointer, interaction || new Interaction({ pointerType: pointerType })]);
+      }
+    } else {
+      var invalidPointer = false;
+
+      if (!browser.supportsPointerEvent && /mouse/.test(event.type)) {
+        // ignore mouse events while touch interactions are active
+        for (var i = 0; i < scope.interactions.length && !invalidPointer; i++) {
+          invalidPointer = scope.interactions[i].pointerType !== 'mouse' && scope.interactions[i].pointerIsDown;
+        }
+
+        // try to ignore mouse events that are simulated by the browser
+        // after a touch event
+        invalidPointer = invalidPointer || new Date().getTime() - prevTouchTime < 500
+        // on iOS and Firefox Mobile, MouseEvent.timeStamp is zero if simulated
+        || event.timeStamp === 0;
+      }
+
+      if (!invalidPointer) {
+        var _interaction = finder.search(event, event.type, eventTarget);
+
+        if (!_interaction) {
+          _interaction = new Interaction({ pointerType: pointerType });
+        }
+
+        matches.push([event, _interaction]);
+      }
+    }
+
+    for (var _i3 = 0; _i3 < matches.length; _i3++) {
+      var _ref3 = matches[_i3];
+      var _pointer = _ref3[0];
+      var _interaction2 = _ref3[1];
+
+      _interaction2._updateEventTargets(eventTarget, curEventTarget);
+      _interaction2[method](_pointer, event, eventTarget, curEventTarget);
+    }
+  };
+}
+
+function endAll(event) {
+  for (var _i4 = 0; _i4 < scope.interactions.length; _i4++) {
+    var _ref4;
+
+    _ref4 = scope.interactions[_i4];
+    var interaction = _ref4;
+
+    interaction.end(event);
+    signals.fire('endall', { event: event, interaction: interaction });
+  }
+}
+
+var docEvents = {/* 'eventType': listenerFunc */};
+var pEventTypes = browser.pEventTypes;
+
+if (domObjects.PointerEvent) {
+  docEvents[pEventTypes.down] = listeners.pointerDown;
+  docEvents[pEventTypes.move] = listeners.pointerMove;
+  docEvents[pEventTypes.up] = listeners.pointerUp;
+  docEvents[pEventTypes.cancel] = listeners.pointerUp;
+} else {
+  docEvents.mousedown = listeners.pointerDown;
+  docEvents.mousemove = listeners.pointerMove;
+  docEvents.mouseup = listeners.pointerUp;
+
+  docEvents.touchstart = listeners.pointerDown;
+  docEvents.touchmove = listeners.pointerMove;
+  docEvents.touchend = listeners.pointerUp;
+  docEvents.touchcancel = listeners.pointerUp;
+}
+
+docEvents.blur = endAll;
+
+function onDocSignal(_ref5, signalName) {
+  var doc = _ref5.doc;
+
+  var eventMethod = signalName.indexOf('add') === 0 ? events.add : events.remove;
+
+  // delegate event listener
+  for (var eventType in scope.delegatedEvents) {
+    eventMethod(doc, eventType, events.delegateListener);
+    eventMethod(doc, eventType, events.delegateUseCapture, true);
+  }
+
+  for (var _eventType in docEvents) {
+    eventMethod(doc, _eventType, docEvents[_eventType]);
+  }
+}
+
+signals.on('update-pointer-down', function (_ref6) {
+  var interaction = _ref6.interaction,
+      pointer = _ref6.pointer,
+      pointerId = _ref6.pointerId,
+      pointerIndex = _ref6.pointerIndex,
+      event = _ref6.event,
+      eventTarget = _ref6.eventTarget,
+      down = _ref6.down;
+
+  interaction.pointerIds[pointerIndex] = pointerId;
+  interaction.pointers[pointerIndex] = pointer;
+
+  if (down) {
+    interaction.pointerIsDown = true;
+  }
+
+  if (!interaction.interacting()) {
+    utils.setCoords(interaction.startCoords, interaction.pointers);
+
+    utils.copyCoords(interaction.curCoords, interaction.startCoords);
+    utils.copyCoords(interaction.prevCoords, interaction.startCoords);
+
+    interaction.downEvent = event;
+    interaction.downTimes[pointerIndex] = interaction.curCoords.timeStamp;
+    interaction.downTargets[pointerIndex] = eventTarget || event && utils.getEventTargets(event)[0];
+    interaction.pointerWasMoved = false;
+
+    utils.pointerExtend(interaction.downPointer, pointer);
+  }
+});
+
+scope.signals.on('add-document', onDocSignal);
+scope.signals.on('remove-document', onDocSignal);
+
+Interaction.pointerMoveTolerance = 1;
+Interaction.doOnInteractions = doOnInteractions;
+Interaction.endAll = endAll;
+Interaction.signals = signals;
+Interaction.docEvents = docEvents;
+
+scope.endAllInteractions = endAll;
+
+module.exports = Interaction;
+
+},{"./scope":33,"./utils":43,"./utils/Signals":34,"./utils/browser":36,"./utils/domObjects":37,"./utils/events":39,"./utils/interactionFinder":44}],6:[function(require,module,exports){
+'use strict';
+
+var Interaction = require('../Interaction');
+var InteractEvent = require('../InteractEvent');
+
+var actions = {
+  firePrepared: firePrepared,
+  names: [],
+  methodDict: {}
+};
+
+Interaction.signals.on('action-start', function (_ref) {
+  var interaction = _ref.interaction,
+      event = _ref.event;
+
+  interaction._interacting = true;
+  firePrepared(interaction, event, 'start');
+});
+
+Interaction.signals.on('action-move', function (_ref2) {
+  var interaction = _ref2.interaction,
+      event = _ref2.event,
+      preEnd = _ref2.preEnd;
+
+  firePrepared(interaction, event, 'move', preEnd);
+
+  // if the action was ended in a listener
+  if (!interaction.interacting()) {
+    return false;
+  }
+});
+
+Interaction.signals.on('action-end', function (_ref3) {
+  var interaction = _ref3.interaction,
+      event = _ref3.event;
+
+  firePrepared(interaction, event, 'end');
+});
+
+function firePrepared(interaction, event, phase, preEnd) {
+  var actionName = interaction.prepared.name;
+
+  var newEvent = new InteractEvent(interaction, event, actionName, phase, interaction.element, null, preEnd);
+
+  interaction.target.fire(newEvent);
+  interaction.prevEvent = newEvent;
+}
+
+module.exports = actions;
+
+},{"../InteractEvent":3,"../Interaction":5}],7:[function(require,module,exports){
+'use strict';
+
+var actions = require('./base');
+var utils = require('../utils');
+var InteractEvent = require('../InteractEvent');
+/** @lends Interactable */
+var Interactable = require('../Interactable');
+var Interaction = require('../Interaction');
+var defaultOptions = require('../defaultOptions');
+
+var drag = {
+  defaults: {
+    enabled: false,
+    mouseButtons: null,
+
+    origin: null,
+    snap: null,
+    restrict: null,
+    inertia: null,
+    autoScroll: null,
+
+    startAxis: 'xy',
+    lockAxis: 'xy'
+  },
+
+  checker: function checker(pointer, event, interactable) {
+    var dragOptions = interactable.options.drag;
+
+    return dragOptions.enabled ? { name: 'drag', axis: dragOptions.lockAxis === 'start' ? dragOptions.startAxis : dragOptions.lockAxis } : null;
+  },
+
+  getCursor: function getCursor() {
+    return 'move';
+  }
+};
+
+Interaction.signals.on('before-action-move', function (_ref) {
+  var interaction = _ref.interaction;
+
+  if (interaction.prepared.name !== 'drag') {
+    return;
+  }
+
+  var axis = interaction.prepared.axis;
+
+  if (axis === 'x') {
+    interaction.curCoords.page.y = interaction.startCoords.page.y;
+    interaction.curCoords.client.y = interaction.startCoords.client.y;
+
+    interaction.pointerDelta.page.speed = Math.abs(interaction.pointerDelta.page.vx);
+    interaction.pointerDelta.client.speed = Math.abs(interaction.pointerDelta.client.vx);
+    interaction.pointerDelta.client.vy = 0;
+    interaction.pointerDelta.page.vy = 0;
+  } else if (axis === 'y') {
+    interaction.curCoords.page.x = interaction.startCoords.page.x;
+    interaction.curCoords.client.x = interaction.startCoords.client.x;
+
+    interaction.pointerDelta.page.speed = Math.abs(interaction.pointerDelta.page.vy);
+    interaction.pointerDelta.client.speed = Math.abs(interaction.pointerDelta.client.vy);
+    interaction.pointerDelta.client.vx = 0;
+    interaction.pointerDelta.page.vx = 0;
+  }
+});
+
+// dragmove
+InteractEvent.signals.on('new', function (_ref2) {
+  var iEvent = _ref2.iEvent,
+      interaction = _ref2.interaction;
+
+  if (iEvent.type !== 'dragmove') {
+    return;
+  }
+
+  var axis = interaction.prepared.axis;
+
+  if (axis === 'x') {
+    iEvent.pageY = interaction.startCoords.page.y;
+    iEvent.clientY = interaction.startCoords.client.y;
+    iEvent.dy = 0;
+  } else if (axis === 'y') {
+    iEvent.pageX = interaction.startCoords.page.x;
+    iEvent.clientX = interaction.startCoords.client.x;
+    iEvent.dx = 0;
+  }
+});
+
+/**
+ * ```js
+ * interact(element).draggable({
+ *     onstart: function (event) {},
+ *     onmove : function (event) {},
+ *     onend  : function (event) {},
+ *
+ *     // the axis in which the first movement must be
+ *     // for the drag sequence to start
+ *     // 'xy' by default - any direction
+ *     startAxis: 'x' || 'y' || 'xy',
+ *
+ *     // 'xy' by default - don't restrict to one axis (move in any direction)
+ *     // 'x' or 'y' to restrict movement to either axis
+ *     // 'start' to restrict movement to the axis the drag started in
+ *     lockAxis: 'x' || 'y' || 'xy' || 'start',
+ *
+ *     // max number of drags that can happen concurrently
+ *     // with elements of this Interactable. Infinity by default
+ *     max: Infinity,
+ *
+ *     // max number of drags that can target the same element+Interactable
+ *     // 1 by default
+ *     maxPerElement: 2
+ * });
+ *
+ * var isDraggable = interact('element').draggable(); // true
+ * ```
+ *
+ * Get or set whether drag actions can be performed on the target
+ *
+ * @param {boolean | object} [options] true/false or An object with event
+ * listeners to be fired on drag events (object makes the Interactable
+ * draggable)
+ * @return {boolean | Interactable} boolean indicating if this can be the
+ * target of drag events, or this Interctable
+ */
+Interactable.prototype.draggable = function (options) {
+  if (utils.is.object(options)) {
+    this.options.drag.enabled = options.enabled === false ? false : true;
+    this.setPerAction('drag', options);
+    this.setOnEvents('drag', options);
+
+    if (/^(xy|x|y|start)$/.test(options.lockAxis)) {
+      this.options.drag.lockAxis = options.lockAxis;
+    }
+    if (/^(xy|x|y)$/.test(options.startAxis)) {
+      this.options.drag.startAxis = options.startAxis;
+    }
+
+    return this;
+  }
+
+  if (utils.is.bool(options)) {
+    this.options.drag.enabled = options;
+
+    if (!options) {
+      this.ondragstart = this.ondragstart = this.ondragend = null;
+    }
+
+    return this;
+  }
+
+  return this.options.drag;
+};
+
+actions.drag = drag;
+actions.names.push('drag');
+utils.merge(Interactable.eventTypes, ['dragstart', 'dragmove', 'draginertiastart', 'draginertiaresume', 'dragend']);
+actions.methodDict.drag = 'draggable';
+
+defaultOptions.drag = drag.defaults;
+
+module.exports = drag;
+
+},{"../InteractEvent":3,"../Interactable":4,"../Interaction":5,"../defaultOptions":18,"../utils":43,"./base":6}],8:[function(require,module,exports){
+'use strict';
+
+var actions = require('./base');
+var utils = require('../utils');
+var scope = require('../scope');
+/** @lends module:interact */
+var interact = require('../interact');
+var InteractEvent = require('../InteractEvent');
+/** @lends Interactable */
+var Interactable = require('../Interactable');
+var Interaction = require('../Interaction');
+var defaultOptions = require('../defaultOptions');
+
+var drop = {
+  defaults: {
+    enabled: false,
+    accept: null,
+    overlap: 'pointer'
+  }
+};
+
+var dynamicDrop = false;
+
+Interaction.signals.on('action-start', function (_ref) {
+  var interaction = _ref.interaction,
+      event = _ref.event;
+
+  if (interaction.prepared.name !== 'drag') {
+    return;
+  }
+
+  // reset active dropzones
+  interaction.activeDrops.dropzones = [];
+  interaction.activeDrops.elements = [];
+  interaction.activeDrops.rects = [];
+
+  interaction.dropEvents = null;
+
+  if (!interaction.dynamicDrop) {
+    setActiveDrops(interaction.activeDrops, interaction.element);
+  }
+
+  var dragEvent = interaction.prevEvent;
+  var dropEvents = getDropEvents(interaction, event, dragEvent);
+
+  if (dropEvents.activate) {
+    fireActiveDrops(interaction.activeDrops, dropEvents.activate);
+  }
+});
+
+InteractEvent.signals.on('new', function (_ref2) {
+  var interaction = _ref2.interaction,
+      iEvent = _ref2.iEvent,
+      event = _ref2.event;
+
+  if (iEvent.type !== 'dragmove' && iEvent.type !== 'dragend') {
+    return;
+  }
+
+  var draggableElement = interaction.element;
+  var dragEvent = iEvent;
+  var dropResult = getDrop(dragEvent, event, draggableElement);
+
+  interaction.dropTarget = dropResult.dropzone;
+  interaction.dropElement = dropResult.element;
+
+  interaction.dropEvents = getDropEvents(interaction, event, dragEvent);
+});
+
+Interaction.signals.on('action-move', function (_ref3) {
+  var interaction = _ref3.interaction;
+
+  if (interaction.prepared.name !== 'drag') {
+    return;
+  }
+
+  fireDropEvents(interaction, interaction.dropEvents);
+});
+
+Interaction.signals.on('action-end', function (_ref4) {
+  var interaction = _ref4.interaction;
+
+  if (interaction.prepared.name === 'drag') {
+    fireDropEvents(interaction, interaction.dropEvents);
+  }
+});
+
+Interaction.signals.on('stop-drag', function (_ref5) {
+  var interaction = _ref5.interaction;
+
+  interaction.activeDrops = {
+    dropzones: null,
+    elements: null,
+    rects: null
+  };
+
+  interaction.dropEvents = null;
+});
+
+function collectDrops(activeDrops, element) {
+  var drops = [];
+  var elements = [];
+
+  // collect all dropzones and their elements which qualify for a drop
+  for (var _i = 0; _i < scope.interactables.length; _i++) {
+    var _ref6;
+
+    _ref6 = scope.interactables[_i];
+    var current = _ref6;
+
+    if (!current.options.drop.enabled) {
+      continue;
+    }
+
+    var accept = current.options.drop.accept;
+
+    // test the draggable element against the dropzone's accept setting
+    if (utils.is.element(accept) && accept !== element || utils.is.string(accept) && !utils.matchesSelector(element, accept)) {
+
+      continue;
+    }
+
+    // query for new elements if necessary
+    var dropElements = utils.is.string(current.target) ? current._context.querySelectorAll(current.target) : [current.target];
+
+    for (var _i2 = 0; _i2 < dropElements.length; _i2++) {
+      var _ref7;
+
+      _ref7 = dropElements[_i2];
+      var currentElement = _ref7;
+
+      if (currentElement !== element) {
+        drops.push(current);
+        elements.push(currentElement);
+      }
+    }
+  }
+
+  return {
+    elements: elements,
+    dropzones: drops
+  };
+}
+
+function fireActiveDrops(activeDrops, event) {
+  var prevElement = void 0;
+
+  // loop through all active dropzones and trigger event
+  for (var i = 0; i < activeDrops.dropzones.length; i++) {
+    var current = activeDrops.dropzones[i];
+    var currentElement = activeDrops.elements[i];
+
+    // prevent trigger of duplicate events on same element
+    if (currentElement !== prevElement) {
+      // set current element as event target
+      event.target = currentElement;
+      current.fire(event);
+    }
+    prevElement = currentElement;
+  }
+}
+
+// Collect a new set of possible drops and save them in activeDrops.
+// setActiveDrops should always be called when a drag has just started or a
+// drag event happens while dynamicDrop is true
+function setActiveDrops(activeDrops, dragElement) {
+  // get dropzones and their elements that could receive the draggable
+  var possibleDrops = collectDrops(activeDrops, dragElement);
+
+  activeDrops.dropzones = possibleDrops.dropzones;
+  activeDrops.elements = possibleDrops.elements;
+  activeDrops.rects = [];
+
+  for (var i = 0; i < activeDrops.dropzones.length; i++) {
+    activeDrops.rects[i] = activeDrops.dropzones[i].getRect(activeDrops.elements[i]);
+  }
+}
+
+function getDrop(dragEvent, event, dragElement) {
+  var interaction = dragEvent.interaction;
+  var validDrops = [];
+
+  if (dynamicDrop) {
+    setActiveDrops(interaction.activeDrops, dragElement);
+  }
+
+  // collect all dropzones and their elements which qualify for a drop
+  for (var j = 0; j < interaction.activeDrops.dropzones.length; j++) {
+    var current = interaction.activeDrops.dropzones[j];
+    var currentElement = interaction.activeDrops.elements[j];
+    var rect = interaction.activeDrops.rects[j];
+
+    validDrops.push(current.dropCheck(dragEvent, event, interaction.target, dragElement, currentElement, rect) ? currentElement : null);
+  }
+
+  // get the most appropriate dropzone based on DOM depth and order
+  var dropIndex = utils.indexOfDeepestElement(validDrops);
+
+  return {
+    dropzone: interaction.activeDrops.dropzones[dropIndex] || null,
+    element: interaction.activeDrops.elements[dropIndex] || null
+  };
+}
+
+function getDropEvents(interaction, pointerEvent, dragEvent) {
+  var dropEvents = {
+    enter: null,
+    leave: null,
+    activate: null,
+    deactivate: null,
+    move: null,
+    drop: null
+  };
+
+  var tmpl = {
+    dragEvent: dragEvent,
+    interaction: interaction,
+    target: interaction.dropElement,
+    dropzone: interaction.dropTarget,
+    relatedTarget: dragEvent.target,
+    draggable: dragEvent.interactable,
+    timeStamp: dragEvent.timeStamp
+  };
+
+  if (interaction.dropElement !== interaction.prevDropElement) {
+    // if there was a prevDropTarget, create a dragleave event
+    if (interaction.prevDropTarget) {
+      dropEvents.leave = utils.extend({ type: 'dragleave' }, tmpl);
+
+      dragEvent.dragLeave = dropEvents.leave.target = interaction.prevDropElement;
+      dragEvent.prevDropzone = dropEvents.leave.dropzone = interaction.prevDropTarget;
+    }
+    // if the dropTarget is not null, create a dragenter event
+    if (interaction.dropTarget) {
+      dropEvents.enter = {
+        dragEvent: dragEvent,
+        interaction: interaction,
+        target: interaction.dropElement,
+        dropzone: interaction.dropTarget,
+        relatedTarget: dragEvent.target,
+        draggable: dragEvent.interactable,
+        timeStamp: dragEvent.timeStamp,
+        type: 'dragenter'
+      };
+
+      dragEvent.dragEnter = interaction.dropElement;
+      dragEvent.dropzone = interaction.dropTarget;
+    }
+  }
+
+  if (dragEvent.type === 'dragend' && interaction.dropTarget) {
+    dropEvents.drop = utils.extend({ type: 'drop' }, tmpl);
+
+    dragEvent.dropzone = interaction.dropTarget;
+    dragEvent.relatedTarget = interaction.dropElement;
+  }
+  if (dragEvent.type === 'dragstart') {
+    dropEvents.activate = utils.extend({ type: 'dropactivate' }, tmpl);
+
+    dropEvents.activate.target = null;
+    dropEvents.activate.dropzone = null;
+  }
+  if (dragEvent.type === 'dragend') {
+    dropEvents.deactivate = utils.extend({ type: 'dropdeactivate' }, tmpl);
+
+    dropEvents.deactivate.target = null;
+    dropEvents.deactivate.dropzone = null;
+  }
+  if (dragEvent.type === 'dragmove' && interaction.dropTarget) {
+    dropEvents.move = utils.extend({
+      dragmove: dragEvent,
+      type: 'dropmove'
+    }, tmpl);
+
+    dragEvent.dropzone = interaction.dropTarget;
+  }
+
+  return dropEvents;
+}
+
+function fireDropEvents(interaction, dropEvents) {
+  var activeDrops = interaction.activeDrops,
+      prevDropTarget = interaction.prevDropTarget,
+      dropTarget = interaction.dropTarget,
+      dropElement = interaction.dropElement;
+
+
+  if (dropEvents.leave) {
+    prevDropTarget.fire(dropEvents.leave);
+  }
+  if (dropEvents.move) {
+    dropTarget.fire(dropEvents.move);
+  }
+  if (dropEvents.enter) {
+    dropTarget.fire(dropEvents.enter);
+  }
+  if (dropEvents.drop) {
+    dropTarget.fire(dropEvents.drop);
+  }
+  if (dropEvents.deactivate) {
+    fireActiveDrops(activeDrops, dropEvents.deactivate);
+  }
+
+  interaction.prevDropTarget = dropTarget;
+  interaction.prevDropElement = dropElement;
+}
+
+/**
+ * ```js
+ * interact(target)
+ * .dropChecker(function(dragEvent,         // related dragmove or dragend event
+ *                       event,             // TouchEvent/PointerEvent/MouseEvent
+ *                       dropped,           // bool result of the default checker
+ *                       dropzone,          // dropzone Interactable
+ *                       dropElement,       // dropzone elemnt
+ *                       draggable,         // draggable Interactable
+ *                       draggableElement) {// draggable element
+ *
+ *   return dropped && event.target.hasAttribute('allow-drop');
+ * }
+ * ```
+ *
+ * ```js
+ * interact('.drop').dropzone({
+ *   accept: '.can-drop' || document.getElementById('single-drop'),
+ *   overlap: 'pointer' || 'center' || zeroToOne
+ * }
+ * ```
+ *
+ * Returns or sets whether draggables can be dropped onto this target to
+ * trigger drop events
+ *
+ * Dropzones can receive the following events:
+ *  - `dropactivate` and `dropdeactivate` when an acceptable drag starts and ends
+ *  - `dragenter` and `dragleave` when a draggable enters and leaves the dropzone
+ *  - `dragmove` when a draggable that has entered the dropzone is moved
+ *  - `drop` when a draggable is dropped into this dropzone
+ *
+ * Use the `accept` option to allow only elements that match the given CSS
+ * selector or element. The value can be:
+ *
+ *  - **an Element** - only that element can be dropped into this dropzone.
+ *  - **a string**, - the element being dragged must match it as a CSS selector.
+ *  - **`null`** - accept options is cleared - it accepts any element.
+ *
+ * Use the `overlap` option to set how drops are checked for. The allowed
+ * values are:
+ *
+ *   - `'pointer'`, the pointer must be over the dropzone (default)
+ *   - `'center'`, the draggable element's center must be over the dropzone
+ *   - a number from 0-1 which is the `(intersection area) / (draggable area)`.
+ *   e.g. `0.5` for drop to happen when half of the area of the draggable is
+ *   over the dropzone
+ *
+ * Use the `checker` option to specify a function to check if a dragged element
+ * is over this Interactable.
+ *
+ * @param {boolean | object | null} [options] The new options to be set.
+ * @return {boolean | Interactable} The current setting or this Interactable
+ */
+Interactable.prototype.dropzone = function (options) {
+  if (utils.is.object(options)) {
+    this.options.drop.enabled = options.enabled === false ? false : true;
+
+    if (utils.is.function(options.ondrop)) {
+      this.events.ondrop = options.ondrop;
+    }
+    if (utils.is.function(options.ondropactivate)) {
+      this.events.ondropactivate = options.ondropactivate;
+    }
+    if (utils.is.function(options.ondropdeactivate)) {
+      this.events.ondropdeactivate = options.ondropdeactivate;
+    }
+    if (utils.is.function(options.ondragenter)) {
+      this.events.ondragenter = options.ondragenter;
+    }
+    if (utils.is.function(options.ondragleave)) {
+      this.events.ondragleave = options.ondragleave;
+    }
+    if (utils.is.function(options.ondropmove)) {
+      this.events.ondropmove = options.ondropmove;
+    }
+
+    if (/^(pointer|center)$/.test(options.overlap)) {
+      this.options.drop.overlap = options.overlap;
+    } else if (utils.is.number(options.overlap)) {
+      this.options.drop.overlap = Math.max(Math.min(1, options.overlap), 0);
+    }
+    if ('accept' in options) {
+      this.options.drop.accept = options.accept;
+    }
+    if ('checker' in options) {
+      this.options.drop.checker = options.checker;
+    }
+
+    return this;
+  }
+
+  if (utils.is.bool(options)) {
+    this.options.drop.enabled = options;
+
+    if (!options) {
+      this.ondragenter = this.ondragleave = this.ondrop = this.ondropactivate = this.ondropdeactivate = null;
+    }
+
+    return this;
+  }
+
+  return this.options.drop;
+};
+
+Interactable.prototype.dropCheck = function (dragEvent, event, draggable, draggableElement, dropElement, rect) {
+  var dropped = false;
+
+  // if the dropzone has no rect (eg. display: none)
+  // call the custom dropChecker or just return false
+  if (!(rect = rect || this.getRect(dropElement))) {
+    return this.options.drop.checker ? this.options.drop.checker(dragEvent, event, dropped, this, dropElement, draggable, draggableElement) : false;
+  }
+
+  var dropOverlap = this.options.drop.overlap;
+
+  if (dropOverlap === 'pointer') {
+    var origin = utils.getOriginXY(draggable, draggableElement, 'drag');
+    var page = utils.getPageXY(dragEvent);
+
+    page.x += origin.x;
+    page.y += origin.y;
+
+    var horizontal = page.x > rect.left && page.x < rect.right;
+    var vertical = page.y > rect.top && page.y < rect.bottom;
+
+    dropped = horizontal && vertical;
+  }
+
+  var dragRect = draggable.getRect(draggableElement);
+
+  if (dragRect && dropOverlap === 'center') {
+    var cx = dragRect.left + dragRect.width / 2;
+    var cy = dragRect.top + dragRect.height / 2;
+
+    dropped = cx >= rect.left && cx <= rect.right && cy >= rect.top && cy <= rect.bottom;
+  }
+
+  if (dragRect && utils.is.number(dropOverlap)) {
+    var overlapArea = Math.max(0, Math.min(rect.right, dragRect.right) - Math.max(rect.left, dragRect.left)) * Math.max(0, Math.min(rect.bottom, dragRect.bottom) - Math.max(rect.top, dragRect.top));
+
+    var overlapRatio = overlapArea / (dragRect.width * dragRect.height);
+
+    dropped = overlapRatio >= dropOverlap;
+  }
+
+  if (this.options.drop.checker) {
+    dropped = this.options.drop.checker(dragEvent, event, dropped, this, dropElement, draggable, draggableElement);
+  }
+
+  return dropped;
+};
+
+Interactable.signals.on('unset', function (_ref8) {
+  var interactable = _ref8.interactable;
+
+  interactable.dropzone(false);
+});
+
+Interactable.settingsMethods.push('dropChecker');
+
+Interaction.signals.on('new', function (interaction) {
+  interaction.dropTarget = null; // the dropzone a drag target might be dropped into
+  interaction.dropElement = null; // the element at the time of checking
+  interaction.prevDropTarget = null; // the dropzone that was recently dragged away from
+  interaction.prevDropElement = null; // the element at the time of checking
+  interaction.dropEvents = null; // the dropEvents related to the current drag event
+
+  interaction.activeDrops = {
+    dropzones: [], // the dropzones that are mentioned below
+    elements: [], // elements of dropzones that accept the target draggable
+    rects: [] // the rects of the elements mentioned above
+  };
+});
+
+Interaction.signals.on('stop', function (_ref9) {
+  var interaction = _ref9.interaction;
+
+  interaction.dropTarget = interaction.dropElement = interaction.prevDropTarget = interaction.prevDropElement = null;
+});
+
+/**
+ * Returns or sets whether the dimensions of dropzone elements are calculated
+ * on every dragmove or only on dragstart for the default dropChecker
+ *
+ * @param {boolean} [newValue] True to check on each move. False to check only
+ * before start
+ * @return {boolean | interact} The current setting or interact
+ */
+interact.dynamicDrop = function (newValue) {
+  if (utils.is.bool(newValue)) {
+    //if (dragging && dynamicDrop !== newValue && !newValue) {
+    //calcRects(dropzones);
+    //}
+
+    dynamicDrop = newValue;
+
+    return interact;
+  }
+  return dynamicDrop;
+};
+
+utils.merge(Interactable.eventTypes, ['dragenter', 'dragleave', 'dropactivate', 'dropdeactivate', 'dropmove', 'drop']);
+actions.methodDict.drop = 'dropzone';
+
+defaultOptions.drop = drop.defaults;
+
+module.exports = drop;
+
+},{"../InteractEvent":3,"../Interactable":4,"../Interaction":5,"../defaultOptions":18,"../interact":21,"../scope":33,"../utils":43,"./base":6}],9:[function(require,module,exports){
+'use strict';
+
+var actions = require('./base');
+var utils = require('../utils');
+var InteractEvent = require('../InteractEvent');
+var Interactable = require('../Interactable');
+var Interaction = require('../Interaction');
+var defaultOptions = require('../defaultOptions');
+
+var gesture = {
+  defaults: {
+    enabled: false,
+    origin: null,
+    restrict: null
+  },
+
+  checker: function checker(pointer, event, interactable, element, interaction) {
+    if (interaction.pointerIds.length >= 2) {
+      return { name: 'gesture' };
+    }
+
+    return null;
+  },
+
+  getCursor: function getCursor() {
+    return '';
+  }
+};
+
+InteractEvent.signals.on('new', function (_ref) {
+  var iEvent = _ref.iEvent,
+      interaction = _ref.interaction;
+
+  if (iEvent.type !== 'gesturestart') {
+    return;
+  }
+  iEvent.ds = 0;
+
+  interaction.gesture.startDistance = interaction.gesture.prevDistance = iEvent.distance;
+  interaction.gesture.startAngle = interaction.gesture.prevAngle = iEvent.angle;
+  interaction.gesture.scale = 1;
+});
+
+InteractEvent.signals.on('new', function (_ref2) {
+  var iEvent = _ref2.iEvent,
+      interaction = _ref2.interaction;
+
+  if (iEvent.type !== 'gesturemove') {
+    return;
+  }
+
+  iEvent.ds = iEvent.scale - interaction.gesture.scale;
+
+  interaction.target.fire(iEvent);
+
+  interaction.gesture.prevAngle = iEvent.angle;
+  interaction.gesture.prevDistance = iEvent.distance;
+
+  if (iEvent.scale !== Infinity && iEvent.scale !== null && iEvent.scale !== undefined && !isNaN(iEvent.scale)) {
+
+    interaction.gesture.scale = iEvent.scale;
+  }
+});
+
+/**
+ * ```js
+ * interact(element).gesturable({
+ *     onstart: function (event) {},
+ *     onmove : function (event) {},
+ *     onend  : function (event) {},
+ *
+ *     // limit multiple gestures.
+ *     // See the explanation in {@link Interactable.draggable} example
+ *     max: Infinity,
+ *     maxPerElement: 1,
+ * });
+ *
+ * var isGestureable = interact(element).gesturable();
+ * ```
+ *
+ * Gets or sets whether multitouch gestures can be performed on the target
+ *
+ * @param {boolean | object} [options] true/false or An object with event
+ * listeners to be fired on gesture events (makes the Interactable gesturable)
+ * @return {boolean | Interactable} A boolean indicating if this can be the
+ * target of gesture events, or this Interactable
+ */
+Interactable.prototype.gesturable = function (options) {
+  if (utils.is.object(options)) {
+    this.options.gesture.enabled = options.enabled === false ? false : true;
+    this.setPerAction('gesture', options);
+    this.setOnEvents('gesture', options);
+
+    return this;
+  }
+
+  if (utils.is.bool(options)) {
+    this.options.gesture.enabled = options;
+
+    if (!options) {
+      this.ongesturestart = this.ongesturestart = this.ongestureend = null;
+    }
+
+    return this;
+  }
+
+  return this.options.gesture;
+};
+
+InteractEvent.signals.on('set-delta', function (_ref3) {
+  var interaction = _ref3.interaction,
+      iEvent = _ref3.iEvent,
+      action = _ref3.action,
+      event = _ref3.event,
+      starting = _ref3.starting,
+      ending = _ref3.ending,
+      deltaSource = _ref3.deltaSource;
+
+  if (action !== 'gesture') {
+    return;
+  }
+
+  var pointers = interaction.pointers;
+
+  iEvent.touches = [pointers[0], pointers[1]];
+
+  if (starting) {
+    iEvent.distance = utils.touchDistance(pointers, deltaSource);
+    iEvent.box = utils.touchBBox(pointers);
+    iEvent.scale = 1;
+    iEvent.ds = 0;
+    iEvent.angle = utils.touchAngle(pointers, undefined, deltaSource);
+    iEvent.da = 0;
+  } else if (ending || event instanceof InteractEvent) {
+    iEvent.distance = interaction.prevEvent.distance;
+    iEvent.box = interaction.prevEvent.box;
+    iEvent.scale = interaction.prevEvent.scale;
+    iEvent.ds = iEvent.scale - 1;
+    iEvent.angle = interaction.prevEvent.angle;
+    iEvent.da = iEvent.angle - interaction.gesture.startAngle;
+  } else {
+    iEvent.distance = utils.touchDistance(pointers, deltaSource);
+    iEvent.box = utils.touchBBox(pointers);
+    iEvent.scale = iEvent.distance / interaction.gesture.startDistance;
+    iEvent.angle = utils.touchAngle(pointers, interaction.gesture.prevAngle, deltaSource);
+
+    iEvent.ds = iEvent.scale - interaction.gesture.prevScale;
+    iEvent.da = iEvent.angle - interaction.gesture.prevAngle;
+  }
+});
+
+Interaction.signals.on('new', function (interaction) {
+  interaction.gesture = {
+    start: { x: 0, y: 0 },
+
+    startDistance: 0, // distance between two touches of touchStart
+    prevDistance: 0,
+    distance: 0,
+
+    scale: 1, // gesture.distance / gesture.startDistance
+
+    startAngle: 0, // angle of line joining two touches
+    prevAngle: 0 // angle of the previous gesture event
+  };
+});
+
+actions.gesture = gesture;
+actions.names.push('gesture');
+utils.merge(Interactable.eventTypes, ['gesturestart', 'gesturemove', 'gestureend']);
+actions.methodDict.gesture = 'gesturable';
+
+defaultOptions.gesture = gesture.defaults;
+
+module.exports = gesture;
+
+},{"../InteractEvent":3,"../Interactable":4,"../Interaction":5,"../defaultOptions":18,"../utils":43,"./base":6}],10:[function(require,module,exports){
+'use strict';
+
+var actions = require('./base');
+var utils = require('../utils');
+var browser = require('../utils/browser');
+var InteractEvent = require('../InteractEvent');
+/** @lends Interactable */
+var Interactable = require('../Interactable');
+var Interaction = require('../Interaction');
+var defaultOptions = require('../defaultOptions');
+
+// Less Precision with touch input
+var defaultMargin = browser.supportsTouch || browser.supportsPointerEvent ? 20 : 10;
+
+var resize = {
+  defaults: {
+    enabled: false,
+    mouseButtons: null,
+
+    origin: null,
+    snap: null,
+    restrict: null,
+    inertia: null,
+    autoScroll: null,
+
+    square: false,
+    preserveAspectRatio: false,
+    axis: 'xy',
+
+    // use default margin
+    margin: NaN,
+
+    // object with props left, right, top, bottom which are
+    // true/false values to resize when the pointer is over that edge,
+    // CSS selectors to match the handles for each direction
+    // or the Elements for each handle
+    edges: null,
+
+    // a value of 'none' will limit the resize rect to a minimum of 0x0
+    // 'negate' will alow the rect to have negative width/height
+    // 'reposition' will keep the width/height positive by swapping
+    // the top and bottom edges and/or swapping the left and right edges
+    invert: 'none'
+  },
+
+  checker: function checker(pointer, event, interactable, element, interaction, rect) {
+    if (!rect) {
+      return null;
+    }
+
+    var page = utils.extend({}, interaction.curCoords.page);
+    var options = interactable.options;
+
+    if (options.resize.enabled) {
+      var resizeOptions = options.resize;
+      var resizeEdges = { left: false, right: false, top: false, bottom: false };
+
+      // if using resize.edges
+      if (utils.is.object(resizeOptions.edges)) {
+        for (var edge in resizeEdges) {
+          resizeEdges[edge] = checkResizeEdge(edge, resizeOptions.edges[edge], page, interaction._eventTarget, element, rect, resizeOptions.margin || defaultMargin);
+        }
+
+        resizeEdges.left = resizeEdges.left && !resizeEdges.right;
+        resizeEdges.top = resizeEdges.top && !resizeEdges.bottom;
+
+        if (resizeEdges.left || resizeEdges.right || resizeEdges.top || resizeEdges.bottom) {
+          return {
+            name: 'resize',
+            edges: resizeEdges
+          };
+        }
+      } else {
+        var right = options.resize.axis !== 'y' && page.x > rect.right - defaultMargin;
+        var bottom = options.resize.axis !== 'x' && page.y > rect.bottom - defaultMargin;
+
+        if (right || bottom) {
+          return {
+            name: 'resize',
+            axes: (right ? 'x' : '') + (bottom ? 'y' : '')
+          };
+        }
+      }
+    }
+
+    return null;
+  },
+
+  cursors: browser.isIe9 ? {
+    x: 'e-resize',
+    y: 's-resize',
+    xy: 'se-resize',
+
+    top: 'n-resize',
+    left: 'w-resize',
+    bottom: 's-resize',
+    right: 'e-resize',
+    topleft: 'se-resize',
+    bottomright: 'se-resize',
+    topright: 'ne-resize',
+    bottomleft: 'ne-resize'
+  } : {
+    x: 'ew-resize',
+    y: 'ns-resize',
+    xy: 'nwse-resize',
+
+    top: 'ns-resize',
+    left: 'ew-resize',
+    bottom: 'ns-resize',
+    right: 'ew-resize',
+    topleft: 'nwse-resize',
+    bottomright: 'nwse-resize',
+    topright: 'nesw-resize',
+    bottomleft: 'nesw-resize'
+  },
+
+  getCursor: function getCursor(action) {
+    if (action.axis) {
+      return resize.cursors[action.name + action.axis];
+    } else if (action.edges) {
+      var cursorKey = '';
+      var edgeNames = ['top', 'bottom', 'left', 'right'];
+
+      for (var i = 0; i < 4; i++) {
+        if (action.edges[edgeNames[i]]) {
+          cursorKey += edgeNames[i];
+        }
+      }
+
+      return resize.cursors[cursorKey];
+    }
+  }
+};
+
+// resizestart
+InteractEvent.signals.on('new', function (_ref) {
+  var iEvent = _ref.iEvent,
+      interaction = _ref.interaction;
+
+  if (iEvent.type !== 'resizestart' || !interaction.prepared.edges) {
+    return;
+  }
+
+  var startRect = interaction.target.getRect(interaction.element);
+  var resizeOptions = interaction.target.options.resize;
+
+  /*
+   * When using the `resizable.square` or `resizable.preserveAspectRatio` options, resizing from one edge
+   * will affect another. E.g. with `resizable.square`, resizing to make the right edge larger will make
+   * the bottom edge larger by the same amount. We call these 'linked' edges. Any linked edges will depend
+   * on the active edges and the edge being interacted with.
+   */
+  if (resizeOptions.square || resizeOptions.preserveAspectRatio) {
+    var linkedEdges = utils.extend({}, interaction.prepared.edges);
+
+    linkedEdges.top = linkedEdges.top || linkedEdges.left && !linkedEdges.bottom;
+    linkedEdges.left = linkedEdges.left || linkedEdges.top && !linkedEdges.right;
+    linkedEdges.bottom = linkedEdges.bottom || linkedEdges.right && !linkedEdges.top;
+    linkedEdges.right = linkedEdges.right || linkedEdges.bottom && !linkedEdges.left;
+
+    interaction.prepared._linkedEdges = linkedEdges;
+  } else {
+    interaction.prepared._linkedEdges = null;
+  }
+
+  // if using `resizable.preserveAspectRatio` option, record aspect ratio at the start of the resize
+  if (resizeOptions.preserveAspectRatio) {
+    interaction.resizeStartAspectRatio = startRect.width / startRect.height;
+  }
+
+  interaction.resizeRects = {
+    start: startRect,
+    current: utils.extend({}, startRect),
+    inverted: utils.extend({}, startRect),
+    previous: utils.extend({}, startRect),
+    delta: {
+      left: 0, right: 0, width: 0,
+      top: 0, bottom: 0, height: 0
+    }
+  };
+
+  iEvent.rect = interaction.resizeRects.inverted;
+  iEvent.deltaRect = interaction.resizeRects.delta;
+});
+
+// resizemove
+InteractEvent.signals.on('new', function (_ref2) {
+  var iEvent = _ref2.iEvent,
+      phase = _ref2.phase,
+      interaction = _ref2.interaction;
+
+  if (phase !== 'move' || !interaction.prepared.edges) {
+    return;
+  }
+
+  var resizeOptions = interaction.target.options.resize;
+  var invert = resizeOptions.invert;
+  var invertible = invert === 'reposition' || invert === 'negate';
+
+  var edges = interaction.prepared.edges;
+
+  var start = interaction.resizeRects.start;
+  var current = interaction.resizeRects.current;
+  var inverted = interaction.resizeRects.inverted;
+  var delta = interaction.resizeRects.delta;
+  var previous = utils.extend(interaction.resizeRects.previous, inverted);
+  var originalEdges = edges;
+
+  var dx = iEvent.dx;
+  var dy = iEvent.dy;
+
+  if (resizeOptions.preserveAspectRatio || resizeOptions.square) {
+    // `resize.preserveAspectRatio` takes precedence over `resize.square`
+    var startAspectRatio = resizeOptions.preserveAspectRatio ? interaction.resizeStartAspectRatio : 1;
+
+    edges = interaction.prepared._linkedEdges;
+
+    if (originalEdges.left && originalEdges.bottom || originalEdges.right && originalEdges.top) {
+      dy = -dx / startAspectRatio;
+    } else if (originalEdges.left || originalEdges.right) {
+      dy = dx / startAspectRatio;
+    } else if (originalEdges.top || originalEdges.bottom) {
+      dx = dy * startAspectRatio;
+    }
+  }
+
+  // update the 'current' rect without modifications
+  if (edges.top) {
+    current.top += dy;
+  }
+  if (edges.bottom) {
+    current.bottom += dy;
+  }
+  if (edges.left) {
+    current.left += dx;
+  }
+  if (edges.right) {
+    current.right += dx;
+  }
+
+  if (invertible) {
+    // if invertible, copy the current rect
+    utils.extend(inverted, current);
+
+    if (invert === 'reposition') {
+      // swap edge values if necessary to keep width/height positive
+      var swap = void 0;
+
+      if (inverted.top > inverted.bottom) {
+        swap = inverted.top;
+
+        inverted.top = inverted.bottom;
+        inverted.bottom = swap;
+      }
+      if (inverted.left > inverted.right) {
+        swap = inverted.left;
+
+        inverted.left = inverted.right;
+        inverted.right = swap;
+      }
+    }
+  } else {
+    // if not invertible, restrict to minimum of 0x0 rect
+    inverted.top = Math.min(current.top, start.bottom);
+    inverted.bottom = Math.max(current.bottom, start.top);
+    inverted.left = Math.min(current.left, start.right);
+    inverted.right = Math.max(current.right, start.left);
+  }
+
+  inverted.width = inverted.right - inverted.left;
+  inverted.height = inverted.bottom - inverted.top;
+
+  for (var edge in inverted) {
+    delta[edge] = inverted[edge] - previous[edge];
+  }
+
+  iEvent.edges = interaction.prepared.edges;
+  iEvent.rect = inverted;
+  iEvent.deltaRect = delta;
+});
+
+/**
+ * ```js
+ * interact(element).resizable({
+ *   onstart: function (event) {},
+ *   onmove : function (event) {},
+ *   onend  : function (event) {},
+ *
+ *   edges: {
+ *     top   : true,       // Use pointer coords to check for resize.
+ *     left  : false,      // Disable resizing from left edge.
+ *     bottom: '.resize-s',// Resize if pointer target matches selector
+ *     right : handleEl    // Resize if pointer target is the given Element
+ *   },
+ *
+ *     // Width and height can be adjusted independently. When `true`, width and
+ *     // height are adjusted at a 1:1 ratio.
+ *     square: false,
+ *
+ *     // Width and height can be adjusted independently. When `true`, width and
+ *     // height maintain the aspect ratio they had when resizing started.
+ *     preserveAspectRatio: false,
+ *
+ *   // a value of 'none' will limit the resize rect to a minimum of 0x0
+ *   // 'negate' will allow the rect to have negative width/height
+ *   // 'reposition' will keep the width/height positive by swapping
+ *   // the top and bottom edges and/or swapping the left and right edges
+ *   invert: 'none' || 'negate' || 'reposition'
+ *
+ *   // limit multiple resizes.
+ *   // See the explanation in the {@link Interactable.draggable} example
+ *   max: Infinity,
+ *   maxPerElement: 1,
+ * });
+ *
+ * var isResizeable = interact(element).resizable();
+ * ```
+ *
+ * Gets or sets whether resize actions can be performed on the target
+ *
+ * @param {boolean | object} [options] true/false or An object with event
+ * listeners to be fired on resize events (object makes the Interactable
+ * resizable)
+ * @return {boolean | Interactable} A boolean indicating if this can be the
+ * target of resize elements, or this Interactable
+ */
+Interactable.prototype.resizable = function (options) {
+  if (utils.is.object(options)) {
+    this.options.resize.enabled = options.enabled === false ? false : true;
+    this.setPerAction('resize', options);
+    this.setOnEvents('resize', options);
+
+    if (/^x$|^y$|^xy$/.test(options.axis)) {
+      this.options.resize.axis = options.axis;
+    } else if (options.axis === null) {
+      this.options.resize.axis = defaultOptions.resize.axis;
+    }
+
+    if (utils.is.bool(options.preserveAspectRatio)) {
+      this.options.resize.preserveAspectRatio = options.preserveAspectRatio;
+    } else if (utils.is.bool(options.square)) {
+      this.options.resize.square = options.square;
+    }
+
+    return this;
+  }
+  if (utils.is.bool(options)) {
+    this.options.resize.enabled = options;
+
+    if (!options) {
+      this.onresizestart = this.onresizestart = this.onresizeend = null;
+    }
+
+    return this;
+  }
+  return this.options.resize;
+};
+
+function checkResizeEdge(name, value, page, element, interactableElement, rect, margin) {
+  // false, '', undefined, null
+  if (!value) {
+    return false;
+  }
+
+  // true value, use pointer coords and element rect
+  if (value === true) {
+    // if dimensions are negative, "switch" edges
+    var width = utils.is.number(rect.width) ? rect.width : rect.right - rect.left;
+    var height = utils.is.number(rect.height) ? rect.height : rect.bottom - rect.top;
+
+    if (width < 0) {
+      if (name === 'left') {
+        name = 'right';
+      } else if (name === 'right') {
+        name = 'left';
+      }
+    }
+    if (height < 0) {
+      if (name === 'top') {
+        name = 'bottom';
+      } else if (name === 'bottom') {
+        name = 'top';
+      }
+    }
+
+    if (name === 'left') {
+      return page.x < (width >= 0 ? rect.left : rect.right) + margin;
+    }
+    if (name === 'top') {
+      return page.y < (height >= 0 ? rect.top : rect.bottom) + margin;
+    }
+
+    if (name === 'right') {
+      return page.x > (width >= 0 ? rect.right : rect.left) - margin;
+    }
+    if (name === 'bottom') {
+      return page.y > (height >= 0 ? rect.bottom : rect.top) - margin;
+    }
+  }
+
+  // the remaining checks require an element
+  if (!utils.is.element(element)) {
+    return false;
+  }
+
+  return utils.is.element(value)
+  // the value is an element to use as a resize handle
+  ? value === element
+  // otherwise check if element matches value as selector
+  : utils.matchesUpTo(element, value, interactableElement);
+}
+
+Interaction.signals.on('new', function (interaction) {
+  interaction.resizeAxes = 'xy';
+});
+
+InteractEvent.signals.on('set-delta', function (_ref3) {
+  var interaction = _ref3.interaction,
+      iEvent = _ref3.iEvent,
+      action = _ref3.action;
+
+  if (action !== 'resize' || !interaction.resizeAxes) {
+    return;
+  }
+
+  var options = interaction.target.options;
+
+  if (options.resize.square) {
+    if (interaction.resizeAxes === 'y') {
+      iEvent.dx = iEvent.dy;
+    } else {
+      iEvent.dy = iEvent.dx;
+    }
+    iEvent.axes = 'xy';
+  } else {
+    iEvent.axes = interaction.resizeAxes;
+
+    if (interaction.resizeAxes === 'x') {
+      iEvent.dy = 0;
+    } else if (interaction.resizeAxes === 'y') {
+      iEvent.dx = 0;
+    }
+  }
+});
+
+actions.resize = resize;
+actions.names.push('resize');
+utils.merge(Interactable.eventTypes, ['resizestart', 'resizemove', 'resizeinertiastart', 'resizeinertiaresume', 'resizeend']);
+actions.methodDict.resize = 'resizable';
+
+defaultOptions.resize = resize.defaults;
+
+module.exports = resize;
+
+},{"../InteractEvent":3,"../Interactable":4,"../Interaction":5,"../defaultOptions":18,"../utils":43,"../utils/browser":36,"./base":6}],11:[function(require,module,exports){
+'use strict';
+
+var raf = require('./utils/raf');
+var getWindow = require('./utils/window').getWindow;
+var is = require('./utils/is');
+var domUtils = require('./utils/domUtils');
+var Interaction = require('./Interaction');
+var defaultOptions = require('./defaultOptions');
+
+var autoScroll = {
+  defaults: {
+    enabled: false,
+    container: null, // the item that is scrolled (Window or HTMLElement)
+    margin: 60,
+    speed: 300 // the scroll speed in pixels per second
+  },
+
+  interaction: null,
+  i: null, // the handle returned by window.setInterval
+  x: 0, y: 0, // Direction each pulse is to scroll in
+
+  isScrolling: false,
+  prevTime: 0,
+
+  start: function start(interaction) {
+    autoScroll.isScrolling = true;
+    raf.cancel(autoScroll.i);
+
+    autoScroll.interaction = interaction;
+    autoScroll.prevTime = new Date().getTime();
+    autoScroll.i = raf.request(autoScroll.scroll);
+  },
+
+  stop: function stop() {
+    autoScroll.isScrolling = false;
+    raf.cancel(autoScroll.i);
+  },
+
+  // scroll the window by the values in scroll.x/y
+  scroll: function scroll() {
+    var options = autoScroll.interaction.target.options[autoScroll.interaction.prepared.name].autoScroll;
+    var container = options.container || getWindow(autoScroll.interaction.element);
+    var now = new Date().getTime();
+    // change in time in seconds
+    var dt = (now - autoScroll.prevTime) / 1000;
+    // displacement
+    var s = options.speed * dt;
+
+    if (s >= 1) {
+      if (is.window(container)) {
+        container.scrollBy(autoScroll.x * s, autoScroll.y * s);
+      } else if (container) {
+        container.scrollLeft += autoScroll.x * s;
+        container.scrollTop += autoScroll.y * s;
+      }
+
+      autoScroll.prevTime = now;
+    }
+
+    if (autoScroll.isScrolling) {
+      raf.cancel(autoScroll.i);
+      autoScroll.i = raf.request(autoScroll.scroll);
+    }
+  },
+  check: function check(interactable, actionName) {
+    var options = interactable.options;
+
+    return options[actionName].autoScroll && options[actionName].autoScroll.enabled;
+  },
+  onInteractionMove: function onInteractionMove(_ref) {
+    var interaction = _ref.interaction,
+        pointer = _ref.pointer;
+
+    if (!(interaction.interacting() && autoScroll.check(interaction.target, interaction.prepared.name))) {
+      return;
+    }
+
+    if (interaction.simulation) {
+      autoScroll.x = autoScroll.y = 0;
+      return;
+    }
+
+    var top = void 0;
+    var right = void 0;
+    var bottom = void 0;
+    var left = void 0;
+
+    var options = interaction.target.options[interaction.prepared.name].autoScroll;
+    var container = options.container || getWindow(interaction.element);
+
+    if (is.window(container)) {
+      left = pointer.clientX < autoScroll.margin;
+      top = pointer.clientY < autoScroll.margin;
+      right = pointer.clientX > container.innerWidth - autoScroll.margin;
+      bottom = pointer.clientY > container.innerHeight - autoScroll.margin;
+    } else {
+      var rect = domUtils.getElementClientRect(container);
+
+      left = pointer.clientX < rect.left + autoScroll.margin;
+      top = pointer.clientY < rect.top + autoScroll.margin;
+      right = pointer.clientX > rect.right - autoScroll.margin;
+      bottom = pointer.clientY > rect.bottom - autoScroll.margin;
+    }
+
+    autoScroll.x = right ? 1 : left ? -1 : 0;
+    autoScroll.y = bottom ? 1 : top ? -1 : 0;
+
+    if (!autoScroll.isScrolling) {
+      // set the autoScroll properties to those of the target
+      autoScroll.margin = options.margin;
+      autoScroll.speed = options.speed;
+
+      autoScroll.start(interaction);
+    }
+  }
+};
+
+Interaction.signals.on('stop-active', function () {
+  autoScroll.stop();
+});
+
+Interaction.signals.on('action-move', autoScroll.onInteractionMove);
+
+defaultOptions.perAction.autoScroll = autoScroll.defaults;
+
+module.exports = autoScroll;
+
+},{"./Interaction":5,"./defaultOptions":18,"./utils/domUtils":38,"./utils/is":45,"./utils/raf":49,"./utils/window":51}],12:[function(require,module,exports){
+'use strict';
+
+/** @lends Interactable */
+var Interactable = require('../Interactable');
+var actions = require('../actions/base');
+var is = require('../utils/is');
+var domUtils = require('../utils/domUtils');
+
+var _require = require('../utils'),
+    warnOnce = _require.warnOnce;
+
+Interactable.prototype.getAction = function (pointer, event, interaction, element) {
+  var action = this.defaultActionChecker(pointer, event, interaction, element);
+
+  if (this.options.actionChecker) {
+    return this.options.actionChecker(pointer, event, action, this, element, interaction);
+  }
+
+  return action;
+};
+
+/**
+ * ```js
+ * interact(element, { ignoreFrom: document.getElementById('no-action') });
+ * // or
+ * interact(element).ignoreFrom('input, textarea, a');
+ * ```
+ * @deprecated
+ * If the target of the `mousedown`, `pointerdown` or `touchstart` event or any
+ * of it's parents match the given CSS selector or Element, no
+ * drag/resize/gesture is started.
+ *
+ * Don't use this method. Instead set the `ignoreFrom` option for each action
+ * or for `pointerEvents`
+ *
+ * @example
+ * interact(targett)
+ *   .draggable({
+ *     ignoreFrom: 'input, textarea, a[href]'',
+ *   })
+ *   .pointerEvents({
+ *     ignoreFrom: '[no-pointer]',
+ *   });
+ *
+ * @param {string | Element | null} [newValue] a CSS selector string, an
+ * Element or `null` to not ignore any elements
+ * @return {string | Element | object} The current ignoreFrom value or this
+ * Interactable
+ */
+Interactable.prototype.ignoreFrom = warnOnce(function (newValue) {
+  return this._backCompatOption('ignoreFrom', newValue);
+}, 'Interactable.ignoreForm() has been deprecated. Use Interactble.draggable({ignoreFrom: newValue}).');
+
+/**
+ * ```js
+ *
+ * @deprecated
+ * A drag/resize/gesture is started only If the target of the `mousedown`,
+ * `pointerdown` or `touchstart` event or any of it's parents match the given
+ * CSS selector or Element.
+ *
+ * Don't use this method. Instead set the `allowFrom` option for each action
+ * or for `pointerEvents`
+ *
+ * @example
+ * interact(targett)
+ *   .resizable({
+ *     allowFrom: '.resize-handle',
+ *   .pointerEvents({
+ *     allowFrom: '.handle',,
+ *   });
+ *
+ * @param {string | Element | null} [newValue] a CSS selector string, an
+ * Element or `null` to allow from any element
+ * @return {string | Element | object} The current allowFrom value or this
+ * Interactable
+ */
+Interactable.prototype.allowFrom = warnOnce(function (newValue) {
+  return this._backCompatOption('allowFrom', newValue);
+}, 'Interactable.allowForm() has been deprecated. Use Interactble.draggable({allowFrom: newValue}).');
+
+Interactable.prototype.testIgnore = function (ignoreFrom, interactableElement, element) {
+  if (!ignoreFrom || !is.element(element)) {
+    return false;
+  }
+
+  if (is.string(ignoreFrom)) {
+    return domUtils.matchesUpTo(element, ignoreFrom, interactableElement);
+  } else if (is.element(ignoreFrom)) {
+    return domUtils.nodeContains(ignoreFrom, element);
+  }
+
+  return false;
+};
+
+Interactable.prototype.testAllow = function (allowFrom, interactableElement, element) {
+  if (!allowFrom) {
+    return true;
+  }
+
+  if (!is.element(element)) {
+    return false;
+  }
+
+  if (is.string(allowFrom)) {
+    return domUtils.matchesUpTo(element, allowFrom, interactableElement);
+  } else if (is.element(allowFrom)) {
+    return domUtils.nodeContains(allowFrom, element);
+  }
+
+  return false;
+};
+
+Interactable.prototype.testIgnoreAllow = function (options, interactableElement, eventTarget) {
+  return !this.testIgnore(options.ignoreFrom, interactableElement, eventTarget) && this.testAllow(options.allowFrom, interactableElement, eventTarget);
+};
+
+/**
+ * ```js
+ * interact('.resize-drag')
+ *   .resizable(true)
+ *   .draggable(true)
+ *   .actionChecker(function (pointer, event, action, interactable, element, interaction) {
+ *
+ *   if (interact.matchesSelector(event.target, '.drag-handle') {
+ *     // force drag with handle target
+ *     action.name = drag;
+ *   }
+ *   else {
+ *     // resize from the top and right edges
+ *     action.name  = 'resize';
+ *     action.edges = { top: true, right: true };
+ *   }
+ *
+ *   return action;
+ * });
+ * ```
+ *
+ * Gets or sets the function used to check action to be performed on
+ * pointerDown
+ *
+ * @param {function | null} [checker] A function which takes a pointer event,
+ * defaultAction string, interactable, element and interaction as parameters
+ * and returns an object with name property 'drag' 'resize' or 'gesture' and
+ * optionally an `edges` object with boolean 'top', 'left', 'bottom' and right
+ * props.
+ * @return {Function | Interactable} The checker function or this Interactable
+ */
+Interactable.prototype.actionChecker = function (checker) {
+  if (is.function(checker)) {
+    this.options.actionChecker = checker;
+
+    return this;
+  }
+
+  if (checker === null) {
+    delete this.options.actionChecker;
+
+    return this;
+  }
+
+  return this.options.actionChecker;
+};
+
+/**
+ * Returns or sets whether the the cursor should be changed depending on the
+ * action that would be performed if the mouse were pressed and dragged.
+ *
+ * @param {boolean} [newValue]
+ * @return {boolean | Interactable} The current setting or this Interactable
+ */
+Interactable.prototype.styleCursor = function (newValue) {
+  if (is.bool(newValue)) {
+    this.options.styleCursor = newValue;
+
+    return this;
+  }
+
+  if (newValue === null) {
+    delete this.options.styleCursor;
+
+    return this;
+  }
+
+  return this.options.styleCursor;
+};
+
+Interactable.prototype.defaultActionChecker = function (pointer, event, interaction, element) {
+  var rect = this.getRect(element);
+  var buttons = event.buttons || {
+    0: 1,
+    1: 4,
+    3: 8,
+    4: 16
+  }[event.button];
+  var action = null;
+
+  for (var _i = 0; _i < actions.names.length; _i++) {
+    var _ref;
+
+    _ref = actions.names[_i];
+    var actionName = _ref;
+
+    // check mouseButton setting if the pointer is down
+    if (interaction.pointerIsDown && /mouse|pointer/.test(interaction.pointerType) && (buttons & this.options[actionName].mouseButtons) === 0) {
+      continue;
+    }
+
+    action = actions[actionName].checker(pointer, event, this, element, interaction, rect);
+
+    if (action) {
+      return action;
+    }
+  }
+};
+
+},{"../Interactable":4,"../actions/base":6,"../utils":43,"../utils/domUtils":38,"../utils/is":45}],13:[function(require,module,exports){
+'use strict';
+
+var interact = require('../interact');
+var Interactable = require('../Interactable');
+var Interaction = require('../Interaction');
+var actions = require('../actions/base');
+var defaultOptions = require('../defaultOptions');
+var scope = require('../scope');
+var utils = require('../utils');
+var signals = require('../utils/Signals').new();
+
+require('./InteractableMethods');
+
+var autoStart = {
+  signals: signals,
+  withinInteractionLimit: withinInteractionLimit,
+  // Allow this many interactions to happen simultaneously
+  maxInteractions: Infinity,
+  defaults: {
+    perAction: {
+      manualStart: false,
+      max: Infinity,
+      maxPerElement: 1,
+      allowFrom: null,
+      ignoreFrom: null,
+
+      // only allow left button by default
+      // see https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons#Return_value
+      mouseButtons: 1
+    }
+  },
+  setActionDefaults: function setActionDefaults(action) {
+    utils.extend(action.defaults, autoStart.defaults.perAction);
+  },
+  validateAction: validateAction
+};
+
+// set cursor style on mousedown
+Interaction.signals.on('down', function (_ref) {
+  var interaction = _ref.interaction,
+      pointer = _ref.pointer,
+      event = _ref.event,
+      eventTarget = _ref.eventTarget;
+
+  if (interaction.interacting()) {
+    return;
+  }
+
+  var actionInfo = getActionInfo(interaction, pointer, event, eventTarget);
+  prepare(interaction, actionInfo);
+});
+
+// set cursor style on mousemove
+Interaction.signals.on('move', function (_ref2) {
+  var interaction = _ref2.interaction,
+      pointer = _ref2.pointer,
+      event = _ref2.event,
+      eventTarget = _ref2.eventTarget;
+
+  if (interaction.pointerType !== 'mouse' || interaction.pointerIsDown || interaction.interacting()) {
+    return;
+  }
+
+  var actionInfo = getActionInfo(interaction, pointer, event, eventTarget);
+  prepare(interaction, actionInfo);
+});
+
+Interaction.signals.on('move', function (arg) {
+  var interaction = arg.interaction,
+      event = arg.event;
+
+
+  if (!interaction.pointerIsDown || interaction.interacting() || !interaction.pointerWasMoved || !interaction.prepared.name) {
+    return;
+  }
+
+  signals.fire('before-start', arg);
+
+  var target = interaction.target;
+
+  if (interaction.prepared.name && target) {
+    // check manualStart and interaction limit
+    if (target.options[interaction.prepared.name].manualStart || !withinInteractionLimit(target, interaction.element, interaction.prepared)) {
+      interaction.stop(event);
+    } else {
+      interaction.start(interaction.prepared, target, interaction.element);
+    }
+  }
+});
+
+// Check if the current target supports the action.
+// If so, return the validated action. Otherwise, return null
+function validateAction(action, interactable, element, eventTarget) {
+  if (utils.is.object(action) && interactable.testIgnoreAllow(interactable.options[action.name], element, eventTarget) && interactable.options[action.name].enabled && withinInteractionLimit(interactable, element, action)) {
+    return action;
+  }
+
+  return null;
+}
+
+function validateSelector(interaction, pointer, event, matches, matchElements, eventTarget) {
+  for (var i = 0, len = matches.length; i < len; i++) {
+    var match = matches[i];
+    var matchElement = matchElements[i];
+    var action = validateAction(match.getAction(pointer, event, interaction, matchElement), match, matchElement, eventTarget);
+
+    if (action) {
+      return {
+        action: action,
+        target: match,
+        element: matchElement
+      };
+    }
+  }
+
+  return {};
+}
+
+function getActionInfo(interaction, pointer, event, eventTarget) {
+  var matches = [];
+  var matchElements = [];
+
+  var element = eventTarget;
+
+  function pushMatches(interactable) {
+    matches.push(interactable);
+    matchElements.push(element);
+  }
+
+  while (utils.is.element(element)) {
+    matches = [];
+    matchElements = [];
+
+    scope.interactables.forEachMatch(element, pushMatches);
+
+    var actionInfo = validateSelector(interaction, pointer, event, matches, matchElements, eventTarget);
+
+    if (actionInfo.action && !actionInfo.target.options[actionInfo.action.name].manualStart) {
+      return actionInfo;
+    }
+
+    element = utils.parentNode(element);
+  }
+
+  return {};
+}
+
+function prepare(interaction, _ref3) {
+  var action = _ref3.action,
+      target = _ref3.target,
+      element = _ref3.element;
+
+  action = action || {};
+
+  if (interaction.target && interaction.target.options.styleCursor) {
+    interaction.target._doc.documentElement.style.cursor = '';
+  }
+
+  interaction.target = target;
+  interaction.element = element;
+  utils.copyAction(interaction.prepared, action);
+
+  if (target && target.options.styleCursor) {
+    var cursor = action ? actions[action.name].getCursor(action) : '';
+    interaction.target._doc.documentElement.style.cursor = cursor;
+  }
+
+  signals.fire('prepared', { interaction: interaction });
+}
+
+Interaction.signals.on('stop', function (_ref4) {
+  var interaction = _ref4.interaction;
+
+  var target = interaction.target;
+
+  if (target && target.options.styleCursor) {
+    target._doc.documentElement.style.cursor = '';
+  }
+});
+
+function withinInteractionLimit(interactable, element, action) {
+  var options = interactable.options;
+  var maxActions = options[action.name].max;
+  var maxPerElement = options[action.name].maxPerElement;
+  var activeInteractions = 0;
+  var targetCount = 0;
+  var targetElementCount = 0;
+
+  // no actions if any of these values == 0
+  if (!(maxActions && maxPerElement && autoStart.maxInteractions)) {
+    return;
+  }
+
+  for (var _i = 0; _i < scope.interactions.length; _i++) {
+    var _ref5;
+
+    _ref5 = scope.interactions[_i];
+    var interaction = _ref5;
+
+    var otherAction = interaction.prepared.name;
+
+    if (!interaction.interacting()) {
+      continue;
+    }
+
+    activeInteractions++;
+
+    if (activeInteractions >= autoStart.maxInteractions) {
+      return false;
+    }
+
+    if (interaction.target !== interactable) {
+      continue;
+    }
+
+    targetCount += otherAction === action.name | 0;
+
+    if (targetCount >= maxActions) {
+      return false;
+    }
+
+    if (interaction.element === element) {
+      targetElementCount++;
+
+      if (otherAction !== action.name || targetElementCount >= maxPerElement) {
+        return false;
+      }
+    }
+  }
+
+  return autoStart.maxInteractions > 0;
+}
+
+/**
+ * Returns or sets the maximum number of concurrent interactions allowed.  By
+ * default only 1 interaction is allowed at a time (for backwards
+ * compatibility). To allow multiple interactions on the same Interactables and
+ * elements, you need to enable it in the draggable, resizable and gesturable
+ * `'max'` and `'maxPerElement'` options.
+ *
+ * @alias module:interact.maxInteractions
+ *
+ * @param {number} [newValue] Any number. newValue <= 0 means no interactions.
+ */
+interact.maxInteractions = function (newValue) {
+  if (utils.is.number(newValue)) {
+    autoStart.maxInteractions = newValue;
+
+    return interact;
+  }
+
+  return autoStart.maxInteractions;
+};
+
+Interactable.settingsMethods.push('styleCursor');
+Interactable.settingsMethods.push('actionChecker');
+Interactable.settingsMethods.push('ignoreFrom');
+Interactable.settingsMethods.push('allowFrom');
+
+defaultOptions.base.actionChecker = null;
+defaultOptions.base.styleCursor = true;
+
+utils.extend(defaultOptions.perAction, autoStart.defaults.perAction);
+
+module.exports = autoStart;
+
+},{"../Interactable":4,"../Interaction":5,"../actions/base":6,"../defaultOptions":18,"../interact":21,"../scope":33,"../utils":43,"../utils/Signals":34,"./InteractableMethods":12}],14:[function(require,module,exports){
+'use strict';
+
+var autoStart = require('./base');
+var scope = require('../scope');
+var is = require('../utils/is');
+
+var _require = require('../utils/domUtils'),
+    parentNode = _require.parentNode;
+
+autoStart.setActionDefaults(require('../actions/drag'));
+
+autoStart.signals.on('before-start', function (_ref) {
+  var interaction = _ref.interaction,
+      eventTarget = _ref.eventTarget,
+      dx = _ref.dx,
+      dy = _ref.dy;
+
+  if (interaction.prepared.name !== 'drag') {
+    return;
+  }
+
+  // check if a drag is in the correct axis
+  var absX = Math.abs(dx);
+  var absY = Math.abs(dy);
+  var targetOptions = interaction.target.options.drag;
+  var startAxis = targetOptions.startAxis;
+  var currentAxis = absX > absY ? 'x' : absX < absY ? 'y' : 'xy';
+
+  interaction.prepared.axis = targetOptions.lockAxis === 'start' ? currentAxis[0] // always lock to one axis even if currentAxis === 'xy'
+  : targetOptions.lockAxis;
+
+  // if the movement isn't in the startAxis of the interactable
+  if (currentAxis !== 'xy' && startAxis !== 'xy' && startAxis !== currentAxis) {
+    // cancel the prepared action
+    interaction.prepared.name = null;
+
+    // then try to get a drag from another ineractable
+    var element = eventTarget;
+
+    var getDraggable = function getDraggable(interactable) {
+      if (interactable === interaction.target) {
+        return;
+      }
+
+      var options = interaction.target.options.drag;
+
+      if (!options.manualStart && interactable.testIgnoreAllow(options, element, eventTarget)) {
+
+        var action = interactable.getAction(interaction.downPointer, interaction.downEvent, interaction, element);
+
+        if (action && action.name === 'drag' && checkStartAxis(currentAxis, interactable) && autoStart.validateAction(action, interactable, element, eventTarget)) {
+
+          return interactable;
+        }
+      }
+    };
+
+    // check all interactables
+    while (is.element(element)) {
+      var interactable = scope.interactables.forEachMatch(element, getDraggable);
+
+      if (interactable) {
+        interaction.prepared.name = 'drag';
+        interaction.target = interactable;
+        interaction.element = element;
+        break;
+      }
+
+      element = parentNode(element);
+    }
+  }
+});
+
+function checkStartAxis(startAxis, interactable) {
+  if (!interactable) {
+    return false;
+  }
+
+  var thisAxis = interactable.options.drag.startAxis;
+
+  return startAxis === 'xy' || thisAxis === 'xy' || thisAxis === startAxis;
+}
+
+},{"../actions/drag":7,"../scope":33,"../utils/domUtils":38,"../utils/is":45,"./base":13}],15:[function(require,module,exports){
+'use strict';
+
+require('./base').setActionDefaults(require('../actions/gesture'));
+
+},{"../actions/gesture":9,"./base":13}],16:[function(require,module,exports){
+'use strict';
+
+var autoStart = require('./base');
+var Interaction = require('../Interaction');
+
+autoStart.defaults.perAction.hold = 0;
+autoStart.defaults.perAction.delay = 0;
+
+Interaction.signals.on('new', function (interaction) {
+  interaction.autoStartHoldTimer = null;
+});
+
+autoStart.signals.on('prepared', function (_ref) {
+  var interaction = _ref.interaction;
+
+  var hold = getHoldDuration(interaction);
+
+  if (hold > 0) {
+    interaction.autoStartHoldTimer = setTimeout(function () {
+      interaction.start(interaction.prepared, interaction.target, interaction.element);
+    }, hold);
+  }
+});
+
+Interaction.signals.on('move', function (_ref2) {
+  var interaction = _ref2.interaction,
+      duplicate = _ref2.duplicate;
+
+  if (interaction.pointerWasMoved && !duplicate) {
+    clearTimeout(interaction.autoStartHoldTimer);
+  }
+});
+
+// prevent regular down->move autoStart
+autoStart.signals.on('before-start', function (_ref3) {
+  var interaction = _ref3.interaction;
+
+  var hold = getHoldDuration(interaction);
+
+  if (hold > 0) {
+    interaction.prepared.name = null;
+  }
+});
+
+function getHoldDuration(interaction) {
+  var actionName = interaction.prepared && interaction.prepared.name;
+
+  if (!actionName) {
+    return null;
+  }
+
+  var options = interaction.target.options;
+
+  return options[actionName].hold || options[actionName].delay;
+}
+
+module.exports = {
+  getHoldDuration: getHoldDuration
+};
+
+},{"../Interaction":5,"./base":13}],17:[function(require,module,exports){
+'use strict';
+
+require('./base').setActionDefaults(require('../actions/resize'));
+
+},{"../actions/resize":10,"./base":13}],18:[function(require,module,exports){
+'use strict';
+
+module.exports = {
+  base: {
+    accept: null,
+    preventDefault: 'auto',
+    deltaSource: 'page'
+  },
+
+  perAction: {
+    origin: { x: 0, y: 0 },
+
+    inertia: {
+      enabled: false,
+      resistance: 10, // the lambda in exponential decay
+      minSpeed: 100, // target speed must be above this for inertia to start
+      endSpeed: 10, // the speed at which inertia is slow enough to stop
+      allowResume: true, // allow resuming an action in inertia phase
+      smoothEndDuration: 300 // animate to snap/restrict endOnly if there's no inertia
+    }
+  }
+};
+
+},{}],19:[function(require,module,exports){
+'use strict';
+
+/* browser entry point */
+
+// inertia
+require('./inertia');
+
+// modifiers
+require('./modifiers/snap');
+require('./modifiers/restrict');
+
+// pointerEvents
+require('./pointerEvents/base');
+require('./pointerEvents/holdRepeat');
+require('./pointerEvents/interactableTargets');
+
+// autoStart hold
+require('./autoStart/hold');
+
+// actions
+require('./actions/gesture');
+require('./actions/resize');
+require('./actions/drag');
+require('./actions/drop');
+
+// load these modifiers after resize is loaded
+require('./modifiers/snapSize');
+require('./modifiers/restrictEdges');
+require('./modifiers/restrictSize');
+
+// autoStart actions
+require('./autoStart/gesture');
+require('./autoStart/resize');
+require('./autoStart/drag');
+
+// Interactable preventDefault setting
+require('./interactablePreventDefault.js');
+
+// autoScroll
+require('./autoScroll');
+
+// export interact
+module.exports = require('./interact');
+
+},{"./actions/drag":7,"./actions/drop":8,"./actions/gesture":9,"./actions/resize":10,"./autoScroll":11,"./autoStart/drag":14,"./autoStart/gesture":15,"./autoStart/hold":16,"./autoStart/resize":17,"./inertia":20,"./interact":21,"./interactablePreventDefault.js":22,"./modifiers/restrict":24,"./modifiers/restrictEdges":25,"./modifiers/restrictSize":26,"./modifiers/snap":27,"./modifiers/snapSize":28,"./pointerEvents/base":30,"./pointerEvents/holdRepeat":31,"./pointerEvents/interactableTargets":32}],20:[function(require,module,exports){
+'use strict';
+
+var InteractEvent = require('./InteractEvent');
+var Interaction = require('./Interaction');
+var modifiers = require('./modifiers/base');
+var utils = require('./utils');
+var animationFrame = require('./utils/raf');
+
+Interaction.signals.on('new', function (interaction) {
+  interaction.inertiaStatus = {
+    active: false,
+    smoothEnd: false,
+    allowResume: false,
+
+    startEvent: null,
+    upCoords: {},
+
+    xe: 0, ye: 0,
+    sx: 0, sy: 0,
+
+    t0: 0,
+    vx0: 0, vys: 0,
+    duration: 0,
+
+    lambda_v0: 0,
+    one_ve_v0: 0,
+    i: null
+  };
+
+  interaction.boundInertiaFrame = function () {
+    return inertiaFrame.apply(interaction);
+  };
+  interaction.boundSmoothEndFrame = function () {
+    return smoothEndFrame.apply(interaction);
+  };
+});
+
+Interaction.signals.on('down', function (_ref) {
+  var interaction = _ref.interaction,
+      event = _ref.event,
+      pointer = _ref.pointer,
+      eventTarget = _ref.eventTarget;
+
+  var status = interaction.inertiaStatus;
+
+  // Check if the down event hits the current inertia target
+  if (status.active) {
+    var element = eventTarget;
+
+    // climb up the DOM tree from the event target
+    while (utils.is.element(element)) {
+
+      // if interaction element is the current inertia target element
+      if (element === interaction.element) {
+        // stop inertia
+        animationFrame.cancel(status.i);
+        status.active = false;
+        interaction.simulation = null;
+
+        // update pointers to the down event's coordinates
+        interaction.updatePointer(pointer);
+        utils.setCoords(interaction.curCoords, interaction.pointers);
+
+        // fire appropriate signals
+        var signalArg = { interaction: interaction };
+        Interaction.signals.fire('before-action-move', signalArg);
+        Interaction.signals.fire('action-resume', signalArg);
+
+        // fire a reume event
+        var resumeEvent = new InteractEvent(interaction, event, interaction.prepared.name, 'inertiaresume', interaction.element);
+
+        interaction.target.fire(resumeEvent);
+        interaction.prevEvent = resumeEvent;
+        modifiers.resetStatuses(interaction.modifierStatuses);
+
+        utils.copyCoords(interaction.prevCoords, interaction.curCoords);
+        break;
+      }
+
+      element = utils.parentNode(element);
+    }
+  }
+});
+
+Interaction.signals.on('up', function (_ref2) {
+  var interaction = _ref2.interaction,
+      event = _ref2.event;
+
+  var status = interaction.inertiaStatus;
+
+  if (!interaction.interacting() || status.active) {
+    return;
+  }
+
+  var target = interaction.target;
+  var options = target && target.options;
+  var inertiaOptions = options && interaction.prepared.name && options[interaction.prepared.name].inertia;
+
+  var now = new Date().getTime();
+  var statuses = {};
+  var page = utils.extend({}, interaction.curCoords.page);
+  var pointerSpeed = interaction.pointerDelta.client.speed;
+
+  var smoothEnd = false;
+  var modifierResult = void 0;
+
+  // check if inertia should be started
+  var inertiaPossible = inertiaOptions && inertiaOptions.enabled && interaction.prepared.name !== 'gesture' && event !== status.startEvent;
+
+  var inertia = inertiaPossible && now - interaction.curCoords.timeStamp < 50 && pointerSpeed > inertiaOptions.minSpeed && pointerSpeed > inertiaOptions.endSpeed;
+
+  var modifierArg = {
+    interaction: interaction,
+    pageCoords: page,
+    statuses: statuses,
+    preEnd: true,
+    requireEndOnly: true
+  };
+
+  // smoothEnd
+  if (inertiaPossible && !inertia) {
+    modifiers.resetStatuses(statuses);
+
+    modifierResult = modifiers.setAll(modifierArg);
+
+    if (modifierResult.shouldMove && modifierResult.locked) {
+      smoothEnd = true;
+    }
+  }
+
+  if (!(inertia || smoothEnd)) {
+    return;
+  }
+
+  utils.copyCoords(status.upCoords, interaction.curCoords);
+
+  interaction.pointers[0] = status.startEvent = new InteractEvent(interaction, event, interaction.prepared.name, 'inertiastart', interaction.element);
+
+  status.t0 = now;
+
+  status.active = true;
+  status.allowResume = inertiaOptions.allowResume;
+  interaction.simulation = status;
+
+  target.fire(status.startEvent);
+
+  if (inertia) {
+    status.vx0 = interaction.pointerDelta.client.vx;
+    status.vy0 = interaction.pointerDelta.client.vy;
+    status.v0 = pointerSpeed;
+
+    calcInertia(interaction, status);
+
+    utils.extend(page, interaction.curCoords.page);
+
+    page.x += status.xe;
+    page.y += status.ye;
+
+    modifiers.resetStatuses(statuses);
+
+    modifierResult = modifiers.setAll(modifierArg);
+
+    status.modifiedXe += modifierResult.dx;
+    status.modifiedYe += modifierResult.dy;
+
+    status.i = animationFrame.request(interaction.boundInertiaFrame);
+  } else {
+    status.smoothEnd = true;
+    status.xe = modifierResult.dx;
+    status.ye = modifierResult.dy;
+
+    status.sx = status.sy = 0;
+
+    status.i = animationFrame.request(interaction.boundSmoothEndFrame);
+  }
+});
+
+Interaction.signals.on('stop-active', function (_ref3) {
+  var interaction = _ref3.interaction;
+
+  var status = interaction.inertiaStatus;
+
+  if (status.active) {
+    animationFrame.cancel(status.i);
+    status.active = false;
+    interaction.simulation = null;
+  }
+});
+
+function calcInertia(interaction, status) {
+  var inertiaOptions = interaction.target.options[interaction.prepared.name].inertia;
+  var lambda = inertiaOptions.resistance;
+  var inertiaDur = -Math.log(inertiaOptions.endSpeed / status.v0) / lambda;
+
+  status.x0 = interaction.prevEvent.pageX;
+  status.y0 = interaction.prevEvent.pageY;
+  status.t0 = status.startEvent.timeStamp / 1000;
+  status.sx = status.sy = 0;
+
+  status.modifiedXe = status.xe = (status.vx0 - inertiaDur) / lambda;
+  status.modifiedYe = status.ye = (status.vy0 - inertiaDur) / lambda;
+  status.te = inertiaDur;
+
+  status.lambda_v0 = lambda / status.v0;
+  status.one_ve_v0 = 1 - inertiaOptions.endSpeed / status.v0;
+}
+
+function inertiaFrame() {
+  updateInertiaCoords(this);
+  utils.setCoordDeltas(this.pointerDelta, this.prevCoords, this.curCoords);
+
+  var status = this.inertiaStatus;
+  var options = this.target.options[this.prepared.name].inertia;
+  var lambda = options.resistance;
+  var t = new Date().getTime() / 1000 - status.t0;
+
+  if (t < status.te) {
+
+    var progress = 1 - (Math.exp(-lambda * t) - status.lambda_v0) / status.one_ve_v0;
+
+    if (status.modifiedXe === status.xe && status.modifiedYe === status.ye) {
+      status.sx = status.xe * progress;
+      status.sy = status.ye * progress;
+    } else {
+      var quadPoint = utils.getQuadraticCurvePoint(0, 0, status.xe, status.ye, status.modifiedXe, status.modifiedYe, progress);
+
+      status.sx = quadPoint.x;
+      status.sy = quadPoint.y;
+    }
+
+    this.doMove();
+
+    status.i = animationFrame.request(this.boundInertiaFrame);
+  } else {
+    status.sx = status.modifiedXe;
+    status.sy = status.modifiedYe;
+
+    this.doMove();
+    this.end(status.startEvent);
+    status.active = false;
+    this.simulation = null;
+  }
+
+  utils.copyCoords(this.prevCoords, this.curCoords);
+}
+
+function smoothEndFrame() {
+  updateInertiaCoords(this);
+
+  var status = this.inertiaStatus;
+  var t = new Date().getTime() - status.t0;
+  var duration = this.target.options[this.prepared.name].inertia.smoothEndDuration;
+
+  if (t < duration) {
+    status.sx = utils.easeOutQuad(t, 0, status.xe, duration);
+    status.sy = utils.easeOutQuad(t, 0, status.ye, duration);
+
+    this.pointerMove(status.startEvent, status.startEvent);
+
+    status.i = animationFrame.request(this.boundSmoothEndFrame);
+  } else {
+    status.sx = status.xe;
+    status.sy = status.ye;
+
+    this.pointerMove(status.startEvent, status.startEvent);
+    this.end(status.startEvent);
+
+    status.smoothEnd = status.active = false;
+    this.simulation = null;
+  }
+}
+
+function updateInertiaCoords(interaction) {
+  var status = interaction.inertiaStatus;
+
+  // return if inertia isn't running
+  if (!status.active) {
+    return;
+  }
+
+  var pageUp = status.upCoords.page;
+  var clientUp = status.upCoords.client;
+
+  utils.setCoords(interaction.curCoords, [{
+    pageX: pageUp.x + status.sx,
+    pageY: pageUp.y + status.sy,
+    clientX: clientUp.x + status.sx,
+    clientY: clientUp.y + status.sy
+  }]);
+}
+
+},{"./InteractEvent":3,"./Interaction":5,"./modifiers/base":23,"./utils":43,"./utils/raf":49}],21:[function(require,module,exports){
+'use strict';
+
+/** @module interact */
+
+var browser = require('./utils/browser');
+var events = require('./utils/events');
+var utils = require('./utils');
+var scope = require('./scope');
+var Interactable = require('./Interactable');
+var Interaction = require('./Interaction');
+
+var globalEvents = {};
+
+/**
+ * ```js
+ * interact('#draggable').draggable(true);
+ *
+ * var rectables = interact('rect');
+ * rectables
+ *   .gesturable(true)
+ *   .on('gesturemove', function (event) {
+ *       // ...
+ *   });
+ * ```
+ *
+ * The methods of this variable can be used to set elements as interactables
+ * and also to change various default settings.
+ *
+ * Calling it as a function and passing an element or a valid CSS selector
+ * string returns an Interactable object which has various methods to configure
+ * it.
+ *
+ * @global
+ *
+ * @param {Element | string} element The HTML or SVG Element to interact with
+ * or CSS selector
+ * @return {Interactable}
+ */
+function interact(element, options) {
+  var interactable = scope.interactables.get(element, options);
+
+  if (!interactable) {
+    interactable = new Interactable(element, options);
+    interactable.events.global = globalEvents;
+  }
+
+  return interactable;
+}
+
+/**
+ * Check if an element or selector has been set with the {@link interact}
+ * function
+ *
+ * @alias module:interact.isSet
+ *
+ * @param {Element} element The Element being searched for
+ * @return {boolean} Indicates if the element or CSS selector was previously
+ * passed to interact
+*/
+interact.isSet = function (element, options) {
+  return scope.interactables.indexOfElement(element, options && options.context) !== -1;
+};
+
+/**
+ * Add a global listener for an InteractEvent or adds a DOM event to `document`
+ *
+ * @alias module:interact.on
+ *
+ * @param {string | array | object} type The types of events to listen for
+ * @param {function} listener The function event (s)
+ * @param {object | boolean} [options] object or useCapture flag for
+ * addEventListener
+ * @return {object} interact
+ */
+interact.on = function (type, listener, options) {
+  if (utils.is.string(type) && type.search(' ') !== -1) {
+    type = type.trim().split(/ +/);
+  }
+
+  if (utils.is.array(type)) {
+    for (var _i = 0; _i < type.length; _i++) {
+      var _ref;
+
+      _ref = type[_i];
+      var eventType = _ref;
+
+      interact.on(eventType, listener, options);
+    }
+
+    return interact;
+  }
+
+  if (utils.is.object(type)) {
+    for (var prop in type) {
+      interact.on(prop, type[prop], listener);
+    }
+
+    return interact;
+  }
+
+  // if it is an InteractEvent type, add listener to globalEvents
+  if (utils.contains(Interactable.eventTypes, type)) {
+    // if this type of event was never bound
+    if (!globalEvents[type]) {
+      globalEvents[type] = [listener];
+    } else {
+      globalEvents[type].push(listener);
+    }
+  }
+  // If non InteractEvent type, addEventListener to document
+  else {
+      events.add(scope.document, type, listener, { options: options });
+    }
+
+  return interact;
+};
+
+/**
+ * Removes a global InteractEvent listener or DOM event from `document`
+ *
+ * @alias module:interact.off
+ *
+ * @param {string | array | object} type The types of events that were listened
+ * for
+ * @param {function} listener The listener function to be removed
+ * @param {object | boolean} options [options] object or useCapture flag for
+ * removeEventListener
+ * @return {object} interact
+ */
+interact.off = function (type, listener, options) {
+  if (utils.is.string(type) && type.search(' ') !== -1) {
+    type = type.trim().split(/ +/);
+  }
+
+  if (utils.is.array(type)) {
+    for (var _i2 = 0; _i2 < type.length; _i2++) {
+      var _ref2;
+
+      _ref2 = type[_i2];
+      var eventType = _ref2;
+
+      interact.off(eventType, listener, options);
+    }
+
+    return interact;
+  }
+
+  if (utils.is.object(type)) {
+    for (var prop in type) {
+      interact.off(prop, type[prop], listener);
+    }
+
+    return interact;
+  }
+
+  if (!utils.contains(Interactable.eventTypes, type)) {
+    events.remove(scope.document, type, listener, options);
+  } else {
+    var index = void 0;
+
+    if (type in globalEvents && (index = globalEvents[type].indexOf(listener)) !== -1) {
+      globalEvents[type].splice(index, 1);
+    }
+  }
+
+  return interact;
+};
+
+/**
+ * Returns an object which exposes internal data
+
+ * @alias module:interact.debug
+ *
+ * @return {object} An object with properties that outline the current state
+ * and expose internal functions and variables
+ */
+interact.debug = function () {
+  return scope;
+};
+
+// expose the functions used to calculate multi-touch properties
+interact.getPointerAverage = utils.pointerAverage;
+interact.getTouchBBox = utils.touchBBox;
+interact.getTouchDistance = utils.touchDistance;
+interact.getTouchAngle = utils.touchAngle;
+
+interact.getElementRect = utils.getElementRect;
+interact.getElementClientRect = utils.getElementClientRect;
+interact.matchesSelector = utils.matchesSelector;
+interact.closest = utils.closest;
+
+/**
+ * @alias module:interact.supportsTouch
+ *
+ * @return {boolean} Whether or not the browser supports touch input
+ */
+interact.supportsTouch = function () {
+  return browser.supportsTouch;
+};
+
+/**
+ * @alias module:interact.supportsPointerEvent
+ *
+ * @return {boolean} Whether or not the browser supports PointerEvents
+ */
+interact.supportsPointerEvent = function () {
+  return browser.supportsPointerEvent;
+};
+
+/**
+ * Cancels all interactions (end events are not fired)
+ *
+ * @alias module:interact.stop
+ *
+ * @param {Event} event An event on which to call preventDefault()
+ * @return {object} interact
+ */
+interact.stop = function (event) {
+  for (var i = scope.interactions.length - 1; i >= 0; i--) {
+    scope.interactions[i].stop(event);
+  }
+
+  return interact;
+};
+
+/**
+ * Returns or sets the distance the pointer must be moved before an action
+ * sequence occurs. This also affects tolerance for tap events.
+ *
+ * @alias module:interact.pointerMoveTolerance
+ *
+ * @param {number} [newValue] The movement from the start position must be greater than this value
+ * @return {interact | number}
+ */
+interact.pointerMoveTolerance = function (newValue) {
+  if (utils.is.number(newValue)) {
+    Interaction.pointerMoveTolerance = newValue;
+
+    return interact;
+  }
+
+  return Interaction.pointerMoveTolerance;
+};
+
+interact.addDocument = scope.addDocument;
+interact.removeDocument = scope.removeDocument;
+
+scope.interact = interact;
+
+module.exports = interact;
+
+},{"./Interactable":4,"./Interaction":5,"./scope":33,"./utils":43,"./utils/browser":36,"./utils/events":39}],22:[function(require,module,exports){
+'use strict';
+
+var Interactable = require('./Interactable');
+var Interaction = require('./Interaction');
+var scope = require('./scope');
+var is = require('./utils/is');
+var events = require('./utils/events');
+var browser = require('./utils/browser');
+
+var _require = require('./utils/domUtils'),
+    nodeContains = _require.nodeContains,
+    matchesSelector = _require.matchesSelector;
+
+/**
+ * Returns or sets whether to prevent the browser's default behaviour in
+ * response to pointer events. Can be set to:
+ *  - `'always'` to always prevent
+ *  - `'never'` to never prevent
+ *  - `'auto'` to let interact.js try to determine what would be best
+ *
+ * @param {string} [newValue] `true`, `false` or `'auto'`
+ * @return {string | Interactable} The current setting or this Interactable
+ */
+
+
+Interactable.prototype.preventDefault = function (newValue) {
+  if (/^(always|never|auto)$/.test(newValue)) {
+    this.options.preventDefault = newValue;
+    return this;
+  }
+
+  if (is.bool(newValue)) {
+    this.options.preventDefault = newValue ? 'always' : 'never';
+    return this;
+  }
+
+  return this.options.preventDefault;
+};
+
+Interactable.prototype.checkAndPreventDefault = function (event) {
+  var setting = this.options.preventDefault;
+
+  if (setting === 'never') {
+    return;
+  }
+
+  if (setting === 'always') {
+    event.preventDefault();
+    return;
+  }
+
+  // setting === 'auto'
+
+  // don't preventDefault of touch{start,move} events if the browser supports passive
+  // events listeners. CSS touch-action and user-selecct should be used instead
+  if (events.supportsPassive && /^touch(start|move)$/.test(event.type) && !browser.isIOS) {
+    return;
+  }
+
+  // don't preventDefault of pointerdown events
+  if (/^(mouse|pointer|touch)*(down|start)/i.test(event.type)) {
+    return;
+  }
+
+  // don't preventDefault on editable elements
+  if (is.element(event.target) && matchesSelector(event.target, 'input,select,textarea,[contenteditable=true],[contenteditable=true] *')) {
+    return;
+  }
+
+  event.preventDefault();
+};
+
+function onInteractionEvent(_ref) {
+  var interaction = _ref.interaction,
+      event = _ref.event;
+
+  if (interaction.target) {
+    interaction.target.checkAndPreventDefault(event);
+  }
+}
+
+var _arr = ['down', 'move', 'up', 'cancel'];
+for (var _i = 0; _i < _arr.length; _i++) {
+  var eventSignal = _arr[_i];
+  Interaction.signals.on(eventSignal, onInteractionEvent);
+}
+
+// prevent native HTML5 drag on interact.js target elements
+Interaction.docEvents.dragstart = function preventNativeDrag(event) {
+  for (var _i2 = 0; _i2 < scope.interactions.length; _i2++) {
+    var _ref2;
+
+    _ref2 = scope.interactions[_i2];
+    var interaction = _ref2;
+
+
+    if (interaction.element && (interaction.element === event.target || nodeContains(interaction.element, event.target))) {
+
+      interaction.target.checkAndPreventDefault(event);
+      return;
+    }
+  }
+};
+
+},{"./Interactable":4,"./Interaction":5,"./scope":33,"./utils/browser":36,"./utils/domUtils":38,"./utils/events":39,"./utils/is":45}],23:[function(require,module,exports){
+'use strict';
+
+var InteractEvent = require('../InteractEvent');
+var Interaction = require('../Interaction');
+var extend = require('../utils/extend');
+
+var modifiers = {
+  names: [],
+
+  setOffsets: function setOffsets(arg) {
+    var interaction = arg.interaction,
+        page = arg.pageCoords;
+    var target = interaction.target,
+        element = interaction.element,
+        startOffset = interaction.startOffset;
+
+    var rect = target.getRect(element);
+
+    if (rect) {
+      startOffset.left = page.x - rect.left;
+      startOffset.top = page.y - rect.top;
+
+      startOffset.right = rect.right - page.x;
+      startOffset.bottom = rect.bottom - page.y;
+
+      if (!('width' in rect)) {
+        rect.width = rect.right - rect.left;
+      }
+      if (!('height' in rect)) {
+        rect.height = rect.bottom - rect.top;
+      }
+    } else {
+      startOffset.left = startOffset.top = startOffset.right = startOffset.bottom = 0;
+    }
+
+    arg.rect = rect;
+    arg.interactable = target;
+    arg.element = element;
+
+    for (var _i = 0; _i < modifiers.names.length; _i++) {
+      var _ref;
+
+      _ref = modifiers.names[_i];
+      var modifierName = _ref;
+
+      arg.options = target.options[interaction.prepared.name][modifierName];
+
+      if (!arg.options) {
+        continue;
+      }
+
+      interaction.modifierOffsets[modifierName] = modifiers[modifierName].setOffset(arg);
+    }
+  },
+
+  setAll: function setAll(arg) {
+    var interaction = arg.interaction,
+        statuses = arg.statuses,
+        preEnd = arg.preEnd,
+        requireEndOnly = arg.requireEndOnly;
+
+    var result = {
+      dx: 0,
+      dy: 0,
+      changed: false,
+      locked: false,
+      shouldMove: true
+    };
+
+    arg.modifiedCoords = extend({}, arg.pageCoords);
+
+    for (var _i2 = 0; _i2 < modifiers.names.length; _i2++) {
+      var _ref2;
+
+      _ref2 = modifiers.names[_i2];
+      var modifierName = _ref2;
+
+      var modifier = modifiers[modifierName];
+      var options = interaction.target.options[interaction.prepared.name][modifierName];
+
+      if (!shouldDo(options, preEnd, requireEndOnly)) {
+        continue;
+      }
+
+      arg.status = arg.status = statuses[modifierName];
+      arg.options = options;
+      arg.offset = arg.interaction.modifierOffsets[modifierName];
+
+      modifier.set(arg);
+
+      if (arg.status.locked) {
+        arg.modifiedCoords.x += arg.status.dx;
+        arg.modifiedCoords.y += arg.status.dy;
+
+        result.dx += arg.status.dx;
+        result.dy += arg.status.dy;
+
+        result.locked = true;
+      }
+    }
+
+    // a move should be fired if:
+    //  - there are no modifiers enabled,
+    //  - no modifiers are "locked" i.e. have changed the pointer's coordinates, or
+    //  - the locked coords have changed since the last pointer move
+    result.shouldMove = !arg.status || !result.locked || arg.status.changed;
+
+    return result;
+  },
+
+  resetStatuses: function resetStatuses(statuses) {
+    for (var _i3 = 0; _i3 < modifiers.names.length; _i3++) {
+      var _ref3;
+
+      _ref3 = modifiers.names[_i3];
+      var modifierName = _ref3;
+
+      var status = statuses[modifierName] || {};
+
+      status.dx = status.dy = 0;
+      status.modifiedX = status.modifiedY = NaN;
+      status.locked = false;
+      status.changed = true;
+
+      statuses[modifierName] = status;
+    }
+
+    return statuses;
+  },
+
+  start: function start(_ref4, signalName) {
+    var interaction = _ref4.interaction;
+
+    var arg = {
+      interaction: interaction,
+      pageCoords: (signalName === 'action-resume' ? interaction.curCoords : interaction.startCoords).page,
+      startOffset: interaction.startOffset,
+      statuses: interaction.modifierStatuses,
+      preEnd: false,
+      requireEndOnly: false
+    };
+
+    modifiers.setOffsets(arg);
+    modifiers.resetStatuses(arg.statuses);
+
+    arg.pageCoords = extend({}, interaction.startCoords.page);
+    interaction.modifierResult = modifiers.setAll(arg);
+  },
+
+  beforeMove: function beforeMove(_ref5) {
+    var interaction = _ref5.interaction,
+        preEnd = _ref5.preEnd,
+        interactingBeforeMove = _ref5.interactingBeforeMove;
+
+    var modifierResult = modifiers.setAll({
+      interaction: interaction,
+      preEnd: preEnd,
+      pageCoords: interaction.curCoords.page,
+      statuses: interaction.modifierStatuses,
+      requireEndOnly: false
+    });
+
+    // don't fire an action move if a modifier would keep the event in the same
+    // cordinates as before
+    if (!modifierResult.shouldMove && interactingBeforeMove) {
+      interaction._dontFireMove = true;
+    }
+
+    interaction.modifierResult = modifierResult;
+  },
+
+  end: function end(_ref6) {
+    var interaction = _ref6.interaction,
+        event = _ref6.event;
+
+    for (var _i4 = 0; _i4 < modifiers.names.length; _i4++) {
+      var _ref7;
+
+      _ref7 = modifiers.names[_i4];
+      var modifierName = _ref7;
+
+      var options = interaction.target.options[interaction.prepared.name][modifierName];
+
+      // if the endOnly option is true for any modifier
+      if (shouldDo(options, true, true)) {
+        // fire a move event at the modified coordinates
+        interaction.doMove({ event: event, preEnd: true });
+        break;
+      }
+    }
+  },
+
+  setXY: function setXY(arg) {
+    var iEvent = arg.iEvent,
+        interaction = arg.interaction;
+
+    var modifierArg = extend({}, arg);
+
+    for (var i = 0; i < modifiers.names.length; i++) {
+      var modifierName = modifiers.names[i];
+      modifierArg.options = interaction.target.options[interaction.prepared.name][modifierName];
+
+      if (!modifierArg.options) {
+        continue;
+      }
+
+      var modifier = modifiers[modifierName];
+
+      modifierArg.status = interaction.modifierStatuses[modifierName];
+
+      iEvent[modifierName] = modifier.modifyCoords(modifierArg);
+    }
+  }
+};
+
+Interaction.signals.on('new', function (interaction) {
+  interaction.startOffset = { left: 0, right: 0, top: 0, bottom: 0 };
+  interaction.modifierOffsets = {};
+  interaction.modifierStatuses = modifiers.resetStatuses({});
+  interaction.modifierResult = null;
+});
+
+Interaction.signals.on('action-start', modifiers.start);
+Interaction.signals.on('action-resume', modifiers.start);
+Interaction.signals.on('before-action-move', modifiers.beforeMove);
+Interaction.signals.on('action-end', modifiers.end);
+
+InteractEvent.signals.on('set-xy', modifiers.setXY);
+
+function shouldDo(options, preEnd, requireEndOnly) {
+  return options && options.enabled && (preEnd || !options.endOnly) && (!requireEndOnly || options.endOnly);
+}
+
+module.exports = modifiers;
+
+},{"../InteractEvent":3,"../Interaction":5,"../utils/extend":40}],24:[function(require,module,exports){
+'use strict';
+
+var modifiers = require('./base');
+var utils = require('../utils');
+var defaultOptions = require('../defaultOptions');
+
+var restrict = {
+  defaults: {
+    enabled: false,
+    endOnly: false,
+    restriction: null,
+    elementRect: null
+  },
+
+  setOffset: function setOffset(_ref) {
+    var rect = _ref.rect,
+        startOffset = _ref.startOffset,
+        options = _ref.options;
+
+    var elementRect = options && options.elementRect;
+    var offset = {};
+
+    if (rect && elementRect) {
+      offset.left = startOffset.left - rect.width * elementRect.left;
+      offset.top = startOffset.top - rect.height * elementRect.top;
+
+      offset.right = startOffset.right - rect.width * (1 - elementRect.right);
+      offset.bottom = startOffset.bottom - rect.height * (1 - elementRect.bottom);
+    } else {
+      offset.left = offset.top = offset.right = offset.bottom = 0;
+    }
+
+    return offset;
+  },
+
+  set: function set(_ref2) {
+    var modifiedCoords = _ref2.modifiedCoords,
+        interaction = _ref2.interaction,
+        status = _ref2.status,
+        options = _ref2.options;
+
+    if (!options) {
+      return status;
+    }
+
+    var page = status.useStatusXY ? { x: status.x, y: status.y } : utils.extend({}, modifiedCoords);
+
+    var restriction = getRestrictionRect(options.restriction, interaction, page);
+
+    if (!restriction) {
+      return status;
+    }
+
+    status.dx = 0;
+    status.dy = 0;
+    status.locked = false;
+
+    var rect = restriction;
+    var modifiedX = page.x;
+    var modifiedY = page.y;
+
+    var offset = interaction.modifierOffsets.restrict;
+
+    // object is assumed to have
+    // x, y, width, height or
+    // left, top, right, bottom
+    if ('x' in restriction && 'y' in restriction) {
+      modifiedX = Math.max(Math.min(rect.x + rect.width - offset.right, page.x), rect.x + offset.left);
+      modifiedY = Math.max(Math.min(rect.y + rect.height - offset.bottom, page.y), rect.y + offset.top);
+    } else {
+      modifiedX = Math.max(Math.min(rect.right - offset.right, page.x), rect.left + offset.left);
+      modifiedY = Math.max(Math.min(rect.bottom - offset.bottom, page.y), rect.top + offset.top);
+    }
+
+    status.dx = modifiedX - page.x;
+    status.dy = modifiedY - page.y;
+
+    status.changed = status.modifiedX !== modifiedX || status.modifiedY !== modifiedY;
+    status.locked = !!(status.dx || status.dy);
+
+    status.modifiedX = modifiedX;
+    status.modifiedY = modifiedY;
+  },
+
+  modifyCoords: function modifyCoords(_ref3) {
+    var page = _ref3.page,
+        client = _ref3.client,
+        status = _ref3.status,
+        phase = _ref3.phase,
+        options = _ref3.options;
+
+    var elementRect = options && options.elementRect;
+
+    if (options && options.enabled && !(phase === 'start' && elementRect && status.locked)) {
+
+      if (status.locked) {
+        page.x += status.dx;
+        page.y += status.dy;
+        client.x += status.dx;
+        client.y += status.dy;
+
+        return {
+          dx: status.dx,
+          dy: status.dy
+        };
+      }
+    }
+  },
+
+  getRestrictionRect: getRestrictionRect
+};
+
+function getRestrictionRect(value, interaction, page) {
+  if (utils.is.function(value)) {
+    return utils.resolveRectLike(value, interaction.target, interaction.element, [page.x, page.y, interaction]);
+  } else {
+    return utils.resolveRectLike(value, interaction.target, interaction.element);
+  }
+}
+
+modifiers.restrict = restrict;
+modifiers.names.push('restrict');
+
+defaultOptions.perAction.restrict = restrict.defaults;
+
+module.exports = restrict;
+
+},{"../defaultOptions":18,"../utils":43,"./base":23}],25:[function(require,module,exports){
+'use strict';
+
+// This module adds the options.resize.restrictEdges setting which sets min and
+// max for the top, left, bottom and right edges of the target being resized.
+//
+// interact(target).resize({
+//   edges: { top: true, left: true },
+//   restrictEdges: {
+//     inner: { top: 200, left: 200, right: 400, bottom: 400 },
+//     outer: { top:   0, left:   0, right: 600, bottom: 600 },
+//   },
+// });
+
+var modifiers = require('./base');
+var utils = require('../utils');
+var rectUtils = require('../utils/rect');
+var defaultOptions = require('../defaultOptions');
+var resize = require('../actions/resize');
+
+var _require = require('./restrict'),
+    getRestrictionRect = _require.getRestrictionRect;
+
+var noInner = { top: +Infinity, left: +Infinity, bottom: -Infinity, right: -Infinity };
+var noOuter = { top: -Infinity, left: -Infinity, bottom: +Infinity, right: +Infinity };
+
+var restrictEdges = {
+  defaults: {
+    enabled: false,
+    endOnly: false,
+    min: null,
+    max: null,
+    offset: null
+  },
+
+  setOffset: function setOffset(_ref) {
+    var interaction = _ref.interaction,
+        startOffset = _ref.startOffset,
+        options = _ref.options;
+
+    if (!options) {
+      return utils.extend({}, startOffset);
+    }
+
+    var offset = getRestrictionRect(options.offset, interaction, interaction.startCoords.page);
+
+    if (offset) {
+      return {
+        top: startOffset.top + offset.y,
+        left: startOffset.left + offset.x,
+        bottom: startOffset.bottom + offset.y,
+        right: startOffset.right + offset.x
+      };
+    }
+
+    return startOffset;
+  },
+
+  set: function set(_ref2) {
+    var modifiedCoords = _ref2.modifiedCoords,
+        interaction = _ref2.interaction,
+        status = _ref2.status,
+        offset = _ref2.offset,
+        options = _ref2.options;
+
+    var edges = interaction.prepared.linkedEdges || interaction.prepared.edges;
+
+    if (!interaction.interacting() || !edges) {
+      return;
+    }
+
+    var page = status.useStatusXY ? { x: status.x, y: status.y } : utils.extend({}, modifiedCoords);
+    var inner = rectUtils.xywhToTlbr(getRestrictionRect(options.inner, interaction, page)) || noInner;
+    var outer = rectUtils.xywhToTlbr(getRestrictionRect(options.outer, interaction, page)) || noOuter;
+
+    var modifiedX = page.x;
+    var modifiedY = page.y;
+
+    status.dx = 0;
+    status.dy = 0;
+    status.locked = false;
+
+    if (edges.top) {
+      modifiedY = Math.min(Math.max(outer.top + offset.top, page.y), inner.top + offset.top);
+    } else if (edges.bottom) {
+      modifiedY = Math.max(Math.min(outer.bottom - offset.bottom, page.y), inner.bottom - offset.bottom);
+    }
+    if (edges.left) {
+      modifiedX = Math.min(Math.max(outer.left + offset.left, page.x), inner.left + offset.left);
+    } else if (edges.right) {
+      modifiedX = Math.max(Math.min(outer.right - offset.right, page.x), inner.right - offset.right);
+    }
+
+    status.dx = modifiedX - page.x;
+    status.dy = modifiedY - page.y;
+
+    status.changed = status.modifiedX !== modifiedX || status.modifiedY !== modifiedY;
+    status.locked = !!(status.dx || status.dy);
+
+    status.modifiedX = modifiedX;
+    status.modifiedY = modifiedY;
+  },
+
+  modifyCoords: function modifyCoords(_ref3) {
+    var page = _ref3.page,
+        client = _ref3.client,
+        status = _ref3.status,
+        phase = _ref3.phase,
+        options = _ref3.options;
+
+    if (options && options.enabled && !(phase === 'start' && status.locked)) {
+
+      if (status.locked) {
+        page.x += status.dx;
+        page.y += status.dy;
+        client.x += status.dx;
+        client.y += status.dy;
+
+        return {
+          dx: status.dx,
+          dy: status.dy
+        };
+      }
+    }
+  },
+
+  noInner: noInner,
+  noOuter: noOuter,
+  getRestrictionRect: getRestrictionRect
+};
+
+modifiers.restrictEdges = restrictEdges;
+modifiers.names.push('restrictEdges');
+
+defaultOptions.perAction.restrictEdges = restrictEdges.defaults;
+resize.defaults.restrictEdges = restrictEdges.defaults;
+
+module.exports = restrictEdges;
+
+},{"../actions/resize":10,"../defaultOptions":18,"../utils":43,"../utils/rect":50,"./base":23,"./restrict":24}],26:[function(require,module,exports){
+'use strict';
+
+// This module adds the options.resize.restrictSize setting which sets min and
+// max width and height for the target being resized.
+//
+// interact(target).resize({
+//   edges: { top: true, left: true },
+//   restrictSize: {
+//     min: { width: -600, height: -600 },
+//     max: { width:  600, height:  600 },
+//   },
+// });
+
+var modifiers = require('./base');
+var restrictEdges = require('./restrictEdges');
+var utils = require('../utils');
+var rectUtils = require('../utils/rect');
+var defaultOptions = require('../defaultOptions');
+var resize = require('../actions/resize');
+
+var noMin = { width: -Infinity, height: -Infinity };
+var noMax = { width: +Infinity, height: +Infinity };
+
+var restrictSize = {
+  defaults: {
+    enabled: false,
+    endOnly: false,
+    min: null,
+    max: null
+  },
+
+  setOffset: function setOffset(_ref) {
+    var interaction = _ref.interaction;
+
+    return interaction.startOffset;
+  },
+
+  set: function set(arg) {
+    var interaction = arg.interaction,
+        options = arg.options;
+
+    var edges = interaction.prepared.linkedEdges || interaction.prepared.edges;
+
+    if (!interaction.interacting() || !edges) {
+      return;
+    }
+
+    var rect = rectUtils.xywhToTlbr(interaction.resizeRects.inverted);
+
+    var minSize = rectUtils.tlbrToXywh(restrictEdges.getRestrictionRect(options.min, interaction)) || noMin;
+    var maxSize = rectUtils.tlbrToXywh(restrictEdges.getRestrictionRect(options.max, interaction)) || noMax;
+
+    arg.options = {
+      enabled: options.enabled,
+      endOnly: options.endOnly,
+      inner: utils.extend({}, restrictEdges.noInner),
+      outer: utils.extend({}, restrictEdges.noOuter)
+    };
+
+    if (edges.top) {
+      arg.options.inner.top = rect.bottom - minSize.height;
+      arg.options.outer.top = rect.bottom - maxSize.height;
+    } else if (edges.bottom) {
+      arg.options.inner.bottom = rect.top + minSize.height;
+      arg.options.outer.bottom = rect.top + maxSize.height;
+    }
+    if (edges.left) {
+      arg.options.inner.left = rect.right - minSize.width;
+      arg.options.outer.left = rect.right - maxSize.width;
+    } else if (edges.right) {
+      arg.options.inner.right = rect.left + minSize.width;
+      arg.options.outer.right = rect.left + maxSize.width;
+    }
+
+    restrictEdges.set(arg);
+  },
+
+  modifyCoords: restrictEdges.modifyCoords
+};
+
+modifiers.restrictSize = restrictSize;
+modifiers.names.push('restrictSize');
+
+defaultOptions.perAction.restrictSize = restrictSize.defaults;
+resize.defaults.restrictSize = restrictSize.defaults;
+
+module.exports = restrictSize;
+
+},{"../actions/resize":10,"../defaultOptions":18,"../utils":43,"../utils/rect":50,"./base":23,"./restrictEdges":25}],27:[function(require,module,exports){
+'use strict';
+
+var modifiers = require('./base');
+var interact = require('../interact');
+var utils = require('../utils');
+var defaultOptions = require('../defaultOptions');
+
+var snap = {
+  defaults: {
+    enabled: false,
+    endOnly: false,
+    range: Infinity,
+    targets: null,
+    offsets: null,
+
+    relativePoints: null
+  },
+
+  setOffset: function setOffset(_ref) {
+    var interaction = _ref.interaction,
+        interactable = _ref.interactable,
+        element = _ref.element,
+        rect = _ref.rect,
+        startOffset = _ref.startOffset,
+        options = _ref.options;
+
+    var offsets = [];
+    var optionsOrigin = utils.rectToXY(utils.resolveRectLike(options.origin));
+    var origin = optionsOrigin || utils.getOriginXY(interactable, element, interaction.prepared.name);
+    options = options || interactable.options[interaction.prepared.name].snap || {};
+
+    var snapOffset = void 0;
+
+    if (options.offset === 'startCoords') {
+      snapOffset = {
+        x: interaction.startCoords.page.x - origin.x,
+        y: interaction.startCoords.page.y - origin.y
+      };
+    } else {
+      var offsetRect = utils.resolveRectLike(options.offset, interactable, element, [interaction]);
+
+      snapOffset = utils.rectToXY(offsetRect) || { x: 0, y: 0 };
+    }
+
+    if (rect && options.relativePoints && options.relativePoints.length) {
+      for (var _i = 0; _i < options.relativePoints.length; _i++) {
+        var _ref3;
+
+        _ref3 = options.relativePoints[_i];
+        var _ref2 = _ref3;
+        var relativeX = _ref2.x;
+        var relativeY = _ref2.y;
+
+        offsets.push({
+          x: startOffset.left - rect.width * relativeX + snapOffset.x,
+          y: startOffset.top - rect.height * relativeY + snapOffset.y
+        });
+      }
+    } else {
+      offsets.push(snapOffset);
+    }
+
+    return offsets;
+  },
+
+  set: function set(_ref4) {
+    var interaction = _ref4.interaction,
+        modifiedCoords = _ref4.modifiedCoords,
+        status = _ref4.status,
+        options = _ref4.options,
+        offsets = _ref4.offset;
+
+    var targets = [];
+    var target = void 0;
+    var page = void 0;
+    var i = void 0;
+
+    if (status.useStatusXY) {
+      page = { x: status.x, y: status.y };
+    } else {
+      var origin = utils.getOriginXY(interaction.target, interaction.element, interaction.prepared.name);
+
+      page = utils.extend({}, modifiedCoords);
+
+      page.x -= origin.x;
+      page.y -= origin.y;
+    }
+
+    status.realX = page.x;
+    status.realY = page.y;
+
+    var len = options.targets ? options.targets.length : 0;
+
+    for (var _i2 = 0; _i2 < offsets.length; _i2++) {
+      var _ref6;
+
+      _ref6 = offsets[_i2];
+      var _ref5 = _ref6;
+      var offsetX = _ref5.x;
+      var offsetY = _ref5.y;
+
+      var relativeX = page.x - offsetX;
+      var relativeY = page.y - offsetY;
+
+      for (var _i3 = 0; _i3 < (options.targets || []).length; _i3++) {
+        var _ref7;
+
+        _ref7 = (options.targets || [])[_i3];
+        var snapTarget = _ref7;
+
+        if (utils.is.function(snapTarget)) {
+          target = snapTarget(relativeX, relativeY, interaction);
+        } else {
+          target = snapTarget;
+        }
+
+        if (!target) {
+          continue;
+        }
+
+        targets.push({
+          x: utils.is.number(target.x) ? target.x + offsetX : relativeX,
+          y: utils.is.number(target.y) ? target.y + offsetY : relativeY,
+
+          range: utils.is.number(target.range) ? target.range : options.range
+        });
+      }
+    }
+
+    var closest = {
+      target: null,
+      inRange: false,
+      distance: 0,
+      range: 0,
+      dx: 0,
+      dy: 0
+    };
+
+    for (i = 0, len = targets.length; i < len; i++) {
+      target = targets[i];
+
+      var range = target.range;
+      var dx = target.x - page.x;
+      var dy = target.y - page.y;
+      var distance = utils.hypot(dx, dy);
+      var inRange = distance <= range;
+
+      // Infinite targets count as being out of range
+      // compared to non infinite ones that are in range
+      if (range === Infinity && closest.inRange && closest.range !== Infinity) {
+        inRange = false;
+      }
+
+      if (!closest.target || (inRange
+      // is the closest target in range?
+      ? closest.inRange && range !== Infinity
+      // the pointer is relatively deeper in this target
+      ? distance / range < closest.distance / closest.range
+      // this target has Infinite range and the closest doesn't
+      : range === Infinity && closest.range !== Infinity ||
+      // OR this target is closer that the previous closest
+      distance < closest.distance :
+      // The other is not in range and the pointer is closer to this target
+      !closest.inRange && distance < closest.distance)) {
+
+        closest.target = target;
+        closest.distance = distance;
+        closest.range = range;
+        closest.inRange = inRange;
+        closest.dx = dx;
+        closest.dy = dy;
+
+        status.range = range;
+      }
+    }
+
+    var snapChanged = void 0;
+
+    if (closest.target) {
+      snapChanged = status.modifiedX !== closest.target.x || status.modifiedY !== closest.target.y;
+
+      status.modifiedX = closest.target.x;
+      status.modifiedY = closest.target.y;
+    } else {
+      snapChanged = true;
+
+      status.modifiedX = NaN;
+      status.modifiedY = NaN;
+    }
+
+    status.dx = closest.dx;
+    status.dy = closest.dy;
+
+    status.changed = snapChanged || closest.inRange && !status.locked;
+    status.locked = closest.inRange;
+  },
+
+  modifyCoords: function modifyCoords(_ref8) {
+    var page = _ref8.page,
+        client = _ref8.client,
+        status = _ref8.status,
+        phase = _ref8.phase,
+        options = _ref8.options;
+
+    var relativePoints = options && options.relativePoints;
+
+    if (options && options.enabled && !(phase === 'start' && relativePoints && relativePoints.length)) {
+
+      if (status.locked) {
+        page.x += status.dx;
+        page.y += status.dy;
+        client.x += status.dx;
+        client.y += status.dy;
+      }
+
+      return {
+        range: status.range,
+        locked: status.locked,
+        x: status.modifiedX,
+        y: status.modifiedY,
+        realX: status.realX,
+        realY: status.realY,
+        dx: status.dx,
+        dy: status.dy
+      };
+    }
+  }
+};
+
+interact.createSnapGrid = function (grid) {
+  return function (x, y) {
+    var limits = grid.limits || {
+      left: -Infinity,
+      right: Infinity,
+      top: -Infinity,
+      bottom: Infinity
+    };
+    var offsetX = 0;
+    var offsetY = 0;
+
+    if (utils.is.object(grid.offset)) {
+      offsetX = grid.offset.x;
+      offsetY = grid.offset.y;
+    }
+
+    var gridx = Math.round((x - offsetX) / grid.x);
+    var gridy = Math.round((y - offsetY) / grid.y);
+
+    var newX = Math.max(limits.left, Math.min(limits.right, gridx * grid.x + offsetX));
+    var newY = Math.max(limits.top, Math.min(limits.bottom, gridy * grid.y + offsetY));
+
+    return {
+      x: newX,
+      y: newY,
+      range: grid.range
+    };
+  };
+};
+
+modifiers.snap = snap;
+modifiers.names.push('snap');
+
+defaultOptions.perAction.snap = snap.defaults;
+
+module.exports = snap;
+
+},{"../defaultOptions":18,"../interact":21,"../utils":43,"./base":23}],28:[function(require,module,exports){
+'use strict';
+
+// This module allows snapping of the size of targets during resize
+// interactions.
+
+var modifiers = require('./base');
+var snap = require('./snap');
+var defaultOptions = require('../defaultOptions');
+var resize = require('../actions/resize');
+var utils = require('../utils/');
+
+var snapSize = {
+  defaults: {
+    enabled: false,
+    endOnly: false,
+    range: Infinity,
+    targets: null,
+    offsets: null
+  },
+
+  setOffset: function setOffset(arg) {
+    var interaction = arg.interaction,
+        options = arg.options;
+
+    var edges = interaction.prepared.edges;
+
+    if (!edges) {
+      return;
+    }
+
+    arg.options = {
+      relativePoints: [{
+        x: edges.left ? 0 : 1,
+        y: edges.top ? 0 : 1
+      }],
+      origin: { x: 0, y: 0 },
+      offset: 'self',
+      range: options.range
+    };
+
+    var offsets = snap.setOffset(arg);
+    arg.options = options;
+
+    return offsets;
+  },
+
+  set: function set(arg) {
+    var interaction = arg.interaction,
+        options = arg.options,
+        offset = arg.offset,
+        modifiedCoords = arg.modifiedCoords;
+
+    var page = utils.extend({}, modifiedCoords);
+    var relativeX = page.x - offset[0].x;
+    var relativeY = page.y - offset[0].y;
+
+    arg.options = utils.extend({}, options);
+    arg.options.targets = [];
+
+    for (var _i = 0; _i < (options.targets || []).length; _i++) {
+      var _ref;
+
+      _ref = (options.targets || [])[_i];
+      var snapTarget = _ref;
+
+      var target = void 0;
+
+      if (utils.is.function(snapTarget)) {
+        target = snapTarget(relativeX, relativeY, interaction);
+      } else {
+        target = snapTarget;
+      }
+
+      if (!target) {
+        continue;
+      }
+
+      if ('width' in target && 'height' in target) {
+        target.x = target.width;
+        target.y = target.height;
+      }
+
+      arg.options.targets.push(target);
+    }
+
+    snap.set(arg);
+  },
+
+  modifyCoords: function modifyCoords(arg) {
+    var options = arg.options;
+
+
+    arg.options = utils.extend({}, options);
+    arg.options.enabled = options.enabled;
+    arg.options.relativePoints = [null];
+
+    snap.modifyCoords(arg);
+  }
+};
+
+modifiers.snapSize = snapSize;
+modifiers.names.push('snapSize');
+
+defaultOptions.perAction.snapSize = snapSize.defaults;
+resize.defaults.snapSize = snapSize.defaults;
+
+module.exports = snapSize;
+
+},{"../actions/resize":10,"../defaultOptions":18,"../utils/":43,"./base":23,"./snap":27}],29:[function(require,module,exports){
+'use strict';
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var pointerUtils = require('../utils/pointerUtils');
+
+module.exports = function () {
+  /** */
+  function PointerEvent(type, pointer, event, eventTarget, interaction) {
+    _classCallCheck(this, PointerEvent);
+
+    pointerUtils.pointerExtend(this, event);
+
+    if (event !== pointer) {
+      pointerUtils.pointerExtend(this, pointer);
+    }
+
+    this.interaction = interaction;
+
+    this.timeStamp = new Date().getTime();
+    this.originalEvent = event;
+    this.type = type;
+    this.pointerId = pointerUtils.getPointerId(pointer);
+    this.pointerType = pointerUtils.getPointerType(pointer);
+    this.target = eventTarget;
+    this.currentTarget = null;
+
+    if (type === 'tap') {
+      var pointerIndex = interaction.getPointerIndex(pointer);
+      this.dt = this.timeStamp - interaction.downTimes[pointerIndex];
+
+      var interval = this.timeStamp - interaction.tapTime;
+
+      this.double = !!(interaction.prevTap && interaction.prevTap.type !== 'doubletap' && interaction.prevTap.target === this.target && interval < 500);
+    } else if (type === 'doubletap') {
+      this.dt = pointer.timeStamp - interaction.tapTime;
+    }
+  }
+
+  PointerEvent.prototype.subtractOrigin = function subtractOrigin(_ref) {
+    var originX = _ref.x,
+        originY = _ref.y;
+
+    this.pageX -= originX;
+    this.pageY -= originY;
+    this.clientX -= originX;
+    this.clientY -= originY;
+
+    return this;
+  };
+
+  PointerEvent.prototype.addOrigin = function addOrigin(_ref2) {
+    var originX = _ref2.x,
+        originY = _ref2.y;
+
+    this.pageX += originX;
+    this.pageY += originY;
+    this.clientX += originX;
+    this.clientY += originY;
+
+    return this;
+  };
+
+  /** */
+
+
+  PointerEvent.prototype.preventDefault = function preventDefault() {
+    this.originalEvent.preventDefault();
+  };
+
+  /** */
+
+
+  PointerEvent.prototype.stopPropagation = function stopPropagation() {
+    this.propagationStopped = true;
+  };
+
+  /** */
+
+
+  PointerEvent.prototype.stopImmediatePropagation = function stopImmediatePropagation() {
+    this.immediatePropagationStopped = this.propagationStopped = true;
+  };
+
+  return PointerEvent;
+}();
+
+},{"../utils/pointerUtils":48}],30:[function(require,module,exports){
+'use strict';
+
+var PointerEvent = require('./PointerEvent');
+var Interaction = require('../Interaction');
+var utils = require('../utils');
+var defaults = require('../defaultOptions');
+var signals = require('../utils/Signals').new();
+
+var simpleSignals = ['down', 'up', 'cancel'];
+var simpleEvents = ['down', 'up', 'cancel'];
+
+var pointerEvents = {
+  PointerEvent: PointerEvent,
+  fire: fire,
+  collectEventTargets: collectEventTargets,
+  signals: signals,
+  defaults: {
+    holdDuration: 600,
+    ignoreFrom: null,
+    allowFrom: null,
+    origin: { x: 0, y: 0 }
+  },
+  types: ['down', 'move', 'up', 'cancel', 'tap', 'doubletap', 'hold']
+};
+
+function fire(arg) {
+  var interaction = arg.interaction,
+      pointer = arg.pointer,
+      event = arg.event,
+      eventTarget = arg.eventTarget,
+      _arg$type = arg.type,
+      type = _arg$type === undefined ? arg.pointerEvent.type : _arg$type,
+      _arg$targets = arg.targets,
+      targets = _arg$targets === undefined ? collectEventTargets(arg) : _arg$targets,
+      _arg$pointerEvent = arg.pointerEvent,
+      pointerEvent = _arg$pointerEvent === undefined ? new PointerEvent(type, pointer, event, eventTarget, interaction) : _arg$pointerEvent;
+
+
+  var signalArg = {
+    interaction: interaction,
+    pointer: pointer,
+    event: event,
+    eventTarget: eventTarget,
+    targets: targets,
+    type: type,
+    pointerEvent: pointerEvent
+  };
+
+  for (var i = 0; i < targets.length; i++) {
+    var target = targets[i];
+
+    for (var prop in target.props || {}) {
+      pointerEvent[prop] = target.props[prop];
+    }
+
+    var origin = utils.getOriginXY(target.eventable, target.element);
+
+    pointerEvent.subtractOrigin(origin);
+    pointerEvent.eventable = target.eventable;
+    pointerEvent.currentTarget = target.element;
+
+    target.eventable.fire(pointerEvent);
+
+    pointerEvent.addOrigin(origin);
+
+    if (pointerEvent.immediatePropagationStopped || pointerEvent.propagationStopped && i + 1 < targets.length && targets[i + 1].element !== pointerEvent.currentTarget) {
+      break;
+    }
+  }
+
+  signals.fire('fired', signalArg);
+
+  if (type === 'tap') {
+    // if pointerEvent should make a double tap, create and fire a doubletap
+    // PointerEvent and use that as the prevTap
+    var prevTap = pointerEvent.double ? fire({
+      interaction: interaction, pointer: pointer, event: event, eventTarget: eventTarget,
+      type: 'doubletap'
+    }) : pointerEvent;
+
+    interaction.prevTap = prevTap;
+    interaction.tapTime = prevTap.timeStamp;
+  }
+
+  return pointerEvent;
+}
+
+function collectEventTargets(_ref) {
+  var interaction = _ref.interaction,
+      pointer = _ref.pointer,
+      event = _ref.event,
+      eventTarget = _ref.eventTarget,
+      type = _ref.type;
+
+  var pointerIndex = interaction.getPointerIndex(pointer);
+
+  // do not fire a tap event if the pointer was moved before being lifted
+  if (type === 'tap' && (interaction.pointerWasMoved
+  // or if the pointerup target is different to the pointerdown target
+  || !(interaction.downTargets[pointerIndex] && interaction.downTargets[pointerIndex] === eventTarget))) {
+    return [];
+  }
+
+  var path = utils.getPath(eventTarget);
+  var signalArg = {
+    interaction: interaction,
+    pointer: pointer,
+    event: event,
+    eventTarget: eventTarget,
+    type: type,
+    path: path,
+    targets: [],
+    element: null
+  };
+
+  for (var _i = 0; _i < path.length; _i++) {
+    var _ref2;
+
+    _ref2 = path[_i];
+    var element = _ref2;
+
+    signalArg.element = element;
+
+    signals.fire('collect-targets', signalArg);
+  }
+
+  if (type === 'hold') {
+    signalArg.targets = signalArg.targets.filter(function (target) {
+      return target.eventable.options.holdDuration === interaction.holdTimers[pointerIndex].duration;
+    });
+  }
+
+  return signalArg.targets;
+}
+
+Interaction.signals.on('update-pointer-down', function (_ref3) {
+  var interaction = _ref3.interaction,
+      pointerIndex = _ref3.pointerIndex;
+
+  interaction.holdTimers[pointerIndex] = { duration: Infinity, timeout: null };
+});
+
+Interaction.signals.on('remove-pointer', function (_ref4) {
+  var interaction = _ref4.interaction,
+      pointerIndex = _ref4.pointerIndex;
+
+  interaction.holdTimers.splice(pointerIndex, 1);
+});
+
+Interaction.signals.on('move', function (_ref5) {
+  var interaction = _ref5.interaction,
+      pointer = _ref5.pointer,
+      event = _ref5.event,
+      eventTarget = _ref5.eventTarget,
+      duplicateMove = _ref5.duplicateMove;
+
+  var pointerIndex = interaction.getPointerIndex(pointer);
+
+  if (!duplicateMove && (!interaction.pointerIsDown || interaction.pointerWasMoved)) {
+    if (interaction.pointerIsDown) {
+      clearTimeout(interaction.holdTimers[pointerIndex].timeout);
+    }
+
+    fire({
+      interaction: interaction, pointer: pointer, event: event, eventTarget: eventTarget,
+      type: 'move'
+    });
+  }
+});
+
+Interaction.signals.on('down', function (_ref6) {
+  var interaction = _ref6.interaction,
+      pointer = _ref6.pointer,
+      event = _ref6.event,
+      eventTarget = _ref6.eventTarget,
+      pointerIndex = _ref6.pointerIndex;
+
+  var timer = interaction.holdTimers[pointerIndex];
+  var path = utils.getPath(eventTarget);
+  var signalArg = {
+    interaction: interaction,
+    pointer: pointer,
+    event: event,
+    eventTarget: eventTarget,
+    type: 'hold',
+    targets: [],
+    path: path,
+    element: null
+  };
+
+  for (var _i2 = 0; _i2 < path.length; _i2++) {
+    var _ref7;
+
+    _ref7 = path[_i2];
+    var element = _ref7;
+
+    signalArg.element = element;
+
+    signals.fire('collect-targets', signalArg);
+  }
+
+  if (!signalArg.targets.length) {
+    return;
+  }
+
+  var minDuration = Infinity;
+
+  for (var _i3 = 0; _i3 < signalArg.targets.length; _i3++) {
+    var _ref8;
+
+    _ref8 = signalArg.targets[_i3];
+    var target = _ref8;
+
+    var holdDuration = target.eventable.options.holdDuration;
+
+    if (holdDuration < minDuration) {
+      minDuration = holdDuration;
+    }
+  }
+
+  timer.duration = minDuration;
+  timer.timeout = setTimeout(function () {
+    fire({
+      interaction: interaction,
+      eventTarget: eventTarget,
+      pointer: pointer,
+      event: event,
+      type: 'hold'
+    });
+  }, minDuration);
+});
+
+Interaction.signals.on('up', function (_ref9) {
+  var interaction = _ref9.interaction,
+      pointer = _ref9.pointer,
+      event = _ref9.event,
+      eventTarget = _ref9.eventTarget;
+
+  if (!interaction.pointerWasMoved) {
+    fire({ interaction: interaction, eventTarget: eventTarget, pointer: pointer, event: event, type: 'tap' });
+  }
+});
+
+var _arr = ['up', 'cancel'];
+for (var _i4 = 0; _i4 < _arr.length; _i4++) {
+  var signalName = _arr[_i4];
+  Interaction.signals.on(signalName, function (_ref11) {
+    var interaction = _ref11.interaction,
+        pointerIndex = _ref11.pointerIndex;
+
+    if (interaction.holdTimers[pointerIndex]) {
+      clearTimeout(interaction.holdTimers[pointerIndex].timeout);
+    }
+  });
+}
+
+function createSignalListener(type) {
+  return function (_ref10) {
+    var interaction = _ref10.interaction,
+        pointer = _ref10.pointer,
+        event = _ref10.event,
+        eventTarget = _ref10.eventTarget;
+
+    fire({ interaction: interaction, eventTarget: eventTarget, pointer: pointer, event: event, type: type });
+  };
+}
+
+for (var i = 0; i < simpleSignals.length; i++) {
+  Interaction.signals.on(simpleSignals[i], createSignalListener(simpleEvents[i]));
+}
+
+Interaction.signals.on('new', function (interaction) {
+  interaction.prevTap = null; // the most recent tap event on this interaction
+  interaction.tapTime = 0; // time of the most recent tap event
+  interaction.holdTimers = []; // [{ duration, timeout }]
+});
+
+defaults.pointerEvents = pointerEvents.defaults;
+module.exports = pointerEvents;
+
+},{"../Interaction":5,"../defaultOptions":18,"../utils":43,"../utils/Signals":34,"./PointerEvent":29}],31:[function(require,module,exports){
+'use strict';
+
+var pointerEvents = require('./base');
+var Interaction = require('../Interaction');
+
+pointerEvents.signals.on('new', onNew);
+pointerEvents.signals.on('fired', onFired);
+
+var _arr = ['move', 'up', 'cancel', 'endall'];
+for (var _i = 0; _i < _arr.length; _i++) {
+  var signal = _arr[_i];
+  Interaction.signals.on(signal, endHoldRepeat);
+}
+
+function onNew(_ref) {
+  var pointerEvent = _ref.pointerEvent;
+
+  if (pointerEvent.type !== 'hold') {
+    return;
+  }
+
+  pointerEvent.count = (pointerEvent.count || 0) + 1;
+}
+
+function onFired(_ref2) {
+  var interaction = _ref2.interaction,
+      pointerEvent = _ref2.pointerEvent,
+      eventTarget = _ref2.eventTarget,
+      targets = _ref2.targets;
+
+  if (pointerEvent.type !== 'hold' || !targets.length) {
+    return;
+  }
+
+  // get the repeat interval from the first eventable
+  var interval = targets[0].eventable.options.holdRepeatInterval;
+
+  // don't repeat if the interval is 0 or less
+  if (interval <= 0) {
+    return;
+  }
+
+  // set a timeout to fire the holdrepeat event
+  interaction.holdIntervalHandle = setTimeout(function () {
+    pointerEvents.fire({
+      interaction: interaction,
+      eventTarget: eventTarget,
+      type: 'hold',
+      pointer: pointerEvent,
+      event: pointerEvent
+    });
+  }, interval);
+}
+
+function endHoldRepeat(_ref3) {
+  var interaction = _ref3.interaction;
+
+  // set the interaction's holdStopTime property
+  // to stop further holdRepeat events
+  if (interaction.holdIntervalHandle) {
+    clearInterval(interaction.holdIntervalHandle);
+    interaction.holdIntervalHandle = null;
+  }
+}
+
+// don't repeat by default
+pointerEvents.defaults.holdRepeatInterval = 0;
+pointerEvents.types.push('holdrepeat');
+
+module.exports = {
+  onNew: onNew,
+  onFired: onFired,
+  endHoldRepeat: endHoldRepeat
+};
+
+},{"../Interaction":5,"./base":30}],32:[function(require,module,exports){
+'use strict';
+
+var pointerEvents = require('./base');
+var Interactable = require('../Interactable');
+var is = require('../utils/is');
+var scope = require('../scope');
+var extend = require('../utils/extend');
+
+var _require = require('../utils/arr'),
+    merge = _require.merge;
+
+pointerEvents.signals.on('collect-targets', function (_ref) {
+  var targets = _ref.targets,
+      element = _ref.element,
+      type = _ref.type,
+      eventTarget = _ref.eventTarget;
+
+  scope.interactables.forEachMatch(element, function (interactable) {
+    var eventable = interactable.events;
+    var options = eventable.options;
+
+    if (eventable[type] && is.element(element) && interactable.testIgnoreAllow(options, element, eventTarget)) {
+
+      targets.push({
+        element: element,
+        eventable: eventable,
+        props: { interactable: interactable }
+      });
+    }
+  });
+});
+
+Interactable.signals.on('new', function (_ref2) {
+  var interactable = _ref2.interactable;
+
+  interactable.events.getRect = function (element) {
+    return interactable.getRect(element);
+  };
+});
+
+Interactable.signals.on('set', function (_ref3) {
+  var interactable = _ref3.interactable,
+      options = _ref3.options;
+
+  extend(interactable.events.options, pointerEvents.defaults);
+  extend(interactable.events.options, options);
+});
+
+merge(Interactable.eventTypes, pointerEvents.types);
+
+Interactable.prototype.pointerEvents = function (options) {
+  extend(this.events.options, options);
+
+  return this;
+};
+
+var __backCompatOption = Interactable.prototype._backCompatOption;
+
+Interactable.prototype._backCompatOption = function (optionName, newValue) {
+  var ret = __backCompatOption.call(this, optionName, newValue);
+
+  if (ret === this) {
+    this.events.options[optionName] = newValue;
+  }
+
+  return ret;
+};
+
+Interactable.settingsMethods.push('pointerEvents');
+
+},{"../Interactable":4,"../scope":33,"../utils/arr":35,"../utils/extend":40,"../utils/is":45,"./base":30}],33:[function(require,module,exports){
+'use strict';
+
+var utils = require('./utils');
+var events = require('./utils/events');
+var signals = require('./utils/Signals').new();
+
+var _require = require('./utils/window'),
+    getWindow = _require.getWindow;
+
+var scope = {
+  signals: signals,
+  events: events,
+  utils: utils,
+
+  // main document
+  document: require('./utils/domObjects').document,
+  // all documents being listened to
+  documents: [],
+
+  addDocument: function addDocument(doc, win) {
+    // do nothing if document is already known
+    if (utils.contains(scope.documents, doc)) {
+      return false;
+    }
+
+    win = win || getWindow(doc);
+
+    scope.documents.push(doc);
+    events.documents.push(doc);
+
+    // don't add an unload event for the main document
+    // so that the page may be cached in browser history
+    if (doc !== scope.document) {
+      events.add(win, 'unload', scope.onWindowUnload);
+    }
+
+    signals.fire('add-document', { doc: doc, win: win });
+  },
+
+  removeDocument: function removeDocument(doc, win) {
+    var index = scope.documents.indexOf(doc);
+
+    win = win || getWindow(doc);
+
+    events.remove(win, 'unload', scope.onWindowUnload);
+
+    scope.documents.splice(index, 1);
+    events.documents.splice(index, 1);
+
+    signals.fire('remove-document', { win: win, doc: doc });
+  },
+
+  onWindowUnload: function onWindowUnload() {
+    scope.removeDocument(this.document, this);
+  }
+};
+
+module.exports = scope;
+
+},{"./utils":43,"./utils/Signals":34,"./utils/domObjects":37,"./utils/events":39,"./utils/window":51}],34:[function(require,module,exports){
+"use strict";
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Signals = function () {
+  function Signals() {
+    _classCallCheck(this, Signals);
+
+    this.listeners = {
+      // signalName: [listeners],
+    };
+  }
+
+  Signals.prototype.on = function on(name, listener) {
+    if (!this.listeners[name]) {
+      this.listeners[name] = [listener];
+      return;
+    }
+
+    this.listeners[name].push(listener);
+  };
+
+  Signals.prototype.off = function off(name, listener) {
+    if (!this.listeners[name]) {
+      return;
+    }
+
+    var index = this.listeners[name].indexOf(listener);
+
+    if (index !== -1) {
+      this.listeners[name].splice(index, 1);
+    }
+  };
+
+  Signals.prototype.fire = function fire(name, arg) {
+    var targetListeners = this.listeners[name];
+
+    if (!targetListeners) {
+      return;
+    }
+
+    for (var _i = 0; _i < targetListeners.length; _i++) {
+      var _ref;
+
+      _ref = targetListeners[_i];
+      var listener = _ref;
+
+      if (listener(arg, name) === false) {
+        return;
+      }
+    }
+  };
+
+  return Signals;
+}();
+
+Signals.new = function () {
+  return new Signals();
+};
+
+module.exports = Signals;
+
+},{}],35:[function(require,module,exports){
+"use strict";
+
+function contains(array, target) {
+  return array.indexOf(target) !== -1;
+}
+
+function merge(target, source) {
+  for (var _i = 0; _i < source.length; _i++) {
+    var _ref;
+
+    _ref = source[_i];
+    var item = _ref;
+
+    target.push(item);
+  }
+
+  return target;
+}
+
+module.exports = {
+  contains: contains,
+  merge: merge
+};
+
+},{}],36:[function(require,module,exports){
+'use strict';
+
+var _require = require('./window'),
+    window = _require.window;
+
+var is = require('./is');
+var domObjects = require('./domObjects');
+
+var Element = domObjects.Element;
+var navigator = window.navigator;
+
+var browser = {
+  // Does the browser support touch input?
+  supportsTouch: !!('ontouchstart' in window || is.function(window.DocumentTouch) && domObjects.document instanceof window.DocumentTouch),
+
+  // Does the browser support PointerEvents
+  supportsPointerEvent: !!domObjects.PointerEvent,
+
+  isIOS: /iP(hone|od|ad)/.test(navigator.platform),
+
+  // scrolling doesn't change the result of getClientRects on iOS 7
+  isIOS7: /iP(hone|od|ad)/.test(navigator.platform) && /OS 7[^\d]/.test(navigator.appVersion),
+
+  isIe9: /MSIE 9/.test(navigator.userAgent),
+
+  // prefix matchesSelector
+  prefixedMatchesSelector: 'matches' in Element.prototype ? 'matches' : 'webkitMatchesSelector' in Element.prototype ? 'webkitMatchesSelector' : 'mozMatchesSelector' in Element.prototype ? 'mozMatchesSelector' : 'oMatchesSelector' in Element.prototype ? 'oMatchesSelector' : 'msMatchesSelector',
+
+  pEventTypes: domObjects.PointerEvent ? domObjects.PointerEvent === window.MSPointerEvent ? {
+    up: 'MSPointerUp',
+    down: 'MSPointerDown',
+    over: 'mouseover',
+    out: 'mouseout',
+    move: 'MSPointerMove',
+    cancel: 'MSPointerCancel'
+  } : {
+    up: 'pointerup',
+    down: 'pointerdown',
+    over: 'pointerover',
+    out: 'pointerout',
+    move: 'pointermove',
+    cancel: 'pointercancel'
+  } : null,
+
+  // because Webkit and Opera still use 'mousewheel' event type
+  wheelEvent: 'onmousewheel' in domObjects.document ? 'mousewheel' : 'wheel'
+
+};
+
+// Opera Mobile must be handled differently
+browser.isOperaMobile = navigator.appName === 'Opera' && browser.supportsTouch && navigator.userAgent.match('Presto');
+
+module.exports = browser;
+
+},{"./domObjects":37,"./is":45,"./window":51}],37:[function(require,module,exports){
+'use strict';
+
+var domObjects = {};
+var win = require('./window').window;
+
+function blank() {}
+
+domObjects.document = win.document;
+domObjects.DocumentFragment = win.DocumentFragment || blank;
+domObjects.SVGElement = win.SVGElement || blank;
+domObjects.SVGSVGElement = win.SVGSVGElement || blank;
+domObjects.SVGElementInstance = win.SVGElementInstance || blank;
+domObjects.Element = win.Element || blank;
+domObjects.HTMLElement = win.HTMLElement || domObjects.Element;
+
+domObjects.Event = win.Event;
+domObjects.Touch = win.Touch || blank;
+domObjects.PointerEvent = win.PointerEvent || win.MSPointerEvent;
+
+module.exports = domObjects;
+
+},{"./window":51}],38:[function(require,module,exports){
+'use strict';
+
+var win = require('./window');
+var browser = require('./browser');
+var is = require('./is');
+var domObjects = require('./domObjects');
+
+var domUtils = {
+  nodeContains: function nodeContains(parent, child) {
+    while (child) {
+      if (child === parent) {
+        return true;
+      }
+
+      child = child.parentNode;
+    }
+
+    return false;
+  },
+
+  closest: function closest(element, selector) {
+    while (is.element(element)) {
+      if (domUtils.matchesSelector(element, selector)) {
+        return element;
+      }
+
+      element = domUtils.parentNode(element);
+    }
+
+    return null;
+  },
+
+  parentNode: function parentNode(node) {
+    var parent = node.parentNode;
+
+    if (is.docFrag(parent)) {
+      // skip past #shado-root fragments
+      while ((parent = parent.host) && is.docFrag(parent)) {
+        continue;
+      }
+
+      return parent;
+    }
+
+    return parent;
+  },
+
+  matchesSelector: function matchesSelector(element, selector) {
+    // remove /deep/ from selectors if shadowDOM polyfill is used
+    if (win.window !== win.realWindow) {
+      selector = selector.replace(/\/deep\//g, ' ');
+    }
+
+    return element[browser.prefixedMatchesSelector](selector);
+  },
+
+  // Test for the element that's "above" all other qualifiers
+  indexOfDeepestElement: function indexOfDeepestElement(elements) {
+    var deepestZoneParents = [];
+    var dropzoneParents = [];
+    var dropzone = void 0;
+    var deepestZone = elements[0];
+    var index = deepestZone ? 0 : -1;
+    var parent = void 0;
+    var child = void 0;
+    var i = void 0;
+    var n = void 0;
+
+    for (i = 1; i < elements.length; i++) {
+      dropzone = elements[i];
+
+      // an element might belong to multiple selector dropzones
+      if (!dropzone || dropzone === deepestZone) {
+        continue;
+      }
+
+      if (!deepestZone) {
+        deepestZone = dropzone;
+        index = i;
+        continue;
+      }
+
+      // check if the deepest or current are document.documentElement or document.rootElement
+      // - if the current dropzone is, do nothing and continue
+      if (dropzone.parentNode === dropzone.ownerDocument) {
+        continue;
+      }
+      // - if deepest is, update with the current dropzone and continue to next
+      else if (deepestZone.parentNode === dropzone.ownerDocument) {
+          deepestZone = dropzone;
+          index = i;
+          continue;
+        }
+
+      if (!deepestZoneParents.length) {
+        parent = deepestZone;
+        while (parent.parentNode && parent.parentNode !== parent.ownerDocument) {
+          deepestZoneParents.unshift(parent);
+          parent = parent.parentNode;
+        }
+      }
+
+      // if this element is an svg element and the current deepest is
+      // an HTMLElement
+      if (deepestZone instanceof domObjects.HTMLElement && dropzone instanceof domObjects.SVGElement && !(dropzone instanceof domObjects.SVGSVGElement)) {
+
+        if (dropzone === deepestZone.parentNode) {
+          continue;
+        }
+
+        parent = dropzone.ownerSVGElement;
+      } else {
+        parent = dropzone;
+      }
+
+      dropzoneParents = [];
+
+      while (parent.parentNode !== parent.ownerDocument) {
+        dropzoneParents.unshift(parent);
+        parent = parent.parentNode;
+      }
+
+      n = 0;
+
+      // get (position of last common ancestor) + 1
+      while (dropzoneParents[n] && dropzoneParents[n] === deepestZoneParents[n]) {
+        n++;
+      }
+
+      var parents = [dropzoneParents[n - 1], dropzoneParents[n], deepestZoneParents[n]];
+
+      child = parents[0].lastChild;
+
+      while (child) {
+        if (child === parents[1]) {
+          deepestZone = dropzone;
+          index = i;
+          deepestZoneParents = [];
+
+          break;
+        } else if (child === parents[2]) {
+          break;
+        }
+
+        child = child.previousSibling;
+      }
+    }
+
+    return index;
+  },
+
+  matchesUpTo: function matchesUpTo(element, selector, limit) {
+    while (is.element(element)) {
+      if (domUtils.matchesSelector(element, selector)) {
+        return true;
+      }
+
+      element = domUtils.parentNode(element);
+
+      if (element === limit) {
+        return domUtils.matchesSelector(element, selector);
+      }
+    }
+
+    return false;
+  },
+
+  getActualElement: function getActualElement(element) {
+    return element instanceof domObjects.SVGElementInstance ? element.correspondingUseElement : element;
+  },
+
+  getScrollXY: function getScrollXY(relevantWindow) {
+    relevantWindow = relevantWindow || win.window;
+    return {
+      x: relevantWindow.scrollX || relevantWindow.document.documentElement.scrollLeft,
+      y: relevantWindow.scrollY || relevantWindow.document.documentElement.scrollTop
+    };
+  },
+
+  getElementClientRect: function getElementClientRect(element) {
+    var clientRect = element instanceof domObjects.SVGElement ? element.getBoundingClientRect() : element.getClientRects()[0];
+
+    return clientRect && {
+      left: clientRect.left,
+      right: clientRect.right,
+      top: clientRect.top,
+      bottom: clientRect.bottom,
+      width: clientRect.width || clientRect.right - clientRect.left,
+      height: clientRect.height || clientRect.bottom - clientRect.top
+    };
+  },
+
+  getElementRect: function getElementRect(element) {
+    var clientRect = domUtils.getElementClientRect(element);
+
+    if (!browser.isIOS7 && clientRect) {
+      var scroll = domUtils.getScrollXY(win.getWindow(element));
+
+      clientRect.left += scroll.x;
+      clientRect.right += scroll.x;
+      clientRect.top += scroll.y;
+      clientRect.bottom += scroll.y;
+    }
+
+    return clientRect;
+  },
+
+  getPath: function getPath(element) {
+    var path = [];
+
+    while (element) {
+      path.push(element);
+      element = domUtils.parentNode(element);
+    }
+
+    return path;
+  },
+
+  trySelector: function trySelector(value) {
+    if (!is.string(value)) {
+      return false;
+    }
+
+    // an exception will be raised if it is invalid
+    domObjects.document.querySelector(value);
+    return true;
+  }
+};
+
+module.exports = domUtils;
+
+},{"./browser":36,"./domObjects":37,"./is":45,"./window":51}],39:[function(require,module,exports){
+'use strict';
+
+var is = require('./is');
+var domUtils = require('./domUtils');
+var pointerUtils = require('./pointerUtils');
+var pExtend = require('./pointerExtend');
+
+var _require = require('./window'),
+    window = _require.window;
+
+var _require2 = require('./arr'),
+    contains = _require2.contains;
+
+var elements = [];
+var targets = [];
+
+// {
+//   type: {
+//     selectors: ['selector', ...],
+//     contexts : [document, ...],
+//     listeners: [[listener, capture, passive], ...]
+//   }
+//  }
+var delegatedEvents = {};
+var documents = [];
+
+var supportsOptions = function () {
+  var supported = false;
+
+  window.document.createElement('div').addEventListener('test', null, {
+    get capture() {
+      supported = true;
+    }
+  });
+
+  return supported;
+}();
+
+function add(element, type, listener, optionalArg) {
+  var options = getOptions(optionalArg);
+  var elementIndex = elements.indexOf(element);
+  var target = targets[elementIndex];
+
+  if (!target) {
+    target = {
+      events: {},
+      typeCount: 0
+    };
+
+    elementIndex = elements.push(element) - 1;
+    targets.push(target);
+  }
+
+  if (!target.events[type]) {
+    target.events[type] = [];
+    target.typeCount++;
+  }
+
+  if (!contains(target.events[type], listener)) {
+    element.addEventListener(type, listener, supportsOptions ? options : !!options.capture);
+    target.events[type].push(listener);
+  }
+}
+
+function remove(element, type, listener, optionalArg) {
+  var options = getOptions(optionalArg);
+  var elementIndex = elements.indexOf(element);
+  var target = targets[elementIndex];
+
+  if (!target || !target.events) {
+    return;
+  }
+
+  if (type === 'all') {
+    for (type in target.events) {
+      if (target.events.hasOwnProperty(type)) {
+        remove(element, type, 'all');
+      }
+    }
+    return;
+  }
+
+  if (target.events[type]) {
+    var len = target.events[type].length;
+
+    if (listener === 'all') {
+      for (var i = 0; i < len; i++) {
+        remove(element, type, target.events[type][i], options);
+      }
+      return;
+    } else {
+      for (var _i = 0; _i < len; _i++) {
+        if (target.events[type][_i] === listener) {
+          element.removeEventListener('on' + type, listener, supportsOptions ? options : !!options.capture);
+          target.events[type].splice(_i, 1);
+
+          break;
+        }
+      }
+    }
+
+    if (target.events[type] && target.events[type].length === 0) {
+      target.events[type] = null;
+      target.typeCount--;
+    }
+  }
+
+  if (!target.typeCount) {
+    targets.splice(elementIndex, 1);
+    elements.splice(elementIndex, 1);
+  }
+}
+
+function addDelegate(selector, context, type, listener, optionalArg) {
+  var options = getOptions(optionalArg);
+  if (!delegatedEvents[type]) {
+    delegatedEvents[type] = {
+      selectors: [],
+      contexts: [],
+      listeners: []
+    };
+
+    // add delegate listener functions
+    for (var _i2 = 0; _i2 < documents.length; _i2++) {
+      var doc = documents[_i2];
+      add(doc, type, delegateListener);
+      add(doc, type, delegateUseCapture, true);
+    }
+  }
+
+  var delegated = delegatedEvents[type];
+  var index = void 0;
+
+  for (index = delegated.selectors.length - 1; index >= 0; index--) {
+    if (delegated.selectors[index] === selector && delegated.contexts[index] === context) {
+      break;
+    }
+  }
+
+  if (index === -1) {
+    index = delegated.selectors.length;
+
+    delegated.selectors.push(selector);
+    delegated.contexts.push(context);
+    delegated.listeners.push([]);
+  }
+
+  // keep listener and capture and passive flags
+  delegated.listeners[index].push([listener, !!options.capture, options.passive]);
+}
+
+function removeDelegate(selector, context, type, listener, optionalArg) {
+  var options = getOptions(optionalArg);
+  var delegated = delegatedEvents[type];
+  var matchFound = false;
+  var index = void 0;
+
+  if (!delegated) {
+    return;
+  }
+
+  // count from last index of delegated to 0
+  for (index = delegated.selectors.length - 1; index >= 0; index--) {
+    // look for matching selector and context Node
+    if (delegated.selectors[index] === selector && delegated.contexts[index] === context) {
+
+      var listeners = delegated.listeners[index];
+
+      // each item of the listeners array is an array: [function, capture, passive]
+      for (var i = listeners.length - 1; i >= 0; i--) {
+        var _listeners$i = listeners[i],
+            fn = _listeners$i[0],
+            capture = _listeners$i[1],
+            passive = _listeners$i[2];
+
+        // check if the listener functions and capture and passive flags match
+
+        if (fn === listener && capture === !!options.capture && passive === options.passive) {
+          // remove the listener from the array of listeners
+          listeners.splice(i, 1);
+
+          // if all listeners for this interactable have been removed
+          // remove the interactable from the delegated arrays
+          if (!listeners.length) {
+            delegated.selectors.splice(index, 1);
+            delegated.contexts.splice(index, 1);
+            delegated.listeners.splice(index, 1);
+
+            // remove delegate function from context
+            remove(context, type, delegateListener);
+            remove(context, type, delegateUseCapture, true);
+
+            // remove the arrays if they are empty
+            if (!delegated.selectors.length) {
+              delegatedEvents[type] = null;
+            }
+          }
+
+          // only remove one listener
+          matchFound = true;
+          break;
+        }
+      }
+
+      if (matchFound) {
+        break;
+      }
+    }
+  }
+}
+
+// bound to the interactable context when a DOM event
+// listener is added to a selector interactable
+function delegateListener(event, optionalArg) {
+  var options = getOptions(optionalArg);
+  var fakeEvent = {};
+  var delegated = delegatedEvents[event.type];
+
+  var _pointerUtils$getEven = pointerUtils.getEventTargets(event),
+      eventTarget = _pointerUtils$getEven[0];
+
+  var element = eventTarget;
+
+  // duplicate the event so that currentTarget can be changed
+  pExtend(fakeEvent, event);
+
+  fakeEvent.originalEvent = event;
+  fakeEvent.preventDefault = preventOriginalDefault;
+
+  // climb up document tree looking for selector matches
+  while (is.element(element)) {
+    for (var i = 0; i < delegated.selectors.length; i++) {
+      var selector = delegated.selectors[i];
+      var context = delegated.contexts[i];
+
+      if (domUtils.matchesSelector(element, selector) && domUtils.nodeContains(context, eventTarget) && domUtils.nodeContains(context, element)) {
+
+        var listeners = delegated.listeners[i];
+
+        fakeEvent.currentTarget = element;
+
+        for (var j = 0; j < listeners.length; j++) {
+          var _listeners$j = listeners[j],
+              fn = _listeners$j[0],
+              capture = _listeners$j[1],
+              passive = _listeners$j[2];
+
+
+          if (capture === !!options.capture && passive === options.passive) {
+            fn(fakeEvent);
+          }
+        }
+      }
+    }
+
+    element = domUtils.parentNode(element);
+  }
+}
+
+function delegateUseCapture(event) {
+  return delegateListener.call(this, event, true);
+}
+
+function preventOriginalDefault() {
+  this.originalEvent.preventDefault();
+}
+
+function getOptions(param) {
+  return is.object(param) ? param : { capture: param };
+}
+
+module.exports = {
+  add: add,
+  remove: remove,
+
+  addDelegate: addDelegate,
+  removeDelegate: removeDelegate,
+
+  delegateListener: delegateListener,
+  delegateUseCapture: delegateUseCapture,
+  delegatedEvents: delegatedEvents,
+  documents: documents,
+
+  supportsOptions: supportsOptions,
+
+  _elements: elements,
+  _targets: targets
+};
+
+},{"./arr":35,"./domUtils":38,"./is":45,"./pointerExtend":47,"./pointerUtils":48,"./window":51}],40:[function(require,module,exports){
+"use strict";
+
+module.exports = function extend(dest, source) {
+  for (var prop in source) {
+    dest[prop] = source[prop];
+  }
+  return dest;
+};
+
+},{}],41:[function(require,module,exports){
+'use strict';
+
+var _require = require('./rect'),
+    resolveRectLike = _require.resolveRectLike,
+    rectToXY = _require.rectToXY;
+
+module.exports = function (target, element, action) {
+  var actionOptions = target.options[action];
+  var actionOrigin = actionOptions && actionOptions.origin;
+  var origin = actionOrigin || target.options.origin;
+
+  var originRect = resolveRectLike(origin, target, element, [target && element]);
+
+  return rectToXY(originRect) || { x: 0, y: 0 };
+};
+
+},{"./rect":50}],42:[function(require,module,exports){
+"use strict";
+
+module.exports = function (x, y) {
+  return Math.sqrt(x * x + y * y);
+};
+
+},{}],43:[function(require,module,exports){
+'use strict';
+
+var extend = require('./extend');
+var win = require('./window');
+
+var utils = {
+  warnOnce: function warnOnce(method, message) {
+    var warned = false;
+
+    return function () {
+      if (!warned) {
+        win.window.console.warn(message);
+        warned = true;
+      }
+
+      return method.apply(this, arguments);
+    };
+  },
+
+  // http://stackoverflow.com/a/5634528/2280888
+  _getQBezierValue: function _getQBezierValue(t, p1, p2, p3) {
+    var iT = 1 - t;
+    return iT * iT * p1 + 2 * iT * t * p2 + t * t * p3;
+  },
+
+  getQuadraticCurvePoint: function getQuadraticCurvePoint(startX, startY, cpX, cpY, endX, endY, position) {
+    return {
+      x: utils._getQBezierValue(position, startX, cpX, endX),
+      y: utils._getQBezierValue(position, startY, cpY, endY)
+    };
+  },
+
+  // http://gizma.com/easing/
+  easeOutQuad: function easeOutQuad(t, b, c, d) {
+    t /= d;
+    return -c * t * (t - 2) + b;
+  },
+
+  copyAction: function copyAction(dest, src) {
+    dest.name = src.name;
+    dest.axis = src.axis;
+    dest.edges = src.edges;
+
+    return dest;
+  },
+
+  is: require('./is'),
+  extend: extend,
+  hypot: require('./hypot'),
+  getOriginXY: require('./getOriginXY')
+};
+
+extend(utils, require('./arr'));
+extend(utils, require('./domUtils'));
+extend(utils, require('./pointerUtils'));
+extend(utils, require('./rect'));
+
+module.exports = utils;
+
+},{"./arr":35,"./domUtils":38,"./extend":40,"./getOriginXY":41,"./hypot":42,"./is":45,"./pointerUtils":48,"./rect":50,"./window":51}],44:[function(require,module,exports){
+'use strict';
+
+var scope = require('../scope');
+var utils = require('./index');
+
+var finder = {
+  methodOrder: ['simulationResume', 'mouseOrPen', 'hasPointer', 'idle'],
+
+  search: function search(pointer, eventType, eventTarget) {
+    var pointerType = utils.getPointerType(pointer);
+    var pointerId = utils.getPointerId(pointer);
+    var details = { pointer: pointer, pointerId: pointerId, pointerType: pointerType, eventType: eventType, eventTarget: eventTarget };
+
+    for (var _i = 0; _i < finder.methodOrder.length; _i++) {
+      var _ref;
+
+      _ref = finder.methodOrder[_i];
+      var method = _ref;
+
+      var interaction = finder[method](details);
+
+      if (interaction) {
+        return interaction;
+      }
+    }
+  },
+
+  // try to resume simulation with a new pointer
+  simulationResume: function simulationResume(_ref2) {
+    var pointerType = _ref2.pointerType,
+        eventType = _ref2.eventType,
+        eventTarget = _ref2.eventTarget;
+
+    if (!/down|start/i.test(eventType)) {
+      return null;
+    }
+
+    for (var _i2 = 0; _i2 < scope.interactions.length; _i2++) {
+      var _ref3;
+
+      _ref3 = scope.interactions[_i2];
+      var interaction = _ref3;
+
+      var element = eventTarget;
+
+      if (interaction.simulation && interaction.simulation.allowResume && interaction.pointerType === pointerType) {
+        while (element) {
+          // if the element is the interaction element
+          if (element === interaction.element) {
+            return interaction;
+          }
+          element = utils.parentNode(element);
+        }
+      }
+    }
+
+    return null;
+  },
+
+  // if it's a mouse or pen interaction
+  mouseOrPen: function mouseOrPen(_ref4) {
+    var pointerId = _ref4.pointerId,
+        pointerType = _ref4.pointerType,
+        eventType = _ref4.eventType;
+
+    if (pointerType !== 'mouse' && pointerType !== 'pen') {
+      return null;
+    }
+
+    var firstNonActive = void 0;
+
+    for (var _i3 = 0; _i3 < scope.interactions.length; _i3++) {
+      var _ref5;
+
+      _ref5 = scope.interactions[_i3];
+      var interaction = _ref5;
+
+      if (interaction.pointerType === pointerType) {
+        // if it's a down event, skip interactions with running simulations
+        if (interaction.simulation && !utils.contains(interaction.pointerIds, pointerId)) {
+          continue;
+        }
+
+        // if the interaction is active, return it immediately
+        if (interaction.interacting()) {
+          return interaction;
+        }
+        // otherwise save it and look for another active interaction
+        else if (!firstNonActive) {
+            firstNonActive = interaction;
+          }
+      }
+    }
+
+    // if no active mouse interaction was found use the first inactive mouse
+    // interaction
+    if (firstNonActive) {
+      return firstNonActive;
+    }
+
+    // find any mouse or pen interaction.
+    // ignore the interaction if the eventType is a *down, and a simulation
+    // is active
+    for (var _i4 = 0; _i4 < scope.interactions.length; _i4++) {
+      var _ref6;
+
+      _ref6 = scope.interactions[_i4];
+      var _interaction = _ref6;
+
+      if (_interaction.pointerType === pointerType && !(/down/i.test(eventType) && _interaction.simulation)) {
+        return _interaction;
+      }
+    }
+
+    return null;
+  },
+
+  // get interaction that has this pointer
+  hasPointer: function hasPointer(_ref7) {
+    var pointerId = _ref7.pointerId;
+
+    for (var _i5 = 0; _i5 < scope.interactions.length; _i5++) {
+      var _ref8;
+
+      _ref8 = scope.interactions[_i5];
+      var interaction = _ref8;
+
+      if (utils.contains(interaction.pointerIds, pointerId)) {
+        return interaction;
+      }
+    }
+  },
+
+  // get first idle interaction with a matching pointerType
+  idle: function idle(_ref9) {
+    var pointerType = _ref9.pointerType;
+
+    for (var _i6 = 0; _i6 < scope.interactions.length; _i6++) {
+      var _ref10;
+
+      _ref10 = scope.interactions[_i6];
+      var interaction = _ref10;
+
+      // if there's already a pointer held down
+      if (interaction.pointerIds.length === 1) {
+        var target = interaction.target;
+        // don't add this pointer if there is a target interactable and it
+        // isn't gesturable
+        if (target && !target.options.gesture.enabled) {
+          continue;
+        }
+      }
+      // maximum of 2 pointers per interaction
+      else if (interaction.pointerIds.length >= 2) {
+          continue;
+        }
+
+      if (!interaction.interacting() && pointerType === interaction.pointerType) {
+        return interaction;
+      }
+    }
+
+    return null;
+  }
+};
+
+module.exports = finder;
+
+},{"../scope":33,"./index":43}],45:[function(require,module,exports){
+'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var win = require('./window');
+var isWindow = require('./isWindow');
+
+var is = {
+  array: function array() {},
+
+  window: function window(thing) {
+    return thing === win.window || isWindow(thing);
+  },
+
+  docFrag: function docFrag(thing) {
+    return is.object(thing) && thing.nodeType === 11;
+  },
+
+  object: function object(thing) {
+    return !!thing && (typeof thing === 'undefined' ? 'undefined' : _typeof(thing)) === 'object';
+  },
+
+  function: function _function(thing) {
+    return typeof thing === 'function';
+  },
+
+  number: function number(thing) {
+    return typeof thing === 'number';
+  },
+
+  bool: function bool(thing) {
+    return typeof thing === 'boolean';
+  },
+
+  string: function string(thing) {
+    return typeof thing === 'string';
+  },
+
+  element: function element(thing) {
+    if (!thing || (typeof thing === 'undefined' ? 'undefined' : _typeof(thing)) !== 'object') {
+      return false;
+    }
+
+    var _window = win.getWindow(thing) || win.window;
+
+    return (/object|function/.test(_typeof(_window.Element)) ? thing instanceof _window.Element //DOM2
+      : thing.nodeType === 1 && typeof thing.nodeName === 'string'
+    );
+  }
+};
+
+is.array = function (thing) {
+  return is.object(thing) && typeof thing.length !== 'undefined' && is.function(thing.splice);
+};
+
+module.exports = is;
+
+},{"./isWindow":46,"./window":51}],46:[function(require,module,exports){
+"use strict";
+
+module.exports = function (thing) {
+  return !!(thing && thing.Window) && thing instanceof thing.Window;
+};
+
+},{}],47:[function(require,module,exports){
+'use strict';
+
+function pointerExtend(dest, source) {
+  for (var prop in source) {
+    var prefixedPropREs = module.exports.prefixedPropREs;
+    var deprecated = false;
+
+    // skip deprecated prefixed properties
+    for (var vendor in prefixedPropREs) {
+      if (prop.indexOf(vendor) === 0 && prefixedPropREs[vendor].test(prop)) {
+        deprecated = true;
+        break;
+      }
+    }
+
+    if (!deprecated && typeof source[prop] !== 'function') {
+      dest[prop] = source[prop];
+    }
+  }
+  return dest;
+}
+
+pointerExtend.prefixedPropREs = {
+  webkit: /(Movement[XY]|Radius[XY]|RotationAngle|Force)$/
+};
+
+module.exports = pointerExtend;
+
+},{}],48:[function(require,module,exports){
+'use strict';
+
+var hypot = require('./hypot');
+var browser = require('./browser');
+var dom = require('./domObjects');
+var domUtils = require('./domUtils');
+var domObjects = require('./domObjects');
+var is = require('./is');
+var pointerExtend = require('./pointerExtend');
+
+var pointerUtils = {
+  copyCoords: function copyCoords(dest, src) {
+    dest.page = dest.page || {};
+    dest.page.x = src.page.x;
+    dest.page.y = src.page.y;
+
+    dest.client = dest.client || {};
+    dest.client.x = src.client.x;
+    dest.client.y = src.client.y;
+
+    dest.timeStamp = src.timeStamp;
+  },
+
+  setCoordDeltas: function setCoordDeltas(targetObj, prev, cur) {
+    targetObj.page.x = cur.page.x - prev.page.x;
+    targetObj.page.y = cur.page.y - prev.page.y;
+    targetObj.client.x = cur.client.x - prev.client.x;
+    targetObj.client.y = cur.client.y - prev.client.y;
+    targetObj.timeStamp = cur.timeStamp - prev.timeStamp;
+
+    // set pointer velocity
+    var dt = Math.max(targetObj.timeStamp / 1000, 0.001);
+
+    targetObj.page.speed = hypot(targetObj.page.x, targetObj.page.y) / dt;
+    targetObj.page.vx = targetObj.page.x / dt;
+    targetObj.page.vy = targetObj.page.y / dt;
+
+    targetObj.client.speed = hypot(targetObj.client.x, targetObj.page.y) / dt;
+    targetObj.client.vx = targetObj.client.x / dt;
+    targetObj.client.vy = targetObj.client.y / dt;
+  },
+
+  isNativePointer: function isNativePointer(pointer) {
+    return pointer instanceof dom.Event || pointer instanceof dom.Touch;
+  },
+
+  // Get specified X/Y coords for mouse or event.touches[0]
+  getXY: function getXY(type, pointer, xy) {
+    xy = xy || {};
+    type = type || 'page';
+
+    xy.x = pointer[type + 'X'];
+    xy.y = pointer[type + 'Y'];
+
+    return xy;
+  },
+
+  getPageXY: function getPageXY(pointer, page) {
+    page = page || {};
+
+    // Opera Mobile handles the viewport and scrolling oddly
+    if (browser.isOperaMobile && pointerUtils.isNativePointer(pointer)) {
+      pointerUtils.getXY('screen', pointer, page);
+
+      page.x += window.scrollX;
+      page.y += window.scrollY;
+    } else {
+      pointerUtils.getXY('page', pointer, page);
+    }
+
+    return page;
+  },
+
+  getClientXY: function getClientXY(pointer, client) {
+    client = client || {};
+
+    if (browser.isOperaMobile && pointerUtils.isNativePointer(pointer)) {
+      // Opera Mobile handles the viewport and scrolling oddly
+      pointerUtils.getXY('screen', pointer, client);
+    } else {
+      pointerUtils.getXY('client', pointer, client);
+    }
+
+    return client;
+  },
+
+  getPointerId: function getPointerId(pointer) {
+    return is.number(pointer.pointerId) ? pointer.pointerId : pointer.identifier;
+  },
+
+  setCoords: function setCoords(targetObj, pointers, timeStamp) {
+    var pointer = pointers.length > 1 ? pointerUtils.pointerAverage(pointers) : pointers[0];
+
+    var tmpXY = {};
+
+    pointerUtils.getPageXY(pointer, tmpXY);
+    targetObj.page.x = tmpXY.x;
+    targetObj.page.y = tmpXY.y;
+
+    pointerUtils.getClientXY(pointer, tmpXY);
+    targetObj.client.x = tmpXY.x;
+    targetObj.client.y = tmpXY.y;
+
+    targetObj.timeStamp = is.number(timeStamp) ? timeStamp : new Date().getTime();
+  },
+
+  pointerExtend: pointerExtend,
+
+  getTouchPair: function getTouchPair(event) {
+    var touches = [];
+
+    // array of touches is supplied
+    if (is.array(event)) {
+      touches[0] = event[0];
+      touches[1] = event[1];
+    }
+    // an event
+    else {
+        if (event.type === 'touchend') {
+          if (event.touches.length === 1) {
+            touches[0] = event.touches[0];
+            touches[1] = event.changedTouches[0];
+          } else if (event.touches.length === 0) {
+            touches[0] = event.changedTouches[0];
+            touches[1] = event.changedTouches[1];
+          }
+        } else {
+          touches[0] = event.touches[0];
+          touches[1] = event.touches[1];
+        }
+      }
+
+    return touches;
+  },
+
+  pointerAverage: function pointerAverage(pointers) {
+    var average = {
+      pageX: 0,
+      pageY: 0,
+      clientX: 0,
+      clientY: 0,
+      screenX: 0,
+      screenY: 0
+    };
+
+    for (var _i = 0; _i < pointers.length; _i++) {
+      var _ref;
+
+      _ref = pointers[_i];
+      var pointer = _ref;
+
+      for (var _prop in average) {
+        average[_prop] += pointer[_prop];
+      }
+    }
+    for (var prop in average) {
+      average[prop] /= pointers.length;
+    }
+
+    return average;
+  },
+
+  touchBBox: function touchBBox(event) {
+    if (!event.length && !(event.touches && event.touches.length > 1)) {
+      return;
+    }
+
+    var touches = pointerUtils.getTouchPair(event);
+    var minX = Math.min(touches[0].pageX, touches[1].pageX);
+    var minY = Math.min(touches[0].pageY, touches[1].pageY);
+    var maxX = Math.max(touches[0].pageX, touches[1].pageX);
+    var maxY = Math.max(touches[0].pageY, touches[1].pageY);
+
+    return {
+      x: minX,
+      y: minY,
+      left: minX,
+      top: minY,
+      width: maxX - minX,
+      height: maxY - minY
+    };
+  },
+
+  touchDistance: function touchDistance(event, deltaSource) {
+    var sourceX = deltaSource + 'X';
+    var sourceY = deltaSource + 'Y';
+    var touches = pointerUtils.getTouchPair(event);
+
+    var dx = touches[0][sourceX] - touches[1][sourceX];
+    var dy = touches[0][sourceY] - touches[1][sourceY];
+
+    return hypot(dx, dy);
+  },
+
+  touchAngle: function touchAngle(event, prevAngle, deltaSource) {
+    var sourceX = deltaSource + 'X';
+    var sourceY = deltaSource + 'Y';
+    var touches = pointerUtils.getTouchPair(event);
+    var dx = touches[1][sourceX] - touches[0][sourceX];
+    var dy = touches[1][sourceY] - touches[0][sourceY];
+    var angle = 180 * Math.atan2(dy, dx) / Math.PI;
+
+    return angle;
+  },
+
+  getPointerType: function getPointerType(pointer) {
+    return is.string(pointer.pointerType) ? pointer.pointerType : is.number(pointer.pointerType) ? [undefined, undefined, 'touch', 'pen', 'mouse'][pointer.pointerType]
+    // if the PointerEvent API isn't available, then the "pointer" must
+    // be either a MouseEvent, TouchEvent, or Touch object
+    : /touch/.test(pointer.type) || pointer instanceof domObjects.Touch ? 'touch' : 'mouse';
+  },
+
+  // [ event.target, event.currentTarget ]
+  getEventTargets: function getEventTargets(event) {
+    var path = is.function(event.composedPath) ? event.composedPath() : event.path;
+
+    return [domUtils.getActualElement(path ? path[0] : event.target), domUtils.getActualElement(event.currentTarget)];
+  }
+};
+
+module.exports = pointerUtils;
+
+},{"./browser":36,"./domObjects":37,"./domUtils":38,"./hypot":42,"./is":45,"./pointerExtend":47}],49:[function(require,module,exports){
+'use strict';
+
+var _require = require('./window'),
+    window = _require.window;
+
+var vendors = ['ms', 'moz', 'webkit', 'o'];
+var lastTime = 0;
+var request = void 0;
+var cancel = void 0;
+
+for (var x = 0; x < vendors.length && !window.requestAnimationFrame; x++) {
+  request = window[vendors[x] + 'RequestAnimationFrame'];
+  cancel = window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
+}
+
+if (!request) {
+  request = function request(callback) {
+    var currTime = new Date().getTime();
+    var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+    var id = setTimeout(function () {
+      callback(currTime + timeToCall);
+    }, timeToCall);
+
+    lastTime = currTime + timeToCall;
+    return id;
+  };
+}
+
+if (!cancel) {
+  cancel = function cancel(id) {
+    clearTimeout(id);
+  };
+}
+
+module.exports = {
+  request: request,
+  cancel: cancel
+};
+
+},{"./window":51}],50:[function(require,module,exports){
+'use strict';
+
+var extend = require('./extend');
+var is = require('./is');
+
+var _require = require('./domUtils'),
+    closest = _require.closest,
+    parentNode = _require.parentNode,
+    getElementRect = _require.getElementRect;
+
+var rectUtils = {
+  getStringOptionResult: function getStringOptionResult(value, interactable, element) {
+    if (!is.string(value)) {
+      return null;
+    }
+
+    if (value === 'parent') {
+      value = parentNode(element);
+    } else if (value === 'self') {
+      value = interactable.getRect(element);
+    } else {
+      value = closest(element, value);
+    }
+
+    return value;
+  },
+
+  resolveRectLike: function resolveRectLike(value, interactable, element, functionArgs) {
+    value = rectUtils.getStringOptionResult(value, interactable, element) || value;
+
+    if (is.function(value)) {
+      value = value.apply(null, functionArgs);
+    }
+
+    if (is.element(value)) {
+      value = getElementRect(value);
+    }
+
+    return value;
+  },
+
+  rectToXY: function rectToXY(rect) {
+    return rect && {
+      x: 'x' in rect ? rect.x : rect.left,
+      y: 'y' in rect ? rect.y : rect.top
+    };
+  },
+
+  xywhToTlbr: function xywhToTlbr(rect) {
+    if (rect && !('left' in rect && 'top' in rect)) {
+      rect = extend({}, rect);
+
+      rect.left = rect.x || 0;
+      rect.top = rect.y || 0;
+      rect.right = rect.right || rect.left + rect.width;
+      rect.bottom = rect.bottom || rect.top + rect.height;
+    }
+
+    return rect;
+  },
+
+  tlbrToXywh: function tlbrToXywh(rect) {
+    if (rect && !('x' in rect && 'y' in rect)) {
+      rect = extend({}, rect);
+
+      rect.x = rect.left || 0;
+      rect.top = rect.top || 0;
+      rect.width = rect.width || rect.right - rect.x;
+      rect.height = rect.height || rect.bottom - rect.y;
+    }
+
+    return rect;
+  }
+};
+
+module.exports = rectUtils;
+
+},{"./domUtils":38,"./extend":40,"./is":45}],51:[function(require,module,exports){
+'use strict';
+
+var win = module.exports;
+var isWindow = require('./isWindow');
+
+function init(window) {
+  // get wrapped window if using Shadow DOM polyfill
+
+  win.realWindow = window;
+
+  // create a TextNode
+  var el = window.document.createTextNode('');
+
+  // check if it's wrapped by a polyfill
+  if (el.ownerDocument !== window.document && typeof window.wrap === 'function' && window.wrap(el) === el) {
+    // use wrapped window
+    window = window.wrap(window);
+  }
+
+  win.window = window;
+}
+
+if (typeof window === 'undefined') {
+  win.window = undefined;
+  win.realWindow = undefined;
+} else {
+  init(window);
+}
+
+win.getWindow = function getWindow(node) {
+  if (isWindow(node)) {
+    return node;
+  }
+
+  var rootNode = node.ownerDocument || node;
+
+  return rootNode.defaultView || rootNode.parentWindow || win.window;
+};
+
+win.init = init;
+
+},{"./isWindow":46}]},{},[1])(1)
+});
+
+
+//# sourceMappingURL=interact.js.map
+
+
+/***/ }),
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(27);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
 /* global browser */
 
@@ -12936,13 +20081,13 @@ class Options extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* defaul
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"auk\" data-component=\"alpheios-panel-options\">\r\n    <h4>Options</h4>\r\n    <div id=\"alpheios-language-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-language-selector-list\" class=\"uk-form-label\">Preferred Language:</label>\r\n        <select id=\"alpheios-language-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-locale-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-locale-selector-list\" class=\"uk-form-label\">Locale:</label>\r\n        <select id=\"alpheios-locale-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-ui-type-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-ui-type-selector-list\" class=\"uk-form-label\">UI Type:</label>\r\n        <select id=\"alpheios-ui-type-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-position-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-position-selector-list\" class=\"uk-form-label\">Panel position:</label>\r\n        <select id=\"alpheios-position-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n</div>\r\n";
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12978,7 +20123,7 @@ class State {
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12995,21 +20140,21 @@ class State {
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports) {
 
 module.exports = "<svg xmlns=\"http://www.w3.org/2000/svg\" style=\"display: none;\">\r\n    <symbol id=\"alf-icon-chevron-left\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1427 301l-531 531 531 531q19 19 19 45t-19 45l-166 166q-19 19-45 19t-45-19l-742-742q-19-19-19-45t19-45l742-742q19-19 45-19t45 19l166 166q19 19 19 45t-19 45z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-chevron-right\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1363 877l-742 742q-19 19-45 19t-45-19l-166-166q-19-19-19-45t19-45l531-531-531-531q-19-19-19-45t19-45l166-166q19-19 45-19t45 19l742 742q19 19 19 45t-19 45z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-arrow-left\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M1664 896v128q0 53-32.5 90.5t-84.5 37.5h-704l293 294q38 36 38 90t-38 90l-75 76q-37 37-90 37-52 0-91-37l-651-652q-37-37-37-90 0-52 37-91l651-650q38-38 91-38 52 0 90 38l75 74q38 38 38 91t-38 91l-293 293h704q52 0 84.5 37.5t32.5 90.5z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-commenting\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M640 896q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0 174-120 321.5t-326 233-450 85.5q-110 0-211-18-173 173-435 229-52 10-86 13-12 1-22-6t-13-18q-4-15 20-37 5-5 23.5-21.5t25.5-23.5 23.5-25.5 24-31.5 20.5-37 20-48 14.5-57.5 12.5-72.5q-146-90-229.5-216.5t-83.5-269.5q0-174 120-321.5t326-233 450-85.5 450 85.5 326 233 120 321.5z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-table\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M576 1376v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm0-384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm-512-768v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm-512-768v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm0-384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm128-320v1088q0 66-47 113t-113 47h-1344q-66 0-113-47t-47-113v-1088q0-66 47-113t113-47h1344q66 0 113 47t47 113z\"/>\r\n    </symbol>\r\n    <symbol id=\"alf-icon-wrench\" viewBox=\"0 0 1792 1792\">\r\n        <path d=\"M448 1472q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm644-420l-682 682q-37 37-90 37-52 0-91-37l-106-108q-38-36-38-90 0-53 38-91l681-681q39 98 114.5 173.5t173.5 114.5zm634-435q0 39-23 106-47 134-164.5 217.5t-258.5 83.5q-185 0-316.5-131.5t-131.5-316.5 131.5-316.5 316.5-131.5q58 0 121.5 16.5t107.5 46.5q16 11 16 28t-16 28l-293 169v224l193 107q5-3 79-48.5t135.5-81 70.5-35.5q15 0 23.5 10t8.5 25z\"/>\r\n    </symbol>\r\n</svg>\r\n<div data-component=\"page-controls\"></div>\r\n<div id=\"popup\"><popup></popup></div>\r\n<div data-component=\"alpheios-panel\"></div>";
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(32);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(32);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(35);
  // To polyfill Element.closest() if required
 
 
@@ -13192,7 +20337,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports) {
 
 // element-closest | CC0-1.0 | github.com/jonathantneal/closest
@@ -13231,11 +20376,11 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(34);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
 
 
@@ -13318,7 +20463,7 @@ class TextSelector {
 
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13332,7 +20477,7 @@ class TextQuoteSelector {
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -13375,7 +20520,7 @@ class MediaSelector {
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
@@ -24141,7 +31286,7 @@ return Vue$3;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(6).setImmediate))
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -24331,10 +31476,10 @@ return Vue$3;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(37)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(38)))
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -24524,7 +31669,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 !function(root, factory) {
@@ -25412,18 +32557,18 @@ process.umask = function() { return 0; };
 });
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(46);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(48);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(40)
+  __webpack_require__(41)
 }
-var normalizeComponent = __webpack_require__(45)
+var normalizeComponent = __webpack_require__(46)
 /* script */
 
 /* template */
@@ -25467,17 +32612,17 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(41);
+var content = __webpack_require__(42);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(43)("449bb36b", content, false);
+var update = __webpack_require__(44)("449bb36b", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -25493,10 +32638,10 @@ if(false) {
 }
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(42)(true);
+exports = module.exports = __webpack_require__(43)(true);
 // imports
 
 
@@ -25507,7 +32652,7 @@ exports.push([module.i, "\n.alpheios-popup {\n    border-radius: 0;\n    box-sha
 
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports) {
 
 /*
@@ -25589,7 +32734,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -25608,7 +32753,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(44)
+var listToStyles = __webpack_require__(45)
 
 /*
 type StyleObject = {
@@ -25810,7 +32955,7 @@ function applyToTag (styleElement, obj) {
 
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports) {
 
 /**
@@ -25843,7 +32988,7 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports) {
 
 /* globals __VUE_SSR_CONTEXT__ */
@@ -25952,7 +33097,7 @@ module.exports = function normalizeComponent (
 
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -26038,7 +33183,7 @@ module.exports = function normalizeComponent (
 });
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -26124,7 +33269,7 @@ if (false) {
 }
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(setImmediate) {/*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -36622,7 +43767,7 @@ return UIkit$2;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6).setImmediate))
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -36890,7 +44035,7 @@ return plugin;
 
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

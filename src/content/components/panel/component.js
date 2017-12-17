@@ -1,5 +1,6 @@
 import Component from '../lib/component'
 import template from './template.htmlf'
+import interact from 'interactjs' // Interact.js (for resizability)
 
 /**
  * This is a singleton component.
@@ -8,11 +9,11 @@ export default class Panel extends Component {
   constructor (options) {
     super(Panel.defaults, options)
 
-    this.activeClassName = 'active'
     this.hiddenClassName = 'hidden'
     this.panelOpenedClassName = 'opened'
     this.panelFullWidthClassName = 'full-width'
     this.bodyNormalWidthClassName = 'alpheios-panel-opened'
+    this.resizableSel = '[data-resizable="true"]' // for Interact.js
 
     this.setPositionTo(this.options.position)
     this.width = Panel.widths.zero // Sets initial width to zero because panel is closed initially
@@ -21,6 +22,31 @@ export default class Panel extends Component {
     this.innerElements.normalWidthButton.element.addEventListener('click', this.open.bind(this, Panel.widths.normal))
     this.innerElements.fullWidthButton.element.addEventListener('click', this.open.bind(this, Panel.widths.full))
     this.innerElements.closeButton.element.addEventListener('click', this.close.bind(this))
+
+    // Initialize Interact.js: make panel resizable
+    interact(this.resizableSel)
+      .resizable({
+        // resize from all edges and corners
+        edges: { left: true, right: true, bottom: false, top: false },
+
+        // keep the edges inside the parent
+        restrictEdges: {
+          outer: 'parent',
+          endOnly: true
+        },
+
+        // minimum size
+        restrictSize: {
+          min: { width: 400, height: 800 }
+        },
+
+        inertia: true
+      })
+      .on('resizemove', event => {
+        let target = event.target
+        // update the element's style
+        target.style.width = `${event.rect.width}px`
+      })
   }
 
   static get defaults () {

@@ -888,46 +888,6 @@ class BackgroundProcess {
     return tab.panelStatus
   }
 
-  async handleWordDataRequestStatefully (request, sender, state = undefined) {
-    let textSelector = TextSelector.readObject(request.body.textSelector)
-    let requestOptions = request.body.options
-    console.log(`Request for a "${textSelector.normalizedText}" word`)
-    let tabID = sender.tab.id
-
-    let homonym, lexicalData
-    try {
-      // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
-      ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
-      if (!homonym) { throw __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].value(state, new Error(`Homonym data is empty`)) }
-
-      lexicalData = this.langData.getSuffixes(homonym, state)
-    } catch (e) {
-      console.log(`Failure retrieving inflection data. ${e}`)
-    }
-
-    try {
-      for (let lexeme of homonym.lexemes) {
-        let shortDefs = await Lexicons.fetchShortDefs(lexeme.lemma, requestOptions)
-        console.log(`Retrieved short definitions:`, shortDefs)
-        lexeme.meaning.appendShortDefs(shortDefs)
-        let fullDefs = await Lexicons.fetchFullDefs(lexeme.lemma, requestOptions)
-        console.log(`Retrieved full definitions:`, fullDefs)
-        lexeme.meaning.appendFullDefs(fullDefs)
-      }
-      console.log(lexicalData)
-
-      let returnObject = this.sendResponseToTabStatefully(new WordDataResponse(request, lexicalData, __WEBPACK_IMPORTED_MODULE_0__lib_messaging_message__["a" /* default */].statuses.DATA_FOUND), tabID, state)
-      return __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].emptyValue(returnObject.state)
-    } catch (error) {
-      let errorValue = __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
-      console.error(`Word data retrieval failed: ${errorValue}`)
-      let returnObject = this.sendResponseToTabStatefully(
-        new WordDataResponse(request, undefined, __WEBPACK_IMPORTED_MODULE_0__lib_messaging_message__["a" /* default */].statuses.NO_DATA_FOUND), tabID, __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].getState(error)
-      )
-      return __WEBPACK_IMPORTED_MODULE_7__lib_state__["a" /* default */].emptyValue(returnObject.state)
-    }
-  }
-
   static async getActiveTabID () {
     let tabs = await browser.tabs.query({ active: true })
     console.log(`Active tab ID is ${tabs[0].id}`)
@@ -1177,7 +1137,7 @@ class Service {
     browser.tabs.sendMessage(tabID, request).then(
       () => { console.log(`Successfully sent a request to a tab`) },
       (error) => {
-        console.error(`tabs.sendMessage() failed: ${error.message}`,error)
+        console.error(`tabs.sendMessage() failed: ${error.message}`, error)
         this.rejectRequest(request.ID, error)
       }
     )
@@ -1185,7 +1145,6 @@ class Service {
   }
 
   sendRequestToBg (request, timeout) {
-    console.log(request)
     let promise = this.registerRequest(request, timeout)
     browser.runtime.sendMessage(request).then(
       () => { console.log(`Successfully sent a request to a background`) },
@@ -1224,6 +1183,14 @@ class Service {
       this.messages.delete(requestID) // Remove request from a map
       console.log(`Map length is ${this.messages.size}`)
     }
+  }
+
+  sendMessageToTab (request, tabID) {
+    return browser.tabs.sendMessage(tabID, request)
+  }
+
+  sendMessageToBg (request) {
+    return browser.runtime.sendMessage(request)
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Service;
