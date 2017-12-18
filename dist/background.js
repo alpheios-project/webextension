@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -68,7 +68,7 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
 
 
@@ -124,24 +124,6 @@ class Message {
 
 /***/ }),
 /* 1 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(0);
-
-
-class RequestMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a" /* default */] {
-  constructor (body) {
-    super(body)
-    this.role = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message_message__["a" /* default */].roles.REQUEST)
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = RequestMessage;
-
-
-
-/***/ }),
-/* 2 */
 /***/ (function(module, exports) {
 
 var g;
@@ -168,11 +150,11 @@ module.exports = g;
 
 
 /***/ }),
-/* 3 */
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__statuses__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__statuses__ = __webpack_require__(3);
 
 
 /**
@@ -245,7 +227,7 @@ class TabScript {
 
 
 /***/ }),
-/* 4 */
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -262,7 +244,7 @@ class TabScript {
 
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -718,17 +700,17 @@ exports.Transporter = Transporter;
 exports.StorageAdapter = LocalStorageAdapter;
 exports.TestAdapter = TestAdapter;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_browser__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__background_process__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_browser__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__background_process__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_alpheios_experience__);
 
 
@@ -739,7 +721,7 @@ let browserFeatures = new __WEBPACK_IMPORTED_MODULE_0__lib_browser__["a" /* defa
 console.log(`Support of a "browser" namespace: ${browserFeatures.browserNamespace}`)
 if (!browserFeatures.browserNamespace) {
   console.log('"browser" namespace is not supported, will load a WebExtensions polyfill into the background script')
-  window.browser = __webpack_require__(21)
+  window.browser = __webpack_require__(18)
 }
 
 let monitoredBackgroundProcess = __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].track(
@@ -764,7 +746,7 @@ monitoredBackgroundProcess.initialize()
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -794,26 +776,20 @@ class Browser {
 
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_messaging_message_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_service__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_request_state_request__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_activation_request__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_request_deactivation_request__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_request_open_panel_request__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_content_statuses__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__context_menu_item__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_state__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_alpheios_experience__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10_alpheios_experience__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_service__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_request_state_request__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__context_menu_item__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_state__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_alpheios_experience__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_alpheios_experience__);
 /* global browser */
-
-
-
 
 
 
@@ -860,16 +836,16 @@ class BackgroundProcess {
     browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
 
     this.menuItems = {
-      activate: new __WEBPACK_IMPORTED_MODULE_7__context_menu_item__["a" /* default */](BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
-      deactivate: new __WEBPACK_IMPORTED_MODULE_7__context_menu_item__["a" /* default */](BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
-      openPanel: new __WEBPACK_IMPORTED_MODULE_7__context_menu_item__["a" /* default */](BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText)
+      activate: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item__["a" /* default */](BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
+      deactivate: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item__["a" /* default */](BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
+      openPanel: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item__["a" /* default */](BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText)
     }
     this.menuItems.activate.enable() // This one will be enabled by default
 
     browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
     browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
 
-    this.transporter = new __WEBPACK_IMPORTED_MODULE_10_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_10_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_10_alpheios_experience__["TestAdapter"],
+    this.transporter = new __WEBPACK_IMPORTED_MODULE_7_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_7_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_7_alpheios_experience__["TestAdapter"],
       BackgroundProcess.defaults.experienceStorageThreshold, BackgroundProcess.defaults.experienceStorageCheckInterval)
   }
 
@@ -878,36 +854,36 @@ class BackgroundProcess {
   }
 
   isContentActive (tabID) {
-    return this.isContentLoaded(tabID) && this.tabs.get(tabID).status === __WEBPACK_IMPORTED_MODULE_6__lib_content_statuses__["a" /* default */].ACTIVE
+    return this.isContentLoaded(tabID) && this.tabs.get(tabID).status === __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].ACTIVE
   }
 
   activateContent (tabID) {
     if (!this.isContentLoaded(tabID)) {
       // This tab has no content loaded. loadContent will load content and set it to a tabID state
-      this.loadContent(new __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */](tabID))
+      this.loadContent(new __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__["a" /* default */](tabID))
     } else {
       let tab = this.tabs.get(tabID)
-      tab.status = __WEBPACK_IMPORTED_MODULE_6__lib_content_statuses__["a" /* default */].ACTIVE
-      tab.panelStatus = __WEBPACK_IMPORTED_MODULE_6__lib_content_statuses__["a" /* default */].PANEL_OPEN
+      tab.status = __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].ACTIVE
+      tab.panelStatus = __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].PANEL_OPEN
       this.updateContentState(tabID, tab)
     }
   }
 
   deactivateContent (tabID) {
     let tab = this.tabs.get(tabID)
-    tab.status = __WEBPACK_IMPORTED_MODULE_6__lib_content_statuses__["a" /* default */].DEACTIVATED
-    tab.panelStatus = __WEBPACK_IMPORTED_MODULE_6__lib_content_statuses__["a" /* default */].PANEL_CLOSED
+    tab.status = __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].DEACTIVATED
+    tab.panelStatus = __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].PANEL_CLOSED
     this.updateContentState(tabID, tab)
   }
 
   openPanel (tabID) {
     if (!this.isContentLoaded(tabID)) {
       // This tab has no content loaded. loadContent will load content and set it to a tabID state
-      this.loadContent(new __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */](tabID))
+      this.loadContent(new __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__["a" /* default */](tabID))
     } else {
       let tab = this.tabs.get(tabID)
-      tab.status = __WEBPACK_IMPORTED_MODULE_6__lib_content_statuses__["a" /* default */].ACTIVE
-      tab.panelStatus = __WEBPACK_IMPORTED_MODULE_6__lib_content_statuses__["a" /* default */].PANEL_OPEN
+      tab.status = __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].ACTIVE
+      tab.panelStatus = __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].PANEL_OPEN
       this.updateContentState(tabID, tab)
     }
   }
@@ -954,13 +930,13 @@ class BackgroundProcess {
   }
 
   sendResponseToTabStatefully (request, tabID, state = undefined) {
-    return __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].value(state, this.messagingService.sendResponseToTab(request, tabID))
+    return __WEBPACK_IMPORTED_MODULE_6__lib_state__["a" /* default */].value(state, this.messagingService.sendResponseToTab(request, tabID))
   }
 
   updateContentState (tabID, state) {
     this.messagingService.sendRequestToTab(new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_request_state_request__["a" /* default */](state), 10000, tabID).then(
       message => {
-        let contentState = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].readObject(message.body)
+        let contentState = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__["a" /* default */].readObject(message.body)
         this.updateTabState(tabID, contentState)
       },
       error => {
@@ -970,7 +946,7 @@ class BackgroundProcess {
   }
 
   stateMessageHandler (message, sender) {
-    let contentState = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].readObject(message.body)
+    let contentState = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__["a" /* default */].readObject(message.body)
     this.updateTabState(contentState.tabID, contentState)
   }
 
@@ -1022,11 +998,11 @@ class BackgroundProcess {
 
     // Menu state should reflect a status of a content script
     if (tab.hasOwnProperty('status')) {
-      if (tab.status === __WEBPACK_IMPORTED_MODULE_6__lib_content_statuses__["a" /* default */].ACTIVE) {
+      if (tab.status === __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].ACTIVE) {
         this.menuItems.activate.disable()
         this.menuItems.deactivate.enable()
         this.menuItems.openPanel.enable()
-      } else if (tab.status === __WEBPACK_IMPORTED_MODULE_6__lib_content_statuses__["a" /* default */].DEACTIVATED) {
+      } else if (tab.status === __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].DEACTIVATED) {
         this.menuItems.deactivate.disable()
         this.menuItems.activate.enable()
         this.menuItems.openPanel.disable()
@@ -1034,9 +1010,9 @@ class BackgroundProcess {
     }
 
     if (tab.hasOwnProperty('panelStatus')) {
-      if (tab.panelStatus === __WEBPACK_IMPORTED_MODULE_6__lib_content_statuses__["a" /* default */].PANEL_OPEN) {
+      if (tab.panelStatus === __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].PANEL_OPEN) {
         this.menuItems.openPanel.disable()
-      } else if (tab.status === __WEBPACK_IMPORTED_MODULE_6__lib_content_statuses__["a" /* default */].DEACTIVATED) {
+      } else if (tab.status === __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].DEACTIVATED) {
         this.menuItems.openPanel.enable()
       }
     }
@@ -1047,11 +1023,11 @@ class BackgroundProcess {
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(10);
-var bytesToUuid = __webpack_require__(11);
+var rng = __webpack_require__(9);
+var bytesToUuid = __webpack_require__(10);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -1082,7 +1058,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -1119,10 +1095,10 @@ if (!rng) {
 
 module.exports = rng;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, exports) {
 
 /**
@@ -1151,12 +1127,12 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(13);
 /* global browser */
 
 
@@ -1300,7 +1276,7 @@ class Service {
 
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1345,7 +1321,7 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a"
 
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1367,13 +1343,13 @@ class StoredRequest {
 
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(2);
 
 
 
@@ -1389,67 +1365,25 @@ class StateRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["a" /*
 
 
 /***/ }),
+/* 15 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(0);
+
+
+class RequestMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a" /* default */] {
+  constructor (body) {
+    super(body)
+    this.role = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message_message__["a" /* default */].roles.REQUEST)
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = RequestMessage;
+
+
+
+/***/ }),
 /* 16 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(1);
-
-
-
-class ActivationRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["a" /* default */] {
-  constructor () {
-    super(undefined)
-    this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message_message__["a" /* default */].types.ACTIVATION_REQUEST)
-  }
-}
-/* unused harmony export default */
-
-
-
-/***/ }),
-/* 17 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(1);
-
-
-
-class DeactivationRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["a" /* default */] {
-  constructor () {
-    super(undefined)
-    this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message_message__["a" /* default */].types.DEACTIVATION_REQUEST)
-  }
-}
-/* unused harmony export default */
-
-
-
-/***/ }),
-/* 18 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(1);
-
-
-
-class OpenPanelRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["a" /* default */] {
-  constructor () {
-    super(undefined)
-    this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message_message__["a" /* default */].types.OPEN_PANEL_REQUEST)
-  }
-}
-/* unused harmony export default */
-
-
-
-/***/ }),
-/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1483,7 +1417,7 @@ class ContentMenuItem {
 
 
 /***/ }),
-/* 20 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1519,7 +1453,7 @@ class State {
 
 
 /***/ }),
-/* 21 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {

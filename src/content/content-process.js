@@ -326,7 +326,11 @@ export default class ContentProcess {
   formatShortDefinitions (lexeme) {
     let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
     for (let shortDef of lexeme.meaning.shortDefs) {
-      content += `${shortDef.text}<br>\n`
+      content += `<div class="alpheios-meaning">${shortDef.text}\n`
+      if (shortDef.provider) {
+        content += `<div class="alpheios-provider">${shortDef.provider}</div>\n`
+      }
+      content += '</div>'
     }
     return content
   }
