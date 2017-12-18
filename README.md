@@ -1,6 +1,19 @@
 # Alpheios WebExtension
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
+## Initialization sequence
+
+1. Background script loads a content script, content styles, and, if necessary, a webextension polyfill into
+a tab.
+2. Content script sets itself to a default state.
+3. Background script sends a StatusRequest to a content script with a desired content script status.
+4. Content script responds with a StatusResponse that has an updated content script state.
+
+If a background scripts wants to change a content script state, it sends a StatusRequest to a content script.
+Content script responds with a StatusResponse that has an updated content script state.
+
+If a content script changes its state, it sends a StatusMessage to a background script.
+
 ## Libraries
 
 ### Experience

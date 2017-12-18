@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
+/******/ 	return __webpack_require__(__webpack_require__.s = 9);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1930,7 +1930,7 @@ class ResourceProvider {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
 
 
@@ -1946,10 +1946,9 @@ class Message {
   static get types () {
     return {
       GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
-      WORD_DATA_REQUEST: Symbol.for('Alpheios_WordDataRequest'),
-      WORD_DATA_RESPONSE: Symbol.for('Alpheios_WordDataResponse'),
-      STATUS_REQUEST: Symbol.for('Alpheios_StatusRequest'),
-      STATUS_RESPONSE: Symbol.for('Alpheios_StatusResponse'),
+      STATE_MESSAGE: Symbol.for('Alpheios_StateMessage'),
+      STATE_REQUEST: Symbol.for('Alpheios_StateRequest'),
+      STATE_RESPONSE: Symbol.for('Alpheios_StateResponse'),
       ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
       DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
       OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
@@ -2017,6 +2016,83 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__statuses__ = __webpack_require__(6);
+
+
+/**
+ * Contains a state of a tab content script.
+ * @property {Number} tabID - An ID of a tab where the content script is loaded
+ * @property {Symbol} status - A status of a current script (Active, Deactivated, Pending)
+ * @property {panelStatus} panelStatus
+ */
+class TabScript {
+  constructor (tabID, status, panelStatus) {
+    this.tabID = tabID
+    this.status = status || TabScript.defaults.status
+    this.panelStatus = panelStatus || TabScript.defaults.panelStatus
+  }
+
+  static get defaults () {
+    return {
+      status: __WEBPACK_IMPORTED_MODULE_0__statuses__["a" /* default */].ACTIVE,
+      panelStatus: __WEBPACK_IMPORTED_MODULE_0__statuses__["a" /* default */].PANEL_OPEN
+    }
+  }
+
+  update (source) {
+    for (let key of Object.keys(source)) {
+      this[key] = source[key]
+    }
+    return this
+  }
+
+  diff (state) {
+    let diff = {}
+    for (let key of Object.keys(state)) {
+      if (this.hasOwnProperty(key)) {
+        if (this[key] !== state[key]) {
+          diff[key] = state[key]
+        }
+      } else {
+        console.warn(`TabScript has no property named "${key}"`)
+      }
+    }
+    return diff
+  }
+
+  static serializable (source) {
+    let serializable = new TabScript()
+    for (let key of Object.keys(source)) {
+      let value = source[key]
+      serializable[key] = (typeof value === 'symbol') ? Symbol.keyFor(value) : value
+    }
+    return serializable
+  }
+
+  static readObject (jsonObject) {
+    let props = ['tabID']
+    let symbolProps = ['status', 'panelStatus']
+    let tabScript = new TabScript()
+
+    for (let prop of props) {
+      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
+    }
+    for (let prop of symbolProps) {
+      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
+    }
+
+    return tabScript
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = TabScript;
+
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 class Element {
   constructor (name, scope, elementData = {}) {
     this.options = Element.defaults
@@ -2080,24 +2156,33 @@ class Element {
 
 
 /***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(1);
 
 
-class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */] {
-  constructor (request, body, status = undefined) {
+/**
+ * A generic response to a request message
+ */
+class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a" /* default */] {
+  /**
+   * @param {RequestMessage} request - A request that resulted in this response
+   * @param {Object} body - A response message body
+   * @param {Symbol | string} statusCode - A status code for a request that initiated this response
+   * (i.e. Success, Failure, etc.)
+   */
+  constructor (request, body, statusCode = undefined) {
     super(body)
-    this.role = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.RESPONSE)
+    this.role = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message_message__["a" /* default */].roles.RESPONSE)
     this.requestID = request.ID // ID of the request to match request and response
-    if (status) {
+    if (statusCode) {
       if (typeof status === 'symbol') {
         // If status is a symbol, store a symbol key instead of a symbol for serialization
-        this.status = Symbol.keyFor(status)
+        this.status = Symbol.keyFor(statusCode)
       } else {
-        this.status = status
+        this.status = statusCode
       }
     }
   }
@@ -2108,7 +2193,7 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* defa
    */
   static isResponse (message) {
     return message.role &&
-    Symbol.for(message.role) === __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.RESPONSE && message.requestID
+    Symbol.for(message.role) === __WEBPACK_IMPORTED_MODULE_0__message_message__["a" /* default */].roles.RESPONSE && message.requestID
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = ResponseMessage;
@@ -2116,12 +2201,29 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* defa
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(21);
+/**
+ * A common object shared between content and background.
+ */
+/* harmony default export */ __webpack_exports__["a"] = ({
+  PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
+  ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
+  DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
+  PANEL_OPEN: Symbol.for('Alpheios_Status_PanelOpened'), // Panel has been opened
+  PANEL_CLOSED: Symbol.for('Alpheios_Status_PanelClosed')
+});
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(22);
 
 
 
@@ -2198,7 +2300,7 @@ class Component {
 
 
 /***/ }),
-/* 6 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var apply = Function.prototype.apply;
@@ -2257,12 +2359,12 @@ exports.clearImmediate = clearImmediate;
 
 
 /***/ }),
-/* 7 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(51);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
 
@@ -2287,34 +2389,36 @@ contentProcess.initialize()
 
 
 /***/ }),
-/* 8 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_message__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_service__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_request_panel_status_change_request__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_status_response__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_panel_component__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_options_component__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_state__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__statuses__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__template_htmlf__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue__ = __webpack_require__(36);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_vue_js_modal__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__vue_components_popup_vue__ = __webpack_require__(40);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit__ = __webpack_require__(49);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(50);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit_icons__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_message_message__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_service__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_state_message__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_state_response__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_panel_component__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_options_component__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_state__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__template_htmlf__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_12__template_htmlf__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__lib_selection_media_html_selector__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_dist_vue__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_vue_js_modal__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15_vue_js_modal__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__vue_components_popup_vue__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit__ = __webpack_require__(49);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(50);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_18__node_modules_uikit_dist_js_uikit_icons__);
 /* global browser */
+
 
 
 
@@ -2338,8 +2442,9 @@ contentProcess.initialize()
 
 class ContentProcess {
   constructor () {
-    this.status = __WEBPACK_IMPORTED_MODULE_10__statuses__["a" /* default */].PENDING
-    this.panelStatus = __WEBPACK_IMPORTED_MODULE_10__statuses__["a" /* default */].PANEL_CLOSED
+    this.state = new __WEBPACK_IMPORTED_MODULE_10__lib_content_tab_script__["a" /* default */]()
+    this.state.status = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].PENDING
+    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].PANEL_CLOSED
     this.settings = ContentProcess.settingValues
     this.vueInstance = undefined
 
@@ -2355,10 +2460,10 @@ class ContentProcess {
     this.loadUI()
 
     // Adds message listeners
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message__["a" /* default */].types.STATUS_REQUEST, this.handleStatusRequest, this)
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message__["a" /* default */].types.OPEN_PANEL_REQUEST, this.handleOpenPanelRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message_message__["a" /* default */].types.STATE_REQUEST, this.handleStateRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message_message__["a" /* default */].types.OPEN_PANEL_REQUEST, this.handleOpenPanelRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     // this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
@@ -2369,7 +2474,7 @@ class ContentProcess {
   loadUI () {
     // Inject HTML code of a plugin. Should go in reverse order.
     document.body.classList.add('alpheios')
-    ContentProcess.loadTemplate(__WEBPACK_IMPORTED_MODULE_11__template_htmlf___default.a)
+    ContentProcess.loadTemplate(__WEBPACK_IMPORTED_MODULE_12__template_htmlf___default.a)
 
     // Initialize components
     this.panel = new __WEBPACK_IMPORTED_MODULE_7__components_panel_component__["a" /* default */]({
@@ -2389,7 +2494,7 @@ class ContentProcess {
     this.options = new __WEBPACK_IMPORTED_MODULE_8__components_options_component__["a" /* default */]({
       methods: {
         ready: (options) => {
-          this.status = __WEBPACK_IMPORTED_MODULE_10__statuses__["a" /* default */].ACTIVE
+          this.state.status = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].ACTIVE
           this.setPanelPositionTo(options.panelPosition.currentValue)
           this.setDefaultLanguageTo(options.defaultLanguage.currentValue)
           console.log('Content script is set to active')
@@ -2399,15 +2504,15 @@ class ContentProcess {
     })
 
     // Register a Vue.js modal plugin
-    __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_14_vue_js_modal___default.a, {
+    __WEBPACK_IMPORTED_MODULE_14_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_15_vue_js_modal___default.a, {
       dialog: false
     })
 
     // Create a Vue instance for a popup
-    this.vueInstance = new __WEBPACK_IMPORTED_MODULE_13_vue_dist_vue___default.a({
+    this.vueInstance = new __WEBPACK_IMPORTED_MODULE_14_vue_dist_vue___default.a({
       el: '#popup',
       // template: '<app/>',
-      components: { popup: __WEBPACK_IMPORTED_MODULE_15__vue_components_popup_vue__["a" /* default */] },
+      components: { popup: __WEBPACK_IMPORTED_MODULE_16__vue_components_popup_vue__["a" /* default */] },
       data: {
         popupTitle: '',
         popupContent: '',
@@ -2421,7 +2526,7 @@ class ContentProcess {
     this.modal = this.vueInstance.$modal
 
     // Initialize UIKit
-    __WEBPACK_IMPORTED_MODULE_16__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit_icons___default.a)
+    __WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_18__node_modules_uikit_dist_js_uikit_icons___default.a)
   }
 
   static get settingValues () {
@@ -2443,18 +2548,18 @@ class ContentProcess {
   }
 
   get isActive () {
-    return this.status === __WEBPACK_IMPORTED_MODULE_10__statuses__["a" /* default */].ACTIVE
+    return this.state.status === __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].ACTIVE
   }
 
   deactivate () {
     console.log('Content has been deactivated.')
     this.closePanel()
-    this.status = __WEBPACK_IMPORTED_MODULE_10__statuses__["a" /* default */].DEACTIVATED
+    this.state.status = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
-    this.status = __WEBPACK_IMPORTED_MODULE_10__statuses__["a" /* default */].ACTIVE
+    this.state.status = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].ACTIVE
   }
 
   static loadTemplate (template) {
@@ -2627,13 +2732,14 @@ class ContentProcess {
 
   openPanel () {
     this.panel.open()
-    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_request_panel_status_change_request__["a" /* default */](true), this.settings.requestTimeout)
+    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].PANEL_OPEN
+    this.sendStateToBackground()
   }
 
   closePanel () {
     this.panel.close()
-    this.panelStatus = __WEBPACK_IMPORTED_MODULE_10__statuses__["a" /* default */].PANEL_CLOSED
-    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_request_panel_status_change_request__["a" /* default */](false), this.settings.requestTimeout)
+    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].PANEL_CLOSED
+    this.sendStateToBackground()
   }
 
   formatShortDefinitions (lexeme) {
@@ -2652,12 +2758,27 @@ class ContentProcess {
     return content
   }
 
-  handleStatusRequest (request, sender) {
+  handleStateRequest (request, sender) {
     // Send a status response
-    console.log(`Status request received. Sending a response back.`)
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
+    console.log(`State request has been received`)
+    let state = __WEBPACK_IMPORTED_MODULE_10__lib_content_tab_script__["a" /* default */].readObject(request.body)
+    let diff = this.state.diff(state)
+    if (diff.hasOwnProperty('tabID')) { this.state.tabID = diff.tabID }
+    if (diff.hasOwnProperty('status')) {
+      if (diff.status === __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].ACTIVE) {
+        this.state.status = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].ACTIVE
+      } else {
+        this.state.status = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].DEACTIVATED
+        this.closePanel()
+        console.log('Content has been deactivated')
+      }
+    }
+    if (diff.hasOwnProperty('panelStatus')) {
+      if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].PANEL_OPEN) { this.openPanel() } else { this.closePanel() }
+    }
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_state_response__["a" /* default */](request, this.state)).catch(
       (error) => {
-        console.error(`Unable to send a response to activation request: ${error}`)
+        console.error(`Unable to send a response to a state request: ${error}`)
       }
     )
   }
@@ -2668,7 +2789,7 @@ class ContentProcess {
     if (!this.isActive) {
       this.reactivate()
     }
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_state_response__["a" /* default */](request, this.state.status)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -2681,7 +2802,7 @@ class ContentProcess {
     if (this.isActive) {
       this.deactivate()
     }
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_status_response__["a" /* default */](request, this.status)).catch(
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_state_response__["a" /* default */](request, this.state.status)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -2691,6 +2812,14 @@ class ContentProcess {
   handleOpenPanelRequest (request, sender) {
     console.log(`Open panel request received. Sending a response back.`)
     let panelStatus = this.openPanel()
+  }
+
+  sendStateToBackground () {
+    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
+      (error) => {
+        console.error(`Unable to send a response to activation request: ${error}`)
+      }
+    )
   }
 
   updateInflectionTable (wordData) {
@@ -2723,7 +2852,7 @@ class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.defaultLanguage)
+      let textSelector = __WEBPACK_IMPORTED_MODULE_13__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.defaultLanguage)
 
       if (!textSelector.isEmpty()) {
         this.getWordDataStatefully(textSelector)
@@ -2736,7 +2865,7 @@ class ContentProcess {
 
 
 /***/ }),
-/* 9 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -9748,7 +9877,7 @@ class Presenter {
 
 
 /***/ }),
-/* 10 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -10180,7 +10309,7 @@ class TuftsAdapter extends BaseAdapter {
 
 
 /***/ }),
-/* 11 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12124,11 +12253,11 @@ class Lexicons {
 
 
 /***/ }),
-/* 12 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(13);
-var bytesToUuid = __webpack_require__(14);
+var rng = __webpack_require__(15);
+var bytesToUuid = __webpack_require__(16);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -12159,7 +12288,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 13 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -12199,7 +12328,7 @@ module.exports = rng;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, exports) {
 
 /**
@@ -12228,12 +12357,12 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 15 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(18);
 /* global browser */
 
 
@@ -12377,7 +12506,7 @@ class Service {
 
 
 /***/ }),
-/* 16 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12399,68 +12528,22 @@ class StoredRequest {
 
 
 /***/ }),
-/* 17 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(18);
-
-
-
-class PanelStatusChangeRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["a" /* default */] {
-  constructor (isOpen) {
-    // passing a Symbol (i.e. the PANEL_OPEN or PANEL_CLOSED Status)
-    // fails -- probably there is a way to make it work but for now
-    // a simple boolean flag works
-    super({isOpen: isOpen})
-    this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].types.PANEL_STATUS_CHANGE_REQUEST)
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = PanelStatusChangeRequest;
-
-
-
-/***/ }),
-/* 18 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(1);
-
-
-class RequestMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */] {
-  constructor (body) {
-    super(body)
-    this.role = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].roles.REQUEST)
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = RequestMessage;
-
-
-
-/***/ }),
 /* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__content_tab_script__ = __webpack_require__(3);
 
 
 
-class StatusResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a" /* default */] {
-  /**
-   * Status response initialization.
-   * @param {RequestMessage} request - A request we're responding to.
-   * @param {Message.statuses} status - A current status of a party requested.
-   */
-  constructor (request, status) {
-    super(request, undefined, status)
-    this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].types.STATUS_RESPONSE)
+class StateMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */] {
+  constructor (state) {
+    super(__WEBPACK_IMPORTED_MODULE_1__content_tab_script__["a" /* default */].serializable(state))
+    this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message__["a" /* default */].types.STATE_MESSAGE)
   }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = StatusResponse;
+/* harmony export (immutable) */ __webpack_exports__["a"] = StateMessage;
 
 
 
@@ -12469,10 +12552,38 @@ class StatusResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a"
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(3);
+
+
+
+
+class StateResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a" /* default */] {
+  /**
+   * Status response initialization.
+   * @param {RequestMessage} request - A request we're responding to.
+   * @param {Message.statuses} status - A current status of an object.
+   * @param {Symbol | string} statusCode - A status code for a request that initiated this response.
+   */
+  constructor (request, status, statusCode = undefined) {
+    super(request, __WEBPACK_IMPORTED_MODULE_2__content_tab_script__["a" /* default */].serializable(status), statusCode)
+    this.type = Symbol.keyFor(__WEBPACK_IMPORTED_MODULE_0__message_message__["a" /* default */].types.STATE_RESPONSE)
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = StateResponse;
+
+
+
+/***/ }),
+/* 21 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(26);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_interactjs__);
 
 
@@ -12672,12 +12783,12 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(23);
 
 
 
@@ -12732,11 +12843,11 @@ class TabGroup {
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
 
 
 class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */] {
@@ -12763,19 +12874,19 @@ class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default *
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\r\n  <!--<div class=\"alpheios-panel__wrapper\">-->\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(24) + "\"></div>\r\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\" id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n  <!--</div>-->\r\n</div>\r\n";
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\r\n  <!--<div class=\"alpheios-panel__wrapper\">-->\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(25) + "\"></div>\r\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\" id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n  <!--</div>-->\r\n</div>\r\n";
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports) {
 
 module.exports = "data:image/png;base64,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"
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var require;var require;/**
@@ -19930,12 +20041,12 @@ win.init = init;
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
 /* global browser */
 
@@ -20081,13 +20192,13 @@ class Options extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* defaul
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"auk\" data-component=\"alpheios-panel-options\">\r\n    <h4>Options</h4>\r\n    <div id=\"alpheios-language-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-language-selector-list\" class=\"uk-form-label\">Preferred Language:</label>\r\n        <select id=\"alpheios-language-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-locale-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-locale-selector-list\" class=\"uk-form-label\">Locale:</label>\r\n        <select id=\"alpheios-locale-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-ui-type-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-ui-type-selector-list\" class=\"uk-form-label\">UI Type:</label>\r\n        <select id=\"alpheios-ui-type-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-position-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-position-selector-list\" class=\"uk-form-label\">Panel position:</label>\r\n        <select id=\"alpheios-position-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n</div>\r\n";
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20120,23 +20231,6 @@ class State {
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = State;
 
-
-
-/***/ }),
-/* 29 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/**
- * A common object shared between content and background.
- */
-/* harmony default export */ __webpack_exports__["a"] = ({
-  PENDING: Symbol.for('Pending'), // Content script has not been fully initialized yet
-  ACTIVE: Symbol.for('Active'), // Content script is loaded and active
-  DEACTIVATED: Symbol.for('Deactivated'), // Content script has been loaded, but is deactivated
-  PANEL_OPEN: Symbol.for('PanelOpened'), // Panel has been opened
-  PANEL_CLOSED: Symbol.for('PanelClosed')
-});
 
 
 /***/ }),
@@ -31283,7 +31377,7 @@ return Vue$3;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(6).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(8).setImmediate))
 
 /***/ }),
 /* 37 */
@@ -43764,7 +43858,7 @@ return UIkit$2;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8).setImmediate))
 
 /***/ }),
 /* 50 */

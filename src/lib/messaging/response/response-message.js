@@ -1,16 +1,25 @@
-import Message from '../message'
+import Message from '../message/message'
 
+/**
+ * A generic response to a request message
+ */
 export default class ResponseMessage extends Message {
-  constructor (request, body, status = undefined) {
+  /**
+   * @param {RequestMessage} request - A request that resulted in this response
+   * @param {Object} body - A response message body
+   * @param {Symbol | string} statusCode - A status code for a request that initiated this response
+   * (i.e. Success, Failure, etc.)
+   */
+  constructor (request, body, statusCode = undefined) {
     super(body)
     this.role = Symbol.keyFor(Message.roles.RESPONSE)
     this.requestID = request.ID // ID of the request to match request and response
-    if (status) {
+    if (statusCode) {
       if (typeof status === 'symbol') {
         // If status is a symbol, store a symbol key instead of a symbol for serialization
-        this.status = Symbol.keyFor(status)
+        this.status = Symbol.keyFor(statusCode)
       } else {
-        this.status = status
+        this.status = statusCode
       }
     }
   }

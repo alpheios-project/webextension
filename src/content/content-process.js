@@ -2,14 +2,15 @@
 import * as InflectionTables from 'alpheios-inflection-tables'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import {Lexicons} from 'alpheios-lexicon-client'
-import Message from '../lib/messaging/message'
+import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
-import PanelStatusChangeRequest from '../lib/messaging/request/panel-status-change-request'
-import StatusResponse from '../lib/messaging/response/status-response'
+import StateMessage from '../lib/messaging/message/state-message'
+import StateResponse from '../lib/messaging/response/state-response'
 import Panel from './components/panel/component'
 import Options from './components/options/component'
 import State from '../lib/state'
-import Statuses from './statuses'
+import TabScript from '../lib/content/tab-script'
+import Statuses from '../lib/content/statuses'
 import Template from './template.htmlf'
 // import PageControls from './components/page-controls/component'
 import HTMLSelector from '../lib/selection/media/html-selector'
@@ -22,8 +23,9 @@ import UIkITIconts from '../../node_modules/uikit/dist/js/uikit-icons'
 
 export default class ContentProcess {
   constructor () {
-    this.status = Statuses.PENDING
-    this.panelStatus = Statuses.PANEL_CLOSED
+    this.state = new TabScript()
+    this.state.status = Statuses.PENDING
+    this.state.panelStatus = Statuses.PANEL_CLOSED
     this.settings = ContentProcess.settingValues
     this.vueInstance = undefined
 
@@ -39,7 +41,7 @@ export default class ContentProcess {
     this.loadUI()
 
     // Adds message listeners
-    this.messagingService.addHandler(Message.types.STATUS_REQUEST, this.handleStatusRequest, this)
+    this.messagingService.addHandler(Message.types.STATE_REQUEST, this.handleStateRequest, this)
     this.messagingService.addHandler(Message.types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
     this.messagingService.addHandler(Message.types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
     this.messagingService.addHandler(Message.types.OPEN_PANEL_REQUEST, this.handleOpenPanelRequest, this)
@@ -73,7 +75,7 @@ export default class ContentProcess {
     this.options = new Options({
       methods: {
         ready: (options) => {
-          this.status = Statuses.ACTIVE
+          this.state.status = Statuses.ACTIVE
           this.setPanelPositionTo(options.panelPosition.currentValue)
           this.setDefaultLanguageTo(options.defaultLanguage.currentValue)
           console.log('Content script is set to active')
@@ -127,18 +129,18 @@ export default class ContentProcess {
   }
 
   get isActive () {
-    return this.status === Statuses.ACTIVE
+    return this.state.status === Statuses.ACTIVE
   }
 
   deactivate () {
     console.log('Content has been deactivated.')
     this.closePanel()
-    this.status = Statuses.DEACTIVATED
+    this.state.status = Statuses.DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
-    this.status = Statuses.ACTIVE
+    this.state.status = Statuses.ACTIVE
   }
 
   static loadTemplate (template) {
@@ -311,13 +313,14 @@ export default class ContentProcess {
 
   openPanel () {
     this.panel.open()
-    this.messagingService.sendMessageToBg(new PanelStatusChangeRequest(true), this.settings.requestTimeout)
+    this.state.panelStatus = Statuses.PANEL_OPEN
+    this.sendStateToBackground()
   }
 
   closePanel () {
     this.panel.close()
-    this.panelStatus = Statuses.PANEL_CLOSED
-    this.messagingService.sendMessageToBg(new PanelStatusChangeRequest(false), this.settings.requestTimeout)
+    this.state.panelStatus = Statuses.PANEL_CLOSED
+    this.sendStateToBackground()
   }
 
   formatShortDefinitions (lexeme) {
@@ -336,12 +339,27 @@ export default class ContentProcess {
     return content
   }
 
-  handleStatusRequest (request, sender) {
+  handleStateRequest (request, sender) {
     // Send a status response
-    console.log(`Status request received. Sending a response back.`)
-    this.messagingService.sendResponseToBg(new StatusResponse(request, this.status)).catch(
+    console.log(`State request has been received`)
+    let state = TabScript.readObject(request.body)
+    let diff = this.state.diff(state)
+    if (diff.hasOwnProperty('tabID')) { this.state.tabID = diff.tabID }
+    if (diff.hasOwnProperty('status')) {
+      if (diff.status === Statuses.ACTIVE) {
+        this.state.status = Statuses.ACTIVE
+      } else {
+        this.state.status = Statuses.DEACTIVATED
+        this.closePanel()
+        console.log('Content has been deactivated')
+      }
+    }
+    if (diff.hasOwnProperty('panelStatus')) {
+      if (diff.panelStatus === Statuses.PANEL_OPEN) { this.openPanel() } else { this.closePanel() }
+    }
+    this.messagingService.sendResponseToBg(new StateResponse(request, this.state)).catch(
       (error) => {
-        console.error(`Unable to send a response to activation request: ${error}`)
+        console.error(`Unable to send a response to a state request: ${error}`)
       }
     )
   }
@@ -352,7 +370,7 @@ export default class ContentProcess {
     if (!this.isActive) {
       this.reactivate()
     }
-    this.messagingService.sendResponseToBg(new StatusResponse(request, this.status)).catch(
+    this.messagingService.sendResponseToBg(new StateResponse(request, this.state.status)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -365,7 +383,7 @@ export default class ContentProcess {
     if (this.isActive) {
       this.deactivate()
     }
-    this.messagingService.sendResponseToBg(new StatusResponse(request, this.status)).catch(
+    this.messagingService.sendResponseToBg(new StateResponse(request, this.state.status)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -375,6 +393,14 @@ export default class ContentProcess {
   handleOpenPanelRequest (request, sender) {
     console.log(`Open panel request received. Sending a response back.`)
     let panelStatus = this.openPanel()
+  }
+
+  sendStateToBackground () {
+    this.messagingService.sendMessageToBg(new StateMessage(this.state)).catch(
+      (error) => {
+        console.error(`Unable to send a response to activation request: ${error}`)
+      }
+    )
   }
 
   updateInflectionTable (wordData) {
