@@ -1,4 +1,4 @@
-import Message from '../message'
+import Message from '../message/message'
 import RequestMessage from './request-message'
 
 export default class ActivationRequest extends RequestMessage {

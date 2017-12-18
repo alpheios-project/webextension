@@ -1,11 +1,10 @@
 /* global browser */
-import Message from '../lib/messaging/message'
+import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
-import ActivationRequest from '../lib/messaging/request/activation-request'
-import DeactivationRequest from '../lib/messaging/request/deactivation-request'
-import OpenPanelRequest from '../lib/messaging/request/open-panel-request'
-import Statuses from '../content/statuses'
-import ContentTab from './content-tab'
+import StateRequest from '../lib/messaging/request/state-request'
+import Statuses from '../lib/content/statuses'
+import ContextMenuItem from './context-menu-item'
+import TabScript from '../lib/content/tab-script'
 import State from '../lib/state'
 import {
   Transporter,
@@ -45,12 +44,16 @@ export default class BackgroundProcess {
   initialize () {
     console.log('Background script initialization started ...')
 
-    this.messagingService.addHandler(Message.types.WORD_DATA_REQUEST, this.handleWordDataRequestStatefully, this)
-    this.messagingService.addHandler(Message.types.PANEL_STATUS_CHANGE_REQUEST, this.updatePanelStatus, this)
+    this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
 
-    BackgroundProcess.createMenuItem()
+    this.menuItems = {
+      activate: new ContextMenuItem(BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
+      deactivate: new ContextMenuItem(BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
+      openPanel: new ContextMenuItem(BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText)
+    }
+    this.menuItems.activate.enable() // This one will be enabled by default
 
     browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
     browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
@@ -67,40 +70,34 @@ export default class BackgroundProcess {
     return this.isContentLoaded(tabID) && this.tabs.get(tabID).status === Statuses.ACTIVE
   }
 
-  isPanelOpen (tabID) {
-    return this.isContentActive(tabID) && this.tabs.get(tabID).panelStatus === Statuses.PANEL_OPEN
-  }
-
   activateContent (tabID) {
     if (!this.isContentLoaded(tabID)) {
-      // This tab has no content loaded
-      this.loadContent(tabID)
+      // This tab has no content loaded. loadContent will load content and set it to a tabID state
+      this.loadContent(new TabScript(tabID))
     } else {
-      if (!this.isContentActive(tabID)) {
-        this.messagingService.sendRequestToTab(new ActivationRequest(), 10000, tabID).then(
-          (message) => {
-            console.log(`Status update, new status is "${message.status}"`)
-            this.tabs.get(tabID).status = Message.statusSym(message)
-          },
-          (error) => {
-            console.log(`No status confirmation from tab {tabID} on activation request: ${error.message}`)
-          }
-        )
-      }
+      let tab = this.tabs.get(tabID)
+      tab.status = Statuses.ACTIVE
+      tab.panelStatus = Statuses.PANEL_OPEN
+      this.updateContentState(tabID, tab)
     }
   }
 
   deactivateContent (tabID) {
-    if (this.isContentActive(tabID)) {
-      this.messagingService.sendRequestToTab(new DeactivationRequest(), 10000, tabID).then(
-        (message) => {
-          console.log(`Status update, new status is "${message.status}"`)
-          this.tabs.get(tabID).status = Message.statusSym(message)
-        },
-        (error) => {
-          console.log(`No status confirmation from tab {tabID} on deactivation request: ${error.message}`)
-        }
-      )
+    let tab = this.tabs.get(tabID)
+    tab.status = Statuses.DEACTIVATED
+    tab.panelStatus = Statuses.PANEL_CLOSED
+    this.updateContentState(tabID, tab)
+  }
+
+  openPanel (tabID) {
+    if (!this.isContentLoaded(tabID)) {
+      // This tab has no content loaded. loadContent will load content and set it to a tabID state
+      this.loadContent(new TabScript(tabID))
+    } else {
+      let tab = this.tabs.get(tabID)
+      tab.status = Statuses.ACTIVE
+      tab.panelStatus = Statuses.PANEL_OPEN
+      this.updateContentState(tabID, tab)
     }
   }
 
@@ -123,44 +120,25 @@ export default class BackgroundProcess {
     return browser.tabs.executeScript(tabID, {
       file: this.settings.contentScriptFileName
     })
-  };
+  }
 
   loadContentCSS (tabID) {
     console.log('Loading CSS into a content tab')
     return browser.tabs.insertCSS(tabID, {
       file: this.settings.contentCSSFileName
     })
-  };
-
-  handleOpenPanelRequest (tabID) {
-    this.messagingService.sendRequestToTab(new OpenPanelRequest(), 10000, tabID).then(
-      (message) => {
-        this.tabs.get(tabID).panelStatus = message
-      },
-      (error) => {
-        console.log(`Error opening panel ${error}`)
-      }
-    )
   }
 
-  loadContent (tabID, options = {activate: true, openPanel: true}) {
-    let polyfillScript = this.loadPolyfill(tabID)
-    let contentScript = this.loadContentScript(tabID)
-    let contentCSS = this.loadContentCSS(tabID)
+  loadContent (tabScript) {
+    let polyfillScript = this.loadPolyfill(tabScript.tabID)
+    let contentScript = this.loadContentScript(tabScript.tabID)
+    let contentCSS = this.loadContentCSS(tabScript.tabID)
     Promise.all([polyfillScript, contentScript, contentCSS]).then(() => {
       console.log('Content script(s) has been loaded successfully or already present')
-      this.tabs.set(tabID, new ContentTab(tabID, Statuses.ACTIVE, Statuses.PANEL_OPEN))
-      BackgroundProcess.defaults.contentScriptLoaded = true
-      if (!options.activate) {
-        console.log('Deactiving after load')
-        this.deactivateContent(tabID)
-      }
-      if (options.openPanel) {
-        this.handleOpenPanelRequest(tabID)
-      }
+      if (!this.tabs.has(tabScript.tabID)) { this.tabs.set(tabScript.tabID, tabScript) }
+      this.updateContentState(tabScript.tabID, this.tabs.get(tabScript.tabID))
     }, (error) => {
       console.log(`Content script loading failed, ${error.message}`)
-      // throw new Error('Content script loading failed', error)
     })
   }
 
@@ -168,11 +146,21 @@ export default class BackgroundProcess {
     return State.value(state, this.messagingService.sendResponseToTab(request, tabID))
   }
 
-  updatePanelStatus (request, sender) {
-    console.log(`Request to update panel status ${request.body.isOpen}`)
-    let tab = this.tabs.get(sender.tab.id)
-    tab.panelStatus = request.body.isOpen ? Statuses.PANEL_OPEN : Statuses.PANEL_CLOSED
-    return tab.panelStatus
+  updateContentState (tabID, state) {
+    this.messagingService.sendRequestToTab(new StateRequest(state), 10000, tabID).then(
+      message => {
+        let contentState = TabScript.readObject(message.body)
+        this.updateTabState(tabID, contentState)
+      },
+      error => {
+        console.log(`No status confirmation from tab ${tabID} on state request: ${error.message}`)
+      }
+    )
+  }
+
+  stateMessageHandler (message, sender) {
+    let contentState = TabScript.readObject(message.body)
+    this.updateTabState(contentState.tabID, contentState)
   }
 
   static async getActiveTabID () {
@@ -190,12 +178,12 @@ export default class BackgroundProcess {
    */
   tabUpdatedListener (tabID, changeInfo, tab) {
     if (changeInfo.status === 'complete') {
-      let wasLoaded = this.isContentLoaded(tabID)
-      let wasActive = this.isContentActive(tabID)
-      let panelOpen = this.isPanelOpen(tabID)
-      if (wasLoaded) {
+      if (this.tabs.has(tabID)) {
         // If content script was loaded to that tab, restore it to the state it had before
-        this.loadContent(tabID, { activate: wasActive, openPanel: panelOpen })
+        let tab = this.tabs.get(tabID)
+        // TODO: do we need to activate it? Then
+        // let tab = this.tabs.get(tabID).update({status: Statuses.ACTIVE, panelStatus: Statuses.PANEL_OPEN})
+        this.loadContent(tab)
       }
     }
   }
@@ -206,9 +194,7 @@ export default class BackgroundProcess {
     } else if (info.menuItemId === this.settings.deactivateMenuItemId) {
       this.deactivateContent(tab.id)
     } else if (info.menuItemId === this.settings.openPanelMenuItemId) {
-      // make sure the content script is loaded and active first
-      this.activateContent(tab.id)
-      this.handleOpenPanelRequest(tab.id)
+      this.openPanel(tab.id)
     }
   }
 
@@ -220,18 +206,28 @@ export default class BackgroundProcess {
     }
   }
 
-  static createMenuItem () {
-    browser.contextMenus.create({
-      id: BackgroundProcess.defaults.activateMenuItemId,
-      title: BackgroundProcess.defaults.activateMenuItemText
-    })
-    browser.contextMenus.create({
-      id: BackgroundProcess.defaults.deactivateMenuItemId,
-      title: BackgroundProcess.defaults.deactivateMenuItemText
-    })
-    browser.contextMenus.create({
-      id: BackgroundProcess.defaults.openPanelMenuItemId,
-      title: BackgroundProcess.defaults.openPanelMenuItemText
-    })
+  updateTabState (tabID, newState) {
+    let tab = this.tabs.get(tabID).update(newState)
+
+    // Menu state should reflect a status of a content script
+    if (tab.hasOwnProperty('status')) {
+      if (tab.status === Statuses.ACTIVE) {
+        this.menuItems.activate.disable()
+        this.menuItems.deactivate.enable()
+        this.menuItems.openPanel.enable()
+      } else if (tab.status === Statuses.DEACTIVATED) {
+        this.menuItems.deactivate.disable()
+        this.menuItems.activate.enable()
+        this.menuItems.openPanel.disable()
+      }
+    }
+
+    if (tab.hasOwnProperty('panelStatus')) {
+      if (tab.panelStatus === Statuses.PANEL_OPEN) {
+        this.menuItems.openPanel.disable()
+      } else if (tab.status === Statuses.DEACTIVATED) {
+        this.menuItems.openPanel.enable()
+      }
+    }
   }
 }

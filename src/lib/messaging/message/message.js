@@ -12,10 +12,9 @@ export default class Message {
   static get types () {
     return {
       GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
-      WORD_DATA_REQUEST: Symbol.for('Alpheios_WordDataRequest'),
-      WORD_DATA_RESPONSE: Symbol.for('Alpheios_WordDataResponse'),
-      STATUS_REQUEST: Symbol.for('Alpheios_StatusRequest'),
-      STATUS_RESPONSE: Symbol.for('Alpheios_StatusResponse'),
+      STATE_MESSAGE: Symbol.for('Alpheios_StateMessage'),
+      STATE_REQUEST: Symbol.for('Alpheios_StateRequest'),
+      STATE_RESPONSE: Symbol.for('Alpheios_StateResponse'),
       ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
       DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
       OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
