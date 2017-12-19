@@ -21,6 +21,7 @@
             <button v-on:click="closePopup" class="alpheios-popup__close-btn"><span uk-icon="icon: close"></span></button>
             <div v-html="$root.messageContent"></div>
             <h2>{{ $root.popupTitle }}</h2>
+            <morph :lexemes="$root.lexemes"></morph>
             <div v-html="$root.popupContent"></div>
             <button v-on:click="showInflectionsPanelTab" class="uk-button uk-button-default alpheios-popup__more-btn">Go to Inflections</button>
             <button v-on:click="showDefinitionsPanelTab" class="uk-button uk-button-default alpheios-popup__more-btn">Go to Full Definitions</button>

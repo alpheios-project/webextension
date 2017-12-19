@@ -17,6 +17,7 @@ import HTMLSelector from '../lib/selection/media/html-selector'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import VueJsModal from 'vue-js-modal'
 import Popup from './vue-components/popup.vue'
+import Morph from './vue-components/morph.vue'
 // UIKit
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
 import UIkITIconts from '../../node_modules/uikit/dist/js/uikit-icons'
@@ -89,15 +90,18 @@ export default class ContentProcess {
       dialog: false
     })
 
+    Vue.component('morph',Morph)
+
     // Create a Vue instance for a popup
     this.vueInstance = new Vue({
       el: '#popup',
       // template: '<app/>',
-      components: { popup: Popup },
+      components: { morph: Morph, popup: Popup },
       data: {
         popupTitle: '',
         popupContent: '',
         messageContent: '',
+        lexemes: [],
         panel: this.panel
       },
       mounted: function () {
@@ -185,6 +189,7 @@ export default class ContentProcess {
       ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
       if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
       this.appendMessage(`Morphological analyzer data is ready<br>`)
+      this.updateMorphologyData(homonym)
       this.updateDefinitionsData(homonym)
     } catch (error) {
       console.error(`Cannot retrieve homonym data: ${error}`)
@@ -270,6 +275,11 @@ export default class ContentProcess {
     this.panel.clearContent()
     this.vueInstance.popupTitle = ''
     this.vueInstance.popupContent = ''
+  }
+
+  updateMorphologyData (homonym) {
+    //this.panel.contentAreas.morphology.clearContent()
+    this.vueInstance.lexemes = homonym.lexemes
   }
 
   updateDefinitionsData (homonym) {
