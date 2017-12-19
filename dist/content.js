@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 10);
+/******/ 	return __webpack_require__(__webpack_require__.s = 14);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -559,85 +559,6 @@ class DefinitionSet {
   }
 }
 
-/**
- * Wrapper class for a (grammatical, usually) feature, such as part of speech or declension. Keeps both value and type information.
- */
-class Feature {
-    /**
-     * Initializes a Feature object
-     * @param {string | string[]} value - A single feature value or, if this feature could have multiple
-     * values, an array of values.
-     * @param {string} type - A type of the feature, allowed values are specified in 'types' object.
-     * @param {string} language - A language of a feature, allowed values are specified in 'languages' object.
-     */
-  constructor (value, type, language) {
-    if (!Feature.types.isAllowed(type)) {
-      throw new Error('Features of "' + type + '" type are not supported.')
-    }
-    if (!value) {
-      throw new Error('Feature should have a non-empty value.')
-    }
-    if (!type) {
-      throw new Error('Feature should have a non-empty type.')
-    }
-    if (!language) {
-      throw new Error('Feature constructor requires a language')
-    }
-    this.value = value;
-    this.type = type;
-    this.language = language;
-  };
-
-  isEqual (feature) {
-    if (Array.isArray(feature.value)) {
-      if (!Array.isArray(this.value) || this.value.length !== feature.value.length) {
-        return false
-      }
-      let equal = this.type === feature.type && this.language === feature.language;
-      equal = equal && this.value.every(function (element, index) {
-        return element === feature.value[index]
-      });
-      return equal
-    } else {
-      return this.value === feature.value && this.type === feature.type && this.language === feature.language
-    }
-  }
-}
-// Should have no spaces in values in order to be used in HTML templates
-Feature.types = {
-  word: 'word',
-  part: 'part of speech', // Part of speech
-  number: 'number',
-  grmCase: 'case',
-  declension: 'declension',
-  gender: 'gender',
-  type: 'type',
-  conjugation: 'conjugation',
-  comparison: 'comparison',
-  tense: 'tense',
-  voice: 'voice',
-  mood: 'mood',
-  person: 'person',
-  frequency: 'frequency', // How frequent this word is
-  meaning: 'meaning', // Meaning of a word
-  source: 'source', // Source of word definition
-  footnote: 'footnote', // A footnote for a word's ending
-  dialect: 'dialect', // a dialect iderntifier
-  note: 'note', // a general note
-  pronunciation: 'pronunciation',
-  area: 'area',
-  geo: 'geo', // geographical data
-  kind: 'kind', // verb kind informatin
-  derivtype: 'derivtype',
-  stemtype: 'stemtype',
-  morph: 'morph', // general morphological information
-  var: 'var', // variance?
-  isAllowed (value) {
-    let v = `${value}`;
-    return Object.values(this).includes(v)
-  }
-};
-
 class FeatureImporter {
   constructor (defaults = []) {
     this.hash = {};
@@ -723,6 +644,7 @@ class FeatureType {
 
     this.type = type;
     this.language = language;
+    this.unrestrictedValue = values.length === 1 && values[0] === '*';
 
         /*
          This is a sort order index for a grammatical feature values. It is determined by the order of values in
@@ -749,11 +671,12 @@ class FeatureType {
      * Return a Feature with an arbitrary value. This value would not be necessarily present among FeatureType values.
      * This can be especially useful for features that do not set: a list of predefined values, such as footnotes.
      * @param value
+     * @param {int} sortOrder
      * @returns {Feature}
      */
-  get (value) {
+  get (value, sortOrder = 1) {
     if (value) {
-      return new Feature(value, this.type, this.language)
+      return new Feature(value, this.type, this.language, sortOrder)
     } else {
       throw new Error('A non-empty value should be provided.')
     }
@@ -897,65 +820,6 @@ class FeatureType {
 }
 
 /**
- * A list of grammatical features that characterizes a language unit. Has some additional service methods,
- * compared with standard storage objects.
- */
-class FeatureList {
-    /**
-     * Initializes a feature list.
-     * @param {FeatureType[]} features - Features that build the list (optional, can be set later).
-     */
-  constructor (features = []) {
-    this._features = [];
-    this._types = {};
-    this.add(features);
-  }
-
-  add (features) {
-    if (!features || !Array.isArray(features)) {
-      throw new Error('Features must be defined and must come in an array.')
-    }
-
-    for (let feature of features) {
-      this._features.push(feature);
-      this._types[feature.type] = feature;
-    }
-  }
-
-    /**
-     * Returns an array of grouping features.
-     * @returns {FeatureType[]} - An array of grouping features.
-     */
-  get items () {
-    return this._features
-  }
-
-  forEach (callback) {
-    this._features.forEach(callback);
-  }
-
-    /**
-     * Returns a feature of a particular type. If such feature does not exist in a list, returns undefined.
-     * @param {string} type - Feature type as defined in `types` object.
-     * @return {FeatureType | undefined} A feature if a particular type if contains it. Undefined otherwise.
-     */
-  ofType (type) {
-    if (this.hasType(type)) {
-      return this._types[type]
-    }
-  }
-
-    /**
-     * Checks whether a feature list has a feature of a specific type.
-     * @param {string} type - Feature type as defined in `types` object.
-     * @return {boolean} Whether a feature list has a feature of a particular type.
-     */
-  hasType (type) {
-    return this._types.hasOwnProperty(type)
-  }
-}
-
-/**
  * @class  LanguageModel is the base class for language-specific behavior
  */
 class LanguageModel {
@@ -997,6 +861,19 @@ class LanguageModel {
       [TYPE_REGULAR, TYPE_IRREGULAR], code);
     features[Feature.types.person] = new FeatureType(Feature.types.person,
       [ORD_1ST, ORD_2ND, ORD_3RD], code);
+    // some general, non-language specific grammatical features
+    features[Feature.types.area] = new FeatureType(Feature.types.area,
+      ['*'], code);
+    features[Feature.types.source] = new FeatureType(Feature.types.source,
+      ['*'], code);
+    features[Feature.types.frequency] = new FeatureType(Feature.types.frequency,
+      ['*'], code);
+    features[Feature.types.geo] = new FeatureType(Feature.types.geo,
+      ['*'], code);
+    features[Feature.types.source] = new FeatureType(Feature.types.source,
+      ['*'], code);
+    features[Feature.types.pronunciation] = new FeatureType(Feature.types.pronunciation,
+      ['*'], code);
     return features
   }
 
@@ -1626,6 +1503,149 @@ class LanguageModelFactory {
 }
 
 /**
+ * Wrapper class for a (grammatical, usually) feature, such as part of speech or declension. Keeps both value and type information.
+ */
+class Feature {
+    /**
+     * Initializes a Feature object
+     * @param {string | string[]} value - A single feature value or, if this feature could have multiple
+     * values, an array of values.
+     * @param {string} type - A type of the feature, allowed values are specified in 'types' object.
+     * @param {string} language - A language of a feature, allowed values are specified in 'languages' object.
+     * @param {int} sortOrder - an integer used for sorting
+     */
+  constructor (value, type, language, sortOrder = 1) {
+    if (!Feature.types.isAllowed(type)) {
+      throw new Error('Features of "' + type + '" type are not supported.')
+    }
+    if (!value) {
+      throw new Error('Feature should have a non-empty value.')
+    }
+    if (!type) {
+      throw new Error('Feature should have a non-empty type.')
+    }
+    if (!language) {
+      throw new Error('Feature constructor requires a language')
+    }
+    this.value = value;
+    this.type = type;
+    this.language = language;
+    this.languageCode = language;
+    this.languageID = LanguageModelFactory.getLanguageIdFromCode(this.languageCode);
+    this.sortOrder = sortOrder;
+  };
+
+  isEqual (feature) {
+    if (Array.isArray(feature.value)) {
+      if (!Array.isArray(this.value) || this.value.length !== feature.value.length) {
+        return false
+      }
+      let equal = this.type === feature.type && this.language === feature.language;
+      equal = equal && this.value.every(function (element, index) {
+        return element === feature.value[index]
+      });
+      return equal
+    } else {
+      return this.value === feature.value && this.type === feature.type && this.language === feature.language
+    }
+  }
+}
+// Should have no spaces in values in order to be used in HTML templates
+Feature.types = {
+  word: 'word',
+  part: 'part of speech', // Part of speech
+  number: 'number',
+  grmCase: 'case',
+  declension: 'declension',
+  gender: 'gender',
+  type: 'type',
+  conjugation: 'conjugation',
+  comparison: 'comparison',
+  tense: 'tense',
+  voice: 'voice',
+  mood: 'mood',
+  person: 'person',
+  frequency: 'frequency', // How frequent this word is
+  meaning: 'meaning', // Meaning of a word
+  source: 'source', // Source of word definition
+  footnote: 'footnote', // A footnote for a word's ending
+  dialect: 'dialect', // a dialect iderntifier
+  note: 'note', // a general note
+  pronunciation: 'pronunciation',
+  age: 'age',
+  area: 'area',
+  geo: 'geo', // geographical data
+  kind: 'kind', // verb kind informatin
+  derivtype: 'derivtype',
+  stemtype: 'stemtype',
+  morph: 'morph', // general morphological information
+  var: 'var', // variance?
+  isAllowed (value) {
+    let v = `${value}`;
+    return Object.values(this).includes(v)
+  }
+};
+
+/**
+ * A list of grammatical features that characterizes a language unit. Has some additional service methods,
+ * compared with standard storage objects.
+ */
+class FeatureList {
+    /**
+     * Initializes a feature list.
+     * @param {FeatureType[]} features - Features that build the list (optional, can be set later).
+     */
+  constructor (features = []) {
+    this._features = [];
+    this._types = {};
+    this.add(features);
+  }
+
+  add (features) {
+    if (!features || !Array.isArray(features)) {
+      throw new Error('Features must be defined and must come in an array.')
+    }
+
+    for (let feature of features) {
+      this._features.push(feature);
+      this._types[feature.type] = feature;
+    }
+  }
+
+    /**
+     * Returns an array of grouping features.
+     * @returns {FeatureType[]} - An array of grouping features.
+     */
+  get items () {
+    return this._features
+  }
+
+  forEach (callback) {
+    this._features.forEach(callback);
+  }
+
+    /**
+     * Returns a feature of a particular type. If such feature does not exist in a list, returns undefined.
+     * @param {string} type - Feature type as defined in `types` object.
+     * @return {FeatureType | undefined} A feature if a particular type if contains it. Undefined otherwise.
+     */
+  ofType (type) {
+    if (this.hasType(type)) {
+      return this._types[type]
+    }
+  }
+
+    /**
+     * Checks whether a feature list has a feature of a specific type.
+     * @param {string} type - Feature type as defined in `types` object.
+     * @return {boolean} Whether a feature list has a feature of a particular type.
+     */
+  hasType (type) {
+    return this._types.hasOwnProperty(type)
+  }
+}
+
+/**
  * Lemma, a canonical form of a word.
  */
 class Lemma {
@@ -1634,8 +1654,9 @@ class Lemma {
    * @param {string} word - A word.
    * @param {string} language - A language code of a word. TODO: Switch to using Language ID instead
    * @param {Array[string]} principalParts - the principalParts of a lemma
+   * @param {Object} features - the grammatical features of a lemma
    */
-  constructor (word, language, principalParts = []) {
+  constructor (word, language, principalParts = [], features = {}) {
     if (!word) {
       throw new Error('Word should not be empty.')
     }
@@ -1653,10 +1674,41 @@ class Lemma {
     this.languageCode = language;
     this.languageID = LanguageModelFactory.getLanguageIdFromCode(this.languageCode);
     this.principalParts = principalParts;
+    this.features = {};
   }
 
   static readObject (jsonObject) {
-    return new Lemma(jsonObject.word, jsonObject.language)
+    return new Lemma(jsonObject.word, jsonObject.language, jsonObject.principalParts, jsonObject.pronunciation)
+  }
+
+  /**
+   * Sets a grammatical feature for a lemma. Some features can have multiple values, In this case
+   * an array of Feature objects will be provided.
+   * Values are taken from features and stored in a 'feature.type' property as an array of values.
+   * @param {Feature | Feature[]} data
+   */
+  set feature (data) {
+    if (!data) {
+      throw new Error('feature data cannot be empty.')
+    }
+    if (!Array.isArray(data)) {
+      data = [data];
+    }
+
+    let type = data[0].type;
+    this.features[type] = [];
+    for (let element of data) {
+      if (!(element instanceof Feature)) {
+        throw new Error('feature data must be a Feature object.')
+      }
+
+      if (element.languageID !== this.languageID) {
+        throw new Error('Language "' + element.languageID + '" of a feature does not match a language "' +
+                this.languageID + '" of a Lemma object.')
+      }
+
+      this.features[type].push(element);
+    }
   }
 }
 
@@ -1762,7 +1814,7 @@ class Inflection {
 
 /**
  * A basic unit of lexical meaning. Contains a primary Lemma object, one or more Inflection objects
- * and optional alternate Lemmas
+ * and a DefinitionSet
  */
 class Lexeme {
     /**
@@ -1770,6 +1822,7 @@ class Lexeme {
      * @param {Lemma} lemma - A lemma object.
      * @param {Inflection[]} inflections - An array of inflections.
      * @param {DefinitionSet} meaning - A set of definitions.
+
      */
   constructor (lemma, inflections, meaning = null) {
     if (!lemma) {
@@ -1809,6 +1862,24 @@ class Lexeme {
     let lexeme = new Lexeme(lemma, inflections);
     lexeme.meaning = DefinitionSet.readObject(jsonObject.meaning);
     return lexeme
+  }
+
+  static getSortByLemmaFeature (featureName) {
+    return (a, b) => {
+      console.log(`Sort by ${featureName}`, a, b);
+
+      if (a.lemma.features[featureName] && b.lemma.features[featureName]) {
+        if (a.lemma.features[featureName][0].sortOrder < b.lemma.features[featureName][0].sortOrder) {
+          return -1
+        } else if (a.lemma.features[featureName][0].sortOrder > b.lemma.features[featureName][0].sortOrder) {
+          return 1
+        } else {
+          return 0
+        }
+      } else {
+        return 0
+      }
+    }
   }
 }
 
@@ -1930,7 +2001,7 @@ class ResourceProvider {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
 
 
@@ -2223,7 +2294,7 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a"
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(27);
 
 
 
@@ -2353,16 +2424,429 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(38);
+__webpack_require__(42);
 exports.setImmediate = setImmediate;
 exports.clearImmediate = clearImmediate;
 
 
 /***/ }),
 /* 9 */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function(useSourceMap) {
+	var list = [];
+
+	// return the list of modules as css string
+	list.toString = function toString() {
+		return this.map(function (item) {
+			var content = cssWithMappingToString(item, useSourceMap);
+			if(item[2]) {
+				return "@media " + item[2] + "{" + content + "}";
+			} else {
+				return content;
+			}
+		}).join("");
+	};
+
+	// import a list of modules into the list
+	list.i = function(modules, mediaQuery) {
+		if(typeof modules === "string")
+			modules = [[null, modules, ""]];
+		var alreadyImportedModules = {};
+		for(var i = 0; i < this.length; i++) {
+			var id = this[i][0];
+			if(typeof id === "number")
+				alreadyImportedModules[id] = true;
+		}
+		for(i = 0; i < modules.length; i++) {
+			var item = modules[i];
+			// skip already imported module
+			// this implementation is not 100% perfect for weird media query combinations
+			//  when a module is imported multiple times with different media queries.
+			//  I hope this will never occur (Hey this way we have smaller bundles)
+			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+				if(mediaQuery && !item[2]) {
+					item[2] = mediaQuery;
+				} else if(mediaQuery) {
+					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+				}
+				list.push(item);
+			}
+		}
+	};
+	return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+	var content = item[1] || '';
+	var cssMapping = item[3];
+	if (!cssMapping) {
+		return content;
+	}
+
+	if (useSourceMap && typeof btoa === 'function') {
+		var sourceMapping = toComment(cssMapping);
+		var sourceURLs = cssMapping.sources.map(function (source) {
+			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
+		});
+
+		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+	}
+
+	return [content].join('\n');
+}
+
+// Adapted from convert-source-map (MIT)
+function toComment(sourceMap) {
+	// eslint-disable-next-line no-undef
+	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
+
+	return '/*# ' + data + ' */';
+}
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+  MIT License http://www.opensource.org/licenses/mit-license.php
+  Author Tobias Koppers @sokra
+  Modified by Evan You @yyx990803
+*/
+
+var hasDocument = typeof document !== 'undefined'
+
+if (typeof DEBUG !== 'undefined' && DEBUG) {
+  if (!hasDocument) {
+    throw new Error(
+    'vue-style-loader cannot be used in a non-browser environment. ' +
+    "Use { target: 'node' } in your Webpack config to indicate a server-rendering environment."
+  ) }
+}
+
+var listToStyles = __webpack_require__(48)
+
+/*
+type StyleObject = {
+  id: number;
+  parts: Array<StyleObjectPart>
+}
+
+type StyleObjectPart = {
+  css: string;
+  media: string;
+  sourceMap: ?string
+}
+*/
+
+var stylesInDom = {/*
+  [id: number]: {
+    id: number,
+    refs: number,
+    parts: Array<(obj?: StyleObjectPart) => void>
+  }
+*/}
+
+var head = hasDocument && (document.head || document.getElementsByTagName('head')[0])
+var singletonElement = null
+var singletonCounter = 0
+var isProduction = false
+var noop = function () {}
+
+// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+// tags it will allow on a page
+var isOldIE = typeof navigator !== 'undefined' && /msie [6-9]\b/.test(navigator.userAgent.toLowerCase())
+
+module.exports = function (parentId, list, _isProduction) {
+  isProduction = _isProduction
+
+  var styles = listToStyles(parentId, list)
+  addStylesToDom(styles)
+
+  return function update (newList) {
+    var mayRemove = []
+    for (var i = 0; i < styles.length; i++) {
+      var item = styles[i]
+      var domStyle = stylesInDom[item.id]
+      domStyle.refs--
+      mayRemove.push(domStyle)
+    }
+    if (newList) {
+      styles = listToStyles(parentId, newList)
+      addStylesToDom(styles)
+    } else {
+      styles = []
+    }
+    for (var i = 0; i < mayRemove.length; i++) {
+      var domStyle = mayRemove[i]
+      if (domStyle.refs === 0) {
+        for (var j = 0; j < domStyle.parts.length; j++) {
+          domStyle.parts[j]()
+        }
+        delete stylesInDom[domStyle.id]
+      }
+    }
+  }
+}
+
+function addStylesToDom (styles /* Array<StyleObject> */) {
+  for (var i = 0; i < styles.length; i++) {
+    var item = styles[i]
+    var domStyle = stylesInDom[item.id]
+    if (domStyle) {
+      domStyle.refs++
+      for (var j = 0; j < domStyle.parts.length; j++) {
+        domStyle.parts[j](item.parts[j])
+      }
+      for (; j < item.parts.length; j++) {
+        domStyle.parts.push(addStyle(item.parts[j]))
+      }
+      if (domStyle.parts.length > item.parts.length) {
+        domStyle.parts.length = item.parts.length
+      }
+    } else {
+      var parts = []
+      for (var j = 0; j < item.parts.length; j++) {
+        parts.push(addStyle(item.parts[j]))
+      }
+      stylesInDom[item.id] = { id: item.id, refs: 1, parts: parts }
+    }
+  }
+}
+
+function createStyleElement () {
+  var styleElement = document.createElement('style')
+  styleElement.type = 'text/css'
+  head.appendChild(styleElement)
+  return styleElement
+}
+
+function addStyle (obj /* StyleObjectPart */) {
+  var update, remove
+  var styleElement = document.querySelector('style[data-vue-ssr-id~="' + obj.id + '"]')
+
+  if (styleElement) {
+    if (isProduction) {
+      // has SSR styles and in production mode.
+      // simply do nothing.
+      return noop
+    } else {
+      // has SSR styles but in dev mode.
+      // for some reason Chrome can't handle source map in server-rendered
+      // style tags - source maps in <style> only works if the style tag is
+      // created and inserted dynamically. So we remove the server rendered
+      // styles and inject new ones.
+      styleElement.parentNode.removeChild(styleElement)
+    }
+  }
+
+  if (isOldIE) {
+    // use singleton mode for IE9.
+    var styleIndex = singletonCounter++
+    styleElement = singletonElement || (singletonElement = createStyleElement())
+    update = applyToSingletonTag.bind(null, styleElement, styleIndex, false)
+    remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true)
+  } else {
+    // use multi-style-tag mode in all other cases
+    styleElement = createStyleElement()
+    update = applyToTag.bind(null, styleElement)
+    remove = function () {
+      styleElement.parentNode.removeChild(styleElement)
+    }
+  }
+
+  update(obj)
+
+  return function updateStyle (newObj /* StyleObjectPart */) {
+    if (newObj) {
+      if (newObj.css === obj.css &&
+          newObj.media === obj.media &&
+          newObj.sourceMap === obj.sourceMap) {
+        return
+      }
+      update(obj = newObj)
+    } else {
+      remove()
+    }
+  }
+}
+
+var replaceText = (function () {
+  var textStore = []
+
+  return function (index, replacement) {
+    textStore[index] = replacement
+    return textStore.filter(Boolean).join('\n')
+  }
+})()
+
+function applyToSingletonTag (styleElement, index, remove, obj) {
+  var css = remove ? '' : obj.css
+
+  if (styleElement.styleSheet) {
+    styleElement.styleSheet.cssText = replaceText(index, css)
+  } else {
+    var cssNode = document.createTextNode(css)
+    var childNodes = styleElement.childNodes
+    if (childNodes[index]) styleElement.removeChild(childNodes[index])
+    if (childNodes.length) {
+      styleElement.insertBefore(cssNode, childNodes[index])
+    } else {
+      styleElement.appendChild(cssNode)
+    }
+  }
+}
+
+function applyToTag (styleElement, obj) {
+  var css = obj.css
+  var media = obj.media
+  var sourceMap = obj.sourceMap
+
+  if (media) {
+    styleElement.setAttribute('media', media)
+  }
+
+  if (sourceMap) {
+    // https://developer.chrome.com/devtools/docs/javascript-debugging
+    // this makes source maps inside style tags work properly in Chrome
+    css += '\n/*# sourceURL=' + sourceMap.sources[0] + ' */'
+    // http://stackoverflow.com/a/26603875
+    css += '\n/*# sourceMappingURL=data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + ' */'
+  }
+
+  if (styleElement.styleSheet) {
+    styleElement.styleSheet.cssText = css
+  } else {
+    while (styleElement.firstChild) {
+      styleElement.removeChild(styleElement.firstChild)
+    }
+    styleElement.appendChild(document.createTextNode(css))
+  }
+}
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports) {
+
+/* globals __VUE_SSR_CONTEXT__ */
+
+// IMPORTANT: Do NOT use ES2015 features in this file.
+// This module is a runtime utility for cleaner component module output and will
+// be included in the final webpack user bundle.
+
+module.exports = function normalizeComponent (
+  rawScriptExports,
+  compiledTemplate,
+  functionalTemplate,
+  injectStyles,
+  scopeId,
+  moduleIdentifier /* server only */
+) {
+  var esModule
+  var scriptExports = rawScriptExports = rawScriptExports || {}
+
+  // ES6 modules interop
+  var type = typeof rawScriptExports.default
+  if (type === 'object' || type === 'function') {
+    esModule = rawScriptExports
+    scriptExports = rawScriptExports.default
+  }
+
+  // Vue.extend constructor export interop
+  var options = typeof scriptExports === 'function'
+    ? scriptExports.options
+    : scriptExports
+
+  // render functions
+  if (compiledTemplate) {
+    options.render = compiledTemplate.render
+    options.staticRenderFns = compiledTemplate.staticRenderFns
+    options._compiled = true
+  }
+
+  // functional template
+  if (functionalTemplate) {
+    options.functional = true
+  }
+
+  // scopedId
+  if (scopeId) {
+    options._scopeId = scopeId
+  }
+
+  var hook
+  if (moduleIdentifier) { // server build
+    hook = function (context) {
+      // 2.3 injection
+      context =
+        context || // cached call
+        (this.$vnode && this.$vnode.ssrContext) || // stateful
+        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
+      // 2.2 with runInNewContext: true
+      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
+        context = __VUE_SSR_CONTEXT__
+      }
+      // inject component styles
+      if (injectStyles) {
+        injectStyles.call(this, context)
+      }
+      // register component module identifier for async chunk inferrence
+      if (context && context._registeredComponents) {
+        context._registeredComponents.add(moduleIdentifier)
+      }
+    }
+    // used by ssr in case component is cached and beforeCreate
+    // never gets called
+    options._ssrRegister = hook
+  } else if (injectStyles) {
+    hook = injectStyles
+  }
+
+  if (hook) {
+    var functional = options.functional
+    var existing = functional
+      ? options.render
+      : options.beforeCreate
+
+    if (!functional) {
+      // inject component registration as beforeCreate hook
+      options.beforeCreate = existing
+        ? [].concat(existing, hook)
+        : [hook]
+    } else {
+      // for template-only hot-reload because in that case the render fn doesn't
+      // go through the normalizer
+      options._injectStyles = hook
+      // register for functioal component in vue file
+      options.render = function renderWithStyleInjection (h, context) {
+        hook.call(context)
+        return existing(h, context)
+      }
+    }
+  }
+
+  return {
+    esModule: esModule,
+    exports: scriptExports,
+    options: options
+  }
+}
+
+
+/***/ }),
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+//
 //
 //
 //
@@ -2445,13 +2929,54 @@ exports.clearImmediate = clearImmediate;
 });
 
 /***/ }),
-/* 10 */
+/* 13 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+  name: 'Morph',
+  props: ['lexemes'],
+  mounted() {
+    console.log('Morph is mounted');
+    // for each infl without dial
+    //   sort by stem, pref, suff, pofs/@order
+    //   group by stem and pofs
+    // for each infl without dial and without either stem or pofs
+    // for each infl with dial
+    // inflection-set:
+    //  ignores conjunction, preposition, interjection, particle
+    //  take pofs and decl from infl if it differs from dict
+    //  add dialect
+  }
+});
+
+/***/ }),
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(51);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(56);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
 
 
@@ -2475,35 +3000,38 @@ contentProcess.initialize()
 
 
 /***/ }),
-/* 11 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_message_message__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_service__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_state_message__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_state_response__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__components_panel_component__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_options_component__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_state__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_content_tab_script__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__template_htmlf__ = __webpack_require__(31);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_12__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__lib_selection_media_html_selector__ = __webpack_require__(32);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_dist_vue__ = __webpack_require__(37);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_vue_js_modal__ = __webpack_require__(40);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15_vue_js_modal__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16__vue_components_popup_vue__ = __webpack_require__(41);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit__ = __webpack_require__(49);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(50);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_18__node_modules_uikit_dist_js_uikit_icons__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__components_panel_component__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__components_options_component__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_state__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__template_htmlf__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13__template_htmlf__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__lib_selection_media_html_selector__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_vue_dist_vue__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_vue_js_modal__ = __webpack_require__(44);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_16_vue_js_modal___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_16_vue_js_modal__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_17__vue_components_popup_vue__ = __webpack_require__(45);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_18__vue_components_morph_vue__ = __webpack_require__(50);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__node_modules_uikit_dist_js_uikit__ = __webpack_require__(54);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_19__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_19__node_modules_uikit_dist_js_uikit__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(55);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_20__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_20__node_modules_uikit_dist_js_uikit_icons__);
 /* global browser */
+
 
 
 
@@ -2522,21 +3050,22 @@ contentProcess.initialize()
  // Vue in a runtime + compiler configuration
 
 
+
 // UIKit
 
 
 
 class ContentProcess {
   constructor () {
-    this.state = new __WEBPACK_IMPORTED_MODULE_10__lib_content_tab_script__["a" /* default */]()
-    this.state.status = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].PENDING
-    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].PANEL_CLOSED
+    this.state = new __WEBPACK_IMPORTED_MODULE_11__lib_content_tab_script__["a" /* default */]()
+    this.state.status = __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__["a" /* default */].PENDING
+    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__["a" /* default */].PANEL_CLOSED
     this.settings = ContentProcess.settingValues
     this.vueInstance = undefined
 
     this.modal = undefined
 
-    this.messagingService = new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_service__["a" /* default */]()
+    this.messagingService = new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__["a" /* default */]()
 
     this.maAdapter = new __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__["a" /* default */]() // Morphological analyzer adapter, with default arguments
     this.langData = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* LanguageData */]([__WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["c" /* LatinDataSet */], __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* GreekDataSet */]]).loadData()
@@ -2546,10 +3075,10 @@ class ContentProcess {
     this.loadUI()
 
     // Adds message listeners
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message_message__["a" /* default */].types.STATE_REQUEST, this.handleStateRequest, this)
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message_message__["a" /* default */].types.OPEN_PANEL_REQUEST, this.handleOpenPanelRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__["a" /* default */].types.STATE_REQUEST, this.handleStateRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__["a" /* default */].types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__["a" /* default */].types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__["a" /* default */].types.OPEN_PANEL_REQUEST, this.handleOpenPanelRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     // this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
@@ -2560,10 +3089,10 @@ class ContentProcess {
   loadUI () {
     // Inject HTML code of a plugin. Should go in reverse order.
     document.body.classList.add('alpheios')
-    ContentProcess.loadTemplate(__WEBPACK_IMPORTED_MODULE_12__template_htmlf___default.a)
+    ContentProcess.loadTemplate(__WEBPACK_IMPORTED_MODULE_13__template_htmlf___default.a)
 
     // Initialize components
-    this.panel = new __WEBPACK_IMPORTED_MODULE_7__components_panel_component__["a" /* default */]({
+    this.panel = new __WEBPACK_IMPORTED_MODULE_8__components_panel_component__["a" /* default */]({
       contentAreas: {
         shortDefinitions: {
           dataFunction: this.formatShortDefinitions.bind(this)
@@ -2577,10 +3106,10 @@ class ContentProcess {
       }
     })
     // Should be loaded after Panel because options are inserted into a panel
-    this.options = new __WEBPACK_IMPORTED_MODULE_8__components_options_component__["a" /* default */]({
+    this.options = new __WEBPACK_IMPORTED_MODULE_9__components_options_component__["a" /* default */]({
       methods: {
         ready: (options) => {
-          this.state.status = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].ACTIVE
+          this.state.status = __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__["a" /* default */].ACTIVE
           this.setPanelPositionTo(options.panelPosition.currentValue)
           this.setDefaultLanguageTo(options.defaultLanguage.currentValue)
           console.log('Content script is set to active')
@@ -2590,19 +3119,22 @@ class ContentProcess {
     })
 
     // Register a Vue.js modal plugin
-    __WEBPACK_IMPORTED_MODULE_14_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_15_vue_js_modal___default.a, {
+    __WEBPACK_IMPORTED_MODULE_15_vue_dist_vue___default.a.use(__WEBPACK_IMPORTED_MODULE_16_vue_js_modal___default.a, {
       dialog: false
     })
 
+    __WEBPACK_IMPORTED_MODULE_15_vue_dist_vue___default.a.component('morph',__WEBPACK_IMPORTED_MODULE_18__vue_components_morph_vue__["a" /* default */])
+
     // Create a Vue instance for a popup
-    this.vueInstance = new __WEBPACK_IMPORTED_MODULE_14_vue_dist_vue___default.a({
+    this.vueInstance = new __WEBPACK_IMPORTED_MODULE_15_vue_dist_vue___default.a({
       el: '#popup',
       // template: '<app/>',
-      components: { popup: __WEBPACK_IMPORTED_MODULE_16__vue_components_popup_vue__["a" /* default */] },
+      components: { morph: __WEBPACK_IMPORTED_MODULE_18__vue_components_morph_vue__["a" /* default */], popup: __WEBPACK_IMPORTED_MODULE_17__vue_components_popup_vue__["a" /* default */] },
       data: {
         popupTitle: '',
         popupContent: '',
         messageContent: '',
+        lexemes: [],
         panel: this.panel
       },
       mounted: function () {
@@ -2612,7 +3144,7 @@ class ContentProcess {
     this.modal = this.vueInstance.$modal
 
     // Initialize UIKit
-    __WEBPACK_IMPORTED_MODULE_17__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_18__node_modules_uikit_dist_js_uikit_icons___default.a)
+    __WEBPACK_IMPORTED_MODULE_19__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_20__node_modules_uikit_dist_js_uikit_icons___default.a)
   }
 
   static get settingValues () {
@@ -2634,18 +3166,18 @@ class ContentProcess {
   }
 
   get isActive () {
-    return this.state.status === __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].ACTIVE
+    return this.state.status === __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__["a" /* default */].ACTIVE
   }
 
   deactivate () {
     console.log('Content has been deactivated.')
     this.closePanel()
-    this.state.status = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].DEACTIVATED
+    this.state.status = __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__["a" /* default */].DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
-    this.state.status = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].ACTIVE
+    this.state.status = __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__["a" /* default */].ACTIVE
   }
 
   static loadTemplate (template) {
@@ -2657,11 +3189,11 @@ class ContentProcess {
   async sendRequestToBgStatefully (request, timeout, state = undefined) {
     try {
       let result = await this.messagingService.sendRequestToBg(request, timeout)
-      return __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].value(state, result)
+      return __WEBPACK_IMPORTED_MODULE_10__lib_state__["a" /* default */].value(state, result)
     } catch (error) {
       // Wrap an error the same way we wrap the value
       console.log(`Statefull request to a background failed: ${error}`)
-      throw __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].value(state, error)
+      throw __WEBPACK_IMPORTED_MODULE_10__lib_state__["a" /* default */].value(state, error)
     }
   }
 
@@ -2669,13 +3201,13 @@ class ContentProcess {
     try {
       let result = await this.maAdapter.getHomonym(languageCode, word, state)
       // If no valid homonym data found should always throw an error to be caught in a calling function
-      return __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].value(state, result)
+      return __WEBPACK_IMPORTED_MODULE_10__lib_state__["a" /* default */].value(state, result)
     } catch (error) {
       /*
       getHomonym is non-statefull function. If it throws an error, we should catch it here, attach state
       information, and rethrow
       */
-      throw (__WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].value(state, error))
+      throw (__WEBPACK_IMPORTED_MODULE_10__lib_state__["a" /* default */].value(state, error))
     }
   }
 
@@ -2688,8 +3220,9 @@ class ContentProcess {
     try {
       // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
       ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
-      if (!homonym) { throw __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].value(state, new Error(`Homonym data is empty`)) }
+      if (!homonym) { throw __WEBPACK_IMPORTED_MODULE_10__lib_state__["a" /* default */].value(state, new Error(`Homonym data is empty`)) }
       this.appendMessage(`Morphological analyzer data is ready<br>`)
+      this.updateMorphologyData(homonym)
       this.updateDefinitionsData(homonym)
     } catch (error) {
       console.error(`Cannot retrieve homonym data: ${error}`)
@@ -2754,11 +3287,11 @@ class ContentProcess {
         )
       }
 
-      return __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].emptyValue(state)
+      return __WEBPACK_IMPORTED_MODULE_10__lib_state__["a" /* default */].emptyValue(state)
     } catch (error) {
-      let errorValue = __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
+      let errorValue = __WEBPACK_IMPORTED_MODULE_10__lib_state__["a" /* default */].getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
       console.error(`Word data retrieval failed: ${errorValue}`)
-      return __WEBPACK_IMPORTED_MODULE_9__lib_state__["a" /* default */].emptyValue(state)
+      return __WEBPACK_IMPORTED_MODULE_10__lib_state__["a" /* default */].emptyValue(state)
     }
   }
 
@@ -2775,6 +3308,13 @@ class ContentProcess {
     this.panel.clearContent()
     this.vueInstance.popupTitle = ''
     this.vueInstance.popupContent = ''
+  }
+
+  updateMorphologyData (homonym) {
+    //this.panel.contentAreas.morphology.clearContent()
+    homonym.lexemes.sort(__WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__["n" /* Lexeme */].getSortByLemmaFeature(__WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__["d" /* Feature */].types.frequency))
+    homonym.lexemes.sort(__WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__["n" /* Lexeme */].getSortByLemmaFeature(__WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__["d" /* Feature */].types.part))
+    this.vueInstance.lexemes = homonym.lexemes
   }
 
   updateDefinitionsData (homonym) {
@@ -2818,13 +3358,13 @@ class ContentProcess {
 
   openPanel () {
     this.panel.open()
-    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].PANEL_OPEN
+    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__["a" /* default */].PANEL_OPEN
     this.sendStateToBackground()
   }
 
   closePanel () {
     this.panel.close()
-    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].PANEL_CLOSED
+    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__["a" /* default */].PANEL_CLOSED
     this.sendStateToBackground()
   }
 
@@ -2851,22 +3391,22 @@ class ContentProcess {
   handleStateRequest (request, sender) {
     // Send a status response
     console.log(`State request has been received`)
-    let state = __WEBPACK_IMPORTED_MODULE_10__lib_content_tab_script__["a" /* default */].readObject(request.body)
+    let state = __WEBPACK_IMPORTED_MODULE_11__lib_content_tab_script__["a" /* default */].readObject(request.body)
     let diff = this.state.diff(state)
     if (diff.hasOwnProperty('tabID')) { this.state.tabID = diff.tabID }
     if (diff.hasOwnProperty('status')) {
-      if (diff.status === __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].ACTIVE) {
-        this.state.status = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].ACTIVE
+      if (diff.status === __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__["a" /* default */].ACTIVE) {
+        this.state.status = __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__["a" /* default */].ACTIVE
       } else {
-        this.state.status = __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].DEACTIVATED
+        this.state.status = __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__["a" /* default */].DEACTIVATED
         this.closePanel()
         console.log('Content has been deactivated')
       }
     }
     if (diff.hasOwnProperty('panelStatus')) {
-      if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_11__lib_content_statuses__["a" /* default */].PANEL_OPEN) { this.openPanel() } else { this.closePanel() }
+      if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_12__lib_content_statuses__["a" /* default */].PANEL_OPEN) { this.openPanel() } else { this.closePanel() }
     }
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_state_response__["a" /* default */](request, this.state)).catch(
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__["a" /* default */](request, this.state)).catch(
       (error) => {
         console.error(`Unable to send a response to a state request: ${error}`)
       }
@@ -2879,7 +3419,7 @@ class ContentProcess {
     if (!this.isActive) {
       this.reactivate()
     }
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_state_response__["a" /* default */](request, this.state.status)).catch(
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__["a" /* default */](request, this.state.status)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -2892,7 +3432,7 @@ class ContentProcess {
     if (this.isActive) {
       this.deactivate()
     }
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_state_response__["a" /* default */](request, this.state.status)).catch(
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__["a" /* default */](request, this.state.status)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -2905,7 +3445,7 @@ class ContentProcess {
   }
 
   sendStateToBackground () {
-    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
+    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -2942,7 +3482,7 @@ class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = __WEBPACK_IMPORTED_MODULE_13__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.defaultLanguage)
+      let textSelector = __WEBPACK_IMPORTED_MODULE_14__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.defaultLanguage)
 
       if (!textSelector.isEmpty()) {
         this.getWordDataStatefully(textSelector)
@@ -2955,7 +3495,7 @@ class ContentProcess {
 
 
 /***/ }),
-/* 12 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -9967,7 +10507,7 @@ class Presenter {
 
 
 /***/ }),
-/* 13 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -10080,24 +10620,34 @@ class ImportData {
     let language = this.language;
 
     this[featureName].add = function add (providerValue, alpheiosValue) {
-      'use strict';
       this[providerValue] = alpheiosValue;
       return this
     };
 
-    this[featureName].get = function get (providerValue) {
-      'use strict';
+    this[featureName].get = function get (providerValue, sortOrder) {
+      let mappedValue = [];
       if (!this.importer.has(providerValue)) {
-        // if the providerValue matches the model value return that
-        if (language.features[featureName][providerValue]) {
-          return language.features[featureName][providerValue]
+        // if the providerValue matches the model value or the model value
+        // is unrestricted, return a feature with the providerValue and order
+        if (language.features[featureName][providerValue] ||
+            language.features[featureName].unrestrictedValue) {
+          mappedValue = language.features[featureName].get(providerValue, sortOrder);
         } else {
           throw new Error("Skipping an unknown value '" +
                     providerValue + "' of a grammatical feature '" + featureName + "' of " + language + ' language.')
         }
       } else {
-        return this.importer.get(providerValue)
+        let tempValue = this.importer.get(providerValue);
+        if (Array.isArray(tempValue)) {
+          mappedValue = [];
+          for (let feature of tempValue) {
+            mappedValue.push(language.features[featureName].get(feature.value, sortOrder));
+          }
+        } else {
+          mappedValue = language.features[featureName].get(tempValue.value, sortOrder);
+        }
       }
+      return mappedValue
     };
 
     this[featureName].importer = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["e" /* FeatureImporter */]();
@@ -10299,6 +10849,46 @@ class TuftsAdapter extends BaseAdapter {
       let language = lexeme.rest.entry.dict.hdwd.lang;
       let mappingData = this.getEngineLanguageMap(language);
       let lemma = mappingData.parseLemma(lexeme.rest.entry.dict.hdwd.$, language);
+      if (lexeme.rest.entry.dict.pofs) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(
+          lexeme.rest.entry.dict.pofs.$, lexeme.rest.entry.dict.pofs.order);
+      }
+      if (lexeme.rest.entry.dict.decl) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(
+          lexeme.rest.entry.dict.decl.$, lexeme.rest.entry.dict.decl.order);
+      }
+      if (lexeme.rest.entry.dict.conj) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(
+          lexeme.rest.entry.dict.conj.$, lexeme.rest.entry.dict.conj.order);
+      }
+      if (lexeme.rest.entry.dict.area) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.area].get(
+          lexeme.rest.entry.dict.area.$, lexeme.rest.entry.dict.area.order);
+      }
+      if (lexeme.rest.entry.dict.age) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.age].get(
+          lexeme.rest.entry.dict.age.$, lexeme.rest.entry.dict.age.order);
+      }
+      if (lexeme.rest.entry.dict.geo) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.geo].get(
+          lexeme.rest.entry.dict.geo.$, lexeme.rest.entry.dict.geo.order);
+      }
+      if (lexeme.rest.entry.dict.freq) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.frequency].get(
+          lexeme.rest.entry.dict.freq.$, lexeme.rest.entry.dict.freq.order);
+      }
+      if (lexeme.rest.entry.dict.note) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.note].get(
+          lexeme.rest.entry.dict.note.$, lexeme.rest.entry.dict.note.order);
+      }
+      if (lexeme.rest.entry.dict.pron) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.pronunciation].get(
+          lexeme.rest.entry.dict.pron.$, lexeme.rest.entry.dict.pron.order);
+      }
+      if (lexeme.rest.entry.dict.src) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.source].get(
+          lexeme.rest.entry.dict.src.$, lexeme.rest.entry.dict.src.order);
+      }
 
       if (!provider) {
         let providerUri = jsonObj.RDF.Annotation.about;
@@ -10334,6 +10924,8 @@ class TuftsAdapter extends BaseAdapter {
                 // Parse whatever grammatical features we're interested in
         if (inflectionJSON.pofs) {
           inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(inflectionJSON.pofs.$);
+          // inflection pofs overrides lemma pofs
+          lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(inflectionJSON.pofs.$);
         }
 
         if (inflectionJSON.case) {
@@ -10342,6 +10934,8 @@ class TuftsAdapter extends BaseAdapter {
 
         if (inflectionJSON.decl) {
           inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(inflectionJSON.decl.$);
+          // inflection decl overrides lemma decl
+          lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(inflectionJSON.decl.$);
         }
 
         if (inflectionJSON.num) {
@@ -10354,6 +10948,8 @@ class TuftsAdapter extends BaseAdapter {
 
         if (inflectionJSON.conj) {
           inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(inflectionJSON.conj.$);
+          // inflection conj overrides lemma conj
+          lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(inflectionJSON.conj.$);
         }
 
         if (inflectionJSON.tense) {
@@ -10399,7 +10995,7 @@ class TuftsAdapter extends BaseAdapter {
 
 
 /***/ }),
-/* 14 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12371,11 +12967,11 @@ class Lexicons {
 
 
 /***/ }),
-/* 15 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(16);
-var bytesToUuid = __webpack_require__(17);
+var rng = __webpack_require__(20);
+var bytesToUuid = __webpack_require__(21);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -12406,7 +13002,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 16 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -12446,7 +13042,7 @@ module.exports = rng;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ }),
-/* 17 */
+/* 21 */
 /***/ (function(module, exports) {
 
 /**
@@ -12475,12 +13071,12 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 18 */
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(23);
 /* global browser */
 
 
@@ -12624,7 +13220,7 @@ class Service {
 
 
 /***/ }),
-/* 19 */
+/* 23 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12646,7 +13242,7 @@ class StoredRequest {
 
 
 /***/ }),
-/* 20 */
+/* 24 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12666,7 +13262,7 @@ class StateMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default
 
 
 /***/ }),
-/* 21 */
+/* 25 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12694,14 +13290,14 @@ class StateResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a" 
 
 
 /***/ }),
-/* 22 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(29);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(31);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_interactjs__);
 
 
@@ -12901,12 +13497,12 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
 
 
 /***/ }),
-/* 23 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(28);
 
 
 
@@ -12961,7 +13557,7 @@ class TabGroup {
 
 
 /***/ }),
-/* 24 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12992,19 +13588,19 @@ class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default *
 
 
 /***/ }),
-/* 25 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\n  <!--<div class=\"alpheios-panel__wrapper\">-->\n    <div class=\"alpheios-panel__header\">\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(26) + "\"></div>\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\n    </div>\n\n    <div class=\"alpheios-panel__body\">\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\n            <div data-element=\"definitionsPanel\">\n                <h2>Short Definitions</h2>\n                <div data-content-area=\"shortDefinitions\"></div>\n                <h2>Full Definitions</h2>\n                <div data-content-area=\"fullDefinitions\"></div>\n            </div>\n            <div data-element=\"inflectionsPanel\">\n                <div data-content-area=\"inflectionsLocaleSwitcher\" id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\n            </div>\n            <div data-element=\"statusPanel\">\n                <div data-content-area=\"messages\"></div>\n            </div>\n            <div data-element=\"optionsPanel\">\n                <div data-component=\"alpheios-panel-options\"></div>\n            </div>\n        </div>\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\n        </div>\n    </div>\n  <!--</div>-->\n</div>\n";
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\n  <!--<div class=\"alpheios-panel__wrapper\">-->\n    <div class=\"alpheios-panel__header\">\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(30) + "\"></div>\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: shrink; ratio: 2\"></span>\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: expand; ratio: 2\"></span>\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\" uk-icon=\"icon: close; ratio: 2\"></span>\n    </div>\n\n    <div class=\"alpheios-panel__body\">\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\n            <div data-element=\"definitionsPanel\">\n                <h2>Short Definitions</h2>\n                <div data-content-area=\"shortDefinitions\"></div>\n                <h2>Full Definitions</h2>\n                <div data-content-area=\"fullDefinitions\"></div>\n            </div>\n            <div data-element=\"inflectionsPanel\">\n                <div data-content-area=\"inflectionsLocaleSwitcher\" id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\" class=\"alpheios-ui-form-group\"></div>\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\n            </div>\n            <div data-element=\"statusPanel\">\n                <div data-content-area=\"messages\"></div>\n            </div>\n            <div data-element=\"optionsPanel\">\n                <div data-component=\"alpheios-panel-options\"></div>\n            </div>\n        </div>\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\n        </div>\n    </div>\n  <!--</div>-->\n</div>\n";
 
 /***/ }),
-/* 26 */
+/* 30 */
 /***/ (function(module, exports) {
 
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAzMYbbAAAAolBMVEUAAAD///8GITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITWPtMG85fAGITW85fAGITVPb4C85fAGITWbwc685fAGITW85fAGITU+XW+85fAGITU6WWq85fAGITW85fAGITURLUEdOkwoRlg0UmQ/Xm9Ka3tWd4dhg5Nsj554nKqDqLaPtMGawM2lzdmx2eS85fBSA/ZbAAAAJXRSTlMAABAQICAwMEBAUFBgYHBwgICAj4+fn5+vr6+/v8/Pz9/f3+/vxRX+wgAABfhJREFUaN7dWn9XqzgQpTykkYeVFVnZh+zjicOPUoqU9vt/tZ1JQggt1dZ/lJ1zPIcmBHIzd+5MgsbCmLLlLZkxXzuBdfvw/HKQ9vrr/ub/AGv59Ho4sufbucO6ez5M2fNyzrCW06DI7ucL6/Hwjj19g5lan4D14/fh8L1xmQm7Gtby9fCBfTUPzQhSdiWsE1Rt29R13bS7oemLdcMDgNi6CtaIgbu6zEBZtm5k++8vdpcD4ZUk/KUwdZucsJQb9FTbbus1/iyky+6+GJdnXgfrpwJVIaZ10+l03K0hE7heLgiAbyTwP/paqckgb/Yc31tNtuV4mh7XR9FlhiOxcj2G5niqjXm9ubZskWYZlrziHcxhg42GutrjwwSjLXS1pbSCBNLIYybBupeoKsi23D/VEFv5GzZsoeA3PL6Pyk5xgPZe26OGZKXi3GKxenDE5+9FdJ34zGA+3QwhH295yRDdYqhDQ9N+OTDS1B3pSp9AHGEHI1jSWW/CKV1JOlG3ZFskZYVta6jHomGZk6iC1QiX4eNbHf0ehg0BLjS+PxVoaXbiyhV9vT4g2ggtBnto8UdPjhzmhKCNwmcRRCf1ENZSoNpnsBNELJohsrqCcHVZxrkpuebGEE1kS2pEXPZYlNkxLG8EIer9ofqOfgRsottVvGCpepTdP2qF8BeyaGq4X1oAQcRNWWRl1R72BXmqFu6iWt4OKIE4J7B8seoRJObHsAxa7Mtg2ROwLO2a2sVLmMKKK7uQBe6aOyuHRhIR4wqIgl0G3aGDjMMiR0HqT2RFXKpQrqN3GSz/EljO6VDyIF7T4pmm/MFfbXJCykVdSLrlGY8vctmOiEisa3L00hZKkhPUju5f9HjkTupFIFcKFzK9jISWgsVIuk5hRZ7nD6Gpd6fS174vuZeqgIPUG8GiySPZSPlKDk4GXIce3CHedYMuTIMz5QutlN3HrfMRLAoIuTpRL2hxfAxLGDuFZUkKe6JFyaUphDa2T2G16BR+2Ufchkfdju4v/jZVgkjH+FzFpUjTs0lYCaobqAQXgW6n3nInvMUELFocqn4HHpu+kHx7ClYr9EG6K6M/CrNyd/ipQOnCIP2fKjYm78LC2a4GtZRzwrQbXBxbPe3MhM8i1nhvi0SowSp4bG3IW/mg8BVUBVVUGyLmLZf3iAh8lLjGi/6xZBzDOq+EZ2KLM12UIL1kSN6Izh5WCeQcrngYW3uRtZoq55K4RtiI9cb2iL6xe5KNiVeivIk0KBos5n8aljmphLGeuflLXEf99pTAb7haVERA1PSsRBM7ExSNDAhrzRti3+5rI212Kg+NPDRcWyIWPwHLiify1pCDqQyQr3YCNZeVSsdC2zteQe25k6DAGgrzGf2VBeds4Fqas61LYPElZHFwPQmFf2PvTJUBIb3fRp7Epgy5PiunpiqeDqJA2vblem8bnpZRMaD8S2N6NKr+LFBCEWj1bjCEmzNR2En2gqn6lIau4FjhR91Y93HmkKhC1IcEhjxjrkgeqtSthABidbuRG659K3iXV6QnWd5vTLhqRIOayYI7wsV0OZLUp7l4Q70upIrxkh4CrQzhpWqCexfZ5/MVcaJj/emHqqU0RQMOHlY3EE08eSyMB1nVQtbJXRfkFFqZgESBlQNVV5x09irkqqHn4l4WTMMWxLQsUZkdnYjZo9vFCP5MS/XZ0xuEUXcv5u6wcdN2dHa/jZTnM7XcVu23ElG5oY0yFYsVBtgWPMcL+RbKt+dw/CnddShU0aTbFuq2grUQDUjD1ffHJI9o5METbkKKsV7gsVqZq/hAd1nGTGyhHRPuUSFKsTF+qzcSECaxeovJ+CaE2YCSx593qrTN9SKorOp2j9ykZPyEouvO7dPC8F2ha/ihE/psr8rCFrMXw+QUzg2W8XT+9H2LO+Y3OvxIYH4fgs5/B2qxrP+HPOXa84Nl3J39aALlk5Ems/0aee4TV4HkC2GusDAvTzvsD+mFPV9Yxs2EcrzcusCMudnR/2XcPLyMQdHnn/mhOv13E2N5/0tCe36c4b8ucPsPj8KYSwhZmDoAAAAASUVORK5CYII="
 
 /***/ }),
-/* 27 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var require;var require;/**
@@ -20159,12 +20755,12 @@ win.init = init;
 
 
 /***/ }),
-/* 28 */
+/* 32 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(33);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
 /* global browser */
 
@@ -20310,13 +20906,13 @@ class Options extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* defaul
 
 
 /***/ }),
-/* 29 */
+/* 33 */
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"auk\" data-component=\"alpheios-panel-options\">\n    <h4>Options</h4>\n    <div id=\"alpheios-language-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-language-selector-list\" class=\"uk-form-label\">Preferred Language:</label>\n        <select id=\"alpheios-language-selector-list\" class=\"uk-select\"></select>\n    </div>\n\n    <div id=\"alpheios-locale-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-locale-selector-list\" class=\"uk-form-label\">Locale:</label>\n        <select id=\"alpheios-locale-selector-list\" class=\"uk-select\"></select>\n    </div>\n\n    <div id=\"alpheios-ui-type-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-ui-type-selector-list\" class=\"uk-form-label\">UI Type:</label>\n        <select id=\"alpheios-ui-type-selector-list\" class=\"uk-select\"></select>\n    </div>\n\n    <div id=\"alpheios-position-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-position-selector-list\" class=\"uk-form-label\">Panel position:</label>\n        <select id=\"alpheios-position-selector-list\" class=\"uk-select\"></select>\n    </div>\n</div>\n";
 
 /***/ }),
-/* 30 */
+/* 34 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20352,21 +20948,21 @@ class State {
 
 
 /***/ }),
-/* 31 */
+/* 35 */
 /***/ (function(module, exports) {
 
 module.exports = "<svg xmlns=\"http://www.w3.org/2000/svg\" style=\"display: none;\">\n    <symbol id=\"alf-icon-chevron-left\" viewBox=\"0 0 1792 1792\">\n        <path d=\"M1427 301l-531 531 531 531q19 19 19 45t-19 45l-166 166q-19 19-45 19t-45-19l-742-742q-19-19-19-45t19-45l742-742q19-19 45-19t45 19l166 166q19 19 19 45t-19 45z\"/>\n    </symbol>\n    <symbol id=\"alf-icon-chevron-right\" viewBox=\"0 0 1792 1792\">\n        <path d=\"M1363 877l-742 742q-19 19-45 19t-45-19l-166-166q-19-19-19-45t19-45l531-531-531-531q-19-19-19-45t19-45l166-166q19-19 45-19t45 19l742 742q19 19 19 45t-19 45z\"/>\n    </symbol>\n    <symbol id=\"alf-icon-arrow-left\" viewBox=\"0 0 1792 1792\">\n        <path d=\"M1664 896v128q0 53-32.5 90.5t-84.5 37.5h-704l293 294q38 36 38 90t-38 90l-75 76q-37 37-90 37-52 0-91-37l-651-652q-37-37-37-90 0-52 37-91l651-650q38-38 91-38 52 0 90 38l75 74q38 38 38 91t-38 91l-293 293h704q52 0 84.5 37.5t32.5 90.5z\"/>\n    </symbol>\n    <symbol id=\"alf-icon-commenting\" viewBox=\"0 0 1792 1792\">\n        <path d=\"M640 896q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0-53-37.5-90.5t-90.5-37.5-90.5 37.5-37.5 90.5 37.5 90.5 90.5 37.5 90.5-37.5 37.5-90.5zm384 0q0 174-120 321.5t-326 233-450 85.5q-110 0-211-18-173 173-435 229-52 10-86 13-12 1-22-6t-13-18q-4-15 20-37 5-5 23.5-21.5t25.5-23.5 23.5-25.5 24-31.5 20.5-37 20-48 14.5-57.5 12.5-72.5q-146-90-229.5-216.5t-83.5-269.5q0-174 120-321.5t326-233 450-85.5 450 85.5 326 233 120 321.5z\"/>\n    </symbol>\n    <symbol id=\"alf-icon-table\" viewBox=\"0 0 1792 1792\">\n        <path d=\"M576 1376v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm0-384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm-512-768v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm-512-768v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm512 384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm0-384v-192q0-14-9-23t-23-9h-320q-14 0-23 9t-9 23v192q0 14 9 23t23 9h320q14 0 23-9t9-23zm128-320v1088q0 66-47 113t-113 47h-1344q-66 0-113-47t-47-113v-1088q0-66 47-113t113-47h1344q66 0 113 47t47 113z\"/>\n    </symbol>\n    <symbol id=\"alf-icon-wrench\" viewBox=\"0 0 1792 1792\">\n        <path d=\"M448 1472q0-26-19-45t-45-19-45 19-19 45 19 45 45 19 45-19 19-45zm644-420l-682 682q-37 37-90 37-52 0-91-37l-106-108q-38-36-38-90 0-53 38-91l681-681q39 98 114.5 173.5t173.5 114.5zm634-435q0 39-23 106-47 134-164.5 217.5t-258.5 83.5q-185 0-316.5-131.5t-131.5-316.5 131.5-316.5 316.5-131.5q58 0 121.5 16.5t107.5 46.5q16 11 16 28t-16 28l-293 169v224l193 107q5-3 79-48.5t135.5-81 70.5-35.5q15 0 23.5 10t8.5 25z\"/>\n    </symbol>\n</svg>\n<div data-component=\"page-controls\"></div>\n<div id=\"popup\"><popup></popup></div>\n<div data-component=\"alpheios-panel\"></div>";
 
 /***/ }),
-/* 32 */
+/* 36 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(37);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(34);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(40);
  // To polyfill Element.closest() if required
 
 
@@ -20554,7 +21150,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 33 */
+/* 37 */
 /***/ (function(module, exports) {
 
 // element-closest | CC0-1.0 | github.com/jonathantneal/closest
@@ -20593,11 +21189,11 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 34 */
+/* 38 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
 
 
@@ -20680,7 +21276,7 @@ class TextSelector {
 
 
 /***/ }),
-/* 35 */
+/* 39 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20694,7 +21290,7 @@ class TextQuoteSelector {
 
 
 /***/ }),
-/* 36 */
+/* 40 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20737,7 +21333,7 @@ class MediaSelector {
 
 
 /***/ }),
-/* 37 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
@@ -31503,7 +32099,7 @@ return Vue$3;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(8).setImmediate))
 
 /***/ }),
-/* 38 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -31693,10 +32289,10 @@ return Vue$3;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(39)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(43)))
 
 /***/ }),
-/* 39 */
+/* 43 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -31886,7 +32482,7 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 40 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 !function(root, factory) {
@@ -32774,19 +33370,19 @@ process.umask = function() { return 0; };
 });
 
 /***/ }),
-/* 41 */
+/* 45 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(12);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_190d0968_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_190d0968_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(49);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(42)
+  __webpack_require__(46)
 }
-var normalizeComponent = __webpack_require__(47)
+var normalizeComponent = __webpack_require__(11)
 /* script */
 
 
@@ -32830,17 +33426,17 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 42 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(43);
+var content = __webpack_require__(47);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(45)("1d2b91c2", content, false);
+var update = __webpack_require__(10)("1d2b91c2", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -32856,324 +33452,21 @@ if(false) {
 }
 
 /***/ }),
-/* 43 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(44)(true);
+exports = module.exports = __webpack_require__(9)(true);
 // imports
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n    border-radius: 0;\n    box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n}\n.alpheios-popup__content {\n    padding: 20px;\n    font-size: 14px;\n    position: relative;\n}\n.alpheios-popup__close-btn {\n    border: none;\n    background: transparent;\n    right: 1rem;\n    top: 1rem;\n    position: absolute;\n    cursor: pointer;\n}\n.auk .uk-button.alpheios-popup__more-btn {\n    margin-top: 30px;\n    float: right;\n}\n.v--modal-overlay[data-modal=\"popup\"] {\n    background: rgba(0, 0, 0, 0.0);\n}\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/popup.vue?4567d3a6"],"names":[],"mappings":";AA8EA;IACA,iBAAA;IACA,iDAAA;CACA;AAEA;IACA,cAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,aAAA;IACA,wBAAA;IACA,YAAA;IACA,UAAA;IACA,mBAAA;IACA,gBAAA;CACA;AAEA;IACA,iBAAA;IACA,aAAA;CACA;AAEA;IACA,+BAAA;CACA","file":"popup.vue","sourcesContent":["<template>\n    <modal name=\"popup\"\n           transition=\"nice-modal-fade\"\n           classes=\"alpheios-popup auk\"\n           :min-width=\"200\"\n           :min-height=\"200\"\n           :pivot-y=\"0.5\"\n           :adaptive=\"true\"\n           :resizable=\"true\"\n           :draggable=\"true\"\n           :scrollable=\"false\"\n           :clickToClose=\"false\"\n           :reset=\"true\"\n           width=\"60%\"\n           height=\"60%\"\n           @before-open=\"beforeOpen\"\n           @opened=\"opened\"\n           @closed=\"closed\"\n           @before-close=\"beforeClose\">\n        <div class=\"alpheios-popup__content\">\n            <button v-on:click=\"closePopup\" class=\"alpheios-popup__close-btn\"><span uk-icon=\"icon: close\"></span></button>\n            <div v-html=\"$root.messageContent\"></div>\n            <h2>{{ $root.popupTitle }}</h2>\n            <div v-html=\"$root.popupContent\"></div>\n            <button v-on:click=\"showInflectionsPanelTab\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Inflections</button>\n            <button v-on:click=\"showDefinitionsPanelTab\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Full Definitions</button>\n        </div>\n    </modal>\n</template>\n<script>\n  export default {\n    name: 'Popup',\n    methods: {\n      showMessage (message) {\n        this.messageContent = message\n      },\n\n      showDefinitionsPanelTab () {\n        this.$root.$modal.hide('popup')\n        if (!this.$root.panel.isOpened) { this.$root.panel.open() }\n        this.$root.panel.tabGroups.contentTabs.activate('definitionsTab')\n      },\n\n      showInflectionsPanelTab () {\n        this.$root.$modal.hide('popup')\n        if (!this.$root.panel.isOpened) { this.$root.panel.open() }\n        this.$root.panel.tabGroups.contentTabs.activate('inflectionsTab')\n      },\n\n      closePopup () {\n        this.$root.$modal.hide('popup')\n      },\n\n      beforeOpen () { },\n\n      beforeClose () { },\n\n      opened (e) {\n        // e.ref should not be undefined here\n        console.log('opened', e)\n        console.log('ref', e.ref)\n      },\n\n      closed (e) {\n        console.log('closed', e)\n      }\n    },\n    mounted () {\n      console.log('Popup is mounted')\n    },\n    watch: {\n      popupContent: function (value) {\n        console.log('Popup content changed to ' + value)\n      }\n    }\n  }\n</script>\n<style>\n    .alpheios-popup {\n        border-radius: 0;\n        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n    }\n\n    .alpheios-popup__content {\n        padding: 20px;\n        font-size: 14px;\n        position: relative;\n    }\n\n    .alpheios-popup__close-btn {\n        border: none;\n        background: transparent;\n        right: 1rem;\n        top: 1rem;\n        position: absolute;\n        cursor: pointer;\n    }\n\n    .auk .uk-button.alpheios-popup__more-btn {\n        margin-top: 30px;\n        float: right;\n    }\n\n    .v--modal-overlay[data-modal=\"popup\"] {\n        background: rgba(0, 0, 0, 0.0);\n    }\n</style>\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n.alpheios-popup {\n    border-radius: 0;\n    box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n}\n.alpheios-popup__content {\n    padding: 20px;\n    font-size: 14px;\n    position: relative;\n}\n.alpheios-popup__close-btn {\n    border: none;\n    background: transparent;\n    right: 1rem;\n    top: 1rem;\n    position: absolute;\n    cursor: pointer;\n}\n.auk .uk-button.alpheios-popup__more-btn {\n    margin-top: 30px;\n    float: right;\n}\n.v--modal-overlay[data-modal=\"popup\"] {\n    background: rgba(0, 0, 0, 0.0);\n}\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/popup.vue?e2edfc32"],"names":[],"mappings":";AA+EA;IACA,iBAAA;IACA,iDAAA;CACA;AAEA;IACA,cAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,aAAA;IACA,wBAAA;IACA,YAAA;IACA,UAAA;IACA,mBAAA;IACA,gBAAA;CACA;AAEA;IACA,iBAAA;IACA,aAAA;CACA;AAEA;IACA,+BAAA;CACA","file":"popup.vue","sourcesContent":["<template>\n    <modal name=\"popup\"\n           transition=\"nice-modal-fade\"\n           classes=\"alpheios-popup auk\"\n           :min-width=\"200\"\n           :min-height=\"200\"\n           :pivot-y=\"0.5\"\n           :adaptive=\"true\"\n           :resizable=\"true\"\n           :draggable=\"true\"\n           :scrollable=\"false\"\n           :clickToClose=\"false\"\n           :reset=\"true\"\n           width=\"60%\"\n           height=\"60%\"\n           @before-open=\"beforeOpen\"\n           @opened=\"opened\"\n           @closed=\"closed\"\n           @before-close=\"beforeClose\">\n        <div class=\"alpheios-popup__content\">\n            <button v-on:click=\"closePopup\" class=\"alpheios-popup__close-btn\"><span uk-icon=\"icon: close\"></span></button>\n            <div v-html=\"$root.messageContent\"></div>\n            <h2>{{ $root.popupTitle }}</h2>\n            <morph :lexemes=\"$root.lexemes\"></morph>\n            <div v-html=\"$root.popupContent\"></div>\n            <button v-on:click=\"showInflectionsPanelTab\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Inflections</button>\n            <button v-on:click=\"showDefinitionsPanelTab\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Full Definitions</button>\n        </div>\n    </modal>\n</template>\n<script>\n  export default {\n    name: 'Popup',\n    methods: {\n      showMessage (message) {\n        this.messageContent = message\n      },\n\n      showDefinitionsPanelTab () {\n        this.$root.$modal.hide('popup')\n        if (!this.$root.panel.isOpened) { this.$root.panel.open() }\n        this.$root.panel.tabGroups.contentTabs.activate('definitionsTab')\n      },\n\n      showInflectionsPanelTab () {\n        this.$root.$modal.hide('popup')\n        if (!this.$root.panel.isOpened) { this.$root.panel.open() }\n        this.$root.panel.tabGroups.contentTabs.activate('inflectionsTab')\n      },\n\n      closePopup () {\n        this.$root.$modal.hide('popup')\n      },\n\n      beforeOpen () { },\n\n      beforeClose () { },\n\n      opened (e) {\n        // e.ref should not be undefined here\n        console.log('opened', e)\n        console.log('ref', e.ref)\n      },\n\n      closed (e) {\n        console.log('closed', e)\n      }\n    },\n    mounted () {\n      console.log('Popup is mounted')\n    },\n    watch: {\n      popupContent: function (value) {\n        console.log('Popup content changed to ' + value)\n      }\n    }\n  }\n</script>\n<style>\n    .alpheios-popup {\n        border-radius: 0;\n        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);\n    }\n\n    .alpheios-popup__content {\n        padding: 20px;\n        font-size: 14px;\n        position: relative;\n    }\n\n    .alpheios-popup__close-btn {\n        border: none;\n        background: transparent;\n        right: 1rem;\n        top: 1rem;\n        position: absolute;\n        cursor: pointer;\n    }\n\n    .auk .uk-button.alpheios-popup__more-btn {\n        margin-top: 30px;\n        float: right;\n    }\n\n    .v--modal-overlay[data-modal=\"popup\"] {\n        background: rgba(0, 0, 0, 0.0);\n    }\n</style>\n"],"sourceRoot":""}]);
 
 // exports
 
 
 /***/ }),
-/* 44 */
-/***/ (function(module, exports) {
-
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-// css base code, injected by the css-loader
-module.exports = function(useSourceMap) {
-	var list = [];
-
-	// return the list of modules as css string
-	list.toString = function toString() {
-		return this.map(function (item) {
-			var content = cssWithMappingToString(item, useSourceMap);
-			if(item[2]) {
-				return "@media " + item[2] + "{" + content + "}";
-			} else {
-				return content;
-			}
-		}).join("");
-	};
-
-	// import a list of modules into the list
-	list.i = function(modules, mediaQuery) {
-		if(typeof modules === "string")
-			modules = [[null, modules, ""]];
-		var alreadyImportedModules = {};
-		for(var i = 0; i < this.length; i++) {
-			var id = this[i][0];
-			if(typeof id === "number")
-				alreadyImportedModules[id] = true;
-		}
-		for(i = 0; i < modules.length; i++) {
-			var item = modules[i];
-			// skip already imported module
-			// this implementation is not 100% perfect for weird media query combinations
-			//  when a module is imported multiple times with different media queries.
-			//  I hope this will never occur (Hey this way we have smaller bundles)
-			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-				if(mediaQuery && !item[2]) {
-					item[2] = mediaQuery;
-				} else if(mediaQuery) {
-					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-				}
-				list.push(item);
-			}
-		}
-	};
-	return list;
-};
-
-function cssWithMappingToString(item, useSourceMap) {
-	var content = item[1] || '';
-	var cssMapping = item[3];
-	if (!cssMapping) {
-		return content;
-	}
-
-	if (useSourceMap && typeof btoa === 'function') {
-		var sourceMapping = toComment(cssMapping);
-		var sourceURLs = cssMapping.sources.map(function (source) {
-			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
-		});
-
-		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
-	}
-
-	return [content].join('\n');
-}
-
-// Adapted from convert-source-map (MIT)
-function toComment(sourceMap) {
-	// eslint-disable-next-line no-undef
-	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
-	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
-
-	return '/*# ' + data + ' */';
-}
-
-
-/***/ }),
-/* 45 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/*
-  MIT License http://www.opensource.org/licenses/mit-license.php
-  Author Tobias Koppers @sokra
-  Modified by Evan You @yyx990803
-*/
-
-var hasDocument = typeof document !== 'undefined'
-
-if (typeof DEBUG !== 'undefined' && DEBUG) {
-  if (!hasDocument) {
-    throw new Error(
-    'vue-style-loader cannot be used in a non-browser environment. ' +
-    "Use { target: 'node' } in your Webpack config to indicate a server-rendering environment."
-  ) }
-}
-
-var listToStyles = __webpack_require__(46)
-
-/*
-type StyleObject = {
-  id: number;
-  parts: Array<StyleObjectPart>
-}
-
-type StyleObjectPart = {
-  css: string;
-  media: string;
-  sourceMap: ?string
-}
-*/
-
-var stylesInDom = {/*
-  [id: number]: {
-    id: number,
-    refs: number,
-    parts: Array<(obj?: StyleObjectPart) => void>
-  }
-*/}
-
-var head = hasDocument && (document.head || document.getElementsByTagName('head')[0])
-var singletonElement = null
-var singletonCounter = 0
-var isProduction = false
-var noop = function () {}
-
-// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
-// tags it will allow on a page
-var isOldIE = typeof navigator !== 'undefined' && /msie [6-9]\b/.test(navigator.userAgent.toLowerCase())
-
-module.exports = function (parentId, list, _isProduction) {
-  isProduction = _isProduction
-
-  var styles = listToStyles(parentId, list)
-  addStylesToDom(styles)
-
-  return function update (newList) {
-    var mayRemove = []
-    for (var i = 0; i < styles.length; i++) {
-      var item = styles[i]
-      var domStyle = stylesInDom[item.id]
-      domStyle.refs--
-      mayRemove.push(domStyle)
-    }
-    if (newList) {
-      styles = listToStyles(parentId, newList)
-      addStylesToDom(styles)
-    } else {
-      styles = []
-    }
-    for (var i = 0; i < mayRemove.length; i++) {
-      var domStyle = mayRemove[i]
-      if (domStyle.refs === 0) {
-        for (var j = 0; j < domStyle.parts.length; j++) {
-          domStyle.parts[j]()
-        }
-        delete stylesInDom[domStyle.id]
-      }
-    }
-  }
-}
-
-function addStylesToDom (styles /* Array<StyleObject> */) {
-  for (var i = 0; i < styles.length; i++) {
-    var item = styles[i]
-    var domStyle = stylesInDom[item.id]
-    if (domStyle) {
-      domStyle.refs++
-      for (var j = 0; j < domStyle.parts.length; j++) {
-        domStyle.parts[j](item.parts[j])
-      }
-      for (; j < item.parts.length; j++) {
-        domStyle.parts.push(addStyle(item.parts[j]))
-      }
-      if (domStyle.parts.length > item.parts.length) {
-        domStyle.parts.length = item.parts.length
-      }
-    } else {
-      var parts = []
-      for (var j = 0; j < item.parts.length; j++) {
-        parts.push(addStyle(item.parts[j]))
-      }
-      stylesInDom[item.id] = { id: item.id, refs: 1, parts: parts }
-    }
-  }
-}
-
-function createStyleElement () {
-  var styleElement = document.createElement('style')
-  styleElement.type = 'text/css'
-  head.appendChild(styleElement)
-  return styleElement
-}
-
-function addStyle (obj /* StyleObjectPart */) {
-  var update, remove
-  var styleElement = document.querySelector('style[data-vue-ssr-id~="' + obj.id + '"]')
-
-  if (styleElement) {
-    if (isProduction) {
-      // has SSR styles and in production mode.
-      // simply do nothing.
-      return noop
-    } else {
-      // has SSR styles but in dev mode.
-      // for some reason Chrome can't handle source map in server-rendered
-      // style tags - source maps in <style> only works if the style tag is
-      // created and inserted dynamically. So we remove the server rendered
-      // styles and inject new ones.
-      styleElement.parentNode.removeChild(styleElement)
-    }
-  }
-
-  if (isOldIE) {
-    // use singleton mode for IE9.
-    var styleIndex = singletonCounter++
-    styleElement = singletonElement || (singletonElement = createStyleElement())
-    update = applyToSingletonTag.bind(null, styleElement, styleIndex, false)
-    remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true)
-  } else {
-    // use multi-style-tag mode in all other cases
-    styleElement = createStyleElement()
-    update = applyToTag.bind(null, styleElement)
-    remove = function () {
-      styleElement.parentNode.removeChild(styleElement)
-    }
-  }
-
-  update(obj)
-
-  return function updateStyle (newObj /* StyleObjectPart */) {
-    if (newObj) {
-      if (newObj.css === obj.css &&
-          newObj.media === obj.media &&
-          newObj.sourceMap === obj.sourceMap) {
-        return
-      }
-      update(obj = newObj)
-    } else {
-      remove()
-    }
-  }
-}
-
-var replaceText = (function () {
-  var textStore = []
-
-  return function (index, replacement) {
-    textStore[index] = replacement
-    return textStore.filter(Boolean).join('\n')
-  }
-})()
-
-function applyToSingletonTag (styleElement, index, remove, obj) {
-  var css = remove ? '' : obj.css
-
-  if (styleElement.styleSheet) {
-    styleElement.styleSheet.cssText = replaceText(index, css)
-  } else {
-    var cssNode = document.createTextNode(css)
-    var childNodes = styleElement.childNodes
-    if (childNodes[index]) styleElement.removeChild(childNodes[index])
-    if (childNodes.length) {
-      styleElement.insertBefore(cssNode, childNodes[index])
-    } else {
-      styleElement.appendChild(cssNode)
-    }
-  }
-}
-
-function applyToTag (styleElement, obj) {
-  var css = obj.css
-  var media = obj.media
-  var sourceMap = obj.sourceMap
-
-  if (media) {
-    styleElement.setAttribute('media', media)
-  }
-
-  if (sourceMap) {
-    // https://developer.chrome.com/devtools/docs/javascript-debugging
-    // this makes source maps inside style tags work properly in Chrome
-    css += '\n/*# sourceURL=' + sourceMap.sources[0] + ' */'
-    // http://stackoverflow.com/a/26603875
-    css += '\n/*# sourceMappingURL=data:application/json;base64,' + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + ' */'
-  }
-
-  if (styleElement.styleSheet) {
-    styleElement.styleSheet.cssText = css
-  } else {
-    while (styleElement.firstChild) {
-      styleElement.removeChild(styleElement.firstChild)
-    }
-    styleElement.appendChild(document.createTextNode(css))
-  }
-}
-
-
-/***/ }),
-/* 46 */
+/* 48 */
 /***/ (function(module, exports) {
 
 /**
@@ -33206,116 +33499,7 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 47 */
-/***/ (function(module, exports) {
-
-/* globals __VUE_SSR_CONTEXT__ */
-
-// IMPORTANT: Do NOT use ES2015 features in this file.
-// This module is a runtime utility for cleaner component module output and will
-// be included in the final webpack user bundle.
-
-module.exports = function normalizeComponent (
-  rawScriptExports,
-  compiledTemplate,
-  functionalTemplate,
-  injectStyles,
-  scopeId,
-  moduleIdentifier /* server only */
-) {
-  var esModule
-  var scriptExports = rawScriptExports = rawScriptExports || {}
-
-  // ES6 modules interop
-  var type = typeof rawScriptExports.default
-  if (type === 'object' || type === 'function') {
-    esModule = rawScriptExports
-    scriptExports = rawScriptExports.default
-  }
-
-  // Vue.extend constructor export interop
-  var options = typeof scriptExports === 'function'
-    ? scriptExports.options
-    : scriptExports
-
-  // render functions
-  if (compiledTemplate) {
-    options.render = compiledTemplate.render
-    options.staticRenderFns = compiledTemplate.staticRenderFns
-    options._compiled = true
-  }
-
-  // functional template
-  if (functionalTemplate) {
-    options.functional = true
-  }
-
-  // scopedId
-  if (scopeId) {
-    options._scopeId = scopeId
-  }
-
-  var hook
-  if (moduleIdentifier) { // server build
-    hook = function (context) {
-      // 2.3 injection
-      context =
-        context || // cached call
-        (this.$vnode && this.$vnode.ssrContext) || // stateful
-        (this.parent && this.parent.$vnode && this.parent.$vnode.ssrContext) // functional
-      // 2.2 with runInNewContext: true
-      if (!context && typeof __VUE_SSR_CONTEXT__ !== 'undefined') {
-        context = __VUE_SSR_CONTEXT__
-      }
-      // inject component styles
-      if (injectStyles) {
-        injectStyles.call(this, context)
-      }
-      // register component module identifier for async chunk inferrence
-      if (context && context._registeredComponents) {
-        context._registeredComponents.add(moduleIdentifier)
-      }
-    }
-    // used by ssr in case component is cached and beforeCreate
-    // never gets called
-    options._ssrRegister = hook
-  } else if (injectStyles) {
-    hook = injectStyles
-  }
-
-  if (hook) {
-    var functional = options.functional
-    var existing = functional
-      ? options.render
-      : options.beforeCreate
-
-    if (!functional) {
-      // inject component registration as beforeCreate hook
-      options.beforeCreate = existing
-        ? [].concat(existing, hook)
-        : [hook]
-    } else {
-      // for template-only hot-reload because in that case the render fn doesn't
-      // go through the normalizer
-      options._injectStyles = hook
-      // register for functioal component in vue file
-      options.render = function renderWithStyleInjection (h, context) {
-        hook.call(context)
-        return existing(h, context)
-      }
-    }
-  }
-
-  return {
-    esModule: esModule,
-    exports: scriptExports,
-    options: options
-  }
-}
-
-
-/***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -33350,42 +33534,53 @@ var render = function() {
       }
     },
     [
-      _c("div", { staticClass: "alpheios-popup__content" }, [
-        _c(
-          "button",
-          {
-            staticClass: "alpheios-popup__close-btn",
-            on: { click: _vm.closePopup }
-          },
-          [_c("span", { attrs: { "uk-icon": "icon: close" } })]
-        ),
-        _vm._v(" "),
-        _c("div", {
-          domProps: { innerHTML: _vm._s(_vm.$root.messageContent) }
-        }),
-        _vm._v(" "),
-        _c("h2", [_vm._v(_vm._s(_vm.$root.popupTitle))]),
-        _vm._v(" "),
-        _c("div", { domProps: { innerHTML: _vm._s(_vm.$root.popupContent) } }),
-        _vm._v(" "),
-        _c(
-          "button",
-          {
-            staticClass: "uk-button uk-button-default alpheios-popup__more-btn",
-            on: { click: _vm.showInflectionsPanelTab }
-          },
-          [_vm._v("Go to Inflections")]
-        ),
-        _vm._v(" "),
-        _c(
-          "button",
-          {
-            staticClass: "uk-button uk-button-default alpheios-popup__more-btn",
-            on: { click: _vm.showDefinitionsPanelTab }
-          },
-          [_vm._v("Go to Full Definitions")]
-        )
-      ])
+      _c(
+        "div",
+        { staticClass: "alpheios-popup__content" },
+        [
+          _c(
+            "button",
+            {
+              staticClass: "alpheios-popup__close-btn",
+              on: { click: _vm.closePopup }
+            },
+            [_c("span", { attrs: { "uk-icon": "icon: close" } })]
+          ),
+          _vm._v(" "),
+          _c("div", {
+            domProps: { innerHTML: _vm._s(_vm.$root.messageContent) }
+          }),
+          _vm._v(" "),
+          _c("h2", [_vm._v(_vm._s(_vm.$root.popupTitle))]),
+          _vm._v(" "),
+          _c("morph", { attrs: { lexemes: _vm.$root.lexemes } }),
+          _vm._v(" "),
+          _c("div", {
+            domProps: { innerHTML: _vm._s(_vm.$root.popupContent) }
+          }),
+          _vm._v(" "),
+          _c(
+            "button",
+            {
+              staticClass:
+                "uk-button uk-button-default alpheios-popup__more-btn",
+              on: { click: _vm.showInflectionsPanelTab }
+            },
+            [_vm._v("Go to Inflections")]
+          ),
+          _vm._v(" "),
+          _c(
+            "button",
+            {
+              staticClass:
+                "uk-button uk-button-default alpheios-popup__more-btn",
+              on: { click: _vm.showDefinitionsPanelTab }
+            },
+            [_vm._v("Go to Full Definitions")]
+          )
+        ],
+        1
+      )
     ]
   )
 }
@@ -33401,7 +33596,191 @@ if (false) {
 }
 
 /***/ }),
-/* 49 */
+/* 50 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__ = __webpack_require__(13);
+/* unused harmony namespace reexport */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_85d98878_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__ = __webpack_require__(53);
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(51)
+}
+var normalizeComponent = __webpack_require__(11)
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_85d98878_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__["a" /* default */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "vue-components/morph.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-85d98878", Component.options)
+  } else {
+    hotAPI.reload("data-v-85d98878", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
+
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(52);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(10)("51a66b4f", content, false);
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-85d98878\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./morph.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-85d98878\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./morph.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(9)(true);
+// imports
+
+
+// module
+exports.push([module.i, "\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__source {\n  font-size: small;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n}\n.alpheios-morph__dial {\n    font-size: smaller;\n}\n.alpheios-morph__attr {\n    font-weight: normal;\n    color: #0E2233; /** TODO use alpheios variable **/\n}\n.alpheios-morph__linked-attr {\n\tcolor:#3E8D9C; /** TODO use alpheios variable **/\n\tfont-weight: bold;\n\tcursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n    color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n    content: \";\";\n}\n\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/morph.vue?163e3f2a"],"names":[],"mappings":";AAsCA;EACA,oBAAA;EACA,YAAA;CACA;AAEA;EACA,iBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;CACA;AAEA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;IACA,eAAA,CAAA,kCAAA;CACA;AAEA;CACA,cAAA,CAAA,kCAAA;CACA,kBAAA;CACA,gBAAA;CACA;AAEA;IACA,0BAAA;CACA;AAEA;IACA,aAAA;CACA","file":"morph.vue","sourcesContent":["<template>\n  <div id=\"alpheios-morph__lexemes\">\n    <div class=\"alpheios-morph__dict\" v-for=\"lex in lexemes\">\n      <span class=\"alpheios-morph__hdwd\" :lang=\"lex.lemma.language\">{{ lex.lemma.word }}</span>\n      <span class=\"alpheios-morph__pronunciation\" v-for=\"pron in lex.lemma.features.pronunciation\" v-if=\"lex.lemma.features.pronunciation\">\n        [{{pron}}]\n      </span>\n      <div class=\"alpheios-morph__morph\">\n        <span class=\"alpheios-morph__pofs\" v-for=\"pofs in lex.lemma.features['part of speech']\">\n          <span class=\"alpheios-morph__attr\" v-for=\"kase in lex.lemma.features.case\" v-if=\"lex.lemma.features.case\">{{kase.value}}</span>\n          <span class=\"alpheios-morph__attr\" v-for=\"decl in lex.lemma.features.declension\" v-if=\"lex.lemma.features.declension\">{{decl.value}}</span>\n          <span class=\"alpheios-morph__attr\" v-for=\"kind in lex.lemma.features.kind\" v-if=\"lex.lemma.features.kind\">{{kind.value}}</span>\n          {{ pofs.value }}\n        </span>\n      </div>\n    </div>\n  </div>\n</template>\n<script>\n  export default {\n    name: 'Morph',\n    props: ['lexemes'],\n    mounted () {\n      console.log('Morph is mounted')\n        // for each infl without dial\n        //   sort by stem, pref, suff, pofs/@order\n        //   group by stem and pofs\n        // for each infl without dial and without either stem or pofs\n        // for each infl with dial\n        // inflection-set:\n        //  ignores conjunction, preposition, interjection, particle\n        //  take pofs and decl from infl if it differs from dict\n        //  add dialect\n    },\n  }\n</script>\n<style>\n\n  .alpheios-morph__dict {\n    margin-bottom: .5em;\n    clear: both;\n  }\n\n  .alpheios-morph__source {\n    font-size: small;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n  }\n\n  .alpheios-morph__dial {\n      font-size: smaller;\n  }\n\n  .alpheios-morph__attr {\n      font-weight: normal;\n      color: #0E2233; /** TODO use alpheios variable **/\n  }\n\n  .alpheios-morph__linked-attr {\n  \tcolor:#3E8D9C; /** TODO use alpheios variable **/\n  \tfont-weight: bold;\n  \tcursor: pointer;\n  }\n\n  .alpheios-morph__linked-attr:hover {\n      color: #5BC8DC !important;\n  }\n\n  .alpheios-morph__pofs:after {\n      content: \";\";\n  }\n\n</style>\n"],"sourceRoot":""}]);
+
+// exports
+
+
+/***/ }),
+/* 53 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { attrs: { id: "alpheios-morph__lexemes" } },
+    _vm._l(_vm.lexemes, function(lex) {
+      return _c(
+        "div",
+        { staticClass: "alpheios-morph__dict" },
+        [
+          _c(
+            "span",
+            {
+              staticClass: "alpheios-morph__hdwd",
+              attrs: { lang: lex.lemma.language }
+            },
+            [_vm._v(_vm._s(lex.lemma.word))]
+          ),
+          _vm._v(" "),
+          _vm._l(lex.lemma.features.pronunciation, function(pron) {
+            return lex.lemma.features.pronunciation
+              ? _c("span", { staticClass: "alpheios-morph__pronunciation" }, [
+                  _vm._v("\n      [" + _vm._s(pron) + "]\n    ")
+                ])
+              : _vm._e()
+          }),
+          _vm._v(" "),
+          _c(
+            "div",
+            { staticClass: "alpheios-morph__morph" },
+            _vm._l(lex.lemma.features["part of speech"], function(pofs) {
+              return _c(
+                "span",
+                { staticClass: "alpheios-morph__pofs" },
+                [
+                  _vm._l(lex.lemma.features.case, function(kase) {
+                    return lex.lemma.features.case
+                      ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                          _vm._v(_vm._s(kase.value))
+                        ])
+                      : _vm._e()
+                  }),
+                  _vm._v(" "),
+                  _vm._l(lex.lemma.features.declension, function(decl) {
+                    return lex.lemma.features.declension
+                      ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                          _vm._v(_vm._s(decl.value))
+                        ])
+                      : _vm._e()
+                  }),
+                  _vm._v(" "),
+                  _vm._l(lex.lemma.features.kind, function(kind) {
+                    return lex.lemma.features.kind
+                      ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                          _vm._v(_vm._s(kind.value))
+                        ])
+                      : _vm._e()
+                  }),
+                  _vm._v("\n        " + _vm._s(pofs.value) + "\n      ")
+                ],
+                2
+              )
+            })
+          )
+        ],
+        2
+      )
+    })
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+var esExports = { render: render, staticRenderFns: staticRenderFns }
+/* harmony default export */ __webpack_exports__["a"] = (esExports);
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-85d98878", esExports)
+  }
+}
+
+/***/ }),
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(setImmediate) {/*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -43899,7 +44278,7 @@ return UIkit$2;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8).setImmediate))
 
 /***/ }),
-/* 50 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -44167,7 +44546,7 @@ return plugin;
 
 
 /***/ }),
-/* 51 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
