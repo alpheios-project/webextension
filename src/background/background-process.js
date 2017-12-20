@@ -216,11 +216,11 @@ export default class BackgroundProcess {
 
     // Menu state should reflect a status of a content script
     if (tab.hasOwnProperty('status')) {
-      if (tab.status === TabScript.statuses.script.ACTIVE) {
+      if (tab.isActive()) {
         this.menuItems.activate.disable()
         this.menuItems.deactivate.enable()
         this.menuItems.openPanel.enable()
-      } else if (tab.status === TabScript.statuses.script.DEACTIVATED) {
+      } else if (tab.isDeactivated()) {
         this.menuItems.deactivate.disable()
         this.menuItems.activate.enable()
         this.menuItems.openPanel.disable()
@@ -228,10 +228,10 @@ export default class BackgroundProcess {
     }
 
     if (tab.hasOwnProperty('panelStatus')) {
-      if (tab.panelStatus === TabScript.statuses.panel.OPEN) {
-        this.menuItems.openPanel.disable()
-      } else if (tab.status === TabScript.statuses.script.DEACTIVATED) {
+      if (tab.isActive() && tab.isPanelClosed()) {
         this.menuItems.openPanel.enable()
+      } else {
+        this.menuItems.openPanel.disable()
       }
     }
   }

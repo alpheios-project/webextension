@@ -45,12 +45,16 @@ export default class TabScript {
     }
   }
 
-  IDMatch (tabID) {
+  hasSameID (tabID) {
     return this.tabID === tabID
   }
 
   isActive () {
     return this.status === TabScript.statuses.script.ACTIVE
+  }
+
+  isDeactivated () {
+    return this.status === TabScript.statuses.script.DEACTIVATED
   }
 
   activate () {
@@ -61,6 +65,14 @@ export default class TabScript {
   deactivate () {
     this.status = TabScript.statuses.script.DEACTIVATED
     return this
+  }
+
+  isPanelOpened () {
+    return this.panelStatus === TabScript.statuses.panel.OPEN
+  }
+
+  isPanelClosed () {
+    return this.panelStatus === TabScript.statuses.panel.CLOSED
   }
 
   openPanel () {

@@ -347,7 +347,7 @@ export default class ContentProcess {
       if (!this.state.tabID) {
         // Content script has been just loaded and does not have its tab ID yet
         this.state.tabID = diff.tabID
-      } else if (!this.state.IDMatch(diff.tabID)) {
+      } else if (!this.state.hasSameID(diff.tabID)) {
         console.warn(`State request with the wrong tab ID "${diff.tabID}" received. This tab ID is "${this.state.tabID}"`)
         // TODO: Should we ignore such requests?
       }

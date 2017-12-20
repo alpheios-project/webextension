@@ -201,12 +201,16 @@ class TabScript {
     }
   }
 
-  IDMatch (tabID) {
+  hasSameID (tabID) {
     return this.tabID === tabID
   }
 
   isActive () {
     return this.status === TabScript.statuses.script.ACTIVE
+  }
+
+  isDeactivated () {
+    return this.status === TabScript.statuses.script.DEACTIVATED
   }
 
   activate () {
@@ -217,6 +221,14 @@ class TabScript {
   deactivate () {
     this.status = TabScript.statuses.script.DEACTIVATED
     return this
+  }
+
+  isPanelOpened () {
+    return this.panelStatus === TabScript.statuses.panel.OPEN
+  }
+
+  isPanelClosed () {
+    return this.panelStatus === TabScript.statuses.panel.CLOSED
   }
 
   openPanel () {
@@ -1062,11 +1074,11 @@ class BackgroundProcess {
 
     // Menu state should reflect a status of a content script
     if (tab.hasOwnProperty('status')) {
-      if (tab.status === __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE) {
+      if (tab.isActive()) {
         this.menuItems.activate.disable()
         this.menuItems.deactivate.enable()
         this.menuItems.openPanel.enable()
-      } else if (tab.status === __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.script.DEACTIVATED) {
+      } else if (tab.isDeactivated()) {
         this.menuItems.deactivate.disable()
         this.menuItems.activate.enable()
         this.menuItems.openPanel.disable()
@@ -1074,10 +1086,10 @@ class BackgroundProcess {
     }
 
     if (tab.hasOwnProperty('panelStatus')) {
-      if (tab.panelStatus === __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN) {
-        this.menuItems.openPanel.disable()
-      } else if (tab.status === __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.script.DEACTIVATED) {
+      if (tab.isActive() && tab.isPanelClosed()) {
         this.menuItems.openPanel.enable()
+      } else {
+        this.menuItems.openPanel.disable()
       }
     }
   }
