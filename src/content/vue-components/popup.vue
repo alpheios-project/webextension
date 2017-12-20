@@ -9,7 +9,7 @@
            :resizable="true"
            :draggable="true"
            :scrollable="false"
-           :clickToClose="false"
+           :clickToClose="true"
            :reset="true"
            width="60%"
            height="60%"

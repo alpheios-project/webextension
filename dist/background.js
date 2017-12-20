@@ -1064,10 +1064,10 @@ class BackgroundProcess {
   }
 
   async browserActionListener (tab) {
-    if (!this.isContentActive(tab.id)) {
-      this.activateContent(tab.id)
-    } else {
+    if (this.tabs.has(tab.id) && this.tabs.get(tab.id).isActive()) {
       this.deactivateContent(tab.id)
+    } else {
+      this.activateContent(tab.id)
     }
   }
 
