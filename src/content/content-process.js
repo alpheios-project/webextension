@@ -10,7 +10,6 @@ import Panel from './components/panel/component'
 import Options from './components/options/component'
 import State from '../lib/state'
 import TabScript from '../lib/content/tab-script'
-import Statuses from '../lib/content/statuses'
 import Template from './template.htmlf'
 // import PageControls from './components/page-controls/component'
 import HTMLSelector from '../lib/selection/media/html-selector'
@@ -20,12 +19,15 @@ import Popup from './vue-components/popup.vue'
 // UIKit
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
 import UIkITIconts from '../../node_modules/uikit/dist/js/uikit-icons'
+// Use a custom logger that outputs timestamps
+import Logger from '../lib/logger'
+console.log = Logger.log
 
 export default class ContentProcess {
   constructor () {
     this.state = new TabScript()
-    this.state.status = Statuses.PENDING
-    this.state.panelStatus = Statuses.PANEL_CLOSED
+    this.state.status = TabScript.statuses.script.PENDING
+    this.state.panelStatus = TabScript.statuses.panel.CLOSED
     this.settings = ContentProcess.settingValues
     this.vueInstance = undefined
 
@@ -42,9 +44,6 @@ export default class ContentProcess {
 
     // Adds message listeners
     this.messagingService.addHandler(Message.types.STATE_REQUEST, this.handleStateRequest, this)
-    this.messagingService.addHandler(Message.types.ACTIVATION_REQUEST, this.handleActivationRequest, this)
-    this.messagingService.addHandler(Message.types.DEACTIVATION_REQUEST, this.handleDeactivationRequest, this)
-    this.messagingService.addHandler(Message.types.OPEN_PANEL_REQUEST, this.handleOpenPanelRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     // this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
@@ -75,7 +74,7 @@ export default class ContentProcess {
     this.options = new Options({
       methods: {
         ready: (options) => {
-          this.state.status = Statuses.ACTIVE
+          this.state.status = TabScript.statuses.script.ACTIVE
           this.setPanelPositionTo(options.panelPosition.currentValue)
           this.setDefaultLanguageTo(options.defaultLanguage.currentValue)
           console.log('Content script is set to active')
@@ -129,18 +128,18 @@ export default class ContentProcess {
   }
 
   get isActive () {
-    return this.state.status === Statuses.ACTIVE
+    return this.state.status === TabScript.statuses.script.ACTIVE
   }
 
   deactivate () {
     console.log('Content has been deactivated.')
     this.closePanel()
-    this.state.status = Statuses.DEACTIVATED
+    this.state.status = TabScript.statuses.script.DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
-    this.state.status = Statuses.ACTIVE
+    this.state.status = TabScript.statuses.script.ACTIVE
   }
 
   static loadTemplate (template) {
@@ -313,13 +312,13 @@ export default class ContentProcess {
 
   openPanel () {
     this.panel.open()
-    this.state.panelStatus = Statuses.PANEL_OPEN
+    this.state.panelStatus = TabScript.statuses.panel.OPEN
     this.sendStateToBackground()
   }
 
   closePanel () {
     this.panel.close()
-    this.state.panelStatus = Statuses.PANEL_CLOSED
+    this.state.panelStatus = TabScript.statuses.panel.CLOSED
     this.sendStateToBackground()
   }
 
@@ -344,55 +343,32 @@ export default class ContentProcess {
     console.log(`State request has been received`)
     let state = TabScript.readObject(request.body)
     let diff = this.state.diff(state)
-    if (diff.hasOwnProperty('tabID')) { this.state.tabID = diff.tabID }
-    if (diff.hasOwnProperty('status')) {
-      if (diff.status === Statuses.ACTIVE) {
-        this.state.status = Statuses.ACTIVE
+    if (diff.has('tabID')) {
+      if (!this.state.tabID) {
+        // Content script has been just loaded and does not have its tab ID yet
+        this.state.tabID = diff.tabID
+      } else if (!this.state.IDMatch(diff.tabID)) {
+        console.warn(`State request with the wrong tab ID "${diff.tabID}" received. This tab ID is "${this.state.tabID}"`)
+        // TODO: Should we ignore such requests?
+      }
+    }
+    if (diff.has('status')) {
+      if (diff.status === TabScript.statuses.script.ACTIVE) {
+        this.state.activate()
       } else {
-        this.state.status = Statuses.DEACTIVATED
+        this.state.deactivate()
         this.closePanel()
         console.log('Content has been deactivated')
       }
     }
     if (diff.hasOwnProperty('panelStatus')) {
-      if (diff.panelStatus === Statuses.PANEL_OPEN) { this.openPanel() } else { this.closePanel() }
+      if (diff.panelStatus === TabScript.statuses.panel.OPEN) { this.openPanel() } else { this.closePanel() }
     }
     this.messagingService.sendResponseToBg(new StateResponse(request, this.state)).catch(
       (error) => {
         console.error(`Unable to send a response to a state request: ${error}`)
       }
     )
-  }
-
-  handleActivationRequest (request, sender) {
-    // Send a status response
-    console.log(`Activate request received. Sending a response back.`)
-    if (!this.isActive) {
-      this.reactivate()
-    }
-    this.messagingService.sendResponseToBg(new StateResponse(request, this.state.status)).catch(
-      (error) => {
-        console.error(`Unable to send a response to activation request: ${error}`)
-      }
-    )
-  }
-
-  handleDeactivationRequest (request, sender) {
-    // Send a status response
-    console.log(`Deactivate request received. Sending a response back.`)
-    if (this.isActive) {
-      this.deactivate()
-    }
-    this.messagingService.sendResponseToBg(new StateResponse(request, this.state.status)).catch(
-      (error) => {
-        console.error(`Unable to send a response to activation request: ${error}`)
-      }
-    )
-  }
-
-  handleOpenPanelRequest (request, sender) {
-    console.log(`Open panel request received. Sending a response back.`)
-    let panelStatus = this.openPanel()
   }
 
   sendStateToBackground () {

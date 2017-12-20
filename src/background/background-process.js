@@ -2,15 +2,16 @@
 import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
 import StateRequest from '../lib/messaging/request/state-request'
-import Statuses from '../lib/content/statuses'
 import ContextMenuItem from './context-menu-item'
 import TabScript from '../lib/content/tab-script'
-import State from '../lib/state'
 import {
   Transporter,
   StorageAdapter as LocalExperienceStorage,
   TestAdapter as RemoteExperienceServer
 } from 'alpheios-experience'
+// Use a logger that outputs timestamps
+// import Logger from '../lib/logger'
+// console.log = Logger.log
 
 export default class BackgroundProcess {
   constructor (browserFeatures) {
@@ -62,43 +63,22 @@ export default class BackgroundProcess {
       BackgroundProcess.defaults.experienceStorageThreshold, BackgroundProcess.defaults.experienceStorageCheckInterval)
   }
 
-  isContentLoaded (tabID) {
-    return this.tabs.has(tabID)
+  async activateContent (tabID) {
+    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
+    let tab = TabScript.create(this.tabs.get(tabID)).activate().openPanel()
+    this.setContentState(tab)
   }
 
-  isContentActive (tabID) {
-    return this.isContentLoaded(tabID) && this.tabs.get(tabID).status === Statuses.ACTIVE
+  async deactivateContent (tabID) {
+    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
+    let tab = TabScript.create(this.tabs.get(tabID)).deactivate().closePanel()
+    this.setContentState(tab)
   }
 
-  activateContent (tabID) {
-    if (!this.isContentLoaded(tabID)) {
-      // This tab has no content loaded. loadContent will load content and set it to a tabID state
-      this.loadContent(new TabScript(tabID))
-    } else {
-      let tab = this.tabs.get(tabID)
-      tab.status = Statuses.ACTIVE
-      tab.panelStatus = Statuses.PANEL_OPEN
-      this.updateContentState(tabID, tab)
-    }
-  }
-
-  deactivateContent (tabID) {
-    let tab = this.tabs.get(tabID)
-    tab.status = Statuses.DEACTIVATED
-    tab.panelStatus = Statuses.PANEL_CLOSED
-    this.updateContentState(tabID, tab)
-  }
-
-  openPanel (tabID) {
-    if (!this.isContentLoaded(tabID)) {
-      // This tab has no content loaded. loadContent will load content and set it to a tabID state
-      this.loadContent(new TabScript(tabID))
-    } else {
-      let tab = this.tabs.get(tabID)
-      tab.status = Statuses.ACTIVE
-      tab.panelStatus = Statuses.PANEL_OPEN
-      this.updateContentState(tabID, tab)
-    }
+  async openPanel (tabID) {
+    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
+    let tab = TabScript.create(this.tabs.get(tabID)).activate().openPanel()
+    this.setContentState(tab)
   }
 
   loadPolyfill (tabID) {
@@ -129,33 +109,54 @@ export default class BackgroundProcess {
     })
   }
 
-  loadContent (tabScript) {
+  /**
+   * Creates a TabScript object and loads content script(s) into a corresponding browser tab
+   * @param {Number} tabID - An ID of a tab
+   * @return {Promise.<TabScript>} A Promise that is resolved into a newly created TabScript object
+   */
+  async createTab (tabID) {
+    console.log(`Creating a new tab with an ID of ${tabID}`)
+    let newTab = new TabScript(tabID)
+    this.tabs.set(tabID, newTab)
+    try {
+      await this.loadContentData(newTab)
+    } catch (error) {
+      console.error(`Cannot load content script for a tab with an ID of ${tabID}`)
+    }
+    return newTab
+  }
+
+  /**
+   * Changes state of a tab by sending it a state update request. Content script of a tab returns
+   * its actual state after request it fulfilled. A warning will be produced if an actual
+   * state does not match desired one.
+   * @param {TabScript} tab - A TabScript object that represents a tab and it desired state
+   */
+  setContentState (tab) {
+    this.messagingService.sendRequestToTab(new StateRequest(tab), 10000, tab.tabID).then(
+      message => {
+        let contentState = TabScript.readObject(message.body)
+        /*
+        ContentState is an actual state content script is in. It may not match a desired state because
+        content script may fail in one or several operations.
+         */
+        let diff = tab.diff(contentState)
+        if (!diff.isEmpty()) {
+          console.warn(`Content script was not able to update the following properties:`, diff.keys())
+        }
+        this.updateTabState(tab.tabID, contentState)
+      },
+      error => {
+        console.log(`No status confirmation from tab ${tab.tabID} on state request: ${error.message}`)
+      }
+    )
+  }
+
+  loadContentData (tabScript) {
     let polyfillScript = this.loadPolyfill(tabScript.tabID)
     let contentScript = this.loadContentScript(tabScript.tabID)
     let contentCSS = this.loadContentCSS(tabScript.tabID)
-    Promise.all([polyfillScript, contentScript, contentCSS]).then(() => {
-      console.log('Content script(s) has been loaded successfully or already present')
-      if (!this.tabs.has(tabScript.tabID)) { this.tabs.set(tabScript.tabID, tabScript) }
-      this.updateContentState(tabScript.tabID, this.tabs.get(tabScript.tabID))
-    }, (error) => {
-      console.log(`Content script loading failed, ${error.message}`)
-    })
-  }
-
-  sendResponseToTabStatefully (request, tabID, state = undefined) {
-    return State.value(state, this.messagingService.sendResponseToTab(request, tabID))
-  }
-
-  updateContentState (tabID, state) {
-    this.messagingService.sendRequestToTab(new StateRequest(state), 10000, tabID).then(
-      message => {
-        let contentState = TabScript.readObject(message.body)
-        this.updateTabState(tabID, contentState)
-      },
-      error => {
-        console.log(`No status confirmation from tab ${tabID} on state request: ${error.message}`)
-      }
-    )
+    return Promise.all([polyfillScript, contentScript, contentCSS])
   }
 
   stateMessageHandler (message, sender) {
@@ -176,14 +177,18 @@ export default class BackgroundProcess {
    * @param tab
    * @return {Promise.<void>}
    */
-  tabUpdatedListener (tabID, changeInfo, tab) {
+  async tabUpdatedListener (tabID, changeInfo, tab) {
     if (changeInfo.status === 'complete') {
+      console.log('tab update complete')
       if (this.tabs.has(tabID)) {
         // If content script was loaded to that tab, restore it to the state it had before
         let tab = this.tabs.get(tabID)
-        // TODO: do we need to activate it? Then
-        // let tab = this.tabs.get(tabID).update({status: Statuses.ACTIVE, panelStatus: Statuses.PANEL_OPEN})
-        this.loadContent(tab)
+        try {
+          await this.loadContentData(tab)
+          this.setContentState(tab)
+        } catch (error) {
+          console.error(`Cannot load content script for a tab with an ID of ${tabID}`)
+        }
       }
     }
   }
@@ -211,11 +216,11 @@ export default class BackgroundProcess {
 
     // Menu state should reflect a status of a content script
     if (tab.hasOwnProperty('status')) {
-      if (tab.status === Statuses.ACTIVE) {
+      if (tab.status === TabScript.statuses.script.ACTIVE) {
         this.menuItems.activate.disable()
         this.menuItems.deactivate.enable()
         this.menuItems.openPanel.enable()
-      } else if (tab.status === Statuses.DEACTIVATED) {
+      } else if (tab.status === TabScript.statuses.script.DEACTIVATED) {
         this.menuItems.deactivate.disable()
         this.menuItems.activate.enable()
         this.menuItems.openPanel.disable()
@@ -223,9 +228,9 @@ export default class BackgroundProcess {
     }
 
     if (tab.hasOwnProperty('panelStatus')) {
-      if (tab.panelStatus === Statuses.PANEL_OPEN) {
+      if (tab.panelStatus === TabScript.statuses.panel.OPEN) {
         this.menuItems.openPanel.disable()
-      } else if (tab.status === Statuses.DEACTIVATED) {
+      } else if (tab.status === TabScript.statuses.script.DEACTIVATED) {
         this.menuItems.openPanel.enable()
       }
     }
