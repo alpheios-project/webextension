@@ -867,7 +867,7 @@ class Browser {
 
 
 
-// Use a logger that outputs timestamps
+// Use a logger that outputs timestamps (but loses line numbers)
 // import Logger from '../lib/logger'
 // console.log = Logger.log
 
@@ -877,6 +877,7 @@ class BackgroundProcess {
     this.settings = BackgroundProcess.defaults
 
     this.tabs = new Map() // A list of tabs that have content script loaded
+    this.activeTab = undefined // A tab that is currently active in a browser window
 
     this.messagingService = new __WEBPACK_IMPORTED_MODULE_1__lib_messaging_service__["a" /* default */]()
   }
@@ -905,6 +906,7 @@ class BackgroundProcess {
 
     this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_0__lib_messaging_message_message__["a" /* default */].types.STATE_MESSAGE, this.stateMessageHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
+    browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
     browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
 
     this.menuItems = {
@@ -1022,10 +1024,10 @@ class BackgroundProcess {
     this.updateTabState(contentState.tabID, contentState)
   }
 
-  static async getActiveTabID () {
-    let tabs = await browser.tabs.query({ active: true })
-    console.log(`Active tab ID is ${tabs[0].id}`)
-    return tabs[0].id
+  tabActivationListener (info) {
+    this.activeTab = info.tabId
+    let tab = this.tabs.has(info.tabId) ? this.tabs.get(info.tabId) : undefined
+    this.setMenuForTab(tab)
   }
 
   /**
@@ -1073,24 +1075,36 @@ class BackgroundProcess {
     let tab = this.tabs.get(tabID).update(newState)
 
     // Menu state should reflect a status of a content script
-    if (tab.hasOwnProperty('status')) {
-      if (tab.isActive()) {
-        this.menuItems.activate.disable()
-        this.menuItems.deactivate.enable()
-        this.menuItems.openPanel.enable()
-      } else if (tab.isDeactivated()) {
-        this.menuItems.deactivate.disable()
-        this.menuItems.activate.enable()
-        this.menuItems.openPanel.disable()
-      }
-    }
+    this.setMenuForTab(tab)
+  }
 
-    if (tab.hasOwnProperty('panelStatus')) {
-      if (tab.isActive() && tab.isPanelClosed()) {
-        this.menuItems.openPanel.enable()
-      } else {
-        this.menuItems.openPanel.disable()
+  setMenuForTab (tab) {
+    if (tab) {
+      // Menu state should reflect a status of a content script
+      if (tab.hasOwnProperty('status')) {
+        if (tab.isActive()) {
+          this.menuItems.activate.disable()
+          this.menuItems.deactivate.enable()
+          this.menuItems.openPanel.enable()
+        } else if (tab.isDeactivated()) {
+          this.menuItems.deactivate.disable()
+          this.menuItems.activate.enable()
+          this.menuItems.openPanel.disable()
+        }
       }
+
+      if (tab.hasOwnProperty('panelStatus')) {
+        if (tab.isActive() && tab.isPanelClosed()) {
+          this.menuItems.openPanel.enable()
+        } else {
+          this.menuItems.openPanel.disable()
+        }
+      }
+    } else {
+      // If tab is not provided will set menu do an initial state
+      this.menuItems.activate.enable()
+      this.menuItems.deactivate.disable()
+      this.menuItems.openPanel.disable()
     }
   }
 }
