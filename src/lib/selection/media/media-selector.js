@@ -1,3 +1,5 @@
+import { LanguageModelFactory } from 'alpheios-data-models'
+
 export default class MediaSelector {
   constructor (target) {
     this.target = target // A selected text area in a document
@@ -29,6 +31,13 @@ export default class MediaSelector {
    * @return {string} A language code of a selection
    */
   getLanguageCode (defaultLanguageCode) {
-    return this.getLanguageCodeFromSource() || defaultLanguageCode
+    let code = this.getLanguageCodeFromSource() || defaultLanguageCode
+    let langId = LanguageModelFactory.getLanguageIdFromCode(code)
+    if (langId) {
+      code = LanguageModelFactory.getLanguageCodeFromId(langId)
+    } else {
+      code = defaultLanguageCode
+    }
+    return code
   }
 }
