@@ -103,7 +103,7 @@ export default class ContentProcess {
         popupContent: '',
         messageContent: '',
         lexemes: [],
-        panel: this.panel
+        panel: this.panel,
       },
       mounted: function () {
         console.log('Root instance is mounted')
@@ -280,8 +280,7 @@ export default class ContentProcess {
 
   updateMorphologyData (homonym) {
     //this.panel.contentAreas.morphology.clearContent()
-    homonym.lexemes.sort(Lexeme.getSortByLemmaFeature(Feature.types.frequency))
-    homonym.lexemes.sort(Lexeme.getSortByLemmaFeature(Feature.types.part))
+    homonym.lexemes.sort(Lexeme.getSortByTwoLemmaFeatures(Feature.types.frequency,Feature.types.part))
     this.vueInstance.lexemes = homonym.lexemes
   }
 
@@ -316,7 +315,7 @@ export default class ContentProcess {
 
   appendMessage (message) {
     this.panel.appendMessage(message)
-    this.vueInstance.messageContent += message
+    this.vueInstance.messageContent = message
   }
 
   clearMessages () {
@@ -337,7 +336,7 @@ export default class ContentProcess {
   }
 
   formatShortDefinitions (lexeme) {
-    let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
+    let content = `<h3 class="alpheios-shortdef__lemma">Lemma: ${lexeme.lemma.word}</h3>\n`
     for (let shortDef of lexeme.meaning.shortDefs) {
       content += `<div class="alpheios-meaning">${shortDef.text}\n`
       if (shortDef.provider) {
@@ -349,7 +348,7 @@ export default class ContentProcess {
   }
 
   formatFullDefinitions (lexeme) {
-    let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
+    let content = `<h3 class="alpheios-fulldef__lemma">Lemma: ${lexeme.lemma.word}</h3>\n`
     for (let fullDef of lexeme.meaning.fullDefs) {
       content += `${fullDef.text}<br>\n`
     }

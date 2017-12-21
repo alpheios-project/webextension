@@ -874,6 +874,8 @@ class LanguageModel {
       ['*'], code);
     features[Feature.types.pronunciation] = new FeatureType(Feature.types.pronunciation,
       ['*'], code);
+    features[Feature.types.kind] = new FeatureType(Feature.types.kind,
+      ['*'], code);
     return features
   }
 
@@ -1549,6 +1551,10 @@ class Feature {
       return this.value === feature.value && this.type === feature.type && this.language === feature.language
     }
   }
+
+  toString (feature) {
+    return this.value
+  }
 }
 // Should have no spaces in values in order to be used in HTML templates
 Feature.types = {
@@ -1740,8 +1746,11 @@ class Inflection {
      * Initializes an Inflection object.
      * @param {string} stem - A stem of a word.
      * @param {string} language - A word's language.
+     * @param {string} suffix - a suffix of a word
+     * @param {prefix} prefix - a prefix of a word
+     * @param {example} example - example
      */
-  constructor (stem, language) {
+  constructor (stem, language, suffix = null, prefix = null, example = null) {
     if (!stem) {
       throw new Error('Stem should not be empty.')
     }
@@ -1758,26 +1767,19 @@ class Inflection {
     this.language = language;
 
     // Suffix may not be present in every word. If missing, it will set to null.
-    this.suffix = null;
+    this.suffix = suffix;
 
     // Prefix may not be present in every word. If missing, it will set to null.
-    this.prefix = null;
+    this.prefix = prefix;
 
     // Example may not be provided
-    this.example = null;
+    this.example = example;
   }
 
   static readObject (jsonObject) {
-    let inflection = new Inflection(jsonObject.stem, jsonObject.language);
-    if (jsonObject.suffix) {
-      inflection.suffix = jsonObject.suffix;
-    }
-    if (jsonObject.prefix) {
-      inflection.prefix = jsonObject.prefix;
-    }
-    if (jsonObject.example) {
-      inflection.example = jsonObject.example;
-    }
+    let inflection =
+      new Inflection(
+        jsonObject.stem, jsonObject.language, jsonObject.suffix, jsonObject.prefix, jsonObject.example);
     return inflection
   }
 
@@ -1807,8 +1809,112 @@ class Inflection {
                 this.language + '" of an Inflection object.')
       }
 
-      this[type].push(element.value);
+      this[type].push(element);
+      // this[type].push(element.value)
     }
+  }
+
+  featureMatch (featureName, otherInflection) {
+    let matches = false;
+    for (let f of this[featureName]) {
+      if (otherInflection[featureName] && otherInflection[featureName].filter((x) => x.isEqual(f)).length > 0) {
+        matches = true;
+        break
+      }
+    }
+    return matches
+  }
+
+  static groupForDisplay (inflections) {
+    let groupOrder = new Map();
+    let sortByOrder = (a, b) => {
+      let orderA = groupOrder.get(a);
+      let orderB = groupOrder.get(b);
+      return orderA > orderB ? -1 : orderB > orderA ? 1 : 0
+    };
+    let grouped = new Map();
+
+    // group inflections by part of speech
+    for (let infl of inflections) {
+      let pofskey, sortkey;
+      if (infl[Feature.types.part]) {
+        pofskey = infl[Feature.types.part].map((f) => { return f.value }).join('--');
+        sortkey = Math.max(infl[Feature.types.part].map((f) => { return f.sortOrder }));
+      } else {
+        pofskey = '';
+        sortkey = 1;
+      }
+      let dialkey = infl[Feature.types.dialect] ? infl[Feature.types.dialect].map((f) => { return f.value }).join('--') : '';
+      let compkey = infl[Feature.types.comparison] ? infl[Feature.types.comparison].map((f) => { return f.value }).join('--') : '';
+      let prefkey = infl.prefix ? infl.prefix : '';
+      let suffkey = infl.suffix ? infl.suffix : '';
+      let key = [prefkey, infl.stem, suffkey, pofskey, compkey, dialkey].filter((x) => x).join(' ');
+      if (grouped.has(key)) {
+        grouped.get(key).push(infl);
+      } else {
+        grouped.set(key, [infl]);
+        groupOrder.set(key, sortkey);
+      }
+    }
+
+    // sort the keys of the groupings by their sort order
+    let keys = Array.from(groupOrder.keys());
+    keys.sort(sortByOrder);
+
+    // iterate through each group key to group the inflections in that group
+    for (let key of keys) {
+      let inflgrp = new Map();
+      // iterate through the inflections of this group,
+      // grouping on case, tense, verbs w/o tense, adverbs and everything else
+      for (let infl of grouped.get(key)) {
+        let setkey;
+        if (infl[Feature.types.grmCase]) {
+          setkey = infl[Feature.types.number] ? infl[Feature.types.number].map((f) => { return f.value }).join(',') : '';
+        } else if (infl[Feature.types.tense]) {
+          setkey = infl[Feature.types.tense].map((f) => { return f.value }).join(',');
+        } else if (infl[Feature.types.part] === POFS_VERB) {
+          setkey = POFS_VERB;
+        } else if (infl[Feature.types.part] === POFS_ADVERB) {
+          setkey = POFS_ADVERB;
+        } else {
+          setkey = '';
+        }
+        if (inflgrp.has(setkey)) {
+          inflgrp.get(setkey).push(infl);
+        } else {
+          inflgrp.set(setkey, [infl]);
+        }
+      }
+      // inflgrp is now a map of groups of inflections grouped by
+      //  inflections with number
+      //  inflections without number but with tense
+      //  inflections of verbs without tense
+      //  inflections of adverbs
+      //  everything else
+      // iterate through each inflection group key to group the inflections in that group
+      for (let kv of inflgrp) {
+        let infls = kv[1];
+        let nextGroup = new Map();
+        groupOrder.clear();
+        for (let infl of infls) {
+          let tensekey = infl[Feature.types.tense] ? infl[Feature.types.tense].map((f) => { return f.value }).join(',') : '';
+          let voicekey = infl[Feature.types.voice] ? infl[Feature.types.voice].map((f) => { return f.value }).join(',') : '';
+          let setkey = [tensekey, voicekey].filter((x) => x).join(' ');
+          let sortkey = infl[Feature.types.grmCase] ? Math.max(infl[Feature.types.grmCase].map((f) => { return f.sortOrder })) : 1;
+          if (nextGroup.has(setkey)) {
+            nextGroup.get(setkey).push(infl);
+          } else {
+            nextGroup.set(setkey, [infl]);
+            groupOrder.set(setkey, sortkey);
+          }
+        }
+        console.log(nextGroup);
+        inflgrp.set(kv[0], Array.from(nextGroup));
+      }
+      grouped.set(key, Array.from(inflgrp));
+    }
+    console.log(grouped);
+    return Array.from(grouped)
   }
 }
 
@@ -1852,6 +1958,11 @@ class Lexeme {
     this.meaning = meaning || new DefinitionSet(this.lemma.word, this.lemma.languageID);
   }
 
+  getGroupedInflections () {
+    console.log(Inflection.groupForDisplay(this.inflections));
+    return Inflection.groupForDisplay(this.inflections)
+  }
+
   static readObject (jsonObject) {
     let lemma = Lemma.readObject(jsonObject.lemma);
     let inflections = [];
@@ -1864,18 +1975,38 @@ class Lexeme {
     return lexeme
   }
 
-  static getSortByLemmaFeature (featureName) {
+  /**
+   * Get a sort function for an array of lexemes which applies a primary and secondary
+   * sort logic using the sort order specified for each feature. Sorts in descending order -
+   * higher sort order means it should come first
+   * @param {string} primary feature name to use as primary sort key
+   * @param {string} secondary feature name to use as secondary sort key
+   * @returns {Function} function which can be passed to Array.sort
+   */
+  static getSortByTwoLemmaFeatures (primary, secondary) {
     return (a, b) => {
-      console.log(`Sort by ${featureName}`, a, b);
-
-      if (a.lemma.features[featureName] && b.lemma.features[featureName]) {
-        if (a.lemma.features[featureName][0].sortOrder < b.lemma.features[featureName][0].sortOrder) {
-          return -1
-        } else if (a.lemma.features[featureName][0].sortOrder > b.lemma.features[featureName][0].sortOrder) {
+      if (a.lemma.features[primary] && b.lemma.features[primary]) {
+        if (a.lemma.features[primary][0].sortOrder < b.lemma.features[primary][0].sortOrder) {
           return 1
-        } else {
-          return 0
+        } else if (a.lemma.features[primary][0].sortOrder > b.lemma.features[primary][0].sortOrder) {
+          return -1
+        } else if (a.lemma.features[secondary] && b.lemma.features[secondary]) {
+          if (a.lemma.features[secondary][0].sortOrder < b.lemma.features[secondary][0].sortOrder) {
+            return 1
+          } else if (a.lemma.features[secondary][0].sortOrder > b.lemma.features[secondary][0].sortOrder) {
+            return -1
+          } else if (a.lemma.features[secondary] && !b.lemma.features[secondary]) {
+            return -1
+          } else if (!a.lemma.features[secondary] && b.lemma.features[secondary]) {
+            return 1
+          } else {
+            return 0
+          }
         }
+      } else if (a.lemma.features[primary] && !b.lemma.features[primary]) {
+        return -1
+      } else if (!a.lemma.features[primary] && b.lemma.features[primary]) {
+        return 1
       } else {
         return 0
       }
@@ -2951,15 +3082,65 @@ module.exports = function normalizeComponent (
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: 'Morph',
-  props: ['lexemes'],
+  props: ['lexemes', 'inflectionGrouper'],
   mounted() {
     console.log('Morph is mounted');
     // for each infl without dial
-    //   sort by stem, pref, suff, pofs/@order
-    //   group by stem and pofs
+    //   group by stem, pref, suff, pofs, comp
+    //   sort by pofs
     // for each infl without dial and without either stem or pofs
     // for each infl with dial
     // inflection-set:
@@ -3135,7 +3316,7 @@ class ContentProcess {
         popupContent: '',
         messageContent: '',
         lexemes: [],
-        panel: this.panel
+        panel: this.panel,
       },
       mounted: function () {
         console.log('Root instance is mounted')
@@ -3312,8 +3493,7 @@ class ContentProcess {
 
   updateMorphologyData (homonym) {
     //this.panel.contentAreas.morphology.clearContent()
-    homonym.lexemes.sort(__WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__["n" /* Lexeme */].getSortByLemmaFeature(__WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__["d" /* Feature */].types.frequency))
-    homonym.lexemes.sort(__WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__["n" /* Lexeme */].getSortByLemmaFeature(__WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__["d" /* Feature */].types.part))
+    homonym.lexemes.sort(__WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__["n" /* Lexeme */].getSortByTwoLemmaFeatures(__WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__["d" /* Feature */].types.frequency,__WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__["d" /* Feature */].types.part))
     this.vueInstance.lexemes = homonym.lexemes
   }
 
@@ -3348,7 +3528,7 @@ class ContentProcess {
 
   appendMessage (message) {
     this.panel.appendMessage(message)
-    this.vueInstance.messageContent += message
+    this.vueInstance.messageContent = message
   }
 
   clearMessages () {
@@ -3369,7 +3549,7 @@ class ContentProcess {
   }
 
   formatShortDefinitions (lexeme) {
-    let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
+    let content = `<h3 class="alpheios-shortdef__lemma">Lemma: ${lexeme.lemma.word}</h3>\n`
     for (let shortDef of lexeme.meaning.shortDefs) {
       content += `<div class="alpheios-meaning">${shortDef.text}\n`
       if (shortDef.provider) {
@@ -3381,7 +3561,7 @@ class ContentProcess {
   }
 
   formatFullDefinitions (lexeme) {
-    let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
+    let content = `<h3 class="alpheios-fulldef__lemma">Lemma: ${lexeme.lemma.word}</h3>\n`
     for (let fullDef of lexeme.meaning.fullDefs) {
       content += `${fullDef.text}<br>\n`
     }
@@ -10748,7 +10928,7 @@ data$3.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feat
 
 var Cupidinibus = "{\n  \"RDF\": {\n    \"Annotation\": {\n      \"about\": \"urn:TuftsMorphologyService:cupidinibus:whitakerLat\",\n      \"creator\": {\n        \"Agent\": {\n          \"about\": \"net.alpheios:tools:wordsxml.v1\"\n        }\n      },\n      \"created\": {\n        \"$\": \"2017-08-10T23:15:29.185581\"\n      },\n      \"hasTarget\": {\n        \"Description\": {\n          \"about\": \"urn:word:cupidinibus\"\n        }\n      },\n      \"title\": {},\n      \"hasBody\": [\n        {\n          \"resource\": \"urn:uuid:idm140578094883136\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140578158026160\"\n        }\n      ],\n      \"Body\": [\n        {\n          \"about\": \"urn:uuid:idm140578094883136\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 2,\n                    \"$\": \"locative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 5,\n                    \"$\": \"dative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  }\n                }\n              ],\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"Cupido, Cupidinis\"\n                },\n                \"pofs\": {\n                  \"order\": 5,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                },\n                \"gend\": {\n                  \"$\": \"masculine\"\n                },\n                \"area\": {\n                  \"$\": \"religion\"\n                },\n                \"freq\": {\n                  \"order\": 4,\n                  \"$\": \"common\"\n                },\n                \"src\": {\n                  \"$\": \"Ox.Lat.Dict.\"\n                }\n              },\n              \"mean\": {\n                \"$\": \"Cupid, son of Venus; personification of carnal desire;\"\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140578158026160\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 2,\n                    \"$\": \"locative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"common\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 5,\n                    \"$\": \"dative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"common\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"common\"\n                  }\n                }\n              ],\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"cupido, cupidinis\"\n                },\n                \"pofs\": {\n                  \"order\": 5,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                },\n                \"gend\": {\n                  \"$\": \"common\"\n                },\n                \"freq\": {\n                  \"order\": 5,\n                  \"$\": \"frequent\"\n                },\n                \"src\": {\n                  \"$\": \"Ox.Lat.Dict.\"\n                }\n              },\n              \"mean\": {\n                \"$\": \"desire/love/wish/longing (passionate); lust; greed, appetite; desire for gain;\"\n              }\n            }\n          }\n        }\n      ]\n    }\n  }\n}\n";
 
-var Mare = "{\n  \"RDF\": {\n    \"Annotation\": {\n      \"about\": \"urn:TuftsMorphologyService:mare:morpheuslat\",\n      \"creator\": {\n        \"Agent\": {\n          \"about\": \"org.perseus:tools:morpheus.v1\"\n        }\n      },\n      \"created\": {\n        \"$\": \"2017-09-08T06:59:48.639180\"\n      },\n      \"hasTarget\": {\n        \"Description\": {\n          \"about\": \"urn:word:mare\"\n        }\n      },\n      \"title\": {},\n      \"hasBody\": [\n        {\n          \"resource\": \"urn:uuid:idm140446402389888\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140446402332400\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140446402303648\"\n        }\n      ],\n      \"Body\": [\n        {\n          \"about\": \"urn:uuid:idm140446402389888\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34070.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"mare\"\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                }\n              },\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 7,\n                    \"$\": \"nominative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 1,\n                    \"$\": \"vocative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 4,\n                    \"$\": \"accusative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                }\n              ],\n              \"mean\": {\n                \"$\": \"the sea\"\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140446402332400\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34118.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"marum\"\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"2nd\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                }\n              },\n              \"infl\": {\n                \"term\": {\n                  \"lang\": \"lat\",\n                  \"stem\": {\n                    \"$\": \"mar\"\n                  },\n                  \"suff\": {\n                    \"$\": \"e\"\n                  }\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"2nd\"\n                },\n                \"case\": {\n                  \"order\": 1,\n                  \"$\": \"vocative\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                },\n                \"num\": {\n                  \"$\": \"singular\"\n                },\n                \"stemtype\": {\n                  \"$\": \"us_i\"\n                }\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140446402303648\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34119.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"mas\"\n                },\n                \"pofs\": {\n                  \"order\": 2,\n                  \"$\": \"adjective\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                }\n              },\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"feminine\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                }\n              ]\n            }\n          }\n        }\n      ]\n    }\n  }\n}\n";
+var Mare = "{\n  \"RDF\": {\n    \"Annotation\": {\n      \"about\": \"urn:TuftsMorphologyService:mare:morpheuslat\",\n      \"creator\": {\n        \"Agent\": {\n          \"about\": \"org.perseus:tools:morpheus.v1\"\n        }\n      },\n      \"created\": {\n        \"$\": \"2017-09-08T06:59:48.639180\"\n      },\n      \"rights\": {\n        \"$\": \"Morphology provided by Morpheus from the Perseus Digital Library at Tufts University.\"\n      },\n      \"hasTarget\": {\n        \"Description\": {\n          \"about\": \"urn:word:mare\"\n        }\n      },\n      \"title\": {},\n      \"hasBody\": [\n        {\n          \"resource\": \"urn:uuid:idm140446402389888\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140446402332400\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140446402303648\"\n        }\n      ],\n      \"Body\": [\n        {\n          \"about\": \"urn:uuid:idm140446402389888\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34070.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"mare\"\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                }\n              },\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 7,\n                    \"$\": \"nominative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 1,\n                    \"$\": \"vocative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 4,\n                    \"$\": \"accusative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                }\n              ],\n              \"mean\": {\n                \"$\": \"the sea\"\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140446402332400\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34118.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"marum\"\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"2nd\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                }\n              },\n              \"infl\": {\n                \"term\": {\n                  \"lang\": \"lat\",\n                  \"stem\": {\n                    \"$\": \"mar\"\n                  },\n                  \"suff\": {\n                    \"$\": \"e\"\n                  }\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"2nd\"\n                },\n                \"case\": {\n                  \"order\": 1,\n                  \"$\": \"vocative\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                },\n                \"num\": {\n                  \"$\": \"singular\"\n                },\n                \"stemtype\": {\n                  \"$\": \"us_i\"\n                }\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140446402303648\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34119.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"mas\"\n                },\n                \"pofs\": {\n                  \"order\": 2,\n                  \"$\": \"adjective\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                }\n              },\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"feminine\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                }\n              ]\n            }\n          }\n        }\n      ]\n    }\n  }\n}\n";
 
 var Cepit = "{\n  \"RDF\": {\n    \"Annotation\": {\n      \"about\": \"urn:TuftsMorphologyService:cepit:whitakerLat\",\n      \"creator\": {\n        \"Agent\": {\n          \"about\": \"net.alpheios:tools:wordsxml.v1\"\n        }\n      },\n      \"created\": {\n        \"$\": \"2017-08-10T23:16:53.672068\"\n      },\n      \"hasTarget\": {\n        \"Description\": {\n          \"about\": \"urn:word:cepit\"\n        }\n      },\n      \"title\": {},\n      \"hasBody\": {\n        \"resource\": \"urn:uuid:idm140578133848416\"\n      },\n      \"Body\": {\n        \"about\": \"urn:uuid:idm140578133848416\",\n        \"type\": {\n          \"resource\": \"cnt:ContentAsXML\"\n        },\n        \"rest\": {\n          \"entry\": {\n            \"infl\": {\n              \"term\": {\n                \"lang\": \"lat\",\n                \"stem\": {\n                  \"$\": \"cep\"\n                },\n                \"suff\": {\n                  \"$\": \"it\"\n                }\n              },\n              \"pofs\": {\n                \"order\": 3,\n                \"$\": \"verb\"\n              },\n              \"conj\": {\n                \"$\": \"3rd\"\n              },\n              \"var\": {\n                \"$\": \"1st\"\n              },\n              \"tense\": {\n                \"$\": \"perfect\"\n              },\n              \"voice\": {\n                \"$\": \"active\"\n              },\n              \"mood\": {\n                \"$\": \"indicative\"\n              },\n              \"pers\": {\n                \"$\": \"3rd\"\n              },\n              \"num\": {\n                \"$\": \"singular\"\n              }\n            },\n            \"dict\": {\n              \"hdwd\": {\n                \"lang\": \"lat\",\n                \"$\": \"capio, capere, cepi, captus\"\n              },\n              \"pofs\": {\n                \"order\": 3,\n                \"$\": \"verb\"\n              },\n              \"conj\": {\n                \"$\": \"3rd\"\n              },\n              \"kind\": {\n                \"$\": \"transitive\"\n              },\n              \"freq\": {\n                \"order\": 6,\n                \"$\": \"very frequent\"\n              },\n              \"src\": {\n                \"$\": \"Ox.Lat.Dict.\"\n              }\n            },\n            \"mean\": {\n              \"$\": \"take hold, seize; grasp; take bribe; arrest/capture; put on; occupy; captivate;\"\n            }\n          }\n        }\n      }\n    }\n  }\n}\n";
 
@@ -10853,6 +11033,14 @@ class TuftsAdapter extends BaseAdapter {
         lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(
           lexeme.rest.entry.dict.pofs.$, lexeme.rest.entry.dict.pofs.order);
       }
+      if (lexeme.rest.entry.dict.case) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.case].get(
+          lexeme.rest.entry.dict.case.$, lexeme.rest.entry.dict.case.order);
+      }
+      if (lexeme.rest.entry.dict.gend) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender].get(
+          lexeme.rest.entry.dict.gend.$, lexeme.rest.entry.dict.gend.order);
+      }
       if (lexeme.rest.entry.dict.decl) {
         lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(
           lexeme.rest.entry.dict.decl.$, lexeme.rest.entry.dict.decl.order);
@@ -10891,7 +11079,7 @@ class TuftsAdapter extends BaseAdapter {
       }
 
       if (!provider) {
-        let providerUri = jsonObj.RDF.Annotation.about;
+        let providerUri = jsonObj.RDF.Annotation.creator.Agent.about;
         let providerRights = '';
         if (jsonObj.RDF.Annotation.rights) {
           providerRights = jsonObj.RDF.Annotation.rights.$;
@@ -10923,49 +11111,68 @@ class TuftsAdapter extends BaseAdapter {
         }
                 // Parse whatever grammatical features we're interested in
         if (inflectionJSON.pofs) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(inflectionJSON.pofs.$);
-          // inflection pofs overrides lemma pofs
-          lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(inflectionJSON.pofs.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(
+            inflectionJSON.pofs.$, inflectionJSON.pofs.order);
+          // inflection pofs can provide missing lemma pofs
+          if (!lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part]) {
+            lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(
+              inflectionJSON.pofs.$, inflectionJSON.pofs.order);
+          }
         }
 
         if (inflectionJSON.case) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase].get(inflectionJSON.case.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase].get(
+            inflectionJSON.case.$, inflectionJSON.case.order);
         }
 
         if (inflectionJSON.decl) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(inflectionJSON.decl.$);
-          // inflection decl overrides lemma decl
-          lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(inflectionJSON.decl.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(
+            inflectionJSON.decl.$, inflectionJSON.decl.order);
+          // inflection decl can provide lemma decl
+          if (!lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension]) {
+            lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(
+              inflectionJSON.decl.$, inflectionJSON.decl.order);
+          }
         }
 
         if (inflectionJSON.num) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number].get(inflectionJSON.num.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number].get(
+            inflectionJSON.num.$, inflectionJSON.num.order);
         }
 
         if (inflectionJSON.gend) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender].get(inflectionJSON.gend.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender].get(
+            inflectionJSON.gend.$, inflectionJSON.gend.order);
         }
 
         if (inflectionJSON.conj) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(inflectionJSON.conj.$);
-          // inflection conj overrides lemma conj
-          lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(inflectionJSON.conj.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(
+            inflectionJSON.conj.$, inflectionJSON.conj.order);
+          // inflection conj can provide lemma conj
+          if (!lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation]) {
+            lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(
+              inflectionJSON.conj.$, inflectionJSON.conj.order);
+          }
         }
 
         if (inflectionJSON.tense) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense].get(inflectionJSON.tense.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense].get(
+            inflectionJSON.tense.$, inflectionJSON.tense.order);
         }
 
         if (inflectionJSON.voice) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.voice].get(inflectionJSON.voice.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.voice].get(
+            inflectionJSON.voice.$, inflectionJSON.voice.order);
         }
 
         if (inflectionJSON.mood) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood].get(inflectionJSON.mood.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood].get(
+            inflectionJSON.mood.$, inflectionJSON.mood.order);
         }
 
         if (inflectionJSON.pers) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person].get(inflectionJSON.pers.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person].get(
+            inflectionJSON.pers.$, inflectionJSON.pers.order);
         }
 
         inflections.push(inflection);
@@ -21294,6 +21501,9 @@ class TextQuoteSelector {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(0);
+
+
 class MediaSelector {
   constructor (target) {
     this.target = target // A selected text area in a document
@@ -21325,7 +21535,14 @@ class MediaSelector {
    * @return {string} A language code of a selection
    */
   getLanguageCode (defaultLanguageCode) {
-    return this.getLanguageCodeFromSource() || defaultLanguageCode
+    let code = this.getLanguageCodeFromSource() || defaultLanguageCode
+    let langId = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(code)
+    if (langId) {
+      code = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageCodeFromId(langId)
+    } else {
+      code = defaultLanguageCode
+    }
+    return code
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = MediaSelector;
@@ -33686,7 +33903,7 @@ exports = module.exports = __webpack_require__(9)(true);
 
 
 // module
-exports.push([module.i, "\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__source {\n  font-size: small;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n}\n.alpheios-morph__dial {\n    font-size: smaller;\n}\n.alpheios-morph__attr {\n    font-weight: normal;\n    color: #0E2233; /** TODO use alpheios variable **/\n}\n.alpheios-morph__linked-attr {\n\tcolor:#3E8D9C; /** TODO use alpheios variable **/\n\tfont-weight: bold;\n\tcursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n    color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n    content: \";\";\n}\n\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/morph.vue?163e3f2a"],"names":[],"mappings":";AAsCA;EACA,oBAAA;EACA,YAAA;CACA;AAEA;EACA,iBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;CACA;AAEA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;IACA,eAAA,CAAA,kCAAA;CACA;AAEA;CACA,cAAA,CAAA,kCAAA;CACA,kBAAA;CACA,gBAAA;CACA;AAEA;IACA,0BAAA;CACA;AAEA;IACA,aAAA;CACA","file":"morph.vue","sourcesContent":["<template>\n  <div id=\"alpheios-morph__lexemes\">\n    <div class=\"alpheios-morph__dict\" v-for=\"lex in lexemes\">\n      <span class=\"alpheios-morph__hdwd\" :lang=\"lex.lemma.language\">{{ lex.lemma.word }}</span>\n      <span class=\"alpheios-morph__pronunciation\" v-for=\"pron in lex.lemma.features.pronunciation\" v-if=\"lex.lemma.features.pronunciation\">\n        [{{pron}}]\n      </span>\n      <div class=\"alpheios-morph__morph\">\n        <span class=\"alpheios-morph__pofs\" v-for=\"pofs in lex.lemma.features['part of speech']\">\n          <span class=\"alpheios-morph__attr\" v-for=\"kase in lex.lemma.features.case\" v-if=\"lex.lemma.features.case\">{{kase.value}}</span>\n          <span class=\"alpheios-morph__attr\" v-for=\"decl in lex.lemma.features.declension\" v-if=\"lex.lemma.features.declension\">{{decl.value}}</span>\n          <span class=\"alpheios-morph__attr\" v-for=\"kind in lex.lemma.features.kind\" v-if=\"lex.lemma.features.kind\">{{kind.value}}</span>\n          {{ pofs.value }}\n        </span>\n      </div>\n    </div>\n  </div>\n</template>\n<script>\n  export default {\n    name: 'Morph',\n    props: ['lexemes'],\n    mounted () {\n      console.log('Morph is mounted')\n        // for each infl without dial\n        //   sort by stem, pref, suff, pofs/@order\n        //   group by stem and pofs\n        // for each infl without dial and without either stem or pofs\n        // for each infl with dial\n        // inflection-set:\n        //  ignores conjunction, preposition, interjection, particle\n        //  take pofs and decl from infl if it differs from dict\n        //  add dialect\n    },\n  }\n</script>\n<style>\n\n  .alpheios-morph__dict {\n    margin-bottom: .5em;\n    clear: both;\n  }\n\n  .alpheios-morph__source {\n    font-size: small;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n  }\n\n  .alpheios-morph__dial {\n      font-size: smaller;\n  }\n\n  .alpheios-morph__attr {\n      font-weight: normal;\n      color: #0E2233; /** TODO use alpheios variable **/\n  }\n\n  .alpheios-morph__linked-attr {\n  \tcolor:#3E8D9C; /** TODO use alpheios variable **/\n  \tfont-weight: bold;\n  \tcursor: pointer;\n  }\n\n  .alpheios-morph__linked-attr:hover {\n      color: #5BC8DC !important;\n  }\n\n  .alpheios-morph__pofs:after {\n      content: \";\";\n  }\n\n</style>\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: small;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n}\n.alpheios-morph__dial {\n    font-size: smaller;\n}\n.alpheios-morph__attr {\n    font-weight: normal;\n    color: #0E2233; /** TODO use alpheios variable **/\n}\n.alpheios-morph__linked-attr {\n\tcolor:#3E8D9C; /** TODO use alpheios variable **/\n\tfont-weight: bold;\n\tcursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n    color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n    content: \";\";\n}\n.alpheios-morph__provider {\n  font-size: small;\n  font-weight: normal;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n  padding-left: .5em;\n}\n.alpheios-morph__listitem:after {\n    content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n    content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n    content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n    content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n   display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n   display: none;\n}\n.alpheios-popup__content .alpheios-shortdef__lemma {\n   display: none;\n}\n.alpheios-popup__content .alpheios-fulldef__lemma {\n   display: none;\n}\n\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/morph.vue?152e8a54"],"names":[],"mappings":";AAwFA;EACA,oBAAA;EACA,YAAA;CACA;AAEA;EACA,kBAAA;CACA;AAEA;EACA,iBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;CACA;AAEA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;IACA,eAAA,CAAA,kCAAA;CACA;AAEA;CACA,cAAA,CAAA,kCAAA;CACA,kBAAA;CACA,gBAAA;CACA;AAEA;IACA,0BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;EACA,iBAAA;EACA,oBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;EACA,mBAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,YAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;GACA,eAAA;CACA;AAEA;GACA,cAAA;CACA;AAEA;GACA,cAAA;CACA;AAEA;GACA,cAAA;CACA","file":"morph.vue","sourcesContent":["<template>\n  <div id=\"alpheios-morph__lexemes\">\n    <div class=\"alpheios-morph__dict\" v-for=\"lex in lexemes\">\n      <span class=\"alpheios-morph__lemma\" v-if=\"! lex.lemma.principalParts.includes(lex.lemma.word)\" :lang=\"lex.lemma.language\">{{ lex.lemma.word }}</span>\n      <span class=\"alpheios-morph__pparts\">\n        <span class=\"alpheios-morph__listitem\" v-for=\"part in lex.lemma.principalParts\" :lang=\"lex.lemma.language\">{{ part }}</span>\n      </span>\n      <span class=\"alpheios-morph__pronunciation\" v-for=\"pron in lex.lemma.features.pronunciation\" v-if=\"lex.lemma.features.pronunciation\">\n        [{{pron}}]\n      </span>\n      <div class=\"alpheios-morph__morph\">\n        <span class=\"alpheios-morph__pofs\" v-for=\"pofs in lex.lemma.features['part of speech']\">\n          <span class=\"alpheios-morph__attr\" v-for=\"kase in lex.lemma.features['case']\" v-if=\"lex.lemma.features['case']\">{{kase.value}}</span>\n          <span class=\"alpheios-morph__attr\" v-for=\"gender in lex.lemma.features.gender\" v-if=\"lex.lemma.features.gender\">{{gender.value}}</span>\n          {{ pofs.value }}\n        </span>\n        <span class=\"alpheios-morph__attr\" v-for=\"kind in lex.lemma.features.kind\" v-if=\"lex.lemma.features.kind\">{{kind.value}}</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"decl in lex.lemma.features.declension\" v-if=\"lex.lemma.features.declension\">{{decl.value}} declension</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"conj in lex.lemma.features.conjugation\" v-if=\"lex.lemma.features.conjugation\">{{conj.value}}</span>\n        <span class=\"alpheios-morph__parenthesized\" v-if=\"lex.lemma.features.age || lex.lemma.features.area || lex.lemma.features.geo || lex.lemma.features.frequency\">\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"age in lex.lemma.features.age\" v-if=\"lex.lemma.features.age\">( {{age.value}} )</span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"area in lex.lemma.features.area\" v-if=\"lex.lemma.features.area\">{{area.value}} </span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"geo in lex.lemma.features.geo\" v-if=\"lex.lemma.features.geo\">{{geo.value}}</span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"freq in lex.lemma.features.frequency\" v-if=\"lex.lemma.features.frequency\">{{freq.value}}</span>\n        </span>\n        <span class=\"alpheios-morph__attr\" v-for=\"source in lex.lemma.features.source\" v-if=\"lex.lemma.features.source\">[{{source.value}}]</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"note in lex.lemma.features.note\" v-if=\"lex.lemma.features.note\">[{{source.note}}]</span>\n      </div>\n      <div class=\"alpheios-morph__inflections\">\n        <div class=\"alpheios-morph__inflset\" v-for=\"inflset in lex.getGroupedInflections()\">\n          <div class=\"alpheios-morph__list\">\n            <div class=\"alpheios-morph__infl\" v-for=\"group in inflset[1]\">\n              <div class=\"alpheios-morph__showiffirst\">\n                <span class=\"alpheios-morph__prefix\" v-if=\"group[1][0][1][0].prefix\">{{group[1][0][1][0].prefix}} </span>\n                <span class=\"alpheios-morph__stem\">{{group[1][0][1][0].stem}}</span>\n                <span class=\"alpheios-morph__suffix\" v-if=\"group[1][0][1][0].suffix\"> -{{group[1][0][1][0].suffix}}</span>\n                <span class=\"alpheios-morph__pofs\"\n                  v-for=\"pofs in group[1][0][1][0]['part of speech']\"\n                  v-if=\"! group[1][0][1][0].featureMatch('part of speech',lex.lemma.features)\">{{pofs.value}}</span>\n                <span class=\"alpheios-morph__declension\"\n                  v-for=\"decl in group[1][0][1][0]['declension']\"\n                  v-if=\"! group[1][0][1][0].featureMatch('declension',lex.lemma.features)\">{{decl.value}}</span>\n              </div>\n              <span>{{group[0]}}\n                <span class=\"alpheios-morph__items alpheios-morph__listitem\" v-for=\"infl in group[1]\">\n                    <span class=\"alpheios-morph__group\">\n                      {{ infl[0] }}\n                      <span class=\"alpheios-morph__groupitem\" v-for=\"item in infl[1]\">\n                        <span class=\"alpheios-morph__case\" v-for=\"kase in item.case\">\n                          {{ kase.value }}\n                          <span class=\"alpheios-morph__gender alpheios-morph__parenthesized\" v-for=\"gend in item.gender\">\n                            {{ gend.value }}\n                          </span>\n                        </span>\n                      </span>\n                    </span>\n                </span>\n              </span>\n            </div>\n          </div>\n        </div>\n      </div>\n      <div class=\"alpheios-morph__provider\">\n        {{ lex.provider.toString() }}\n      </div>\n    </div>\n  </div>\n</template>\n<script>\n  export default {\n    name: 'Morph',\n    props: ['lexemes','inflectionGrouper'],\n    mounted () {\n      console.log('Morph is mounted')\n        // for each infl without dial\n        //   group by stem, pref, suff, pofs, comp\n        //   sort by pofs\n        // for each infl without dial and without either stem or pofs\n        // for each infl with dial\n        // inflection-set:\n        //  ignores conjunction, preposition, interjection, particle\n        //  take pofs and decl from infl if it differs from dict\n        //  add dialect\n    },\n  }\n</script>\n<style>\n\n  .alpheios-morph__dict {\n    margin-bottom: .5em;\n    clear: both;\n  }\n\n  .alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n    font-weight: bold;\n  }\n\n  .alpheios-morph__source {\n    font-size: small;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n  }\n\n  .alpheios-morph__dial {\n      font-size: smaller;\n  }\n\n  .alpheios-morph__attr {\n      font-weight: normal;\n      color: #0E2233; /** TODO use alpheios variable **/\n  }\n\n  .alpheios-morph__linked-attr {\n  \tcolor:#3E8D9C; /** TODO use alpheios variable **/\n  \tfont-weight: bold;\n  \tcursor: pointer;\n  }\n\n  .alpheios-morph__linked-attr:hover {\n      color: #5BC8DC !important;\n  }\n\n  .alpheios-morph__pofs:after {\n      content: \";\";\n  }\n\n  .alpheios-morph__provider {\n    font-size: small;\n    font-weight: normal;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n    padding-left: .5em;\n  }\n\n  .alpheios-morph__listitem:after {\n      content: \", \";\n   }\n\n  .alpheios-morph__listitem:last-child:after {\n      content: \"\";\n   }\n\n  .alpheios-morph__parenthesized:before {\n      content: \"(\";\n   }\n\n  .alpheios-morph__parenthesized:after {\n      content: \")\";\n   }\n\n   .alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n     display: block;\n   }\n\n   .alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n     display: none;\n   }\n\n   .alpheios-popup__content .alpheios-shortdef__lemma {\n     display: none;\n   }\n\n   .alpheios-popup__content .alpheios-fulldef__lemma {\n     display: none;\n   }\n\n</style>\n"],"sourceRoot":""}]);
 
 // exports
 
@@ -33708,13 +33925,30 @@ var render = function() {
         "div",
         { staticClass: "alpheios-morph__dict" },
         [
+          !lex.lemma.principalParts.includes(lex.lemma.word)
+            ? _c(
+                "span",
+                {
+                  staticClass: "alpheios-morph__lemma",
+                  attrs: { lang: lex.lemma.language }
+                },
+                [_vm._v(_vm._s(lex.lemma.word))]
+              )
+            : _vm._e(),
+          _vm._v(" "),
           _c(
             "span",
-            {
-              staticClass: "alpheios-morph__hdwd",
-              attrs: { lang: lex.lemma.language }
-            },
-            [_vm._v(_vm._s(lex.lemma.word))]
+            { staticClass: "alpheios-morph__pparts" },
+            _vm._l(lex.lemma.principalParts, function(part) {
+              return _c(
+                "span",
+                {
+                  staticClass: "alpheios-morph__listitem",
+                  attrs: { lang: lex.lemma.language }
+                },
+                [_vm._v(_vm._s(part))]
+              )
+            })
           ),
           _vm._v(" "),
           _vm._l(lex.lemma.features.pronunciation, function(pron) {
@@ -33728,40 +33962,295 @@ var render = function() {
           _c(
             "div",
             { staticClass: "alpheios-morph__morph" },
-            _vm._l(lex.lemma.features["part of speech"], function(pofs) {
-              return _c(
-                "span",
-                { staticClass: "alpheios-morph__pofs" },
-                [
-                  _vm._l(lex.lemma.features.case, function(kase) {
-                    return lex.lemma.features.case
-                      ? _c("span", { staticClass: "alpheios-morph__attr" }, [
-                          _vm._v(_vm._s(kase.value))
-                        ])
-                      : _vm._e()
-                  }),
-                  _vm._v(" "),
-                  _vm._l(lex.lemma.features.declension, function(decl) {
-                    return lex.lemma.features.declension
-                      ? _c("span", { staticClass: "alpheios-morph__attr" }, [
-                          _vm._v(_vm._s(decl.value))
-                        ])
-                      : _vm._e()
-                  }),
-                  _vm._v(" "),
-                  _vm._l(lex.lemma.features.kind, function(kind) {
-                    return lex.lemma.features.kind
-                      ? _c("span", { staticClass: "alpheios-morph__attr" }, [
-                          _vm._v(_vm._s(kind.value))
-                        ])
-                      : _vm._e()
-                  }),
-                  _vm._v("\n        " + _vm._s(pofs.value) + "\n      ")
-                ],
-                2
-              )
+            [
+              _vm._l(lex.lemma.features["part of speech"], function(pofs) {
+                return _c(
+                  "span",
+                  { staticClass: "alpheios-morph__pofs" },
+                  [
+                    _vm._l(lex.lemma.features["case"], function(kase) {
+                      return lex.lemma.features["case"]
+                        ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                            _vm._v(_vm._s(kase.value))
+                          ])
+                        : _vm._e()
+                    }),
+                    _vm._v(" "),
+                    _vm._l(lex.lemma.features.gender, function(gender) {
+                      return lex.lemma.features.gender
+                        ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                            _vm._v(_vm._s(gender.value))
+                          ])
+                        : _vm._e()
+                    }),
+                    _vm._v("\n        " + _vm._s(pofs.value) + "\n      ")
+                  ],
+                  2
+                )
+              }),
+              _vm._v(" "),
+              _vm._l(lex.lemma.features.kind, function(kind) {
+                return lex.lemma.features.kind
+                  ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                      _vm._v(_vm._s(kind.value))
+                    ])
+                  : _vm._e()
+              }),
+              _vm._v(" "),
+              _vm._l(lex.lemma.features.declension, function(decl) {
+                return lex.lemma.features.declension
+                  ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                      _vm._v(_vm._s(decl.value) + " declension")
+                    ])
+                  : _vm._e()
+              }),
+              _vm._v(" "),
+              _vm._l(lex.lemma.features.conjugation, function(conj) {
+                return lex.lemma.features.conjugation
+                  ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                      _vm._v(_vm._s(conj.value))
+                    ])
+                  : _vm._e()
+              }),
+              _vm._v(" "),
+              lex.lemma.features.age ||
+              lex.lemma.features.area ||
+              lex.lemma.features.geo ||
+              lex.lemma.features.frequency
+                ? _c(
+                    "span",
+                    { staticClass: "alpheios-morph__parenthesized" },
+                    [
+                      _vm._l(lex.lemma.features.age, function(age) {
+                        return lex.lemma.features.age
+                          ? _c(
+                              "span",
+                              {
+                                staticClass:
+                                  "alpheios-morph__attr alpheios-morph__listitem"
+                              },
+                              [_vm._v("( " + _vm._s(age.value) + " )")]
+                            )
+                          : _vm._e()
+                      }),
+                      _vm._v(" "),
+                      _vm._l(lex.lemma.features.area, function(area) {
+                        return lex.lemma.features.area
+                          ? _c(
+                              "span",
+                              {
+                                staticClass:
+                                  "alpheios-morph__attr alpheios-morph__listitem"
+                              },
+                              [_vm._v(_vm._s(area.value) + " ")]
+                            )
+                          : _vm._e()
+                      }),
+                      _vm._v(" "),
+                      _vm._l(lex.lemma.features.geo, function(geo) {
+                        return lex.lemma.features.geo
+                          ? _c(
+                              "span",
+                              {
+                                staticClass:
+                                  "alpheios-morph__attr alpheios-morph__listitem"
+                              },
+                              [_vm._v(_vm._s(geo.value))]
+                            )
+                          : _vm._e()
+                      }),
+                      _vm._v(" "),
+                      _vm._l(lex.lemma.features.frequency, function(freq) {
+                        return lex.lemma.features.frequency
+                          ? _c(
+                              "span",
+                              {
+                                staticClass:
+                                  "alpheios-morph__attr alpheios-morph__listitem"
+                              },
+                              [_vm._v(_vm._s(freq.value))]
+                            )
+                          : _vm._e()
+                      })
+                    ],
+                    2
+                  )
+                : _vm._e(),
+              _vm._v(" "),
+              _vm._l(lex.lemma.features.source, function(source) {
+                return lex.lemma.features.source
+                  ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                      _vm._v("[" + _vm._s(source.value) + "]")
+                    ])
+                  : _vm._e()
+              }),
+              _vm._v(" "),
+              _vm._l(lex.lemma.features.note, function(note) {
+                return lex.lemma.features.note
+                  ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                      _vm._v("[" + _vm._s(_vm.source.note) + "]")
+                    ])
+                  : _vm._e()
+              })
+            ],
+            2
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            { staticClass: "alpheios-morph__inflections" },
+            _vm._l(lex.getGroupedInflections(), function(inflset) {
+              return _c("div", { staticClass: "alpheios-morph__inflset" }, [
+                _c(
+                  "div",
+                  { staticClass: "alpheios-morph__list" },
+                  _vm._l(inflset[1], function(group) {
+                    return _c("div", { staticClass: "alpheios-morph__infl" }, [
+                      _c(
+                        "div",
+                        { staticClass: "alpheios-morph__showiffirst" },
+                        [
+                          group[1][0][1][0].prefix
+                            ? _c(
+                                "span",
+                                { staticClass: "alpheios-morph__prefix" },
+                                [_vm._v(_vm._s(group[1][0][1][0].prefix) + " ")]
+                              )
+                            : _vm._e(),
+                          _vm._v(" "),
+                          _c("span", { staticClass: "alpheios-morph__stem" }, [
+                            _vm._v(_vm._s(group[1][0][1][0].stem))
+                          ]),
+                          _vm._v(" "),
+                          group[1][0][1][0].suffix
+                            ? _c(
+                                "span",
+                                { staticClass: "alpheios-morph__suffix" },
+                                [
+                                  _vm._v(
+                                    " -" + _vm._s(group[1][0][1][0].suffix)
+                                  )
+                                ]
+                              )
+                            : _vm._e(),
+                          _vm._v(" "),
+                          _vm._l(group[1][0][1][0]["part of speech"], function(
+                            pofs
+                          ) {
+                            return !group[1][0][1][0].featureMatch(
+                              "part of speech",
+                              lex.lemma.features
+                            )
+                              ? _c(
+                                  "span",
+                                  { staticClass: "alpheios-morph__pofs" },
+                                  [_vm._v(_vm._s(pofs.value))]
+                                )
+                              : _vm._e()
+                          }),
+                          _vm._v(" "),
+                          _vm._l(group[1][0][1][0]["declension"], function(
+                            decl
+                          ) {
+                            return !group[1][0][1][0].featureMatch(
+                              "declension",
+                              lex.lemma.features
+                            )
+                              ? _c(
+                                  "span",
+                                  { staticClass: "alpheios-morph__declension" },
+                                  [_vm._v(_vm._s(decl.value))]
+                                )
+                              : _vm._e()
+                          })
+                        ],
+                        2
+                      ),
+                      _vm._v(" "),
+                      _c(
+                        "span",
+                        [
+                          _vm._v(_vm._s(group[0]) + "\n              "),
+                          _vm._l(group[1], function(infl) {
+                            return _c(
+                              "span",
+                              {
+                                staticClass:
+                                  "alpheios-morph__items alpheios-morph__listitem"
+                              },
+                              [
+                                _c(
+                                  "span",
+                                  { staticClass: "alpheios-morph__group" },
+                                  [
+                                    _vm._v(
+                                      "\n                    " +
+                                        _vm._s(infl[0]) +
+                                        "\n                    "
+                                    ),
+                                    _vm._l(infl[1], function(item) {
+                                      return _c(
+                                        "span",
+                                        {
+                                          staticClass:
+                                            "alpheios-morph__groupitem"
+                                        },
+                                        _vm._l(item.case, function(kase) {
+                                          return _c(
+                                            "span",
+                                            {
+                                              staticClass:
+                                                "alpheios-morph__case"
+                                            },
+                                            [
+                                              _vm._v(
+                                                "\n                        " +
+                                                  _vm._s(kase.value) +
+                                                  "\n                        "
+                                              ),
+                                              _vm._l(item.gender, function(
+                                                gend
+                                              ) {
+                                                return _c(
+                                                  "span",
+                                                  {
+                                                    staticClass:
+                                                      "alpheios-morph__gender alpheios-morph__parenthesized"
+                                                  },
+                                                  [
+                                                    _vm._v(
+                                                      "\n                          " +
+                                                        _vm._s(gend.value) +
+                                                        "\n                        "
+                                                    )
+                                                  ]
+                                                )
+                                              })
+                                            ],
+                                            2
+                                          )
+                                        })
+                                      )
+                                    })
+                                  ],
+                                  2
+                                )
+                              ]
+                            )
+                          })
+                        ],
+                        2
+                      )
+                    ])
+                  })
+                )
+              ])
             })
-          )
+          ),
+          _vm._v(" "),
+          _c("div", { staticClass: "alpheios-morph__provider" }, [
+            _vm._v("\n      " + _vm._s(lex.provider.toString()) + "\n    ")
+          ])
         ],
         2
       )
