@@ -908,6 +908,7 @@ class BackgroundProcess {
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
     browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
+    browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
 
     this.menuItems = {
       activate: new __WEBPACK_IMPORTED_MODULE_3__context_menu_item__["a" /* default */](BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
@@ -1050,6 +1051,13 @@ class BackgroundProcess {
           console.error(`Cannot load content script for a tab with an ID of ${tabID}`)
         }
       }
+    }
+  }
+
+  tabRemovalListener (tabID, removeInfo) {
+    if (this.tabs.has(tabID)) {
+      this.tabs.delete(tabID)
+      console.log('Removing tab info')
     }
   }
 

@@ -50,6 +50,7 @@ export default class BackgroundProcess {
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
     browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
+    browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
 
     this.menuItems = {
       activate: new ContextMenuItem(BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
@@ -192,6 +193,12 @@ export default class BackgroundProcess {
           console.error(`Cannot load content script for a tab with an ID of ${tabID}`)
         }
       }
+    }
+  }
+
+  tabRemovalListener (tabID, removeInfo) {
+    if (this.tabs.has(tabID)) {
+      this.tabs.delete(tabID)
     }
   }
 

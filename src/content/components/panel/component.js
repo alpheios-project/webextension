@@ -14,6 +14,8 @@ export default class Panel extends Component {
     this.panelFullWidthClassName = 'full-width'
     this.bodyNormalWidthClassName = 'alpheios-panel-opened'
     this.resizableSel = '[data-resizable="true"]' // for Interact.js
+    this.zIndex = Panel.defaults.zIndex
+    this.self.element.style.zIndex = this.zIndex
 
     this.setPositionTo(this.options.position)
     this.width = Panel.widths.zero // Sets initial width to zero because panel is closed initially
@@ -69,7 +71,8 @@ export default class Panel extends Component {
         inflectionsViewSelector: {},
         inflectionsTable: {}
       },
-      position: Panel.positions.default
+      position: Panel.positions.default,
+      zIndex: 2000
     }
   }
 
@@ -87,6 +90,18 @@ export default class Panel extends Component {
       zero: 'alpheios-panel-zero-width',
       normal: 'alpheios-panel-opened',
       full: 'alpheios-panel-full-width'
+    }
+  }
+
+  /**
+   * Sets a z-index of a panel to be higher than a z-index of any page element.
+   * @param {Number} zIndexMax - A maximum z-index of elements on a page.
+   */
+  updateZIndex (zIndexMax) {
+    if (zIndexMax >= this.zIndex) {
+      this.zIndex = zIndexMax
+      if (this.zIndex < Number.POSITIVE_INFINITY) { this.zIndex++ } // To be one level higher that the highest element on a page
+      this.self.element.style.zIndex = this.zIndex
     }
   }
 

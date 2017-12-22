@@ -1,4 +1,4 @@
-/* global browser */
+/* global browser, Node */
 import * as InflectionTables from 'alpheios-inflection-tables'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import {Lexicons} from 'alpheios-lexicon-client'
@@ -20,8 +20,8 @@ import Popup from './vue-components/popup.vue'
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
 import UIkITIconts from '../../node_modules/uikit/dist/js/uikit-icons'
 // Use a custom logger that outputs timestamps
-import Logger from '../lib/logger'
-console.log = Logger.log
+// import Logger from '../lib/logger'
+// console.log = Logger.log
 
 export default class ContentProcess {
   constructor () {
@@ -52,6 +52,10 @@ export default class ContentProcess {
   }
 
   loadUI () {
+    // Finds a max z-index of element on the page.
+    // Need to run this before our UI elements are loaded to avoid scanning them too.
+    let zIndexMax = this.getZIndexMax()
+
     // Inject HTML code of a plugin. Should go in reverse order.
     document.body.classList.add('alpheios')
     ContentProcess.loadTemplate(Template)
@@ -70,6 +74,8 @@ export default class ContentProcess {
         onClose: this.closePanel.bind(this)
       }
     })
+    this.panel.updateZIndex(zIndexMax)
+
     // Should be loaded after Panel because options are inserted into a panel
     this.options = new Options({
       methods: {
@@ -111,8 +117,6 @@ export default class ContentProcess {
 
   static get settingValues () {
     return {
-      hiddenClassName: 'hidden',
-      pageControlsID: 'alpheios-page-controls',
       requestTimeout: 60000,
       uiTypePanel: 'panel',
       uiTypePopup: 'popup'
@@ -142,9 +146,9 @@ export default class ContentProcess {
     this.state.status = TabScript.statuses.script.ACTIVE
   }
 
-  static loadTemplate (template) {
+  static loadTemplate (template, referenceNode = null) {
     let container = document.createElement('div')
-    document.body.insertBefore(container, document.body.firstChild)
+    document.body.insertBefore(container, referenceNode)
     container.outerHTML = template
   }
 
@@ -415,5 +419,47 @@ export default class ContentProcess {
         this.getWordDataStatefully(textSelector)
       }
     }
+  }
+
+  /**
+   * Finds a maximal z-index value of elements on a page.
+   * @return {Number}
+   */
+  getZIndexMax () {
+    let startTime = new Date().getTime()
+    let zIndex = this.zIndexRecursion(document.querySelector('body'), Number.NEGATIVE_INFINITY)
+    let timeDiff = new Date().getTime() - startTime
+    console.log(`Z-index max value is ${zIndex}, calculation time is ${timeDiff} ms`)
+    let i = parseInt(Number.POSITIVE_INFINITY)
+    console.log(i)
+    return zIndex
+  }
+
+  /**
+   * A recursive function that iterates over all elements on a page searching for a highest z-index.
+   * @param {Node} element - A root page element to start scan with (usually `body`).
+   * @param {Number} zIndexMax - A current highest z-index value found.
+   * @return {Number} - A current highest z-index value.
+   */
+  zIndexRecursion (element, zIndexMax) {
+    if (element) {
+      let zIndexValues = [
+        window.getComputedStyle(element).getPropertyValue('z-index'), // If z-index defined in CSS rules
+        element.style.getPropertyValue('z-index') // If z-index is defined in an inline style
+      ]
+      for (const zIndex of zIndexValues) {
+        if (zIndex && zIndex !== 'auto') {
+          // Value has some numerical z-index value
+          zIndexMax = Math.max(zIndexMax, zIndex)
+        }
+      }
+      for (let node of element.childNodes) {
+        let nodeType = node.nodeType
+        if (nodeType === Node.ELEMENT_NODE || nodeType === Node.DOCUMENT_NODE || nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+          zIndexMax = this.zIndexRecursion(node, zIndexMax)
+        }
+      }
+    }
+    return zIndexMax
   }
 }
