@@ -1,2 +1,7 @@
-<div id="popup"><popup></popup></div>
+<div id="alpheios-popup" >
+    <popup class='auk' :messages="messages" :content="content" :visible="visible"
+           :defdataready="defDataReady" :infldataready="inflDataReady"
+           @close="close" @showdefspaneltab="showDefinitionsPanelTab"  @showinflpaneltab="showInflectionsPanelTab">
+    </popup>
+</div>
 <div data-component="alpheios-panel"></div>

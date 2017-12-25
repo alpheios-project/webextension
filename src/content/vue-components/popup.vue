@@ -1,107 +1,159 @@
 <template>
-    <modal name="popup"
-           transition="nice-modal-fade"
-           classes="alpheios-popup auk"
-           :min-width="200"
-           :min-height="200"
-           :pivot-y="0.5"
-           :adaptive="true"
-           :resizable="true"
-           :draggable="true"
-           :scrollable="false"
-           :clickToClose="true"
-           :reset="true"
-           width="60%"
-           height="60%"
-           @before-open="beforeOpen"
-           @opened="opened"
-           @closed="closed"
-           @before-close="beforeClose">
-        <div class="alpheios-popup__content">
-            <button v-on:click="closePopup" class="alpheios-popup__close-btn"><span uk-icon="icon: close"></span></button>
-            <div v-html="$root.messageContent"></div>
-            <h2>{{ $root.popupTitle }}</h2>
-            <div v-html="$root.popupContent"></div>
-            <button v-on:click="showInflectionsPanelTab" class="uk-button uk-button-default alpheios-popup__more-btn">Go to Inflections</button>
-            <button v-on:click="showDefinitionsPanelTab" class="uk-button uk-button-default alpheios-popup__more-btn">Go to Full Definitions</button>
-        </div>
-    </modal>
+    <div ref="popup" class="alpheios-popup" v-show="visible">
+        <span class="alpheios-popup__close-btn" @click="closePopup" uk-icon="icon: close; ratio: 2"></span>
+        <div class="alpheios-popup__message-area" v-html="messages"></div>
+        <div class="alpheios-popup__content-area" v-html="content"></div>
+        <button @click="showInflectionsPanelTab" v-show="defdataready" class="uk-button uk-button-default alpheios-popup__more-btn">Go to Inflections</button>
+        <button @click="showDefinitionsPanelTab" v-show="infldataready" class="uk-button uk-button-default alpheios-popup__more-btn">Go to Full Definitions</button>
+    </div>
 </template>
 <script>
+  import interact from 'interactjs'
+
   export default {
     name: 'Popup',
+    data: function () {
+      return {
+        resizable: true,
+        draggable: true,
+      }
+    },
+    props: {
+      messages: {
+        type: String,
+        required: true
+      },
+      content: {
+        type: String,
+        required: true
+      },
+      visible: {
+        type: Boolean,
+        required: true
+      },
+      defdataready: {
+        type: Boolean,
+        required: true
+      },
+      infldataready: {
+        type: Boolean,
+        required: true
+      }
+    },
     methods: {
-      showMessage (message) {
-        this.messageContent = message
+      closePopup () {
+        this.$emit('close')
       },
 
       showDefinitionsPanelTab () {
-        this.$root.$modal.hide('popup')
-        if (!this.$root.panel.isOpened) { this.$root.panel.open() }
-        this.$root.panel.tabGroups.contentTabs.activate('definitionsTab')
+        this.$emit('showdefspaneltab')
       },
 
       showInflectionsPanelTab () {
-        this.$root.$modal.hide('popup')
-        if (!this.$root.panel.isOpened) { this.$root.panel.open() }
-        this.$root.panel.tabGroups.contentTabs.activate('inflectionsTab')
+        this.$emit('showinflpaneltab')
       },
 
-      closePopup () {
-        this.$root.$modal.hide('popup')
+      resizeListener(event) {
+        console.log('Resize listener')
+        if (this.resizable) {
+          const target = event.target
+          let x = (parseFloat(target.getAttribute('data-x')) || 0)
+          let y = (parseFloat(target.getAttribute('data-y')) || 0)
+
+          // update the element's style
+          target.style.width  = event.rect.width + 'px'
+          target.style.height = event.rect.height + 'px'
+
+          // translate when resizing from top or left edges
+          x += event.deltaRect.left
+          y += event.deltaRect.top
+
+          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)'
+
+          target.setAttribute('data-x', x)
+          target.setAttribute('data-y', y)
+        }
       },
 
-      beforeOpen () { },
+      dragMoveListener(event) {
+        if (this.draggable) {
+          const target = event.target;
+          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
 
-      beforeClose () { },
+          target.style.webkitTransform = `translate(${x}px, ${y}px)`;
+          target.style.transform = `translate(${x}px, ${y}px)`;
 
-      opened (e) {
-        // e.ref should not be undefined here
-        console.log('opened', e)
-        console.log('ref', e.ref)
-      },
-
-      closed (e) {
-        console.log('closed', e)
+          target.setAttribute('data-x', x);
+          target.setAttribute('data-y', y);
+        }
       }
     },
     mounted () {
-      console.log('Popup is mounted')
-    },
-    watch: {
-      popupContent: function (value) {
-        console.log('Popup content changed to ' + value)
-      }
+      console.log('mounted')
+      const resizableSettings = {
+        preserveAspectRatio: false,
+        edges: { left: true, right: true, bottom: true, top: true },
+        restrictSize: {
+          min: { width: 300, height: 300 }
+        },
+        restrictEdges: {
+          outer: document.body,
+          endOnly: true,
+        }
+      };
+      const draggableSettings = {
+        inertia: true,
+        autoScroll: false,
+        restrict: {
+          restriction: document.body,
+          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+        },
+        onmove: this.dragMoveListener
+      };
+      interact(this.$el)
+        .resizable(resizableSettings)
+        .draggable(draggableSettings)
+        .on('resizemove', this.resizeListener);
     }
   }
 </script>
 <style>
     .alpheios-popup {
-        border-radius: 0;
-        box-shadow: 5px 5px 30px 0 rgba(46, 61, 73, 0.6);
-    }
-
-    .alpheios-popup__content {
-        padding: 20px;
-        font-size: 14px;
-        position: relative;
+        background: #FFF;
+        border: 1px solid lightgray;
+        width: 400px;
+        height: 500px;
+        z-index: 1000;
+        position: fixed;
+        left: 200px;
+        top: 100px;
+        padding: 50px 20px 20px;
+        box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */
+        overflow: auto;
     }
 
     .alpheios-popup__close-btn {
-        border: none;
-        background: transparent;
-        right: 1rem;
-        top: 1rem;
-        position: absolute;
+        color: gray;
+        display: block;
+        width: 40px;
+        height: 40px;
+        top: 0;
+        right: 0;
+        margin: 10px;
         cursor: pointer;
+        position: absolute;
     }
 
-    .auk .uk-button.alpheios-popup__more-btn {
-        margin-top: 30px;
+    .alpheios-popup__message-area {
+        margin-bottom: 20px;
+    }
+
+    .alpheios-popup__content-area {
+        margin-bottom: 20px;
+    }
+
+    .alpheios-popup__more-btn {
         float: right;
-    }
-
-    .v--modal-overlay[data-modal="popup"] {
-        background: rgba(0, 0, 0, 0.0);
     }
 </style>

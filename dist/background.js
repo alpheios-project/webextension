@@ -1057,7 +1057,6 @@ class BackgroundProcess {
   tabRemovalListener (tabID, removeInfo) {
     if (this.tabs.has(tabID)) {
       this.tabs.delete(tabID)
-      console.log('Removing tab info')
     }
   }
 

@@ -13,7 +13,6 @@ export default class Panel extends Component {
     this.panelOpenedClassName = 'opened'
     this.panelFullWidthClassName = 'full-width'
     this.bodyNormalWidthClassName = 'alpheios-panel-opened'
-    this.resizableSel = '[data-resizable="true"]' // for Interact.js
     this.zIndex = Panel.defaults.zIndex
     this.self.element.style.zIndex = this.zIndex
 
@@ -26,20 +25,20 @@ export default class Panel extends Component {
     this.innerElements.closeButton.element.addEventListener('click', this.close.bind(this))
 
     // Initialize Interact.js: make panel resizable
-    interact(this.resizableSel)
+    interact(this.self.element)
       .resizable({
         // resize from all edges and corners
         edges: { left: true, right: true, bottom: false, top: false },
 
         // keep the edges inside the parent
         restrictEdges: {
-          outer: 'parent',
+          outer: document.body,
           endOnly: true
         },
 
         // minimum size
         restrictSize: {
-          min: { width: 400, height: 800 }
+          min: { width: 400 }
         },
 
         inertia: true

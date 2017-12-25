@@ -11,10 +11,8 @@ import Options from './components/options/component'
 import State from '../lib/state'
 import TabScript from '../lib/content/tab-script'
 import Template from './template.htmlf'
-// import PageControls from './components/page-controls/component'
 import HTMLSelector from '../lib/selection/media/html-selector'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
-import VueJsModal from 'vue-js-modal'
 import Popup from './vue-components/popup.vue'
 // UIKit
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
@@ -29,7 +27,7 @@ export default class ContentProcess {
     this.state.status = TabScript.statuses.script.PENDING
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
     this.settings = ContentProcess.settingValues
-    this.vueInstance = undefined
+    // this.vueInstance = undefined
 
     this.modal = undefined
 
@@ -89,27 +87,69 @@ export default class ContentProcess {
       }
     })
 
-    // Register a Vue.js modal plugin
-    Vue.use(VueJsModal, {
-      dialog: false
-    })
-
     // Create a Vue instance for a popup
-    this.vueInstance = new Vue({
-      el: '#popup',
-      // template: '<app/>',
+    this.popup = new Vue({
+      el: '#alpheios-popup',
       components: { popup: Popup },
       data: {
-        popupTitle: '',
-        popupContent: '',
-        messageContent: '',
-        panel: this.panel
+        messages: '',
+        content: '',
+        visible: false,
+        defDataReady: false,
+        inflDataReady: false
       },
-      mounted: function () {
-        console.log('Root instance is mounted')
+      methods: {
+        showMessage: function (message) {
+          this.messages = message
+          return this
+        },
+
+        appendMessage: function (message) {
+          this.messages += message
+          return this
+        },
+
+        clearMessages: function () {
+          this.messages = ''
+          return this
+        },
+
+        setContent: function (content) {
+          this.content = content
+          return this
+        },
+
+        clearContent: function () {
+          this.content = ''
+          return this
+        },
+
+        open: function () {
+          this.visible = true
+          return this
+        },
+
+        close: function () {
+          this.visible = false
+          return this
+        },
+
+        showDefinitionsPanelTab: function () {
+          this.visible = false
+          this.panel.tabGroups.contentTabs.activate('definitionsTab')
+          this.panel.open()
+          return this
+        },
+
+        showInflectionsPanelTab: function () {
+          this.visible = false
+          this.panel.tabGroups.contentTabs.activate('inflectionsTab')
+          this.panel.open()
+          return this
+        }
       }
     })
-    this.modal = this.vueInstance.$modal
+    this.popup.panel = this.panel
 
     // Initialize UIKit
     UIkit.use(UIkITIconts)
@@ -189,6 +229,7 @@ export default class ContentProcess {
       if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
       this.appendMessage(`Morphological analyzer data is ready<br>`)
       this.updateDefinitionsData(homonym)
+      this.popup.defDataReady = true
     } catch (error) {
       console.error(`Cannot retrieve homonym data: ${error}`)
     }
@@ -198,6 +239,7 @@ export default class ContentProcess {
       // this.panel.contentAreas.messages.appendContent('Inflection data is ready<br>')
       this.appendMessage(`Inflection data is ready<br>`)
       this.updateInflectionsData(lexicalData)
+      this.popup.inflDataReady = true
     } catch (e) {
       console.log(`Failure retrieving inflection data. ${e}`)
     }
@@ -265,14 +307,13 @@ export default class ContentProcess {
       this.panel.open()
     } else {
       if (this.panel.isOpened) { this.panel.close() }
-      this.vueInstance.$modal.show('popup')
+      this.popup.open()
     }
   }
 
   clearUI () {
     this.panel.clearContent()
-    this.vueInstance.popupTitle = ''
-    this.vueInstance.popupContent = ''
+    this.popup.clearContent()
   }
 
   updateDefinitionsData (homonym) {
@@ -290,9 +331,8 @@ export default class ContentProcess {
       }
     }
 
-    // Pouplate a popup
-    this.vueInstance.popupTitle = `${homonym.targetWord}`
-    this.vueInstance.popupContent = shortDefsText
+    // Populate a popup
+    this.popup.setContent(shortDefsText)
   }
 
   updateInflectionsData (lexicalData) {
@@ -301,17 +341,17 @@ export default class ContentProcess {
 
   showMessage (message) {
     this.panel.showMessage(message)
-    this.vueInstance.messageContent = message
+    this.popup.showMessage(message)
   }
 
   appendMessage (message) {
     this.panel.appendMessage(message)
-    this.vueInstance.messageContent += message
+    this.popup.appendMessage(message)
   }
 
   clearMessages () {
     this.panel.clearMessages()
-    this.vueInstance.messageContent = ''
+    this.popup.clearMessages()
   }
 
   openPanel () {
@@ -430,8 +470,6 @@ export default class ContentProcess {
     let zIndex = this.zIndexRecursion(document.querySelector('body'), Number.NEGATIVE_INFINITY)
     let timeDiff = new Date().getTime() - startTime
     console.log(`Z-index max value is ${zIndex}, calculation time is ${timeDiff} ms`)
-    let i = parseInt(Number.POSITIVE_INFINITY)
-    console.log(i)
     return zIndex
   }
 
