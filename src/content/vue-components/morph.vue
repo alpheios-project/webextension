@@ -9,10 +9,10 @@
         [{{pron}}]
       </span>
       <div class="alpheios-morph__morph">
-        <span class="alpheios-morph__pofs" v-for="pofs in lex.lemma.features['part of speech']">
+        <span class="alpheios-morph__pofs">
           <span class="alpheios-morph__attr" v-for="kase in lex.lemma.features['case']" v-if="lex.lemma.features['case']">{{kase.value}}</span>
           <span class="alpheios-morph__attr" v-for="gender in lex.lemma.features.gender" v-if="lex.lemma.features.gender">{{gender.value}}</span>
-          {{ pofs.value }}
+          {{ lex.lemma.features['part of speech'].toString() }}
         </span>
         <span class="alpheios-morph__attr" v-for="kind in lex.lemma.features.kind" v-if="lex.lemma.features.kind">{{kind.value}}</span>
         <span class="alpheios-morph__attr" v-for="decl in lex.lemma.features.declension" v-if="lex.lemma.features.declension">{{decl.value}} declension</span>
@@ -28,44 +28,56 @@
       </div>
       <div class="alpheios-morph__inflections">
         <div class="alpheios-morph__inflset" v-for="inflset in lex.getGroupedInflections()">
+
           <span class="alpheios-morph__prefix" v-if="inflset.groupingKey.prefix">{{inflset.groupingKey.prefix}} </span>
           <span class="alpheios-morph__stem">{{inflset.groupingKey.stem}}</span>
           <span class="alpheios-morph__suffix" v-if="inflset.groupingKey.suffix"> -{{inflset.groupingKey.suffix}}</span>
-          <span class="alpheios-morph__pofs"
-            v-if="inflset.groupingKey['part of speech'] !== lex.lemma.features['part of speech']">{{inflset.groupingKey['part of speech']}}</span>
-          <span class="alpheios-morph__declension"
-            v-if="inflset.groupingKey.declension !== lex.lemma.features.declension">{{inflset.groupingKey.declension}}</span>
-          <div class="alpheios-morph__infl" v-for="group in inflset.inflections">
-            {{ group.groupingKey.number || group.groupingKey.tense }}
-            <div class="alpheios-morph__list">
-              <span v-for="nextGroup in group.inflections">
-              {{ nextGroup.groupingKey.voice }}
-                <span class="alpheios-morph__items alpheios-morph__listitem" v-for="infl in nextGroup.inflections">
-                    <span class="alpheios-morph__group">
-                      <span class="alpheios-morph__case" v-if="infl.groupingKey.case">
-                        {{ infl.groupingKey.case }}
-                      </span>
-                      <span class="alpheios-morph__gender alpheios-morph__parenthesized" v-if="infl.groupingKey.gender">
-                      {{ infl.groupingKey.gender }}
-                      </span>
-                      <span class="alpheios-morph__person" v-if="infl.groupingKey.person">
-                      {{ infl.groupingKey.person }}
-                      </span>
-                      <span class="alpheios-morph__mood" v-if="infl.groupingKey.mood">
-                      {{ infl.groupingKey.mood }}
-                      </span>
-                      <span class="alpheios-morph__sort" v-if="infl.groupingKey.sort">
-                      {{ infl.groupingKey.sort }}
-                      </span>
-                      <span class="alpheios-morph__comparative" v-if="infl.groupingKey.comparative">
-                      {{ infl.groupingKey.comparative }}
-                      </span>
-                      <span class="alpheios-morph__groupitem" v-for="item in infl.inflections">
-                      </span>
+          <span class="alpheios-morph__pofs alpheios-morph__parenthesized"
+            v-if="! featureMatch(lex.lemma.features['part of speech'],inflset.groupingKey['part of speech'])">{{inflset.groupingKey["part of speech"].toString()}}</span>
+          <span class="alpheios-morph__declension alpheios-morph__parenthesized"
+            v-if="inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension">{{inflset.groupingKey.declension.toString()}}</span>
+
+          <div class="alpheios-morph__inflgroup" v-for="group in inflset.inflections">
+            <span class="alpheios-morph__number" v-if="group.groupingKey.number">{{ group.groupingKey.number.toString() }}</span>
+            <span class="alpheios-morph__tense" v-if="group.groupingKey.tense">{{ group.groupingKey.tense.toString() }}</span>
+            <span v-for="nextGroup in group.inflections">
+              <span class="alpheios-morph__voice" v-if="nextGroup.groupingKey.voice">{{ nextGroup.groupingKey.voice.toString() }}</span>
+              <span class="alpheios-morph__tense" v-if="nextGroup.groupingKey.tense">{{ nextGroup.groupingKey.tense.toString() }}</span>
+              <span class="alpheios-morph__inflgroupdetail">
+                <span v-for="infl in nextGroup.inflections">
+
+                  <span class="alpheios-morph__case" v-if="infl.groupingKey.case">
+                    {{ infl.groupingKey.case.toString() }}
+                    <span class="alpheios-morph__gender alpheios-morph__parenthesized"
+                      v-if="infl.groupingKey.gender && ! featureMatch(infl.groupingKey.gender,lex.lemma.features.gender) ">
+                      {{ infl.groupingKey.gender.map((g) => g.toLocaleStringAbbr()).toString()}}
                     </span>
-                </span>
+
+                    <span class="alpheios-morph__comparative" v-if="infl.groupingKey.comparative && infl.groupingKey.filter((f)=> f.toString() !== 'positive')">
+                      {{ infl.groupingKey.comparative.toString() }}
+                    </span>
+
+                  </span>
+
+                  <span class="alpheios-morph__person" v-if="infl.groupingKey.person">
+                    {{ infl.groupingKey.person.toString() }}
+                  </span>
+
+                  <span class="alpheios-morph__mood" v-if="infl.groupingKey.mood && !infl.groupingKey.case">
+                    {{ infl.groupingKey.mood.toString() }}
+                  </span>
+
+                  <span class="alpheios-morph__sort" v-if="infl.groupingKey.sort">
+                    {{ infl.groupingKey.sort.toString() }}
+                  </span>
+
+                  <span v-for="item in infl.inflections">
+                    <span class="alpheios-morph__example" v-if="item.example">{{ item.example.toString() }}</span>
+                  </span>
+
+                </span><!-- end span infl -->
               </span>
-            </div>
+            </span><!-- end span groupinflections -->
           </div>
         </div>
       </div>
@@ -78,7 +90,19 @@
 <script>
   export default {
     name: 'Morph',
-    props: ['lexemes','inflectionGrouper'],
+    props: ['lexemes'],
+    methods: {
+      featureMatch(a,b) {
+        let matches = false
+        for (let f of a) {
+          if (b && b.filter((x) => x.isEqual(f)).length > 0) {
+            matches = true
+            break
+          }
+        }
+        return matches
+      }
+    },
     mounted () {
       console.log('Morph is mounted')
         // for each infl without dial
@@ -171,6 +195,10 @@
 
    .alpheios-popup .alpheios-fulldef__lemma {
      display: none;
+   }
+
+   .alpheios-morph__inflgroupdetail:before {
+     content: ":"
    }
 
 </style>

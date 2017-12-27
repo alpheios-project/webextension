@@ -2,7 +2,7 @@
 import * as InflectionTables from 'alpheios-inflection-tables'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import {Lexicons} from 'alpheios-lexicon-client'
-import {Feature, Lexeme} from 'alpheios-data-models'
+import {Feature, Lexeme, Inflection} from 'alpheios-data-models'
 import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
@@ -109,6 +109,7 @@ export default class ContentProcess {
         console.log('Root instance is mounted')
       }
     })
+    console.log(this.vueInstance)
     this.modal = this.vueInstance.$modal
 
     // Initialize UIKit
