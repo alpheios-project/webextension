@@ -28,30 +28,39 @@
       </div>
       <div class="alpheios-morph__inflections">
         <div class="alpheios-morph__inflset" v-for="inflset in lex.getGroupedInflections()">
-          <div class="alpheios-morph__list">
-            <div class="alpheios-morph__infl" v-for="group in inflset[1]">
-              <div class="alpheios-morph__showiffirst">
-                <span class="alpheios-morph__prefix" v-if="group[1][0][1][0].prefix">{{group[1][0][1][0].prefix}} </span>
-                <span class="alpheios-morph__stem">{{group[1][0][1][0].stem}}</span>
-                <span class="alpheios-morph__suffix" v-if="group[1][0][1][0].suffix"> -{{group[1][0][1][0].suffix}}</span>
-                <span class="alpheios-morph__pofs"
-                  v-for="pofs in group[1][0][1][0]['part of speech']"
-                  v-if="! group[1][0][1][0].featureMatch('part of speech',lex.lemma.features)">{{pofs.value}}</span>
-                <span class="alpheios-morph__declension"
-                  v-for="decl in group[1][0][1][0]['declension']"
-                  v-if="! group[1][0][1][0].featureMatch('declension',lex.lemma.features)">{{decl.value}}</span>
-              </div>
-              <span>{{group[0]}}
-                <span class="alpheios-morph__items alpheios-morph__listitem" v-for="infl in group[1]">
+          <span class="alpheios-morph__prefix" v-if="inflset.groupingKey.prefix">{{inflset.groupingKey.prefix}} </span>
+          <span class="alpheios-morph__stem">{{inflset.groupingKey.stem}}</span>
+          <span class="alpheios-morph__suffix" v-if="inflset.groupingKey.suffix"> -{{inflset.groupingKey.suffix}}</span>
+          <span class="alpheios-morph__pofs"
+            v-if="inflset.groupingKey['part of speech'] !== lex.lemma.features['part of speech']">{{inflset.groupingKey['part of speech']}}</span>
+          <span class="alpheios-morph__declension"
+            v-if="inflset.groupingKey.declension !== lex.lemma.features.declension">{{inflset.groupingKey.declension}}</span>
+          <div class="alpheios-morph__infl" v-for="group in inflset.inflections">
+            {{ group.groupingKey.number || group.groupingKey.tense }}
+            <div class="alpheios-morph__list">
+              <span v-for="nextGroup in group.inflections">
+              {{ nextGroup.groupingKey.voice }}
+                <span class="alpheios-morph__items alpheios-morph__listitem" v-for="infl in nextGroup.inflections">
                     <span class="alpheios-morph__group">
-                      {{ infl[0] }}
-                      <span class="alpheios-morph__groupitem" v-for="item in infl[1]">
-                        <span class="alpheios-morph__case" v-for="kase in item.case">
-                          {{ kase.value }}
-                          <span class="alpheios-morph__gender alpheios-morph__parenthesized" v-for="gend in item.gender">
-                            {{ gend.value }}
-                          </span>
-                        </span>
+                      <span class="alpheios-morph__case" v-if="infl.groupingKey.case">
+                        {{ infl.groupingKey.case }}
+                      </span>
+                      <span class="alpheios-morph__gender alpheios-morph__parenthesized" v-if="infl.groupingKey.gender">
+                      {{ infl.groupingKey.gender }}
+                      </span>
+                      <span class="alpheios-morph__person" v-if="infl.groupingKey.person">
+                      {{ infl.groupingKey.person }}
+                      </span>
+                      <span class="alpheios-morph__mood" v-if="infl.groupingKey.mood">
+                      {{ infl.groupingKey.mood }}
+                      </span>
+                      <span class="alpheios-morph__sort" v-if="infl.groupingKey.sort">
+                      {{ infl.groupingKey.sort }}
+                      </span>
+                      <span class="alpheios-morph__comparative" v-if="infl.groupingKey.comparative">
+                      {{ infl.groupingKey.comparative }}
+                      </span>
+                      <span class="alpheios-morph__groupitem" v-for="item in infl.inflections">
                       </span>
                     </span>
                 </span>
@@ -160,7 +169,7 @@
      display: none;
    }
 
-   .alpheios-popup__content .alpheios-fulldef__lemma {
+   .alpheios-popup .alpheios-fulldef__lemma {
      display: none;
    }
 
