@@ -1927,6 +1927,33 @@ class ResourceProvider {
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1982,33 +2009,6 @@ class Message {
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = Message;
 
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
 
 
 /***/ }),
@@ -9261,8 +9261,8 @@ class Presenter {
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(16);
-var bytesToUuid = __webpack_require__(17);
+var rng = __webpack_require__(22);
+var bytesToUuid = __webpack_require__(23);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -9297,7 +9297,7 @@ module.exports = v4;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(2);
 
 
 /**
@@ -9391,7 +9391,7 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(30);
+__webpack_require__(36);
 exports.setImmediate = setImmediate;
 exports.clearImmediate = clearImmediate;
 
@@ -9402,7 +9402,7 @@ exports.clearImmediate = clearImmediate;
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(40);
 
 
 
@@ -16764,7 +16764,7 @@ win.init = init;
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(50);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(56);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
 
 
@@ -16791,15 +16791,17 @@ contentProcess.initialize()
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_message_message__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_service__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_state_message__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_state_response__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_content_tab_script__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_selection_media_html_selector__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lexical_query__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__ui_controller__ = __webpack_require__(28);
-/* global browser, Node */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__experience_src_object_monitor__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_selection_media_html_selector__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lexical_query__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__ui_controller__ = __webpack_require__(34);
+/* global browser */
+
 
 
 
@@ -16814,22 +16816,22 @@ contentProcess.initialize()
 
 class ContentProcess {
   constructor () {
-    this.state = new __WEBPACK_IMPORTED_MODULE_7__lib_content_tab_script__["a" /* default */]()
-    this.state.status = __WEBPACK_IMPORTED_MODULE_7__lib_content_tab_script__["a" /* default */].statuses.script.PENDING
-    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_7__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED
+    this.state = new __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */]()
+    this.state.status = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.PENDING
+    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED
     this.settings = ContentProcess.settingValues
 
-    this.messagingService = new __WEBPACK_IMPORTED_MODULE_4__lib_messaging_service__["a" /* default */]()
+    this.messagingService = new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__["a" /* default */]()
 
     this.maAdapter = new __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__["a" /* default */]() // Morphological analyzer adapter, with default arguments
     this.langData = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* LanguageData */]([__WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["c" /* LatinDataSet */], __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* GreekDataSet */]]).loadData()
-    this.ui = new __WEBPACK_IMPORTED_MODULE_10__ui_controller__["a" /* default */](this.state, this.sendStateToBackground.bind(this))
+    this.ui = new __WEBPACK_IMPORTED_MODULE_11__ui_controller__["a" /* default */](this.state, this.sendStateToBackground.bind(this))
     this.options = this.ui.getOptions()
   }
 
   initialize () {
     // Adds message listeners
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_3__lib_messaging_message_message__["a" /* default */].types.STATE_REQUEST, this.handleStateRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__["a" /* default */].types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
@@ -16851,24 +16853,24 @@ class ContentProcess {
   }
 
   get isActive () {
-    return this.state.status === __WEBPACK_IMPORTED_MODULE_7__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+    return this.state.status === __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
   }
 
   deactivate () {
     console.log('Content has been deactivated.')
     this.ui.closePanel()
-    this.state.status = __WEBPACK_IMPORTED_MODULE_7__lib_content_tab_script__["a" /* default */].statuses.script.DEACTIVATED
+    this.state.status = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
-    this.state.status = __WEBPACK_IMPORTED_MODULE_7__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+    this.state.status = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
   }
 
   handleStateRequest (request, sender) {
     // Send a status response
     console.log(`State request has been received`)
-    let state = __WEBPACK_IMPORTED_MODULE_7__lib_content_tab_script__["a" /* default */].readObject(request.body)
+    let state = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].readObject(request.body)
     let diff = this.state.diff(state)
     if (diff.has('tabID')) {
       if (!this.state.tabID) {
@@ -16880,7 +16882,7 @@ class ContentProcess {
       }
     }
     if (diff.has('status')) {
-      if (diff.status === __WEBPACK_IMPORTED_MODULE_7__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE) {
+      if (diff.status === __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE) {
         this.state.activate()
       } else {
         this.state.deactivate()
@@ -16889,9 +16891,9 @@ class ContentProcess {
       }
     }
     if (diff.hasOwnProperty('panelStatus')) {
-      if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_7__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN) { this.ui.openPanel() } else { this.ui.closePanel() }
+      if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN) { this.ui.openPanel() } else { this.ui.closePanel() }
     }
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_response_state_response__["a" /* default */](request, this.state)).catch(
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__["a" /* default */](request, this.state)).catch(
       (error) => {
         console.error(`Unable to send a response to a state request: ${error}`)
       }
@@ -16899,7 +16901,7 @@ class ContentProcess {
   }
 
   sendStateToBackground () {
-    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
+    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -16908,15 +16910,15 @@ class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = __WEBPACK_IMPORTED_MODULE_8__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.options.items.defaultLanguage.currentValue)
+      let textSelector = __WEBPACK_IMPORTED_MODULE_9__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.options.items.defaultLanguage.currentValue)
 
       if (!textSelector.isEmpty()) {
-        let query = __WEBPACK_IMPORTED_MODULE_9__lexical_query__["a" /* default */].create(textSelector, {
+        let query = __WEBPACK_IMPORTED_MODULE_3__experience_src_object_monitor__["a" /* default */].track(__WEBPACK_IMPORTED_MODULE_10__lexical_query__["a" /* default */].create(textSelector, {
           uiController: this.ui,
           maAdapter: this.maAdapter,
           langData: this.langData,
           lexicons: __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__["a" /* Lexicons */]
-        })
+        }))
         query.getData()
       }
     }
@@ -19332,6 +19334,322 @@ class Lexicons {
 
 /***/ }),
 /* 16 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__experience__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__local_storage__ = __webpack_require__(18);
+
+
+
+class ObjectMonitor {
+  constructor (monitoringDataList) {
+    this.monitored = new Map()
+    if (monitoringDataList) {
+      for (let monitoringData of monitoringDataList) {
+        this.monitored.set(monitoringData.monitoredFunction, monitoringData)
+      }
+    }
+  }
+
+  static track (object, monitoringDataList) {
+    return new Proxy(object, new ObjectMonitor(monitoringDataList))
+  }
+
+  get (target, property, receiver) {
+    if (this.monitored.has(property)) {
+      let monitoringData = this.monitored.get(property)
+      if (monitoringData.hasOwnProperty('asyncWrapper')) {
+        return ObjectMonitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
+      } else {
+        console.error(`Only async wrappers are supported by monitor`)
+      }
+    }
+    return target[property]
+  }
+
+  monitor (functionName, functionConfig) {
+    this.monitored.set(functionName, functionConfig)
+  }
+
+  static syncWrapper (target, property, experience) {
+    console.log(`${property}() sync method has been called`)
+    const origMethod = target[property]
+    return function (...args) {
+      let result = origMethod.apply(this, args)
+      console.log(`${property}() sync method has been completed`)
+      experience.complete()
+      console.log(`${experience}`)
+      return result
+    }
+  }
+
+  /**
+   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
+   * as a direct result of a user action: use of UI controls, etc.
+   * @param target
+   * @param property
+   * @param actionFunction
+   * @param monitoringData
+   * @return {Function}
+   */
+  static asyncWrapper (target, property, actionFunction, monitoringData) {
+    console.log(`${property}() async method has been requested`)
+    return async function (...args) {
+      try {
+        return await actionFunction(this, target, property, args, monitoringData, __WEBPACK_IMPORTED_MODULE_1__local_storage__["a" /* default */])
+      } catch (error) {
+        console.error(`${property}() failed: ${error.value}`)
+        throw error
+      }
+    }
+  }
+
+  /**
+   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
+   * as a direct result of a user action: use of UI controls, and such.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @param monitoringData
+   * @param storage
+   * @return {Promise.<*>}
+   */
+  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
+    let experience = new __WEBPACK_IMPORTED_MODULE_0__experience__["a" /* default */](monitoringData.experience)
+    console.log(`${property}() async method has been called`)
+    // Last item in arguments list is a transaction
+    args.push(experience)
+    let result = await target[property].apply(monitor, args)
+    // resultObject.value is a returned message, experience object is in a `experience` property
+    experience = result.state
+    experience.complete()
+    console.log(`${property}() completed with success, experience is:`, experience)
+
+    storage.write(experience)
+    return result
+  }
+
+  /**
+   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
+   * functions that create user experience.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @param monitoringData
+   * @return {Promise.<*>}
+   */
+  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
+    let experience = new __WEBPACK_IMPORTED_MODULE_0__experience__["a" /* default */](monitoringData.experience)
+    console.log(`${property}() async method has been called`)
+    let resultObject = await target[property].apply(monitor, args)
+    experience.complete()
+    resultObject.state.attach(experience)
+    console.log(`${property}() completed with success, experience is: ${experience}`)
+    return resultObject
+  }
+
+  /**
+   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @return {Promise.<*>}
+   */
+  static async attachToMessage (monitor, target, property, args) {
+    console.log(`${property}() async method has been called`)
+    // First argument is always a request object, last argument is a state (Experience) object
+    args[0].experience = args[args.length - 1]
+    let result = await target[property].apply(monitor, args)
+    console.log(`${property}() completed with success`)
+    return result
+  }
+
+  /**
+   * This is a wrapper around functions that handle incoming messages with an experience object attached.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @return {Promise.<*>}
+   */
+  static async detachFromMessage (monitor, target, property, args) {
+    console.log(`${property}() async method has been called`)
+    // First argument is an incoming request object
+    if (args[0].experience) {
+      args.push(__WEBPACK_IMPORTED_MODULE_0__experience__["a" /* default */].readObject(args[0].experience))
+    } else {
+      console.warn(`This message has no experience data attached. Experience data will not be recorded`)
+    }
+    let result = await target[property].apply(monitor, args)
+    console.log(`${property}() completed with success`)
+    return result
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = ObjectMonitor;
+
+
+
+/***/ }),
+/* 17 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/**
+ * A base object class for an Experience object.
+ */
+class Experience {
+  constructor (description) {
+    this.description = description
+    this.startTime = new Date().getTime()
+    this.endTime = undefined
+    this.details = []
+  }
+
+  static readObject (jsonObject) {
+    let experience = new Experience(jsonObject.description)
+    if (jsonObject.startTime) { experience.startTime = jsonObject.startTime }
+    if (jsonObject.endTime) { experience.endTime = jsonObject.endTime }
+    for (let detailsItem of jsonObject.details) {
+      experience.details.push(Experience.readObject(detailsItem))
+    }
+    return experience
+  }
+
+  attach (experience) {
+    this.details.push(experience)
+  }
+
+  complete () {
+    this.endTime = new Date().getTime()
+  }
+
+  get duration () {
+    return this.endTime - this.startTime
+  }
+
+  toString () {
+    return `"${this.description}" experience duration is ${this.duration} ms`
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Experience;
+
+
+
+/***/ }),
+/* 18 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
+/* global browser */
+
+
+
+/**
+ * Represents an adapter for a local storage where experiences are accumulated before a batch of
+ * experiences is sent to a remote server and is removed from a local storage.
+ * Currently a `browser.storage.local` local storage is used.
+ */
+class LocalStorageAdapter {
+  /**
+   * Returns an adapter default values
+   * @return {{prefix: string}}
+   */
+  static get defaults () {
+    return {
+      // A prefix used to distinguish experience objects from objects of other types
+      prefix: 'experience_'
+    }
+  }
+
+  /**
+   * Stores a single experience to the local storage.
+   * @param {Experience} experience - An experience object to be saved.
+   */
+  static write (experience) {
+    // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
+    let uuid = `${LocalStorageAdapter.defaults.prefix}${__WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()}`
+
+    browser.storage.local.set({[uuid]: experience}).then(
+      () => {
+        console.log(`Experience has been written to the local storage successfully`)
+      },
+      (error) => {
+        console.error(`Cannot write experience to the local storage because of the following error: ${error}`)
+      }
+    )
+  }
+
+  /**
+   * Reads all experiences that are present in a local storage.
+   * @return {Promise.<{key: Experience}, Error>} Returns a promise that resolves with an object
+   * containing key: value pairs for each experience stored and rejects with an Error object.
+   */
+  static async readAll () {
+    try {
+      return await browser.storage.local.get()
+    } catch (error) {
+      console.error(`Cannot read data from the local storage because of the following error: ${error}`)
+      return error
+    }
+  }
+
+  /**
+   * Removes experience objects with specified keys from a local storage.
+   * @param {String[]} keys - an array of keys that specifies what Experience objects need to be removed.
+   * @return {Promise.<*|{minArgs, maxArgs}>} A Promise that will be fulfilled with no arguments
+   * if the operation succeeded. If the operation failed, the promise will be rejected with an error message.
+   */
+  static async remove (keys) {
+    return browser.storage.local.remove(keys)
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = LocalStorageAdapter;
+
+
+
+/***/ }),
+/* 19 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var rng = __webpack_require__(20);
+var bytesToUuid = __webpack_require__(21);
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options == 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rng)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid(rnds);
+}
+
+module.exports = v4;
+
+
+/***/ }),
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -19368,10 +19686,10 @@ if (!rng) {
 
 module.exports = rng;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 17 */
+/* 21 */
 /***/ (function(module, exports) {
 
 /**
@@ -19400,12 +19718,81 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 18 */
+/* 22 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+var rng;
+
+var crypto = global.crypto || global.msCrypto; // for IE 11
+if (crypto && crypto.getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+  rng = function whatwgRNG() {
+    crypto.getRandomValues(rnds8);
+    return rnds8;
+  };
+}
+
+if (!rng) {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+  rng = function() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+module.exports = rng;
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+
+/***/ }),
+/* 23 */
+/***/ (function(module, exports) {
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  return bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]];
+}
+
+module.exports = bytesToUuid;
+
+
+/***/ }),
+/* 24 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(25);
 /* global browser */
 
 
@@ -19549,7 +19936,7 @@ class Service {
 
 
 /***/ }),
-/* 19 */
+/* 25 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -19571,11 +19958,11 @@ class StoredRequest {
 
 
 /***/ }),
-/* 20 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__content_tab_script__ = __webpack_require__(3);
 
 
@@ -19591,11 +19978,11 @@ class StateMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default
 
 
 /***/ }),
-/* 21 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(3);
 
@@ -19619,15 +20006,15 @@ class StateResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a" 
 
 
 /***/ }),
-/* 22 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(29);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(32);
  // To polyfill Element.closest() if required
 
 
@@ -19815,7 +20202,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 23 */
+/* 29 */
 /***/ (function(module, exports) {
 
 // element-closest | CC0-1.0 | github.com/jonathantneal/closest
@@ -19854,11 +20241,11 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 24 */
+/* 30 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(31);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
 
 
@@ -19941,7 +20328,7 @@ class TextSelector {
 
 
 /***/ }),
-/* 25 */
+/* 31 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -19955,7 +20342,7 @@ class TextQuoteSelector {
 
 
 /***/ }),
-/* 26 */
+/* 32 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -19998,7 +20385,7 @@ class MediaSelector {
 
 
 /***/ }),
-/* 27 */
+/* 33 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20024,7 +20411,7 @@ class LexicalQuery {
     queries.clear() // Clean up all previous requests of that type
     let query = new LexicalQuery(selector, options)
     queries.set(query.ID, query)
-    console.log('Create executed')
+    console.log('Query had been created')
     return query
   }
 
@@ -20057,7 +20444,6 @@ class LexicalQuery {
         result = iterator.next(result.value)
       }
       if (result.done) { break }
-      console.log(result.value)
     }
   }
 
@@ -20066,15 +20452,12 @@ class LexicalQuery {
   }
 
   * iterations () {
-    console.log('Getting a homonym from a morphological analyzer')
     this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
 
-    console.log('Homonym is', this.homonym)
     this.ui.addMessage(`Morphological analyzer data is ready<br>`)
     this.ui.updateDefinitions(this.homonym)
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)
-    console.log('Lexical data is', this.lexicalData)
     this.ui.addMessage(`Inflection data is ready<br>`)
     this.ui.updateInflections(this.lexicalData)
 
@@ -20149,22 +20532,22 @@ class LexicalQuery {
 
 
 /***/ }),
-/* 28 */
+/* 34 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue__ = __webpack_require__(35);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__template_htmlf__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__template_htmlf__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_panel_component__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_panel_component__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_options_component__ = __webpack_require__(38);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_popup_vue__ = __webpack_require__(40);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_options_component__ = __webpack_require__(44);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_popup_vue__ = __webpack_require__(46);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__ = __webpack_require__(54);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(49);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(55);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons__);
 /* global Node */
  // Required for Presenter
@@ -20453,7 +20836,7 @@ class UIController {
 
 
 /***/ }),
-/* 29 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
@@ -31255,10 +31638,10 @@ return Vue$3;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(8).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(8).setImmediate))
 
 /***/ }),
-/* 30 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -31448,10 +31831,10 @@ return Vue$3;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(31)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(37)))
 
 /***/ }),
-/* 31 */
+/* 37 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -31641,18 +32024,18 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 32 */
+/* 38 */
 /***/ (function(module, exports) {
 
 module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :content=\"content\" :visible=\"visible\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div data-component=\"alpheios-panel\"></div>";
 
 /***/ }),
-/* 33 */
+/* 39 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(42);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_interactjs__);
@@ -31868,12 +32251,12 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
 
 
 /***/ }),
-/* 34 */
+/* 40 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(41);
 
 
 
@@ -31928,7 +32311,7 @@ class TabGroup {
 
 
 /***/ }),
-/* 35 */
+/* 41 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -31959,24 +32342,24 @@ class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default *
 
 
 /***/ }),
-/* 36 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(37) + "\"></div>\r\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\"\r\n                     id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\"\r\n                     class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n</div>\r\n";
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(43) + "\"></div>\r\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\"\r\n                     id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\"\r\n                     class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n</div>\r\n";
 
 /***/ }),
-/* 37 */
+/* 43 */
 /***/ (function(module, exports) {
 
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAzMYbbAAAAolBMVEUAAAD///8GITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITWPtMG85fAGITW85fAGITVPb4C85fAGITWbwc685fAGITW85fAGITU+XW+85fAGITU6WWq85fAGITW85fAGITURLUEdOkwoRlg0UmQ/Xm9Ka3tWd4dhg5Nsj554nKqDqLaPtMGawM2lzdmx2eS85fBSA/ZbAAAAJXRSTlMAABAQICAwMEBAUFBgYHBwgICAj4+fn5+vr6+/v8/Pz9/f3+/vxRX+wgAABfhJREFUaN7dWn9XqzgQpTykkYeVFVnZh+zjicOPUoqU9vt/tZ1JQggt1dZ/lJ1zPIcmBHIzd+5MgsbCmLLlLZkxXzuBdfvw/HKQ9vrr/ub/AGv59Ho4sufbucO6ez5M2fNyzrCW06DI7ucL6/Hwjj19g5lan4D14/fh8L1xmQm7Gtby9fCBfTUPzQhSdiWsE1Rt29R13bS7oemLdcMDgNi6CtaIgbu6zEBZtm5k++8vdpcD4ZUk/KUwdZucsJQb9FTbbus1/iyky+6+GJdnXgfrpwJVIaZ10+l03K0hE7heLgiAbyTwP/paqckgb/Yc31tNtuV4mh7XR9FlhiOxcj2G5niqjXm9ubZskWYZlrziHcxhg42GutrjwwSjLXS1pbSCBNLIYybBupeoKsi23D/VEFv5GzZsoeA3PL6Pyk5xgPZe26OGZKXi3GKxenDE5+9FdJ34zGA+3QwhH295yRDdYqhDQ9N+OTDS1B3pSp9AHGEHI1jSWW/CKV1JOlG3ZFskZYVta6jHomGZk6iC1QiX4eNbHf0ehg0BLjS+PxVoaXbiyhV9vT4g2ggtBnto8UdPjhzmhKCNwmcRRCf1ENZSoNpnsBNELJohsrqCcHVZxrkpuebGEE1kS2pEXPZYlNkxLG8EIer9ofqOfgRsottVvGCpepTdP2qF8BeyaGq4X1oAQcRNWWRl1R72BXmqFu6iWt4OKIE4J7B8seoRJObHsAxa7Mtg2ROwLO2a2sVLmMKKK7uQBe6aOyuHRhIR4wqIgl0G3aGDjMMiR0HqT2RFXKpQrqN3GSz/EljO6VDyIF7T4pmm/MFfbXJCykVdSLrlGY8vctmOiEisa3L00hZKkhPUju5f9HjkTupFIFcKFzK9jISWgsVIuk5hRZ7nD6Gpd6fS174vuZeqgIPUG8GiySPZSPlKDk4GXIce3CHedYMuTIMz5QutlN3HrfMRLAoIuTpRL2hxfAxLGDuFZUkKe6JFyaUphDa2T2G16BR+2Ufchkfdju4v/jZVgkjH+FzFpUjTs0lYCaobqAQXgW6n3nInvMUELFocqn4HHpu+kHx7ClYr9EG6K6M/CrNyd/ipQOnCIP2fKjYm78LC2a4GtZRzwrQbXBxbPe3MhM8i1nhvi0SowSp4bG3IW/mg8BVUBVVUGyLmLZf3iAh8lLjGi/6xZBzDOq+EZ2KLM12UIL1kSN6Izh5WCeQcrngYW3uRtZoq55K4RtiI9cb2iL6xe5KNiVeivIk0KBos5n8aljmphLGeuflLXEf99pTAb7haVERA1PSsRBM7ExSNDAhrzRti3+5rI212Kg+NPDRcWyIWPwHLiify1pCDqQyQr3YCNZeVSsdC2zteQe25k6DAGgrzGf2VBeds4Fqas61LYPElZHFwPQmFf2PvTJUBIb3fRp7Epgy5PiunpiqeDqJA2vblem8bnpZRMaD8S2N6NKr+LFBCEWj1bjCEmzNR2En2gqn6lIau4FjhR91Y93HmkKhC1IcEhjxjrkgeqtSthABidbuRG659K3iXV6QnWd5vTLhqRIOayYI7wsV0OZLUp7l4Q70upIrxkh4CrQzhpWqCexfZ5/MVcaJj/emHqqU0RQMOHlY3EE08eSyMB1nVQtbJXRfkFFqZgESBlQNVV5x09irkqqHn4l4WTMMWxLQsUZkdnYjZo9vFCP5MS/XZ0xuEUXcv5u6wcdN2dHa/jZTnM7XcVu23ElG5oY0yFYsVBtgWPMcL+RbKt+dw/CnddShU0aTbFuq2grUQDUjD1ffHJI9o5METbkKKsV7gsVqZq/hAd1nGTGyhHRPuUSFKsTF+qzcSECaxeovJ+CaE2YCSx593qrTN9SKorOp2j9ykZPyEouvO7dPC8F2ha/ihE/psr8rCFrMXw+QUzg2W8XT+9H2LO+Y3OvxIYH4fgs5/B2qxrP+HPOXa84Nl3J39aALlk5Ems/0aee4TV4HkC2GusDAvTzvsD+mFPV9Yxs2EcrzcusCMudnR/2XcPLyMQdHnn/mhOv13E2N5/0tCe36c4b8ucPsPj8KYSwhZmDoAAAAASUVORK5CYII="
 
 /***/ }),
-/* 38 */
+/* 44 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(45);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
 /* global browser */
 
@@ -32122,25 +32505,25 @@ class Options extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* defaul
 
 
 /***/ }),
-/* 39 */
+/* 45 */
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"auk\" data-component=\"alpheios-panel-options\">\r\n    <h4>Options</h4>\r\n    <div id=\"alpheios-language-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-language-selector-list\" class=\"uk-form-label\">Preferred Language:</label>\r\n        <select id=\"alpheios-language-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-locale-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-locale-selector-list\" class=\"uk-form-label\">Locale:</label>\r\n        <select id=\"alpheios-locale-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-ui-type-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-ui-type-selector-list\" class=\"uk-form-label\">UI Type:</label>\r\n        <select id=\"alpheios-ui-type-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-position-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-position-selector-list\" class=\"uk-form-label\">Panel position:</label>\r\n        <select id=\"alpheios-position-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n</div>\r\n";
 
 /***/ }),
-/* 40 */
+/* 46 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(11);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(53);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(41)
+  __webpack_require__(47)
 }
-var normalizeComponent = __webpack_require__(46)
+var normalizeComponent = __webpack_require__(52)
 /* script */
 
 
@@ -32184,17 +32567,17 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 41 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(42);
+var content = __webpack_require__(48);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(44)("449bb36b", content, false);
+var update = __webpack_require__(50)("449bb36b", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -32210,10 +32593,10 @@ if(false) {
 }
 
 /***/ }),
-/* 42 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(43)(true);
+exports = module.exports = __webpack_require__(49)(true);
 // imports
 
 
@@ -32224,7 +32607,7 @@ exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border:
 
 
 /***/ }),
-/* 43 */
+/* 49 */
 /***/ (function(module, exports) {
 
 /*
@@ -32306,7 +32689,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 44 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -32325,7 +32708,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(45)
+var listToStyles = __webpack_require__(51)
 
 /*
 type StyleObject = {
@@ -32527,7 +32910,7 @@ function applyToTag (styleElement, obj) {
 
 
 /***/ }),
-/* 45 */
+/* 51 */
 /***/ (function(module, exports) {
 
 /**
@@ -32560,7 +32943,7 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 46 */
+/* 52 */
 /***/ (function(module, exports) {
 
 /* globals __VUE_SSR_CONTEXT__ */
@@ -32669,7 +33052,7 @@ module.exports = function normalizeComponent (
 
 
 /***/ }),
-/* 47 */
+/* 53 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -32756,7 +33139,7 @@ if (false) {
 }
 
 /***/ }),
-/* 48 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(setImmediate) {/*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -43254,7 +43637,7 @@ return UIkit$2;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8).setImmediate))
 
 /***/ }),
-/* 49 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -43522,7 +43905,7 @@ return plugin;
 
 
 /***/ }),
-/* 50 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -43865,6 +44248,154 @@ class Monitor {
   }
 }
 
+class ObjectMonitor {
+  constructor (monitoringDataList) {
+    this.monitored = new Map();
+    if (monitoringDataList) {
+      for (let monitoringData of monitoringDataList) {
+        this.monitored.set(monitoringData.monitoredFunction, monitoringData);
+      }
+    }
+  }
+
+  static track (object, monitoringDataList) {
+    return new Proxy(object, new ObjectMonitor(monitoringDataList))
+  }
+
+  get (target, property, receiver) {
+    if (this.monitored.has(property)) {
+      let monitoringData = this.monitored.get(property);
+      if (monitoringData.hasOwnProperty('asyncWrapper')) {
+        return ObjectMonitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
+      } else {
+        console.error(`Only async wrappers are supported by monitor`);
+      }
+    }
+    return target[property]
+  }
+
+  monitor (functionName, functionConfig) {
+    this.monitored.set(functionName, functionConfig);
+  }
+
+  static syncWrapper (target, property, experience) {
+    console.log(`${property}() sync method has been called`);
+    const origMethod = target[property];
+    return function (...args) {
+      let result = origMethod.apply(this, args);
+      console.log(`${property}() sync method has been completed`);
+      experience.complete();
+      console.log(`${experience}`);
+      return result
+    }
+  }
+
+  /**
+   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
+   * as a direct result of a user action: use of UI controls, etc.
+   * @param target
+   * @param property
+   * @param actionFunction
+   * @param monitoringData
+   * @return {Function}
+   */
+  static asyncWrapper (target, property, actionFunction, monitoringData) {
+    console.log(`${property}() async method has been requested`);
+    return async function (...args) {
+      try {
+        return await actionFunction(this, target, property, args, monitoringData, LocalStorageAdapter)
+      } catch (error) {
+        console.error(`${property}() failed: ${error.value}`);
+        throw error
+      }
+    }
+  }
+
+  /**
+   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
+   * as a direct result of a user action: use of UI controls, and such.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @param monitoringData
+   * @param storage
+   * @return {Promise.<*>}
+   */
+  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
+    let experience = new Experience(monitoringData.experience);
+    console.log(`${property}() async method has been called`);
+    // Last item in arguments list is a transaction
+    args.push(experience);
+    let result = await target[property].apply(monitor, args);
+    // resultObject.value is a returned message, experience object is in a `experience` property
+    experience = result.state;
+    experience.complete();
+    console.log(`${property}() completed with success, experience is:`, experience);
+
+    storage.write(experience);
+    return result
+  }
+
+  /**
+   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
+   * functions that create user experience.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @param monitoringData
+   * @return {Promise.<*>}
+   */
+  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
+    let experience = new Experience(monitoringData.experience);
+    console.log(`${property}() async method has been called`);
+    let resultObject = await target[property].apply(monitor, args);
+    experience.complete();
+    resultObject.state.attach(experience);
+    console.log(`${property}() completed with success, experience is: ${experience}`);
+    return resultObject
+  }
+
+  /**
+   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @return {Promise.<*>}
+   */
+  static async attachToMessage (monitor, target, property, args) {
+    console.log(`${property}() async method has been called`);
+    // First argument is always a request object, last argument is a state (Experience) object
+    args[0].experience = args[args.length - 1];
+    let result = await target[property].apply(monitor, args);
+    console.log(`${property}() completed with success`);
+    return result
+  }
+
+  /**
+   * This is a wrapper around functions that handle incoming messages with an experience object attached.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @return {Promise.<*>}
+   */
+  static async detachFromMessage (monitor, target, property, args) {
+    console.log(`${property}() async method has been called`);
+    // First argument is an incoming request object
+    if (args[0].experience) {
+      args.push(Experience.readObject(args[0].experience));
+    } else {
+      console.warn(`This message has no experience data attached. Experience data will not be recorded`);
+    }
+    let result = await target[property].apply(monitor, args);
+    console.log(`${property}() completed with success`);
+    return result
+  }
+}
+
 /**
  * Responsible form transporting experiences from one storage to the other. Current implementation
  * sends a batch of experience objects to the remote server once a certain amount of them
@@ -43974,11 +44505,12 @@ class TestAdapter extends RemoteStorageAdapter {
 
 exports.Experience = Experience;
 exports.Monitor = Monitor;
+exports.ObjectMonitor = ObjectMonitor;
 exports.Transporter = Transporter;
 exports.StorageAdapter = LocalStorageAdapter;
 exports.TestAdapter = TestAdapter;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ })
 /******/ ]);

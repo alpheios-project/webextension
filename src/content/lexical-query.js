@@ -18,7 +18,7 @@ export default class LexicalQuery {
     queries.clear() // Clean up all previous requests of that type
     let query = new LexicalQuery(selector, options)
     queries.set(query.ID, query)
-    console.log('Create executed')
+    console.log('Query had been created')
     return query
   }
 
@@ -51,7 +51,6 @@ export default class LexicalQuery {
         result = iterator.next(result.value)
       }
       if (result.done) { break }
-      console.log(result.value)
     }
   }
 
@@ -60,15 +59,12 @@ export default class LexicalQuery {
   }
 
   * iterations () {
-    console.log('Getting a homonym from a morphological analyzer')
     this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
 
-    console.log('Homonym is', this.homonym)
     this.ui.addMessage(`Morphological analyzer data is ready<br>`)
     this.ui.updateDefinitions(this.homonym)
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)
-    console.log('Lexical data is', this.lexicalData)
     this.ui.addMessage(`Inflection data is ready<br>`)
     this.ui.updateInflections(this.lexicalData)
 

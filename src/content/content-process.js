@@ -1,7 +1,8 @@
-/* global browser, Node */
+/* global browser */
 import {LanguageData, LatinDataSet, GreekDataSet} from 'alpheios-inflection-tables'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import {Lexicons} from 'alpheios-lexicon-client'
+import ObjectMonitor from '../../../experience/src/object-monitor'
 import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
@@ -110,12 +111,12 @@ export default class ContentProcess {
       let textSelector = HTMLSelector.getSelector(event.target, this.options.items.defaultLanguage.currentValue)
 
       if (!textSelector.isEmpty()) {
-        let query = LexicalQuery.create(textSelector, {
+        let query = ObjectMonitor.track(LexicalQuery.create(textSelector, {
           uiController: this.ui,
           maAdapter: this.maAdapter,
           langData: this.langData,
           lexicons: Lexicons
-        })
+        }))
         query.getData()
       }
     }
