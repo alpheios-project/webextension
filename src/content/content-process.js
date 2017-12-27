@@ -1,25 +1,15 @@
 /* global browser, Node */
-import * as InflectionTables from 'alpheios-inflection-tables'
+import {LanguageData, LatinDataSet, GreekDataSet} from 'alpheios-inflection-tables'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import {Lexicons} from 'alpheios-lexicon-client'
 import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
-import Panel from './components/panel/component'
-import Options from './components/options/component'
-import State from '../lib/state'
 import TabScript from '../lib/content/tab-script'
-import Template from './template.htmlf'
 import HTMLSelector from '../lib/selection/media/html-selector'
-import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
-import Popup from './vue-components/popup.vue'
-// UIKit
-import UIkit from '../../node_modules/uikit/dist/js/uikit'
-import UIkITIconts from '../../node_modules/uikit/dist/js/uikit-icons'
-// Use a custom logger that outputs timestamps
-// import Logger from '../lib/logger'
-// console.log = Logger.log
+import LexicalQuery from './lexical-query'
+import UIController from './ui-controller'
 
 export default class ContentProcess {
   constructor () {
@@ -27,139 +17,27 @@ export default class ContentProcess {
     this.state.status = TabScript.statuses.script.PENDING
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
     this.settings = ContentProcess.settingValues
-    // this.vueInstance = undefined
-
-    this.modal = undefined
 
     this.messagingService = new MessagingService()
 
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
-    this.langData = new InflectionTables.LanguageData([InflectionTables.LatinDataSet, InflectionTables.GreekDataSet]).loadData()
+    this.langData = new LanguageData([LatinDataSet, GreekDataSet]).loadData()
+    this.ui = new UIController(this.state, this.sendStateToBackground.bind(this))
+    this.options = this.ui.getOptions()
   }
 
   initialize () {
-    this.loadUI()
-
     // Adds message listeners
     this.messagingService.addHandler(Message.types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
-    // this.panelToggleBtn.addEventListener('click', this.togglePanel.bind(this))
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
     this.reactivate()
   }
 
-  loadUI () {
-    // Finds a max z-index of element on the page.
-    // Need to run this before our UI elements are loaded to avoid scanning them too.
-    let zIndexMax = this.getZIndexMax()
-
-    // Inject HTML code of a plugin. Should go in reverse order.
-    document.body.classList.add('alpheios')
-    ContentProcess.loadTemplate(Template)
-
-    // Initialize components
-    this.panel = new Panel({
-      contentAreas: {
-        shortDefinitions: {
-          dataFunction: this.formatShortDefinitions.bind(this)
-        },
-        fullDefinitions: {
-          dataFunction: this.formatFullDefinitions.bind(this)
-        }
-      },
-      methods: {
-        onClose: this.closePanel.bind(this)
-      }
-    })
-    this.panel.updateZIndex(zIndexMax)
-
-    // Should be loaded after Panel because options are inserted into a panel
-    this.options = new Options({
-      methods: {
-        ready: (options) => {
-          this.state.status = TabScript.statuses.script.ACTIVE
-          this.setPanelPositionTo(options.panelPosition.currentValue)
-          this.setDefaultLanguageTo(options.defaultLanguage.currentValue)
-          console.log('Content script is set to active')
-        },
-        onChange: this.optionChangeListener.bind(this)
-      }
-    })
-
-    // Create a Vue instance for a popup
-    this.popup = new Vue({
-      el: '#alpheios-popup',
-      components: { popup: Popup },
-      data: {
-        messages: '',
-        content: '',
-        visible: false,
-        defDataReady: false,
-        inflDataReady: false
-      },
-      methods: {
-        showMessage: function (message) {
-          this.messages = message
-          return this
-        },
-
-        appendMessage: function (message) {
-          this.messages += message
-          return this
-        },
-
-        clearMessages: function () {
-          this.messages = ''
-          return this
-        },
-
-        setContent: function (content) {
-          this.content = content
-          return this
-        },
-
-        clearContent: function () {
-          this.content = ''
-          return this
-        },
-
-        open: function () {
-          this.visible = true
-          return this
-        },
-
-        close: function () {
-          this.visible = false
-          return this
-        },
-
-        showDefinitionsPanelTab: function () {
-          this.visible = false
-          this.panel.tabGroups.contentTabs.activate('definitionsTab')
-          this.panel.open()
-          return this
-        },
-
-        showInflectionsPanelTab: function () {
-          this.visible = false
-          this.panel.tabGroups.contentTabs.activate('inflectionsTab')
-          this.panel.open()
-          return this
-        }
-      }
-    })
-    this.popup.panel = this.panel
-
-    // Initialize UIKit
-    UIkit.use(UIkITIconts)
-  }
-
   static get settingValues () {
     return {
-      requestTimeout: 60000,
-      uiTypePanel: 'panel',
-      uiTypePopup: 'popup'
+      requestTimeout: 60000
     }
   }
 
@@ -177,209 +55,13 @@ export default class ContentProcess {
 
   deactivate () {
     console.log('Content has been deactivated.')
-    this.closePanel()
+    this.ui.closePanel()
     this.state.status = TabScript.statuses.script.DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
     this.state.status = TabScript.statuses.script.ACTIVE
-  }
-
-  static loadTemplate (template, referenceNode = null) {
-    let container = document.createElement('div')
-    document.body.insertBefore(container, referenceNode)
-    container.outerHTML = template
-  }
-
-  async sendRequestToBgStatefully (request, timeout, state = undefined) {
-    try {
-      let result = await this.messagingService.sendRequestToBg(request, timeout)
-      return State.value(state, result)
-    } catch (error) {
-      // Wrap an error the same way we wrap the value
-      console.log(`Statefull request to a background failed: ${error}`)
-      throw State.value(state, error)
-    }
-  }
-
-  async getHomonymStatefully (languageCode, word, state) {
-    try {
-      let result = await this.maAdapter.getHomonym(languageCode, word, state)
-      // If no valid homonym data found should always throw an error to be caught in a calling function
-      return State.value(state, result)
-    } catch (error) {
-      /*
-      getHomonym is non-statefull function. If it throws an error, we should catch it here, attach state
-      information, and rethrow
-      */
-      throw (State.value(state, error))
-    }
-  }
-
-  async getWordDataStatefully (textSelector, state = undefined) {
-    let homonym, lexicalData
-
-    this.clearUI()
-    this.openUI()
-    this.showMessage(`Please wait while data is retrieved ...<br>`)
-    try {
-      // homonymObject is a state object, where a 'value' property stores a homonym, and 'state' property - a state
-      ({ value: homonym, state } = await this.getHomonymStatefully(textSelector.languageCode, textSelector.normalizedText, state))
-      if (!homonym) { throw State.value(state, new Error(`Homonym data is empty`)) }
-      this.appendMessage(`Morphological analyzer data is ready<br>`)
-      this.updateDefinitionsData(homonym)
-      this.popup.defDataReady = true
-    } catch (error) {
-      console.error(`Cannot retrieve homonym data: ${error}`)
-    }
-
-    try {
-      lexicalData = this.langData.getSuffixes(homonym, state)
-      // this.panel.contentAreas.messages.appendContent('Inflection data is ready<br>')
-      this.appendMessage(`Inflection data is ready<br>`)
-      this.updateInflectionsData(lexicalData)
-      this.popup.inflDataReady = true
-    } catch (e) {
-      console.log(`Failure retrieving inflection data. ${e}`)
-    }
-
-    let definitionRequests = []
-    try {
-      for (let lexeme of homonym.lexemes) {
-        // Short definition requests
-        let requests = Lexicons.fetchShortDefs(lexeme.lemma)
-        definitionRequests = definitionRequests.concat(requests.map(request => {
-          return {
-            request: request,
-            type: 'Short definition',
-            lexeme: lexeme,
-            appendFunction: 'appendShortDefs',
-            isCompleted: false
-          }
-        }))
-        requests = Lexicons.fetchFullDefs(lexeme.lemma)
-        definitionRequests = definitionRequests.concat(requests.map(request => {
-          return {
-            request: request,
-            type: 'Full definition',
-            lexeme: lexeme,
-            appendFunction: 'appendFullDefs',
-            isCompleted: false
-          }
-        }))
-      }
-
-      // Full definition requests
-      for (let definitionRequest of definitionRequests) {
-        definitionRequest.request.then(
-          definition => {
-            console.log(`${definitionRequest.type}(s) received: ${definition}`)
-            definitionRequest.lexeme.meaning[definitionRequest.appendFunction](definition)
-            definitionRequest.isCompleted = true
-            this.appendMessage(`${definitionRequest.type} request is completed successfully. Lemma: "${definitionRequest.lexeme.lemma.word}"<br>`)
-            if (definitionRequests.every(request => request.isCompleted)) {
-              this.appendMessage(`<strong>All lexical data is available now</strong><br>`)
-            }
-            this.updateDefinitionsData(homonym)
-          },
-          error => {
-            console.error(`${definitionRequest.type}(s) request failed: ${error}`)
-            definitionRequest.isCompleted = true
-            this.appendMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"<br>`)
-            if (definitionRequests.every(request => request.isCompleted)) {
-              this.appendMessage(`<strong>All lexical data is available now</strong><br>`)
-            }
-          }
-        )
-      }
-
-      return State.emptyValue(state)
-    } catch (error) {
-      let errorValue = State.getValue(error) // In a mixed environment, both statefull and stateless error messages can be thrown
-      console.error(`Word data retrieval failed: ${errorValue}`)
-      return State.emptyValue(state)
-    }
-  }
-
-  openUI () {
-    if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
-      this.panel.open()
-    } else {
-      if (this.panel.isOpened) { this.panel.close() }
-      this.popup.open()
-    }
-  }
-
-  clearUI () {
-    this.panel.clearContent()
-    this.popup.clearContent()
-  }
-
-  updateDefinitionsData (homonym) {
-    this.panel.contentAreas.shortDefinitions.clearContent()
-    this.panel.contentAreas.fullDefinitions.clearContent()
-    let shortDefsText = ''
-    for (let lexeme of homonym.lexemes) {
-      if (lexeme.meaning.shortDefs.length > 0) {
-        this.panel.contentAreas.shortDefinitions.appendContent(lexeme)
-        shortDefsText += this.formatShortDefinitions(lexeme)
-      }
-
-      if (lexeme.meaning.fullDefs.length > 0) {
-        this.panel.contentAreas.fullDefinitions.appendContent(lexeme)
-      }
-    }
-
-    // Populate a popup
-    this.popup.setContent(shortDefsText)
-  }
-
-  updateInflectionsData (lexicalData) {
-    this.updateInflectionTable(lexicalData)
-  }
-
-  showMessage (message) {
-    this.panel.showMessage(message)
-    this.popup.showMessage(message)
-  }
-
-  appendMessage (message) {
-    this.panel.appendMessage(message)
-    this.popup.appendMessage(message)
-  }
-
-  clearMessages () {
-    this.panel.clearMessages()
-    this.popup.clearMessages()
-  }
-
-  openPanel () {
-    this.panel.open()
-    this.state.panelStatus = TabScript.statuses.panel.OPEN
-    this.sendStateToBackground()
-  }
-
-  closePanel () {
-    this.panel.close()
-    this.state.panelStatus = TabScript.statuses.panel.CLOSED
-    this.sendStateToBackground()
-  }
-
-  formatShortDefinitions (lexeme) {
-    let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
-    for (let shortDef of lexeme.meaning.shortDefs) {
-      content += `${shortDef.text}<br>\n`
-    }
-    return content
-  }
-
-  formatFullDefinitions (lexeme) {
-    let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
-    for (let fullDef of lexeme.meaning.fullDefs) {
-      content += `${fullDef.text}<br>\n`
-    }
-    return content
   }
 
   handleStateRequest (request, sender) {
@@ -406,7 +88,7 @@ export default class ContentProcess {
       }
     }
     if (diff.hasOwnProperty('panelStatus')) {
-      if (diff.panelStatus === TabScript.statuses.panel.OPEN) { this.openPanel() } else { this.closePanel() }
+      if (diff.panelStatus === TabScript.statuses.panel.OPEN) { this.ui.openPanel() } else { this.ui.closePanel() }
     }
     this.messagingService.sendResponseToBg(new StateResponse(request, this.state)).catch(
       (error) => {
@@ -423,81 +105,19 @@ export default class ContentProcess {
     )
   }
 
-  updateInflectionTable (wordData) {
-    this.presenter = new InflectionTables.Presenter(
-      this.panel.contentAreas.inflectionsTable.element,
-      this.panel.contentAreas.inflectionsViewSelector.element,
-      this.panel.contentAreas.inflectionsLocaleSwitcher.element,
-      wordData,
-      this.options.items.locale.currentValue
-    ).render()
-  }
-
-  optionChangeListener (optionName, optionValue) {
-    if (optionName === 'locale' && this.presenter) { this.presenter.setLocale(optionValue) }
-    if (optionName === 'panelPosition') { this.setPanelPositionTo(optionValue) }
-    if (optionName === 'defaultLanguage') { this.setDefaultLanguageTo(optionValue) }
-  }
-
-  setDefaultLanguageTo (language) {
-    this.defaultLanguage = language
-  }
-
-  setPanelPositionTo (position) {
-    if (position === 'right') {
-      this.panel.positionToRight()
-    } else {
-      this.panel.positionToLeft()
-    }
-  }
-
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = HTMLSelector.getSelector(event.target, this.defaultLanguage)
+      let textSelector = HTMLSelector.getSelector(event.target, this.options.items.defaultLanguage.currentValue)
 
       if (!textSelector.isEmpty()) {
-        this.getWordDataStatefully(textSelector)
+        let query = LexicalQuery.create(textSelector, {
+          uiController: this.ui,
+          maAdapter: this.maAdapter,
+          langData: this.langData,
+          lexicons: Lexicons
+        })
+        query.getData()
       }
     }
-  }
-
-  /**
-   * Finds a maximal z-index value of elements on a page.
-   * @return {Number}
-   */
-  getZIndexMax () {
-    let startTime = new Date().getTime()
-    let zIndex = this.zIndexRecursion(document.querySelector('body'), Number.NEGATIVE_INFINITY)
-    let timeDiff = new Date().getTime() - startTime
-    console.log(`Z-index max value is ${zIndex}, calculation time is ${timeDiff} ms`)
-    return zIndex
-  }
-
-  /**
-   * A recursive function that iterates over all elements on a page searching for a highest z-index.
-   * @param {Node} element - A root page element to start scan with (usually `body`).
-   * @param {Number} zIndexMax - A current highest z-index value found.
-   * @return {Number} - A current highest z-index value.
-   */
-  zIndexRecursion (element, zIndexMax) {
-    if (element) {
-      let zIndexValues = [
-        window.getComputedStyle(element).getPropertyValue('z-index'), // If z-index defined in CSS rules
-        element.style.getPropertyValue('z-index') // If z-index is defined in an inline style
-      ]
-      for (const zIndex of zIndexValues) {
-        if (zIndex && zIndex !== 'auto') {
-          // Value has some numerical z-index value
-          zIndexMax = Math.max(zIndexMax, zIndex)
-        }
-      }
-      for (let node of element.childNodes) {
-        let nodeType = node.nodeType
-        if (nodeType === Node.ELEMENT_NODE || nodeType === Node.DOCUMENT_NODE || nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-          zIndexMax = this.zIndexRecursion(node, zIndexMax)
-        }
-      }
-    }
-    return zIndexMax
   }
 }

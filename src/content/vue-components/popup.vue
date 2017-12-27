@@ -155,5 +155,6 @@
 
     .alpheios-popup__more-btn {
         float: right;
+        margin-bottom: 10px;
     }
 </style>
