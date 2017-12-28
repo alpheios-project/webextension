@@ -37,7 +37,7 @@ export default class LexicalQuery {
 
     let result = iterator.next()
     while (true) {
-      if (!this.active) { break }
+      if (!this.active) { this.finalize() }
       if (LexicalQuery.isPromise(result.value)) {
         try {
           let resolvedValue = await result.value

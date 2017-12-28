@@ -2,7 +2,7 @@
 import {LanguageData, LatinDataSet, GreekDataSet} from 'alpheios-inflection-tables'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import {Lexicons} from 'alpheios-lexicon-client'
-import ObjectMonitor from '../../../experience/src/object-monitor'
+import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
 import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
@@ -10,20 +10,19 @@ import StateResponse from '../lib/messaging/response/state-response'
 import TabScript from '../lib/content/tab-script'
 import HTMLSelector from '../lib/selection/media/html-selector'
 import LexicalQuery from './lexical-query'
-import UIController from './ui-controller'
+import ContentUIController from './content-ui-controller'
 
 export default class ContentProcess {
   constructor () {
-    this.state = new TabScript()
+    this.state = new TabScript().setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.status = TabScript.statuses.script.PENDING
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
-    this.settings = ContentProcess.settingValues
 
     this.messagingService = new MessagingService()
 
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
     this.langData = new LanguageData([LatinDataSet, GreekDataSet]).loadData()
-    this.ui = new UIController(this.state, this.sendStateToBackground.bind(this))
+    this.ui = new ContentUIController(this.state)
     this.options = this.ui.getOptions()
   }
 
@@ -34,12 +33,6 @@ export default class ContentProcess {
 
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
     this.reactivate()
-  }
-
-  static get settingValues () {
-    return {
-      requestTimeout: 60000
-    }
   }
 
   /**
@@ -111,13 +104,21 @@ export default class ContentProcess {
       let textSelector = HTMLSelector.getSelector(event.target, this.options.items.defaultLanguage.currentValue)
 
       if (!textSelector.isEmpty()) {
-        let query = ObjectMonitor.track(LexicalQuery.create(textSelector, {
-          uiController: this.ui,
-          maAdapter: this.maAdapter,
-          langData: this.langData,
-          lexicons: Lexicons
-        }))
-        query.getData()
+        ExpObjMon.track(
+          LexicalQuery.create(textSelector, {
+            uiController: this.ui,
+            maAdapter: this.maAdapter,
+            langData: this.langData,
+            lexicons: Lexicons
+          }),
+          {
+            experience: 'Get word data',
+            actions: [
+              { name: 'getData', action: ExpObjMon.actions.START, event: ExpObjMon.events.GET },
+              { name: 'finalize', action: ExpObjMon.actions.STOP, event: ExpObjMon.events.GET }
+            ]
+          })
+        .getData()
       }
     }
   }

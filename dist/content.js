@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 12);
+/******/ 	return __webpack_require__(__webpack_require__.s = 13);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -1957,7 +1957,7 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
 
 
@@ -2027,6 +2027,26 @@ class TabScript {
     this.tabID = tabID
     this.status = status || TabScript.defaults.status
     this.panelStatus = panelStatus || TabScript.defaults.panelStatus
+
+    this.watchers = new Map()
+  }
+
+  static get genericProps () {
+    return ['tabID']
+  }
+
+  static get symbolProps () {
+    return ['status', 'panelStatus']
+  }
+
+  /**
+   * Only certain features will be stored within a serialized version of a TabScript. This is done
+   * to prevent context-specific features (such as local event handlers) to be passed over the network
+   * to a different context where they would make no sense. This getter returns a list of such fields.
+   * @return {String[]}
+   */
+  static get dataProps () {
+    return TabScript.genericProps.concat(TabScript.symbolProps)
   }
 
   /**
@@ -2063,6 +2083,52 @@ class TabScript {
     }
   }
 
+  /**
+   * Sets a watcher function that is called every time a property is changed using a setItem() method.
+   * @param {String} property - A name of a property that should be monitored
+   * @param {Function} watchFunc - A function that will be called every time a property changes
+   * @return {TabScript} Reference to self for chaining
+   */
+  setWatcher (property, watchFunc) {
+    this.watchers.set(property, watchFunc)
+    return this
+  }
+
+  /**
+   * SetItem provides a monitored way to change a TabScript state. If value is assigned to a data property directly
+   * there is no way to know if a property was changed. However, if a property was changed using setItem() method,
+   * and if there is a watcher function registered for a changed property name,
+   * this function will be called on every property change, passing a changed property name as an argument.
+   * @param key
+   * @param value
+   * @return {TabScript}
+   */
+  setItem (key, value) {
+    this[key] = value
+    if (this.watchers && this.watchers.has(key)) {
+      this.watchers.get(key)(key, this)
+    }
+    return this
+  }
+
+  isPanelOpened () {
+    return this.panelStatus === TabScript.statuses.panel.OPEN
+  }
+
+  isPanelClosed () {
+    return this.panelStatus === TabScript.statuses.panel.CLOSED
+  }
+
+  setPanelOpen () {
+    this.setItem('panelStatus', TabScript.statuses.panel.OPEN)
+    return this
+  }
+
+  setPanelClosed () {
+    this.setItem('panelStatus', TabScript.statuses.panel.CLOSED)
+    return this
+  }
+
   hasSameID (tabID) {
     return this.tabID === tabID
   }
@@ -2085,24 +2151,6 @@ class TabScript {
     return this
   }
 
-  isPanelOpened () {
-    return this.panelStatus === TabScript.statuses.panel.OPEN
-  }
-
-  isPanelClosed () {
-    return this.panelStatus === TabScript.statuses.panel.CLOSED
-  }
-
-  openPanel () {
-    this.panelStatus = TabScript.statuses.panel.OPEN
-    return this
-  }
-
-  closePanel () {
-    this.panelStatus = TabScript.statuses.panel.CLOSED
-    return this
-  }
-
   update (source) {
     for (let key of Object.keys(source)) {
       this[key] = source[key]
@@ -2116,14 +2164,17 @@ class TabScript {
       _changedEntries: []
     }
     for (let key of Object.keys(state)) {
-      if (this.hasOwnProperty(key)) {
-        if (this[key] !== state[key]) {
-          diff[key] = state[key]
-          diff['_changedKeys'].push(key)
-          diff['_changedEntries'].push([key, state[key]])
+      // Build diffs only for data properties
+      if (TabScript.dataProps.includes(key)) {
+        if (this.hasOwnProperty(key)) {
+          if (this[key] !== state[key]) {
+            diff[key] = state[key]
+            diff['_changedKeys'].push(key)
+            diff['_changedEntries'].push([key, state[key]])
+          }
+        } else {
+          console.warn(`TabScript has no property named "${key}"`)
         }
-      } else {
-        console.warn(`TabScript has no property named "${key}"`)
       }
     }
 
@@ -2148,26 +2199,31 @@ class TabScript {
   /**
    * Creates a serializable copy of a source object.
    * @param {TabScript} source - An object to be serialized.
-   * @return {source} A serializable copy of a source.
+   * @return {TabScript} A serializable copy of a source.
    */
   static serializable (source) {
     let serializable = TabScript.create(source)
     for (let key of Object.keys(serializable)) {
-      let value = serializable[key]
-      if (typeof value === 'symbol') { serializable[key] = Symbol.keyFor(value) }
+      if (TabScript.dataProps.includes(key)) {
+        /*
+        Only certain features will be stored within a serialized version of a TabScript. This is done
+        to prevent context-specific features (such as local event handlers) to be passed over the network
+        to a different context where they would make no sense.
+         */
+        let value = serializable[key]
+        if (typeof value === 'symbol') { serializable[key] = Symbol.keyFor(value) }
+      }
     }
     return serializable
   }
 
   static readObject (jsonObject) {
-    let props = ['tabID']
-    let symbolProps = ['status', 'panelStatus']
     let tabScript = new TabScript()
 
-    for (let prop of props) {
+    for (let prop of TabScript.genericProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
     }
-    for (let prop of symbolProps) {
+    for (let prop of TabScript.symbolProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
     }
 
@@ -9261,8 +9317,541 @@ class Presenter {
 /* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(22);
-var bytesToUuid = __webpack_require__(23);
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+/**
+ * A base object class for an Experience object.
+ */
+class Experience {
+  constructor (description) {
+    this.description = description;
+    this.startTime = undefined;
+    this.endTime = undefined;
+    this.details = [];
+  }
+
+  static readObject (jsonObject) {
+    let experience = new Experience(jsonObject.description);
+    if (jsonObject.startTime) { experience.startTime = jsonObject.startTime; }
+    if (jsonObject.endTime) { experience.endTime = jsonObject.endTime; }
+    for (let detailsItem of jsonObject.details) {
+      experience.details.push(Experience.readObject(detailsItem));
+    }
+    return experience
+  }
+
+  attach (experience) {
+    this.details.push(experience);
+  }
+
+  start () {
+    this.startTime = new Date().getTime();
+    return this
+  }
+
+  complete () {
+    this.endTime = new Date().getTime();
+    return this
+  }
+
+  get duration () {
+    return this.endTime - this.startTime
+  }
+
+  toString () {
+    return `"${this.description}" experience duration is ${this.duration} ms`
+  }
+}
+
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+var rng;
+
+var crypto = commonjsGlobal.crypto || commonjsGlobal.msCrypto; // for IE 11
+if (crypto && crypto.getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+  rng = function whatwgRNG() {
+    crypto.getRandomValues(rnds8);
+    return rnds8;
+  };
+}
+
+if (!rng) {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+  rng = function() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+var rngBrowser = rng;
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  return bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]];
+}
+
+var bytesToUuid_1 = bytesToUuid;
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options == 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rngBrowser)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid_1(rnds);
+}
+
+var v4_1 = v4;
+
+/* global browser */
+
+/**
+ * Represents an adapter for a local storage where experiences are accumulated before a batch of
+ * experiences is sent to a remote server and is removed from a local storage.
+ * Currently a `browser.storage.local` local storage is used.
+ */
+class LocalStorageAdapter {
+  /**
+   * Returns an adapter default values
+   * @return {{prefix: string}}
+   */
+  static get defaults () {
+    return {
+      // A prefix used to distinguish experience objects from objects of other types
+      prefix: 'experience_'
+    }
+  }
+
+  /**
+   * Stores a single experience to the local storage.
+   * @param {Experience} experience - An experience object to be saved.
+   */
+  static write (experience) {
+    // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
+    let uuid = `${LocalStorageAdapter.defaults.prefix}${v4_1()}`;
+
+    browser.storage.local.set({[uuid]: experience}).then(
+      () => {
+        console.log(`Experience has been written to the local storage successfully`);
+      },
+      (error) => {
+        console.error(`Cannot write experience to the local storage because of the following error: ${error}`);
+      }
+    );
+  }
+
+  /**
+   * Reads all experiences that are present in a local storage.
+   * @return {Promise.<{key: Experience}, Error>} Returns a promise that resolves with an object
+   * containing key: value pairs for each experience stored and rejects with an Error object.
+   */
+  static async readAll () {
+    try {
+      return await browser.storage.local.get()
+    } catch (error) {
+      console.error(`Cannot read data from the local storage because of the following error: ${error}`);
+      return error
+    }
+  }
+
+  /**
+   * Removes experience objects with specified keys from a local storage.
+   * @param {String[]} keys - an array of keys that specifies what Experience objects need to be removed.
+   * @return {Promise.<*|{minArgs, maxArgs}>} A Promise that will be fulfilled with no arguments
+   * if the operation succeeded. If the operation failed, the promise will be rejected with an error message.
+   */
+  static async remove (keys) {
+    return browser.storage.local.remove(keys)
+  }
+}
+
+class Monitor {
+  constructor (monitoringDataList) {
+    this.monitored = new Map();
+    if (monitoringDataList) {
+      for (let monitoringData of monitoringDataList) {
+        this.monitored.set(monitoringData.monitoredFunction, monitoringData);
+      }
+    }
+  }
+
+  static track (object, monitoringDataList) {
+    return new Proxy(object, new Monitor(monitoringDataList))
+  }
+
+  get (target, property, receiver) {
+    if (this.monitored.has(property)) {
+      let monitoringData = this.monitored.get(property);
+      if (monitoringData.hasOwnProperty('asyncWrapper')) {
+        return Monitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
+      } else {
+        console.error(`Only async wrappers are supported by monitor`);
+      }
+    }
+    return target[property]
+  }
+
+  monitor (functionName, functionConfig) {
+    this.monitored.set(functionName, functionConfig);
+  }
+
+  static syncWrapper (target, property, experience) {
+    console.log(`${property}() sync method has been called`);
+    const origMethod = target[property];
+    return function (...args) {
+      let result = origMethod.apply(this, args);
+      console.log(`${property}() sync method has been completed`);
+      experience.complete();
+      console.log(`${experience}`);
+      return result
+    }
+  }
+
+  /**
+   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
+   * as a direct result of a user action: use of UI controls, etc.
+   * @param target
+   * @param property
+   * @param actionFunction
+   * @param monitoringData
+   * @return {Function}
+   */
+  static asyncWrapper (target, property, actionFunction, monitoringData) {
+    console.log(`${property}() async method has been requested`);
+    return async function (...args) {
+      try {
+        return await actionFunction(this, target, property, args, monitoringData, LocalStorageAdapter)
+      } catch (error) {
+        console.error(`${property}() failed: ${error.value}`);
+        throw error
+      }
+    }
+  }
+
+  /**
+   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
+   * as a direct result of a user action: use of UI controls, and such.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @param monitoringData
+   * @param storage
+   * @return {Promise.<*>}
+   */
+  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
+    let experience = new Experience(monitoringData.experience);
+    console.log(`${property}() async method has been called`);
+    // Last item in arguments list is a transaction
+    args.push(experience);
+    let result = await target[property].apply(monitor, args);
+    // resultObject.value is a returned message, experience object is in a `experience` property
+    experience = result.state;
+    experience.complete();
+    console.log(`${property}() completed with success, experience is:`, experience);
+
+    storage.write(experience);
+    return result
+  }
+
+  /**
+   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
+   * functions that create user experience.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @param monitoringData
+   * @return {Promise.<*>}
+   */
+  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
+    let experience = new Experience(monitoringData.experience);
+    console.log(`${property}() async method has been called`);
+    let resultObject = await target[property].apply(monitor, args);
+    experience.complete();
+    resultObject.state.attach(experience);
+    console.log(`${property}() completed with success, experience is: ${experience}`);
+    return resultObject
+  }
+
+  /**
+   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @return {Promise.<*>}
+   */
+  static async attachToMessage (monitor, target, property, args) {
+    console.log(`${property}() async method has been called`);
+    // First argument is always a request object, last argument is a state (Experience) object
+    args[0].experience = args[args.length - 1];
+    let result = await target[property].apply(monitor, args);
+    console.log(`${property}() completed with success`);
+    return result
+  }
+
+  /**
+   * This is a wrapper around functions that handle incoming messages with an experience object attached.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @return {Promise.<*>}
+   */
+  static async detachFromMessage (monitor, target, property, args) {
+    console.log(`${property}() async method has been called`);
+    // First argument is an incoming request object
+    if (args[0].experience) {
+      args.push(Experience.readObject(args[0].experience));
+    } else {
+      console.warn(`This message has no experience data attached. Experience data will not be recorded`);
+    }
+    let result = await target[property].apply(monitor, args);
+    console.log(`${property}() completed with success`);
+    return result
+  }
+}
+
+const experienceActions = {
+  START: Symbol('Experience start'),
+  STOP: Symbol('Experience stop')
+};
+
+const eventTypes = {
+  CONSTRUCT: Symbol('Construct'),
+  GET: Symbol('Get'),
+  SET: Symbol('Set')
+};
+
+class ObjectMonitor {
+  constructor (options = {}) {
+    this.experienceDescription = '';
+    for (let event of Object.values(ObjectMonitor.events)) {
+      this[event] = [];
+    }
+
+    if (options) {
+      if (options.experience) { this.experienceDescription = options.experience; }
+      if (options.actions) {
+        for (const action of options.actions) {
+          this[action.event].push(action);
+        }
+      }
+    }
+  }
+
+  static get actions () {
+    return experienceActions
+  }
+
+  static get events () {
+    return eventTypes
+  }
+
+  static track (object, options) {
+    return new Proxy(object, new ObjectMonitor(options))
+  }
+
+  get (target, property) {
+    for (let action of this[ObjectMonitor.events.GET]) {
+      if (action.name === property) { this.experienceAction(action); }
+    }
+    return target[property]
+  }
+
+  set (target, property, value) {
+    for (let action of this[ObjectMonitor.events.SET]) {
+      if (action.name === property) { this.experienceAction(action); }
+    }
+    target[property] = value;
+    return true // Success of a set operation
+  }
+
+  experienceAction (action) {
+    if (action.action === ObjectMonitor.actions.START) {
+      this.experience = new Experience(this.experienceDescription).start();
+      console.log(`Experience started`);
+    } else if (action.action === ObjectMonitor.actions.STOP) {
+      this.experience.complete();
+      console.log(`Experience completed:`, this.experience);
+      LocalStorageAdapter.write(this.experience);
+    }
+  }
+}
+
+/**
+ * Responsible form transporting experiences from one storage to the other. Current implementation
+ * sends a batch of experience objects to the remote server once a certain amount of them
+ * is accumulated in a local storage.
+ */
+class Transporter {
+  /**
+   * Sets a transporter configuration.
+   * @param {LocalStorageAdapter} localStorage - Represents local storage where experience objects are
+   * accumulated before being sent to a remote server.
+   * @param {RemoteStorageAdapter} remoteStorage - Represents a remote server that stores experience objects.
+   * @param {number} qtyThreshold - A minimal number of experiences to be sent to a remote storage.
+   * @param {number} interval - Interval, in milliseconds, of checking a local storage for changes
+   */
+  constructor (localStorage, remoteStorage, qtyThreshold, interval) {
+    this.localStorage = localStorage;
+    this.remoteStorage = remoteStorage;
+    this.qtyThreshold = qtyThreshold;
+    window.setInterval(this.checkExperienceStorage.bind(this), interval);
+  }
+
+  /**
+   * Runs at a specified interval and check if any new experience objects has been recorded to the local storage.
+   * If number of experience records exceeds a threshold, sends all experiences to the remote server and
+   * removes them from local storage.
+   * @return {Promise.<void>}
+   */
+  async checkExperienceStorage () {
+    console.log(`Experience storage check`);
+    let records = await this.localStorage.readAll();
+    let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
+    if (keys.length > this.qtyThreshold) {
+      await this.sendExperiencesToRemote();
+    }
+  }
+
+  /**
+   * If there are any experiences in the local storage, sends all of them to a remote server and, if succeeded,
+   * removes them from a local storage.
+   * @return {Promise.<*>}
+   */
+  async sendExperiencesToRemote () {
+    try {
+      let records = await this.localStorage.readAll();
+      let values = Object.values(records);
+      let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
+      if (keys.length > 0) {
+        // If there are any records in a local storage
+        await this.remoteStorage.write(values);
+        await this.localStorage.remove(keys);
+      } else {
+        console.log(`No data in local experience storage`);
+      }
+    } catch (error) {
+      console.error(`Cannot send experiences to a remote server: ${error}`);
+      return error
+    }
+  }
+}
+
+/**
+ * Defines an API for storing experiences on a remote server, such as LRS.
+ */
+class RemoteStorageAdapter {
+  /**
+   * Stores one or several experiences on a remote server.
+   * @param {Experience[]} experiences - An array of experiences to store remotely.
+   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
+   * and is rejected when storing on a remote server failed.
+   */
+  static write (experiences) {
+    console.warn(`This method should be implemented within a subclass and should never be called directly.  
+      If you see this message then something is probably goes wrong`);
+    return new Promise()
+  }
+}
+
+/**
+ * This is a test implementation of a remote experience store adapter. It does not send anything anywhere
+ * and just records experiences that are passed to it.
+ */
+class TestAdapter extends RemoteStorageAdapter {
+  /**
+   * Imitates storing of one or several experiences on a remote server.
+   * @param {Experience[]} experiences - An array of experiences to store remotely.
+   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
+   * and is rejected when storing on a remote server failed.
+   */
+  static write (experiences) {
+    return new Promise((resolve, reject) => {
+      if (!experiences) {
+        reject(new Error(`experience cannot be empty`));
+        return
+      }
+      if (!Array.isArray(experiences)) {
+        reject(new Error(`experiences must be an array`));
+        return
+      }
+      console.log('Experience sent to a remote server:');
+      for (let experience of experiences) {
+        console.log(experience);
+      }
+      resolve();
+    })
+  }
+}
+
+exports.Experience = Experience;
+exports.Monitor = Monitor;
+exports.ObjectMonitor = ObjectMonitor;
+exports.Transporter = Transporter;
+exports.StorageAdapter = LocalStorageAdapter;
+exports.TestAdapter = TestAdapter;
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var rng = __webpack_require__(17);
+var bytesToUuid = __webpack_require__(18);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -9293,7 +9882,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -9338,7 +9927,7 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a"
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var apply = Function.prototype.apply;
@@ -9391,18 +9980,18 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(36);
+__webpack_require__(31);
 exports.setImmediate = setImmediate;
 exports.clearImmediate = clearImmediate;
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(35);
 
 
 
@@ -9479,7 +10068,7 @@ class Component {
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var require;var require;/**
@@ -16634,11 +17223,11 @@ win.init = init;
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_interactjs__);
 //
 //
@@ -16758,13 +17347,13 @@ win.init = init;
 });
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(56);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
 
 
@@ -16784,22 +17373,23 @@ contentProcess.initialize()
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__experience_src_object_monitor__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_alpheios_experience__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__ = __webpack_require__(22);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_selection_media_html_selector__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lexical_query__ = __webpack_require__(33);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__ui_controller__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_selection_media_html_selector__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lexical_query__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__content_ui_controller__ = __webpack_require__(29);
 /* global browser */
 
 
@@ -16816,16 +17406,15 @@ contentProcess.initialize()
 
 class ContentProcess {
   constructor () {
-    this.state = new __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */]()
+    this.state = new __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */]().setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.status = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.PENDING
     this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED
-    this.settings = ContentProcess.settingValues
 
     this.messagingService = new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__["a" /* default */]()
 
     this.maAdapter = new __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__["a" /* default */]() // Morphological analyzer adapter, with default arguments
     this.langData = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* LanguageData */]([__WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["c" /* LatinDataSet */], __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* GreekDataSet */]]).loadData()
-    this.ui = new __WEBPACK_IMPORTED_MODULE_11__ui_controller__["a" /* default */](this.state, this.sendStateToBackground.bind(this))
+    this.ui = new __WEBPACK_IMPORTED_MODULE_11__content_ui_controller__["a" /* default */](this.state)
     this.options = this.ui.getOptions()
   }
 
@@ -16836,12 +17425,6 @@ class ContentProcess {
 
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
     this.reactivate()
-  }
-
-  static get settingValues () {
-    return {
-      requestTimeout: 60000
-    }
   }
 
   /**
@@ -16913,13 +17496,21 @@ class ContentProcess {
       let textSelector = __WEBPACK_IMPORTED_MODULE_9__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.options.items.defaultLanguage.currentValue)
 
       if (!textSelector.isEmpty()) {
-        let query = __WEBPACK_IMPORTED_MODULE_3__experience_src_object_monitor__["a" /* default */].track(__WEBPACK_IMPORTED_MODULE_10__lexical_query__["a" /* default */].create(textSelector, {
-          uiController: this.ui,
-          maAdapter: this.maAdapter,
-          langData: this.langData,
-          lexicons: __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__["a" /* Lexicons */]
-        }))
-        query.getData()
+        __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].track(
+          __WEBPACK_IMPORTED_MODULE_10__lexical_query__["a" /* default */].create(textSelector, {
+            uiController: this.ui,
+            maAdapter: this.maAdapter,
+            langData: this.langData,
+            lexicons: __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__["a" /* Lexicons */]
+          }),
+          {
+            experience: 'Get word data',
+            actions: [
+              { name: 'getData', action: __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].actions.START, event: __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].events.GET },
+              { name: 'finalize', action: __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].actions.STOP, event: __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].events.GET }
+            ]
+          })
+        .getData()
       }
     }
   }
@@ -16929,7 +17520,7 @@ class ContentProcess {
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -17361,7 +17952,7 @@ class TuftsAdapter extends BaseAdapter {
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -19333,466 +19924,81 @@ class Lexicons {
 
 
 /***/ }),
-/* 16 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__experience__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__local_storage__ = __webpack_require__(18);
-
-
-
-class ObjectMonitor {
-  constructor (monitoringDataList) {
-    this.monitored = new Map()
-    if (monitoringDataList) {
-      for (let monitoringData of monitoringDataList) {
-        this.monitored.set(monitoringData.monitoredFunction, monitoringData)
-      }
-    }
-  }
-
-  static track (object, monitoringDataList) {
-    return new Proxy(object, new ObjectMonitor(monitoringDataList))
-  }
-
-  get (target, property, receiver) {
-    if (this.monitored.has(property)) {
-      let monitoringData = this.monitored.get(property)
-      if (monitoringData.hasOwnProperty('asyncWrapper')) {
-        return ObjectMonitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
-      } else {
-        console.error(`Only async wrappers are supported by monitor`)
-      }
-    }
-    return target[property]
-  }
-
-  monitor (functionName, functionConfig) {
-    this.monitored.set(functionName, functionConfig)
-  }
-
-  static syncWrapper (target, property, experience) {
-    console.log(`${property}() sync method has been called`)
-    const origMethod = target[property]
-    return function (...args) {
-      let result = origMethod.apply(this, args)
-      console.log(`${property}() sync method has been completed`)
-      experience.complete()
-      console.log(`${experience}`)
-      return result
-    }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, etc.
-   * @param target
-   * @param property
-   * @param actionFunction
-   * @param monitoringData
-   * @return {Function}
-   */
-  static asyncWrapper (target, property, actionFunction, monitoringData) {
-    console.log(`${property}() async method has been requested`)
-    return async function (...args) {
-      try {
-        return await actionFunction(this, target, property, args, monitoringData, __WEBPACK_IMPORTED_MODULE_1__local_storage__["a" /* default */])
-      } catch (error) {
-        console.error(`${property}() failed: ${error.value}`)
-        throw error
-      }
-    }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, and such.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @param storage
-   * @return {Promise.<*>}
-   */
-  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
-    let experience = new __WEBPACK_IMPORTED_MODULE_0__experience__["a" /* default */](monitoringData.experience)
-    console.log(`${property}() async method has been called`)
-    // Last item in arguments list is a transaction
-    args.push(experience)
-    let result = await target[property].apply(monitor, args)
-    // resultObject.value is a returned message, experience object is in a `experience` property
-    experience = result.state
-    experience.complete()
-    console.log(`${property}() completed with success, experience is:`, experience)
-
-    storage.write(experience)
-    return result
-  }
-
-  /**
-   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
-   * functions that create user experience.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @return {Promise.<*>}
-   */
-  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
-    let experience = new __WEBPACK_IMPORTED_MODULE_0__experience__["a" /* default */](monitoringData.experience)
-    console.log(`${property}() async method has been called`)
-    let resultObject = await target[property].apply(monitor, args)
-    experience.complete()
-    resultObject.state.attach(experience)
-    console.log(`${property}() completed with success, experience is: ${experience}`)
-    return resultObject
-  }
-
-  /**
-   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async attachToMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`)
-    // First argument is always a request object, last argument is a state (Experience) object
-    args[0].experience = args[args.length - 1]
-    let result = await target[property].apply(monitor, args)
-    console.log(`${property}() completed with success`)
-    return result
-  }
-
-  /**
-   * This is a wrapper around functions that handle incoming messages with an experience object attached.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async detachFromMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`)
-    // First argument is an incoming request object
-    if (args[0].experience) {
-      args.push(__WEBPACK_IMPORTED_MODULE_0__experience__["a" /* default */].readObject(args[0].experience))
-    } else {
-      console.warn(`This message has no experience data attached. Experience data will not be recorded`)
-    }
-    let result = await target[property].apply(monitor, args)
-    console.log(`${property}() completed with success`)
-    return result
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = ObjectMonitor;
-
-
-
-/***/ }),
 /* 17 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
-/**
- * A base object class for an Experience object.
- */
-class Experience {
-  constructor (description) {
-    this.description = description
-    this.startTime = new Date().getTime()
-    this.endTime = undefined
-    this.details = []
-  }
+/* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+var rng;
 
-  static readObject (jsonObject) {
-    let experience = new Experience(jsonObject.description)
-    if (jsonObject.startTime) { experience.startTime = jsonObject.startTime }
-    if (jsonObject.endTime) { experience.endTime = jsonObject.endTime }
-    for (let detailsItem of jsonObject.details) {
-      experience.details.push(Experience.readObject(detailsItem))
-    }
-    return experience
-  }
-
-  attach (experience) {
-    this.details.push(experience)
-  }
-
-  complete () {
-    this.endTime = new Date().getTime()
-  }
-
-  get duration () {
-    return this.endTime - this.startTime
-  }
-
-  toString () {
-    return `"${this.description}" experience duration is ${this.duration} ms`
-  }
+var crypto = global.crypto || global.msCrypto; // for IE 11
+if (crypto && crypto.getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+  rng = function whatwgRNG() {
+    crypto.getRandomValues(rnds8);
+    return rnds8;
+  };
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = Experience;
 
+if (!rng) {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+  rng = function() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
 
+    return rnds;
+  };
+}
+
+module.exports = rng;
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
 /* 18 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
-/* global browser */
-
-
+/***/ (function(module, exports) {
 
 /**
- * Represents an adapter for a local storage where experiences are accumulated before a batch of
- * experiences is sent to a remote server and is removed from a local storage.
- * Currently a `browser.storage.local` local storage is used.
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
  */
-class LocalStorageAdapter {
-  /**
-   * Returns an adapter default values
-   * @return {{prefix: string}}
-   */
-  static get defaults () {
-    return {
-      // A prefix used to distinguish experience objects from objects of other types
-      prefix: 'experience_'
-    }
-  }
-
-  /**
-   * Stores a single experience to the local storage.
-   * @param {Experience} experience - An experience object to be saved.
-   */
-  static write (experience) {
-    // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
-    let uuid = `${LocalStorageAdapter.defaults.prefix}${__WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()}`
-
-    browser.storage.local.set({[uuid]: experience}).then(
-      () => {
-        console.log(`Experience has been written to the local storage successfully`)
-      },
-      (error) => {
-        console.error(`Cannot write experience to the local storage because of the following error: ${error}`)
-      }
-    )
-  }
-
-  /**
-   * Reads all experiences that are present in a local storage.
-   * @return {Promise.<{key: Experience}, Error>} Returns a promise that resolves with an object
-   * containing key: value pairs for each experience stored and rejects with an Error object.
-   */
-  static async readAll () {
-    try {
-      return await browser.storage.local.get()
-    } catch (error) {
-      console.error(`Cannot read data from the local storage because of the following error: ${error}`)
-      return error
-    }
-  }
-
-  /**
-   * Removes experience objects with specified keys from a local storage.
-   * @param {String[]} keys - an array of keys that specifies what Experience objects need to be removed.
-   * @return {Promise.<*|{minArgs, maxArgs}>} A Promise that will be fulfilled with no arguments
-   * if the operation succeeded. If the operation failed, the promise will be rejected with an error message.
-   */
-  static async remove (keys) {
-    return browser.storage.local.remove(keys)
-  }
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = LocalStorageAdapter;
 
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  return bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]];
+}
+
+module.exports = bytesToUuid;
 
 
 /***/ }),
 /* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var rng = __webpack_require__(20);
-var bytesToUuid = __webpack_require__(21);
-
-function v4(options, buf, offset) {
-  var i = buf && offset || 0;
-
-  if (typeof(options) == 'string') {
-    buf = options == 'binary' ? new Array(16) : null;
-    options = null;
-  }
-  options = options || {};
-
-  var rnds = options.random || (options.rng || rng)();
-
-  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-  rnds[6] = (rnds[6] & 0x0f) | 0x40;
-  rnds[8] = (rnds[8] & 0x3f) | 0x80;
-
-  // Copy bytes to buffer, if provided
-  if (buf) {
-    for (var ii = 0; ii < 16; ++ii) {
-      buf[i + ii] = rnds[ii];
-    }
-  }
-
-  return buf || bytesToUuid(rnds);
-}
-
-module.exports = v4;
-
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
-// browser this is a little complicated due to unknown quality of Math.random()
-// and inconsistent support for the `crypto` API.  We do the best we can via
-// feature-detection
-var rng;
-
-var crypto = global.crypto || global.msCrypto; // for IE 11
-if (crypto && crypto.getRandomValues) {
-  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
-  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
-  rng = function whatwgRNG() {
-    crypto.getRandomValues(rnds8);
-    return rnds8;
-  };
-}
-
-if (!rng) {
-  // Math.random()-based (RNG)
-  //
-  // If all else fails, use Math.random().  It's fast, but is of unspecified
-  // quality.
-  var rnds = new Array(16);
-  rng = function() {
-    for (var i = 0, r; i < 16; i++) {
-      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-    }
-
-    return rnds;
-  };
-}
-
-module.exports = rng;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports) {
-
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-var byteToHex = [];
-for (var i = 0; i < 256; ++i) {
-  byteToHex[i] = (i + 0x100).toString(16).substr(1);
-}
-
-function bytesToUuid(buf, offset) {
-  var i = offset || 0;
-  var bth = byteToHex;
-  return bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]];
-}
-
-module.exports = bytesToUuid;
-
-
-/***/ }),
-/* 22 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
-// browser this is a little complicated due to unknown quality of Math.random()
-// and inconsistent support for the `crypto` API.  We do the best we can via
-// feature-detection
-var rng;
-
-var crypto = global.crypto || global.msCrypto; // for IE 11
-if (crypto && crypto.getRandomValues) {
-  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
-  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
-  rng = function whatwgRNG() {
-    crypto.getRandomValues(rnds8);
-    return rnds8;
-  };
-}
-
-if (!rng) {
-  // Math.random()-based (RNG)
-  //
-  // If all else fails, use Math.random().  It's fast, but is of unspecified
-  // quality.
-  var rnds = new Array(16);
-  rng = function() {
-    for (var i = 0, r; i < 16; i++) {
-      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-    }
-
-    return rnds;
-  };
-}
-
-module.exports = rng;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
-
-/***/ }),
-/* 23 */
-/***/ (function(module, exports) {
-
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-var byteToHex = [];
-for (var i = 0; i < 256; ++i) {
-  byteToHex[i] = (i + 0x100).toString(16).substr(1);
-}
-
-function bytesToUuid(buf, offset) {
-  var i = offset || 0;
-  var bth = byteToHex;
-  return bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]];
-}
-
-module.exports = bytesToUuid;
-
-
-/***/ }),
-/* 24 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(20);
 /* global browser */
 
 
@@ -19936,7 +20142,7 @@ class Service {
 
 
 /***/ }),
-/* 25 */
+/* 20 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -19958,7 +20164,7 @@ class StoredRequest {
 
 
 /***/ }),
-/* 26 */
+/* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -19978,12 +20184,12 @@ class StateMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default
 
 
 /***/ }),
-/* 27 */
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(3);
 
 
@@ -20006,15 +20212,15 @@ class StateResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a" 
 
 
 /***/ }),
-/* 28 */
+/* 23 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(27);
  // To polyfill Element.closest() if required
 
 
@@ -20202,7 +20408,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 29 */
+/* 24 */
 /***/ (function(module, exports) {
 
 // element-closest | CC0-1.0 | github.com/jonathantneal/closest
@@ -20241,11 +20447,11 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 30 */
+/* 25 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(26);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
 
 
@@ -20328,7 +20534,7 @@ class TextSelector {
 
 
 /***/ }),
-/* 31 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20342,7 +20548,7 @@ class TextQuoteSelector {
 
 
 /***/ }),
-/* 32 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20385,11 +20591,11 @@ class MediaSelector {
 
 
 /***/ }),
-/* 33 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
 
 
@@ -20430,7 +20636,7 @@ class LexicalQuery {
 
     let result = iterator.next()
     while (true) {
-      if (!this.active) { break }
+      if (!this.active) { this.finalize() }
       if (LexicalQuery.isPromise(result.value)) {
         try {
           let resolvedValue = await result.value
@@ -20532,22 +20738,22 @@ class LexicalQuery {
 
 
 /***/ }),
-/* 34 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue__ = __webpack_require__(30);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__template_htmlf__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__template_htmlf__ = __webpack_require__(33);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_panel_component__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_panel_component__ = __webpack_require__(34);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_options_component__ = __webpack_require__(44);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_popup_vue__ = __webpack_require__(46);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__ = __webpack_require__(54);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__components_options_component__ = __webpack_require__(39);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_popup_vue__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__ = __webpack_require__(49);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(55);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(50);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons__);
 /* global Node */
  // Required for Presenter
@@ -20560,11 +20766,10 @@ class LexicalQuery {
 
 
 
-class UIController {
-  constructor (state, stateWatcher) {
+class ContentUIController {
+  constructor (state) {
     this.state = state
-    this.stateWatcher = stateWatcher
-    this.settings = UIController.settingValues
+    this.settings = ContentUIController.settingValues
 
     // Finds a max z-index of element on the page.
     // Need to run this before our UI elements are loaded to avoid scanning them too.
@@ -20803,14 +21008,12 @@ class UIController {
 
   openPanel () {
     this.panel.open()
-    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN
-    this.stateWatcher()
+    this.state.setPanelOpen()
   }
 
   closePanel () {
     this.panel.close()
-    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED
-    this.stateWatcher()
+    this.state.setPanelClosed()
   }
 
   optionChangeListener (optionName, optionValue) {
@@ -20831,12 +21034,12 @@ class UIController {
     }
   }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = UIController;
+/* harmony export (immutable) */ __webpack_exports__["a"] = ContentUIController;
 
 
 
 /***/ }),
-/* 35 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
@@ -31638,10 +31841,10 @@ return Vue$3;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(8).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(9).setImmediate))
 
 /***/ }),
-/* 36 */
+/* 31 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -31831,10 +32034,10 @@ return Vue$3;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(37)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(32)))
 
 /***/ }),
-/* 37 */
+/* 32 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -32024,20 +32227,20 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 38 */
+/* 33 */
 /***/ (function(module, exports) {
 
 module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :content=\"content\" :visible=\"visible\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div data-component=\"alpheios-panel\"></div>";
 
 /***/ }),
-/* 39 */
+/* 34 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(42);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(37);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_interactjs__);
 
 
@@ -32251,12 +32454,12 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
 
 
 /***/ }),
-/* 40 */
+/* 35 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(36);
 
 
 
@@ -32311,7 +32514,7 @@ class TabGroup {
 
 
 /***/ }),
-/* 41 */
+/* 36 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -32342,24 +32545,24 @@ class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default *
 
 
 /***/ }),
-/* 42 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(43) + "\"></div>\r\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\"\r\n                     id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\"\r\n                     class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n</div>\r\n";
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(38) + "\"></div>\r\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: shrink; ratio: 2\"></span>\r\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: expand; ratio: 2\"></span>\r\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\"\r\n                     id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\"\r\n                     class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n</div>\r\n";
 
 /***/ }),
-/* 43 */
+/* 38 */
 /***/ (function(module, exports) {
 
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAzMYbbAAAAolBMVEUAAAD///8GITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITWPtMG85fAGITW85fAGITVPb4C85fAGITWbwc685fAGITW85fAGITU+XW+85fAGITU6WWq85fAGITW85fAGITURLUEdOkwoRlg0UmQ/Xm9Ka3tWd4dhg5Nsj554nKqDqLaPtMGawM2lzdmx2eS85fBSA/ZbAAAAJXRSTlMAABAQICAwMEBAUFBgYHBwgICAj4+fn5+vr6+/v8/Pz9/f3+/vxRX+wgAABfhJREFUaN7dWn9XqzgQpTykkYeVFVnZh+zjicOPUoqU9vt/tZ1JQggt1dZ/lJ1zPIcmBHIzd+5MgsbCmLLlLZkxXzuBdfvw/HKQ9vrr/ub/AGv59Ho4sufbucO6ez5M2fNyzrCW06DI7ucL6/Hwjj19g5lan4D14/fh8L1xmQm7Gtby9fCBfTUPzQhSdiWsE1Rt29R13bS7oemLdcMDgNi6CtaIgbu6zEBZtm5k++8vdpcD4ZUk/KUwdZucsJQb9FTbbus1/iyky+6+GJdnXgfrpwJVIaZ10+l03K0hE7heLgiAbyTwP/paqckgb/Yc31tNtuV4mh7XR9FlhiOxcj2G5niqjXm9ubZskWYZlrziHcxhg42GutrjwwSjLXS1pbSCBNLIYybBupeoKsi23D/VEFv5GzZsoeA3PL6Pyk5xgPZe26OGZKXi3GKxenDE5+9FdJ34zGA+3QwhH295yRDdYqhDQ9N+OTDS1B3pSp9AHGEHI1jSWW/CKV1JOlG3ZFskZYVta6jHomGZk6iC1QiX4eNbHf0ehg0BLjS+PxVoaXbiyhV9vT4g2ggtBnto8UdPjhzmhKCNwmcRRCf1ENZSoNpnsBNELJohsrqCcHVZxrkpuebGEE1kS2pEXPZYlNkxLG8EIer9ofqOfgRsottVvGCpepTdP2qF8BeyaGq4X1oAQcRNWWRl1R72BXmqFu6iWt4OKIE4J7B8seoRJObHsAxa7Mtg2ROwLO2a2sVLmMKKK7uQBe6aOyuHRhIR4wqIgl0G3aGDjMMiR0HqT2RFXKpQrqN3GSz/EljO6VDyIF7T4pmm/MFfbXJCykVdSLrlGY8vctmOiEisa3L00hZKkhPUju5f9HjkTupFIFcKFzK9jISWgsVIuk5hRZ7nD6Gpd6fS174vuZeqgIPUG8GiySPZSPlKDk4GXIce3CHedYMuTIMz5QutlN3HrfMRLAoIuTpRL2hxfAxLGDuFZUkKe6JFyaUphDa2T2G16BR+2Ufchkfdju4v/jZVgkjH+FzFpUjTs0lYCaobqAQXgW6n3nInvMUELFocqn4HHpu+kHx7ClYr9EG6K6M/CrNyd/ipQOnCIP2fKjYm78LC2a4GtZRzwrQbXBxbPe3MhM8i1nhvi0SowSp4bG3IW/mg8BVUBVVUGyLmLZf3iAh8lLjGi/6xZBzDOq+EZ2KLM12UIL1kSN6Izh5WCeQcrngYW3uRtZoq55K4RtiI9cb2iL6xe5KNiVeivIk0KBos5n8aljmphLGeuflLXEf99pTAb7haVERA1PSsRBM7ExSNDAhrzRti3+5rI212Kg+NPDRcWyIWPwHLiify1pCDqQyQr3YCNZeVSsdC2zteQe25k6DAGgrzGf2VBeds4Fqas61LYPElZHFwPQmFf2PvTJUBIb3fRp7Epgy5PiunpiqeDqJA2vblem8bnpZRMaD8S2N6NKr+LFBCEWj1bjCEmzNR2En2gqn6lIau4FjhR91Y93HmkKhC1IcEhjxjrkgeqtSthABidbuRG659K3iXV6QnWd5vTLhqRIOayYI7wsV0OZLUp7l4Q70upIrxkh4CrQzhpWqCexfZ5/MVcaJj/emHqqU0RQMOHlY3EE08eSyMB1nVQtbJXRfkFFqZgESBlQNVV5x09irkqqHn4l4WTMMWxLQsUZkdnYjZo9vFCP5MS/XZ0xuEUXcv5u6wcdN2dHa/jZTnM7XcVu23ElG5oY0yFYsVBtgWPMcL+RbKt+dw/CnddShU0aTbFuq2grUQDUjD1ffHJI9o5METbkKKsV7gsVqZq/hAd1nGTGyhHRPuUSFKsTF+qzcSECaxeovJ+CaE2YCSx593qrTN9SKorOp2j9ykZPyEouvO7dPC8F2ha/ihE/psr8rCFrMXw+QUzg2W8XT+9H2LO+Y3OvxIYH4fgs5/B2qxrP+HPOXa84Nl3J39aALlk5Ems/0aee4TV4HkC2GusDAvTzvsD+mFPV9Yxs2EcrzcusCMudnR/2XcPLyMQdHnn/mhOv13E2N5/0tCe36c4b8ucPsPj8KYSwhZmDoAAAAASUVORK5CYII="
 
 /***/ }),
-/* 44 */
+/* 39 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(45);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(40);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
 /* global browser */
 
@@ -32505,25 +32708,25 @@ class Options extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* defaul
 
 
 /***/ }),
-/* 45 */
+/* 40 */
 /***/ (function(module, exports) {
 
 module.exports = "<div class=\"auk\" data-component=\"alpheios-panel-options\">\r\n    <h4>Options</h4>\r\n    <div id=\"alpheios-language-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-language-selector-list\" class=\"uk-form-label\">Preferred Language:</label>\r\n        <select id=\"alpheios-language-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-locale-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-locale-selector-list\" class=\"uk-form-label\">Locale:</label>\r\n        <select id=\"alpheios-locale-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-ui-type-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-ui-type-selector-list\" class=\"uk-form-label\">UI Type:</label>\r\n        <select id=\"alpheios-ui-type-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n\r\n    <div id=\"alpheios-position-switcher\" class=\"uk-margin\">\r\n        <label for=\"alpheios-position-selector-list\" class=\"uk-form-label\">Panel position:</label>\r\n        <select id=\"alpheios-position-selector-list\" class=\"uk-select\"></select>\r\n    </div>\r\n</div>\r\n";
 
 /***/ }),
-/* 46 */
+/* 41 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(12);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(53);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(48);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(47)
+  __webpack_require__(42)
 }
-var normalizeComponent = __webpack_require__(52)
+var normalizeComponent = __webpack_require__(47)
 /* script */
 
 
@@ -32567,17 +32770,17 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 47 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(48);
+var content = __webpack_require__(43);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(50)("449bb36b", content, false);
+var update = __webpack_require__(45)("449bb36b", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -32593,10 +32796,10 @@ if(false) {
 }
 
 /***/ }),
-/* 48 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(49)(true);
+exports = module.exports = __webpack_require__(44)(true);
 // imports
 
 
@@ -32607,7 +32810,7 @@ exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border:
 
 
 /***/ }),
-/* 49 */
+/* 44 */
 /***/ (function(module, exports) {
 
 /*
@@ -32689,7 +32892,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 50 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -32708,7 +32911,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(51)
+var listToStyles = __webpack_require__(46)
 
 /*
 type StyleObject = {
@@ -32910,7 +33113,7 @@ function applyToTag (styleElement, obj) {
 
 
 /***/ }),
-/* 51 */
+/* 46 */
 /***/ (function(module, exports) {
 
 /**
@@ -32943,7 +33146,7 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 52 */
+/* 47 */
 /***/ (function(module, exports) {
 
 /* globals __VUE_SSR_CONTEXT__ */
@@ -33052,7 +33255,7 @@ module.exports = function normalizeComponent (
 
 
 /***/ }),
-/* 53 */
+/* 48 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -33139,7 +33342,7 @@ if (false) {
 }
 
 /***/ }),
-/* 54 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(setImmediate) {/*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -43634,10 +43837,10 @@ return UIkit$2;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(8).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).setImmediate))
 
 /***/ }),
-/* 55 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -43903,614 +44106,6 @@ return plugin;
 
 })));
 
-
-/***/ }),
-/* 56 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-/**
- * A base object class for an Experience object.
- */
-class Experience {
-  constructor (description) {
-    this.description = description;
-    this.startTime = new Date().getTime();
-    this.endTime = undefined;
-    this.details = [];
-  }
-
-  static readObject (jsonObject) {
-    let experience = new Experience(jsonObject.description);
-    if (jsonObject.startTime) { experience.startTime = jsonObject.startTime; }
-    if (jsonObject.endTime) { experience.endTime = jsonObject.endTime; }
-    for (let detailsItem of jsonObject.details) {
-      experience.details.push(Experience.readObject(detailsItem));
-    }
-    return experience
-  }
-
-  attach (experience) {
-    this.details.push(experience);
-  }
-
-  complete () {
-    this.endTime = new Date().getTime();
-  }
-
-  get duration () {
-    return this.endTime - this.startTime
-  }
-
-  toString () {
-    return `"${this.description}" experience duration is ${this.duration} ms`
-  }
-}
-
-var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-// Unique ID creation requires a high quality random # generator.  In the
-// browser this is a little complicated due to unknown quality of Math.random()
-// and inconsistent support for the `crypto` API.  We do the best we can via
-// feature-detection
-var rng;
-
-var crypto = commonjsGlobal.crypto || commonjsGlobal.msCrypto; // for IE 11
-if (crypto && crypto.getRandomValues) {
-  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
-  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
-  rng = function whatwgRNG() {
-    crypto.getRandomValues(rnds8);
-    return rnds8;
-  };
-}
-
-if (!rng) {
-  // Math.random()-based (RNG)
-  //
-  // If all else fails, use Math.random().  It's fast, but is of unspecified
-  // quality.
-  var rnds = new Array(16);
-  rng = function() {
-    for (var i = 0, r; i < 16; i++) {
-      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-    }
-
-    return rnds;
-  };
-}
-
-var rngBrowser = rng;
-
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-var byteToHex = [];
-for (var i = 0; i < 256; ++i) {
-  byteToHex[i] = (i + 0x100).toString(16).substr(1);
-}
-
-function bytesToUuid(buf, offset) {
-  var i = offset || 0;
-  var bth = byteToHex;
-  return bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]];
-}
-
-var bytesToUuid_1 = bytesToUuid;
-
-function v4(options, buf, offset) {
-  var i = buf && offset || 0;
-
-  if (typeof(options) == 'string') {
-    buf = options == 'binary' ? new Array(16) : null;
-    options = null;
-  }
-  options = options || {};
-
-  var rnds = options.random || (options.rng || rngBrowser)();
-
-  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-  rnds[6] = (rnds[6] & 0x0f) | 0x40;
-  rnds[8] = (rnds[8] & 0x3f) | 0x80;
-
-  // Copy bytes to buffer, if provided
-  if (buf) {
-    for (var ii = 0; ii < 16; ++ii) {
-      buf[i + ii] = rnds[ii];
-    }
-  }
-
-  return buf || bytesToUuid_1(rnds);
-}
-
-var v4_1 = v4;
-
-/* global browser */
-
-/**
- * Represents an adapter for a local storage where experiences are accumulated before a batch of
- * experiences is sent to a remote server and is removed from a local storage.
- * Currently a `browser.storage.local` local storage is used.
- */
-class LocalStorageAdapter {
-  /**
-   * Returns an adapter default values
-   * @return {{prefix: string}}
-   */
-  static get defaults () {
-    return {
-      // A prefix used to distinguish experience objects from objects of other types
-      prefix: 'experience_'
-    }
-  }
-
-  /**
-   * Stores a single experience to the local storage.
-   * @param {Experience} experience - An experience object to be saved.
-   */
-  static write (experience) {
-    // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
-    let uuid = `${LocalStorageAdapter.defaults.prefix}${v4_1()}`;
-
-    browser.storage.local.set({[uuid]: experience}).then(
-      () => {
-        console.log(`Experience has been written to the local storage successfully`);
-      },
-      (error) => {
-        console.error(`Cannot write experience to the local storage because of the following error: ${error}`);
-      }
-    );
-  }
-
-  /**
-   * Reads all experiences that are present in a local storage.
-   * @return {Promise.<{key: Experience}, Error>} Returns a promise that resolves with an object
-   * containing key: value pairs for each experience stored and rejects with an Error object.
-   */
-  static async readAll () {
-    try {
-      return await browser.storage.local.get()
-    } catch (error) {
-      console.error(`Cannot read data from the local storage because of the following error: ${error}`);
-      return error
-    }
-  }
-
-  /**
-   * Removes experience objects with specified keys from a local storage.
-   * @param {String[]} keys - an array of keys that specifies what Experience objects need to be removed.
-   * @return {Promise.<*|{minArgs, maxArgs}>} A Promise that will be fulfilled with no arguments
-   * if the operation succeeded. If the operation failed, the promise will be rejected with an error message.
-   */
-  static async remove (keys) {
-    return browser.storage.local.remove(keys)
-  }
-}
-
-class Monitor {
-  constructor (monitoringDataList) {
-    this.monitored = new Map();
-    if (monitoringDataList) {
-      for (let monitoringData of monitoringDataList) {
-        this.monitored.set(monitoringData.monitoredFunction, monitoringData);
-      }
-    }
-  }
-
-  static track (object, monitoringDataList) {
-    return new Proxy(object, new Monitor(monitoringDataList))
-  }
-
-  get (target, property, receiver) {
-    if (this.monitored.has(property)) {
-      let monitoringData = this.monitored.get(property);
-      if (monitoringData.hasOwnProperty('asyncWrapper')) {
-        return Monitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
-      } else {
-        console.error(`Only async wrappers are supported by monitor`);
-      }
-    }
-    return target[property]
-  }
-
-  monitor (functionName, functionConfig) {
-    this.monitored.set(functionName, functionConfig);
-  }
-
-  static syncWrapper (target, property, experience) {
-    console.log(`${property}() sync method has been called`);
-    const origMethod = target[property];
-    return function (...args) {
-      let result = origMethod.apply(this, args);
-      console.log(`${property}() sync method has been completed`);
-      experience.complete();
-      console.log(`${experience}`);
-      return result
-    }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, etc.
-   * @param target
-   * @param property
-   * @param actionFunction
-   * @param monitoringData
-   * @return {Function}
-   */
-  static asyncWrapper (target, property, actionFunction, monitoringData) {
-    console.log(`${property}() async method has been requested`);
-    return async function (...args) {
-      try {
-        return await actionFunction(this, target, property, args, monitoringData, LocalStorageAdapter)
-      } catch (error) {
-        console.error(`${property}() failed: ${error.value}`);
-        throw error
-      }
-    }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, and such.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @param storage
-   * @return {Promise.<*>}
-   */
-  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
-    let experience = new Experience(monitoringData.experience);
-    console.log(`${property}() async method has been called`);
-    // Last item in arguments list is a transaction
-    args.push(experience);
-    let result = await target[property].apply(monitor, args);
-    // resultObject.value is a returned message, experience object is in a `experience` property
-    experience = result.state;
-    experience.complete();
-    console.log(`${property}() completed with success, experience is:`, experience);
-
-    storage.write(experience);
-    return result
-  }
-
-  /**
-   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
-   * functions that create user experience.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @return {Promise.<*>}
-   */
-  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
-    let experience = new Experience(monitoringData.experience);
-    console.log(`${property}() async method has been called`);
-    let resultObject = await target[property].apply(monitor, args);
-    experience.complete();
-    resultObject.state.attach(experience);
-    console.log(`${property}() completed with success, experience is: ${experience}`);
-    return resultObject
-  }
-
-  /**
-   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async attachToMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`);
-    // First argument is always a request object, last argument is a state (Experience) object
-    args[0].experience = args[args.length - 1];
-    let result = await target[property].apply(monitor, args);
-    console.log(`${property}() completed with success`);
-    return result
-  }
-
-  /**
-   * This is a wrapper around functions that handle incoming messages with an experience object attached.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async detachFromMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`);
-    // First argument is an incoming request object
-    if (args[0].experience) {
-      args.push(Experience.readObject(args[0].experience));
-    } else {
-      console.warn(`This message has no experience data attached. Experience data will not be recorded`);
-    }
-    let result = await target[property].apply(monitor, args);
-    console.log(`${property}() completed with success`);
-    return result
-  }
-}
-
-class ObjectMonitor {
-  constructor (monitoringDataList) {
-    this.monitored = new Map();
-    if (monitoringDataList) {
-      for (let monitoringData of monitoringDataList) {
-        this.monitored.set(monitoringData.monitoredFunction, monitoringData);
-      }
-    }
-  }
-
-  static track (object, monitoringDataList) {
-    return new Proxy(object, new ObjectMonitor(monitoringDataList))
-  }
-
-  get (target, property, receiver) {
-    if (this.monitored.has(property)) {
-      let monitoringData = this.monitored.get(property);
-      if (monitoringData.hasOwnProperty('asyncWrapper')) {
-        return ObjectMonitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
-      } else {
-        console.error(`Only async wrappers are supported by monitor`);
-      }
-    }
-    return target[property]
-  }
-
-  monitor (functionName, functionConfig) {
-    this.monitored.set(functionName, functionConfig);
-  }
-
-  static syncWrapper (target, property, experience) {
-    console.log(`${property}() sync method has been called`);
-    const origMethod = target[property];
-    return function (...args) {
-      let result = origMethod.apply(this, args);
-      console.log(`${property}() sync method has been completed`);
-      experience.complete();
-      console.log(`${experience}`);
-      return result
-    }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, etc.
-   * @param target
-   * @param property
-   * @param actionFunction
-   * @param monitoringData
-   * @return {Function}
-   */
-  static asyncWrapper (target, property, actionFunction, monitoringData) {
-    console.log(`${property}() async method has been requested`);
-    return async function (...args) {
-      try {
-        return await actionFunction(this, target, property, args, monitoringData, LocalStorageAdapter)
-      } catch (error) {
-        console.error(`${property}() failed: ${error.value}`);
-        throw error
-      }
-    }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, and such.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @param storage
-   * @return {Promise.<*>}
-   */
-  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
-    let experience = new Experience(monitoringData.experience);
-    console.log(`${property}() async method has been called`);
-    // Last item in arguments list is a transaction
-    args.push(experience);
-    let result = await target[property].apply(monitor, args);
-    // resultObject.value is a returned message, experience object is in a `experience` property
-    experience = result.state;
-    experience.complete();
-    console.log(`${property}() completed with success, experience is:`, experience);
-
-    storage.write(experience);
-    return result
-  }
-
-  /**
-   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
-   * functions that create user experience.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @return {Promise.<*>}
-   */
-  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
-    let experience = new Experience(monitoringData.experience);
-    console.log(`${property}() async method has been called`);
-    let resultObject = await target[property].apply(monitor, args);
-    experience.complete();
-    resultObject.state.attach(experience);
-    console.log(`${property}() completed with success, experience is: ${experience}`);
-    return resultObject
-  }
-
-  /**
-   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async attachToMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`);
-    // First argument is always a request object, last argument is a state (Experience) object
-    args[0].experience = args[args.length - 1];
-    let result = await target[property].apply(monitor, args);
-    console.log(`${property}() completed with success`);
-    return result
-  }
-
-  /**
-   * This is a wrapper around functions that handle incoming messages with an experience object attached.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async detachFromMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`);
-    // First argument is an incoming request object
-    if (args[0].experience) {
-      args.push(Experience.readObject(args[0].experience));
-    } else {
-      console.warn(`This message has no experience data attached. Experience data will not be recorded`);
-    }
-    let result = await target[property].apply(monitor, args);
-    console.log(`${property}() completed with success`);
-    return result
-  }
-}
-
-/**
- * Responsible form transporting experiences from one storage to the other. Current implementation
- * sends a batch of experience objects to the remote server once a certain amount of them
- * is accumulated in a local storage.
- */
-class Transporter {
-  /**
-   * Sets a transporter configuration.
-   * @param {LocalStorageAdapter} localStorage - Represents local storage where experience objects are
-   * accumulated before being sent to a remote server.
-   * @param {RemoteStorageAdapter} remoteStorage - Represents a remote server that stores experience objects.
-   * @param {number} qtyThreshold - A minimal number of experiences to be sent to a remote storage.
-   * @param {number} interval - Interval, in milliseconds, of checking a local storage for changes
-   */
-  constructor (localStorage, remoteStorage, qtyThreshold, interval) {
-    this.localStorage = localStorage;
-    this.remoteStorage = remoteStorage;
-    this.qtyThreshold = qtyThreshold;
-    window.setInterval(this.checkExperienceStorage.bind(this), interval);
-  }
-
-  /**
-   * Runs at a specified interval and check if any new experience objects has been recorded to the local storage.
-   * If number of experience records exceeds a threshold, sends all experiences to the remote server and
-   * removes them from local storage.
-   * @return {Promise.<void>}
-   */
-  async checkExperienceStorage () {
-    console.log(`Experience storage check`);
-    let records = await this.localStorage.readAll();
-    let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
-    if (keys.length > this.qtyThreshold) {
-      await this.sendExperiencesToRemote();
-    }
-  }
-
-  /**
-   * If there are any experiences in the local storage, sends all of them to a remote server and, if succeeded,
-   * removes them from a local storage.
-   * @return {Promise.<*>}
-   */
-  async sendExperiencesToRemote () {
-    try {
-      let records = await this.localStorage.readAll();
-      let values = Object.values(records);
-      let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
-      if (keys.length > 0) {
-        // If there are any records in a local storage
-        await this.remoteStorage.write(values);
-        await this.localStorage.remove(keys);
-      } else {
-        console.log(`No data in local experience storage`);
-      }
-    } catch (error) {
-      console.error(`Cannot send experiences to a remote server: ${error}`);
-      return error
-    }
-  }
-}
-
-/**
- * Defines an API for storing experiences on a remote server, such as LRS.
- */
-class RemoteStorageAdapter {
-  /**
-   * Stores one or several experiences on a remote server.
-   * @param {Experience[]} experiences - An array of experiences to store remotely.
-   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
-   * and is rejected when storing on a remote server failed.
-   */
-  static write (experiences) {
-    console.warn(`This method should be implemented within a subclass and should never be called directly.  
-      If you see this message then something is probably goes wrong`);
-    return new Promise()
-  }
-}
-
-/**
- * This is a test implementation of a remote experience store adapter. It does not send anything anywhere
- * and just records experiences that are passed to it.
- */
-class TestAdapter extends RemoteStorageAdapter {
-  /**
-   * Imitates storing of one or several experiences on a remote server.
-   * @param {Experience[]} experiences - An array of experiences to store remotely.
-   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
-   * and is rejected when storing on a remote server failed.
-   */
-  static write (experiences) {
-    return new Promise((resolve, reject) => {
-      if (!experiences) {
-        reject(new Error(`experience cannot be empty`));
-        return
-      }
-      if (!Array.isArray(experiences)) {
-        reject(new Error(`experiences must be an array`));
-        return
-      }
-      console.log('Experience sent to a remote server:');
-      for (let experience of experiences) {
-        console.log(experience);
-      }
-      resolve();
-    })
-  }
-}
-
-exports.Experience = Experience;
-exports.Monitor = Monitor;
-exports.ObjectMonitor = ObjectMonitor;
-exports.Transporter = Transporter;
-exports.StorageAdapter = LocalStorageAdapter;
-exports.TestAdapter = TestAdapter;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ })
 /******/ ]);

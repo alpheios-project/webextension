@@ -9,11 +9,10 @@ import Popup from './vue-components/popup.vue'
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
 import UIkITIconts from '../../node_modules/uikit/dist/js/uikit-icons'
 
-export default class UIController {
-  constructor (state, stateWatcher) {
+export default class ContentUIController {
+  constructor (state) {
     this.state = state
-    this.stateWatcher = stateWatcher
-    this.settings = UIController.settingValues
+    this.settings = ContentUIController.settingValues
 
     // Finds a max z-index of element on the page.
     // Need to run this before our UI elements are loaded to avoid scanning them too.
@@ -252,14 +251,12 @@ export default class UIController {
 
   openPanel () {
     this.panel.open()
-    this.state.panelStatus = TabScript.statuses.panel.OPEN
-    this.stateWatcher()
+    this.state.setPanelOpen()
   }
 
   closePanel () {
     this.panel.close()
-    this.state.panelStatus = TabScript.statuses.panel.CLOSED
-    this.stateWatcher()
+    this.state.setPanelClosed()
   }
 
   optionChangeListener (optionName, optionValue) {

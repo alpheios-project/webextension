@@ -165,6 +165,26 @@ class TabScript {
     this.tabID = tabID
     this.status = status || TabScript.defaults.status
     this.panelStatus = panelStatus || TabScript.defaults.panelStatus
+
+    this.watchers = new Map()
+  }
+
+  static get genericProps () {
+    return ['tabID']
+  }
+
+  static get symbolProps () {
+    return ['status', 'panelStatus']
+  }
+
+  /**
+   * Only certain features will be stored within a serialized version of a TabScript. This is done
+   * to prevent context-specific features (such as local event handlers) to be passed over the network
+   * to a different context where they would make no sense. This getter returns a list of such fields.
+   * @return {String[]}
+   */
+  static get dataProps () {
+    return TabScript.genericProps.concat(TabScript.symbolProps)
   }
 
   /**
@@ -201,6 +221,52 @@ class TabScript {
     }
   }
 
+  /**
+   * Sets a watcher function that is called every time a property is changed using a setItem() method.
+   * @param {String} property - A name of a property that should be monitored
+   * @param {Function} watchFunc - A function that will be called every time a property changes
+   * @return {TabScript} Reference to self for chaining
+   */
+  setWatcher (property, watchFunc) {
+    this.watchers.set(property, watchFunc)
+    return this
+  }
+
+  /**
+   * SetItem provides a monitored way to change a TabScript state. If value is assigned to a data property directly
+   * there is no way to know if a property was changed. However, if a property was changed using setItem() method,
+   * and if there is a watcher function registered for a changed property name,
+   * this function will be called on every property change, passing a changed property name as an argument.
+   * @param key
+   * @param value
+   * @return {TabScript}
+   */
+  setItem (key, value) {
+    this[key] = value
+    if (this.watchers && this.watchers.has(key)) {
+      this.watchers.get(key)(key, this)
+    }
+    return this
+  }
+
+  isPanelOpened () {
+    return this.panelStatus === TabScript.statuses.panel.OPEN
+  }
+
+  isPanelClosed () {
+    return this.panelStatus === TabScript.statuses.panel.CLOSED
+  }
+
+  setPanelOpen () {
+    this.setItem('panelStatus', TabScript.statuses.panel.OPEN)
+    return this
+  }
+
+  setPanelClosed () {
+    this.setItem('panelStatus', TabScript.statuses.panel.CLOSED)
+    return this
+  }
+
   hasSameID (tabID) {
     return this.tabID === tabID
   }
@@ -223,24 +289,6 @@ class TabScript {
     return this
   }
 
-  isPanelOpened () {
-    return this.panelStatus === TabScript.statuses.panel.OPEN
-  }
-
-  isPanelClosed () {
-    return this.panelStatus === TabScript.statuses.panel.CLOSED
-  }
-
-  openPanel () {
-    this.panelStatus = TabScript.statuses.panel.OPEN
-    return this
-  }
-
-  closePanel () {
-    this.panelStatus = TabScript.statuses.panel.CLOSED
-    return this
-  }
-
   update (source) {
     for (let key of Object.keys(source)) {
       this[key] = source[key]
@@ -254,14 +302,17 @@ class TabScript {
       _changedEntries: []
     }
     for (let key of Object.keys(state)) {
-      if (this.hasOwnProperty(key)) {
-        if (this[key] !== state[key]) {
-          diff[key] = state[key]
-          diff['_changedKeys'].push(key)
-          diff['_changedEntries'].push([key, state[key]])
+      // Build diffs only for data properties
+      if (TabScript.dataProps.includes(key)) {
+        if (this.hasOwnProperty(key)) {
+          if (this[key] !== state[key]) {
+            diff[key] = state[key]
+            diff['_changedKeys'].push(key)
+            diff['_changedEntries'].push([key, state[key]])
+          }
+        } else {
+          console.warn(`TabScript has no property named "${key}"`)
         }
-      } else {
-        console.warn(`TabScript has no property named "${key}"`)
       }
     }
 
@@ -286,26 +337,31 @@ class TabScript {
   /**
    * Creates a serializable copy of a source object.
    * @param {TabScript} source - An object to be serialized.
-   * @return {source} A serializable copy of a source.
+   * @return {TabScript} A serializable copy of a source.
    */
   static serializable (source) {
     let serializable = TabScript.create(source)
     for (let key of Object.keys(serializable)) {
-      let value = serializable[key]
-      if (typeof value === 'symbol') { serializable[key] = Symbol.keyFor(value) }
+      if (TabScript.dataProps.includes(key)) {
+        /*
+        Only certain features will be stored within a serialized version of a TabScript. This is done
+        to prevent context-specific features (such as local event handlers) to be passed over the network
+        to a different context where they would make no sense.
+         */
+        let value = serializable[key]
+        if (typeof value === 'symbol') { serializable[key] = Symbol.keyFor(value) }
+      }
     }
     return serializable
   }
 
   static readObject (jsonObject) {
-    let props = ['tabID']
-    let symbolProps = ['status', 'panelStatus']
     let tabScript = new TabScript()
 
-    for (let prop of props) {
+    for (let prop of TabScript.genericProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
     }
-    for (let prop of symbolProps) {
+    for (let prop of TabScript.symbolProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
     }
 
@@ -331,7 +387,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 class Experience {
   constructor (description) {
     this.description = description;
-    this.startTime = new Date().getTime();
+    this.startTime = undefined;
     this.endTime = undefined;
     this.details = [];
   }
@@ -350,8 +406,14 @@ class Experience {
     this.details.push(experience);
   }
 
+  start () {
+    this.startTime = new Date().getTime();
+    return this
+  }
+
   complete () {
     this.endTime = new Date().getTime();
+    return this
   }
 
   get duration () {
@@ -660,151 +722,70 @@ class Monitor {
   }
 }
 
+const experienceActions = {
+  START: Symbol('Experience start'),
+  STOP: Symbol('Experience stop')
+};
+
+const eventTypes = {
+  CONSTRUCT: Symbol('Construct'),
+  GET: Symbol('Get'),
+  SET: Symbol('Set')
+};
+
 class ObjectMonitor {
-  constructor (monitoringDataList) {
-    this.monitored = new Map();
-    if (monitoringDataList) {
-      for (let monitoringData of monitoringDataList) {
-        this.monitored.set(monitoringData.monitoredFunction, monitoringData);
+  constructor (options = {}) {
+    this.experienceDescription = '';
+    for (let event of Object.values(ObjectMonitor.events)) {
+      this[event] = [];
+    }
+
+    if (options) {
+      if (options.experience) { this.experienceDescription = options.experience; }
+      if (options.actions) {
+        for (const action of options.actions) {
+          this[action.event].push(action);
+        }
       }
     }
   }
 
-  static track (object, monitoringDataList) {
-    return new Proxy(object, new ObjectMonitor(monitoringDataList))
+  static get actions () {
+    return experienceActions
   }
 
-  get (target, property, receiver) {
-    if (this.monitored.has(property)) {
-      let monitoringData = this.monitored.get(property);
-      if (monitoringData.hasOwnProperty('asyncWrapper')) {
-        return ObjectMonitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
-      } else {
-        console.error(`Only async wrappers are supported by monitor`);
-      }
+  static get events () {
+    return eventTypes
+  }
+
+  static track (object, options) {
+    return new Proxy(object, new ObjectMonitor(options))
+  }
+
+  get (target, property) {
+    for (let action of this[ObjectMonitor.events.GET]) {
+      if (action.name === property) { this.experienceAction(action); }
     }
     return target[property]
   }
 
-  monitor (functionName, functionConfig) {
-    this.monitored.set(functionName, functionConfig);
-  }
-
-  static syncWrapper (target, property, experience) {
-    console.log(`${property}() sync method has been called`);
-    const origMethod = target[property];
-    return function (...args) {
-      let result = origMethod.apply(this, args);
-      console.log(`${property}() sync method has been completed`);
-      experience.complete();
-      console.log(`${experience}`);
-      return result
+  set (target, property, value) {
+    for (let action of this[ObjectMonitor.events.SET]) {
+      if (action.name === property) { this.experienceAction(action); }
     }
+    target[property] = value;
+    return true // Success of a set operation
   }
 
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, etc.
-   * @param target
-   * @param property
-   * @param actionFunction
-   * @param monitoringData
-   * @return {Function}
-   */
-  static asyncWrapper (target, property, actionFunction, monitoringData) {
-    console.log(`${property}() async method has been requested`);
-    return async function (...args) {
-      try {
-        return await actionFunction(this, target, property, args, monitoringData, LocalStorageAdapter)
-      } catch (error) {
-        console.error(`${property}() failed: ${error.value}`);
-        throw error
-      }
+  experienceAction (action) {
+    if (action.action === ObjectMonitor.actions.START) {
+      this.experience = new Experience(this.experienceDescription).start();
+      console.log(`Experience started`);
+    } else if (action.action === ObjectMonitor.actions.STOP) {
+      this.experience.complete();
+      console.log(`Experience completed:`, this.experience);
+      LocalStorageAdapter.write(this.experience);
     }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, and such.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @param storage
-   * @return {Promise.<*>}
-   */
-  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
-    let experience = new Experience(monitoringData.experience);
-    console.log(`${property}() async method has been called`);
-    // Last item in arguments list is a transaction
-    args.push(experience);
-    let result = await target[property].apply(monitor, args);
-    // resultObject.value is a returned message, experience object is in a `experience` property
-    experience = result.state;
-    experience.complete();
-    console.log(`${property}() completed with success, experience is:`, experience);
-
-    storage.write(experience);
-    return result
-  }
-
-  /**
-   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
-   * functions that create user experience.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @return {Promise.<*>}
-   */
-  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
-    let experience = new Experience(monitoringData.experience);
-    console.log(`${property}() async method has been called`);
-    let resultObject = await target[property].apply(monitor, args);
-    experience.complete();
-    resultObject.state.attach(experience);
-    console.log(`${property}() completed with success, experience is: ${experience}`);
-    return resultObject
-  }
-
-  /**
-   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async attachToMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`);
-    // First argument is always a request object, last argument is a state (Experience) object
-    args[0].experience = args[args.length - 1];
-    let result = await target[property].apply(monitor, args);
-    console.log(`${property}() completed with success`);
-    return result
-  }
-
-  /**
-   * This is a wrapper around functions that handle incoming messages with an experience object attached.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async detachFromMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`);
-    // First argument is an incoming request object
-    if (args[0].experience) {
-      args.push(Experience.readObject(args[0].experience));
-    } else {
-      console.warn(`This message has no experience data attached. Experience data will not be recorded`);
-    }
-    let result = await target[property].apply(monitor, args);
-    console.log(`${property}() completed with success`);
-    return result
   }
 }
 
@@ -1075,19 +1056,19 @@ class BackgroundProcess {
 
   async activateContent (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].create(this.tabs.get(tabID)).activate().openPanel()
+    let tab = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen()
     this.setContentState(tab)
   }
 
   async deactivateContent (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].create(this.tabs.get(tabID)).deactivate().closePanel()
+    let tab = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].create(this.tabs.get(tabID)).deactivate().setPanelClosed()
     this.setContentState(tab)
   }
 
   async openPanel (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].create(this.tabs.get(tabID)).activate().openPanel()
+    let tab = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen()
     this.setContentState(tab)
   }
 

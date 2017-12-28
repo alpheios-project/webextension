@@ -68,19 +68,19 @@ export default class BackgroundProcess {
 
   async activateContent (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = TabScript.create(this.tabs.get(tabID)).activate().openPanel()
+    let tab = TabScript.create(this.tabs.get(tabID)).activate().setPanelOpen()
     this.setContentState(tab)
   }
 
   async deactivateContent (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = TabScript.create(this.tabs.get(tabID)).deactivate().closePanel()
+    let tab = TabScript.create(this.tabs.get(tabID)).deactivate().setPanelClosed()
     this.setContentState(tab)
   }
 
   async openPanel (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = TabScript.create(this.tabs.get(tabID)).activate().openPanel()
+    let tab = TabScript.create(this.tabs.get(tabID)).activate().setPanelOpen()
     this.setContentState(tab)
   }
 

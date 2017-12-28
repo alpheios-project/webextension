@@ -9,6 +9,26 @@ export default class TabScript {
     this.tabID = tabID
     this.status = status || TabScript.defaults.status
     this.panelStatus = panelStatus || TabScript.defaults.panelStatus
+
+    this.watchers = new Map()
+  }
+
+  static get genericProps () {
+    return ['tabID']
+  }
+
+  static get symbolProps () {
+    return ['status', 'panelStatus']
+  }
+
+  /**
+   * Only certain features will be stored within a serialized version of a TabScript. This is done
+   * to prevent context-specific features (such as local event handlers) to be passed over the network
+   * to a different context where they would make no sense. This getter returns a list of such fields.
+   * @return {String[]}
+   */
+  static get dataProps () {
+    return TabScript.genericProps.concat(TabScript.symbolProps)
   }
 
   /**
@@ -45,6 +65,52 @@ export default class TabScript {
     }
   }
 
+  /**
+   * Sets a watcher function that is called every time a property is changed using a setItem() method.
+   * @param {String} property - A name of a property that should be monitored
+   * @param {Function} watchFunc - A function that will be called every time a property changes
+   * @return {TabScript} Reference to self for chaining
+   */
+  setWatcher (property, watchFunc) {
+    this.watchers.set(property, watchFunc)
+    return this
+  }
+
+  /**
+   * SetItem provides a monitored way to change a TabScript state. If value is assigned to a data property directly
+   * there is no way to know if a property was changed. However, if a property was changed using setItem() method,
+   * and if there is a watcher function registered for a changed property name,
+   * this function will be called on every property change, passing a changed property name as an argument.
+   * @param key
+   * @param value
+   * @return {TabScript}
+   */
+  setItem (key, value) {
+    this[key] = value
+    if (this.watchers && this.watchers.has(key)) {
+      this.watchers.get(key)(key, this)
+    }
+    return this
+  }
+
+  isPanelOpened () {
+    return this.panelStatus === TabScript.statuses.panel.OPEN
+  }
+
+  isPanelClosed () {
+    return this.panelStatus === TabScript.statuses.panel.CLOSED
+  }
+
+  setPanelOpen () {
+    this.setItem('panelStatus', TabScript.statuses.panel.OPEN)
+    return this
+  }
+
+  setPanelClosed () {
+    this.setItem('panelStatus', TabScript.statuses.panel.CLOSED)
+    return this
+  }
+
   hasSameID (tabID) {
     return this.tabID === tabID
   }
@@ -67,24 +133,6 @@ export default class TabScript {
     return this
   }
 
-  isPanelOpened () {
-    return this.panelStatus === TabScript.statuses.panel.OPEN
-  }
-
-  isPanelClosed () {
-    return this.panelStatus === TabScript.statuses.panel.CLOSED
-  }
-
-  openPanel () {
-    this.panelStatus = TabScript.statuses.panel.OPEN
-    return this
-  }
-
-  closePanel () {
-    this.panelStatus = TabScript.statuses.panel.CLOSED
-    return this
-  }
-
   update (source) {
     for (let key of Object.keys(source)) {
       this[key] = source[key]
@@ -98,14 +146,17 @@ export default class TabScript {
       _changedEntries: []
     }
     for (let key of Object.keys(state)) {
-      if (this.hasOwnProperty(key)) {
-        if (this[key] !== state[key]) {
-          diff[key] = state[key]
-          diff['_changedKeys'].push(key)
-          diff['_changedEntries'].push([key, state[key]])
+      // Build diffs only for data properties
+      if (TabScript.dataProps.includes(key)) {
+        if (this.hasOwnProperty(key)) {
+          if (this[key] !== state[key]) {
+            diff[key] = state[key]
+            diff['_changedKeys'].push(key)
+            diff['_changedEntries'].push([key, state[key]])
+          }
+        } else {
+          console.warn(`TabScript has no property named "${key}"`)
         }
-      } else {
-        console.warn(`TabScript has no property named "${key}"`)
       }
     }
 
@@ -130,26 +181,31 @@ export default class TabScript {
   /**
    * Creates a serializable copy of a source object.
    * @param {TabScript} source - An object to be serialized.
-   * @return {source} A serializable copy of a source.
+   * @return {TabScript} A serializable copy of a source.
    */
   static serializable (source) {
     let serializable = TabScript.create(source)
     for (let key of Object.keys(serializable)) {
-      let value = serializable[key]
-      if (typeof value === 'symbol') { serializable[key] = Symbol.keyFor(value) }
+      if (TabScript.dataProps.includes(key)) {
+        /*
+        Only certain features will be stored within a serialized version of a TabScript. This is done
+        to prevent context-specific features (such as local event handlers) to be passed over the network
+        to a different context where they would make no sense.
+         */
+        let value = serializable[key]
+        if (typeof value === 'symbol') { serializable[key] = Symbol.keyFor(value) }
+      }
     }
     return serializable
   }
 
   static readObject (jsonObject) {
-    let props = ['tabID']
-    let symbolProps = ['status', 'panelStatus']
     let tabScript = new TabScript()
 
-    for (let prop of props) {
+    for (let prop of TabScript.genericProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
     }
-    for (let prop of symbolProps) {
+    for (let prop of TabScript.symbolProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
     }
 
