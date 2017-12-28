@@ -38,12 +38,15 @@
             v-if="inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension">{{inflset.groupingKey.declension.toString()}}</span>
 
           <div class="alpheios-morph__inflgroup" v-for="group in inflset.inflections">
-            <span class="alpheios-morph__number" v-if="group.groupingKey.number">{{ group.groupingKey.number.toString() }}</span>
-            <span class="alpheios-morph__tense" v-if="group.groupingKey.tense">{{ group.groupingKey.tense.toString() }}</span>
+            <span class="alpheios-morph__number" v-if="group.groupingKey.number && group.groupingKey.isCaseInflectionSet">{{ group.groupingKey.number.toString() }}</span>
+            <span class="alpheios-morph__tense" v-if="group.groupingKey.tense && group.groupingKey.isCaseInflectionSet">{{ group.groupingKey.tense.toString() }}</span>
             <span v-for="nextGroup in group.inflections">
-              <span class="alpheios-morph__voice" v-if="nextGroup.groupingKey.voice">{{ nextGroup.groupingKey.voice.toString() }}</span>
-              <span class="alpheios-morph__tense" v-if="nextGroup.groupingKey.tense">{{ nextGroup.groupingKey.tense.toString() }}</span>
-              <span class="alpheios-morph__inflgroupdetail">
+              <span v-if="group.groupingKey.isCaseInflectionSet">
+                <span class="alpheios-morph__voice" v-if="group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.voice">{{ nextGroup.groupingKey.voice.toString() }}</span>
+                <span class="alpheios-morph__tense" v-if="group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.tense">{{ nextGroup.groupingKey.tense.toString() }}</span>
+                :
+              </span>
+              <span>
                 <span v-for="infl in nextGroup.inflections">
 
                   <span class="alpheios-morph__case" v-if="infl.groupingKey.case">
@@ -63,12 +66,20 @@
                     {{ infl.groupingKey.person.toString() }}
                   </span>
 
-                  <span class="alpheios-morph__mood" v-if="infl.groupingKey.mood && !infl.groupingKey.case">
+                  <span class="alpheios-morph__number" v-if="infl.groupingKey.number && ! group.groupingKey.isCaseInflectionSet">
+                    {{ infl.groupingKey.number.toString() }}
+                  </span>
+
+                  <span class="alpheios-morph__tense" v-if="infl.groupingKey.tense && ! group.groupingKey.isCaseInflectionSet && ! nextGroup.groupingKey.tense">
+                    {{ infl.groupingKey.tense.toString() }}
+                  </span>
+
+                  <span class="alpheios-morph__mood" v-if="infl.groupingKey.mood && !group.groupingKey.isCaseInflectionSet">
                     {{ infl.groupingKey.mood.toString() }}
                   </span>
 
-                  <span class="alpheios-morph__sort" v-if="infl.groupingKey.sort">
-                    {{ infl.groupingKey.sort.toString() }}
+                  <span class="alpheios-morph__voice" v-if="infl.groupingKey.voice && !group.groupingKey.isCaseInflectionSet">
+                    {{ infl.groupingKey.voice.toString() }}
                   </span>
 
                   <span v-for="item in infl.inflections">
@@ -197,8 +208,5 @@
      display: none;
    }
 
-   .alpheios-morph__inflgroupdetail:before {
-     content: ":"
-   }
 
 </style>

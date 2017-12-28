@@ -1916,25 +1916,30 @@ class Inflection {
           setkey = infl[Feature.types.number] ? infl[Feature.types.number].map((f) => { return f.value }).join(',') : '';
           keyprop = Feature.types.number;
           props[keyprop] = infl[Feature.types.number];
+          props.isCaseInflectionSet = true;
         } else if (infl[Feature.types.tense]) {
           // grouping on tense if tense is defined but not case
           setkey = infl[Feature.types.tense].map((f) => { return f.value }).join(',');
           keyprop = Feature.types.tense;
           props[keyprop] = infl[Feature.types.tense];
+          props.isCaseInflectionSet = false;
         } else if (infl[Feature.types.part] === POFS_VERB) {
           // grouping on no case or tense but a verb
           setkey = POFS_VERB;
           keyprop = Feature.types.part;
           props[keyprop] = infl[Feature.types.part];
+          props.isCaseInflectionSet = false;
         } else if (infl[Feature.types.part] === POFS_ADVERB) {
           keyprop = Feature.types.part;
           setkey = POFS_ADVERB;
           props[keyprop] = infl[Feature.types.part];
+          props.isCaseInflectionSet = false;
           // grouping on adverbs without case or tense
         } else {
           keyprop = 'misc';
           setkey = '';
           props[keyprop] = setkey;
+          props.isCaseInflectionSet = false;
           // grouping on adverbs without case or tense
           // everything else
         }
@@ -1981,10 +1986,13 @@ class Inflection {
             let casekey = infl[Feature.types.grmCase] ? infl[Feature.types.grmCase].map((f) => { return f.value }).join(',') : '';
             let compkey = infl[Feature.types.comparison] ? infl[Feature.types.comparison].map((f) => { return f.value }).join(',') : '';
             let gendkey = infl[Feature.types.gender] ? infl[Feature.types.gender].map((f) => { return f.value }).join(',') : '';
+            let numkey = infl[Feature.types.number] ? infl[Feature.types.number].map((f) => { return f.value }).join(',') : '';
             let perskey = infl[Feature.types.person] ? infl[Feature.types.person].map((f) => { return f.value }).join(',') : '';
+            let tensekey = infl[Feature.types.tense] ? infl[Feature.types.tense].map((f) => { return f.value }).join(',') : '';
+            let voicekey = infl[Feature.types.voice] ? infl[Feature.types.voice].map((f) => { return f.value }).join(',') : '';
             let moodkey = infl[Feature.types.mood] ? infl[Feature.types.mood].map((f) => { return f.value }).join(',') : '';
             let sortkey = infl[Feature.types.sort] ? infl[Feature.types.sort].map((f) => { return f.value }).join(',') : '';
-            let setkey = [casekey, compkey, gendkey, perskey, moodkey, sortkey].filter((x) => x).join(' ');
+            let setkey = [casekey, compkey, gendkey, numkey, perskey, tensekey, moodkey, sortkey, voicekey].filter((x) => x).join(' ');
             if (nextGroup.has(setkey)) {
               nextGroup.get(setkey).append(infl);
             } else {
@@ -1992,9 +2000,12 @@ class Inflection {
               props[Feature.types.grmCase] = infl[Feature.types.grmCase];
               props[Feature.types.comparison] = infl[Feature.types.comparison];
               props[Feature.types.gender] = infl[Feature.types.gender];
+              props[Feature.types.number] = infl[Feature.types.number];
               props[Feature.types.person] = infl[Feature.types.person];
+              props[Feature.types.tense] = infl[Feature.types.tense];
               props[Feature.types.mood] = infl[Feature.types.mood];
               props[Feature.types.sort] = infl[Feature.types.sort];
+              props[Feature.types.voice] = infl[Feature.types.voice];
               nextGroup.set(setkey, new InflectionGroup(props, [infl]));
             }
           }
@@ -3153,6 +3164,17 @@ module.exports = function normalizeComponent (
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -34026,7 +34048,7 @@ exports = module.exports = __webpack_require__(9)(true);
 
 
 // module
-exports.push([module.i, "\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: small;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n}\n.alpheios-morph__dial {\n    font-size: smaller;\n}\n.alpheios-morph__attr {\n    font-weight: normal;\n    color: #0E2233; /** TODO use alpheios variable **/\n}\n.alpheios-morph__linked-attr {\n\tcolor:#3E8D9C; /** TODO use alpheios variable **/\n\tfont-weight: bold;\n\tcursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n    color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n    content: \";\";\n}\n.alpheios-morph__provider {\n  font-size: small;\n  font-weight: normal;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n  padding-left: .5em;\n}\n.alpheios-morph__listitem:after {\n    content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n    content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n    content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n    content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n   display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n   display: none;\n}\n.alpheios-popup__content .alpheios-shortdef__lemma {\n   display: none;\n}\n.alpheios-popup .alpheios-fulldef__lemma {\n   display: none;\n}\n.alpheios-morph__inflgroupdetail:before {\n   content: \":\"\n}\n\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/morph.vue?5da8f32c"],"names":[],"mappings":";AAyHA;EACA,oBAAA;EACA,YAAA;CACA;AAEA;EACA,kBAAA;CACA;AAEA;EACA,iBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;CACA;AAEA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;IACA,eAAA,CAAA,kCAAA;CACA;AAEA;CACA,cAAA,CAAA,kCAAA;CACA,kBAAA;CACA,gBAAA;CACA;AAEA;IACA,0BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;EACA,iBAAA;EACA,oBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;EACA,mBAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,YAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;GACA,eAAA;CACA;AAEA;GACA,cAAA;CACA;AAEA;GACA,cAAA;CACA;AAEA;GACA,cAAA;CACA;AAEA;GACA,YAAA;CACA","file":"morph.vue","sourcesContent":["<template>\n  <div id=\"alpheios-morph__lexemes\">\n    <div class=\"alpheios-morph__dict\" v-for=\"lex in lexemes\">\n      <span class=\"alpheios-morph__lemma\" v-if=\"! lex.lemma.principalParts.includes(lex.lemma.word)\" :lang=\"lex.lemma.language\">{{ lex.lemma.word }}</span>\n      <span class=\"alpheios-morph__pparts\">\n        <span class=\"alpheios-morph__listitem\" v-for=\"part in lex.lemma.principalParts\" :lang=\"lex.lemma.language\">{{ part }}</span>\n      </span>\n      <span class=\"alpheios-morph__pronunciation\" v-for=\"pron in lex.lemma.features.pronunciation\" v-if=\"lex.lemma.features.pronunciation\">\n        [{{pron}}]\n      </span>\n      <div class=\"alpheios-morph__morph\">\n        <span class=\"alpheios-morph__pofs\">\n          <span class=\"alpheios-morph__attr\" v-for=\"kase in lex.lemma.features['case']\" v-if=\"lex.lemma.features['case']\">{{kase.value}}</span>\n          <span class=\"alpheios-morph__attr\" v-for=\"gender in lex.lemma.features.gender\" v-if=\"lex.lemma.features.gender\">{{gender.value}}</span>\n          {{ lex.lemma.features['part of speech'].toString() }}\n        </span>\n        <span class=\"alpheios-morph__attr\" v-for=\"kind in lex.lemma.features.kind\" v-if=\"lex.lemma.features.kind\">{{kind.value}}</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"decl in lex.lemma.features.declension\" v-if=\"lex.lemma.features.declension\">{{decl.value}} declension</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"conj in lex.lemma.features.conjugation\" v-if=\"lex.lemma.features.conjugation\">{{conj.value}}</span>\n        <span class=\"alpheios-morph__parenthesized\" v-if=\"lex.lemma.features.age || lex.lemma.features.area || lex.lemma.features.geo || lex.lemma.features.frequency\">\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"age in lex.lemma.features.age\" v-if=\"lex.lemma.features.age\">( {{age.value}} )</span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"area in lex.lemma.features.area\" v-if=\"lex.lemma.features.area\">{{area.value}} </span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"geo in lex.lemma.features.geo\" v-if=\"lex.lemma.features.geo\">{{geo.value}}</span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"freq in lex.lemma.features.frequency\" v-if=\"lex.lemma.features.frequency\">{{freq.value}}</span>\n        </span>\n        <span class=\"alpheios-morph__attr\" v-for=\"source in lex.lemma.features.source\" v-if=\"lex.lemma.features.source\">[{{source.value}}]</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"note in lex.lemma.features.note\" v-if=\"lex.lemma.features.note\">[{{source.note}}]</span>\n      </div>\n      <div class=\"alpheios-morph__inflections\">\n        <div class=\"alpheios-morph__inflset\" v-for=\"inflset in lex.getGroupedInflections()\">\n\n          <span class=\"alpheios-morph__prefix\" v-if=\"inflset.groupingKey.prefix\">{{inflset.groupingKey.prefix}} </span>\n          <span class=\"alpheios-morph__stem\">{{inflset.groupingKey.stem}}</span>\n          <span class=\"alpheios-morph__suffix\" v-if=\"inflset.groupingKey.suffix\"> -{{inflset.groupingKey.suffix}}</span>\n          <span class=\"alpheios-morph__pofs alpheios-morph__parenthesized\"\n            v-if=\"! featureMatch(lex.lemma.features['part of speech'],inflset.groupingKey['part of speech'])\">{{inflset.groupingKey[\"part of speech\"].toString()}}</span>\n          <span class=\"alpheios-morph__declension alpheios-morph__parenthesized\"\n            v-if=\"inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension\">{{inflset.groupingKey.declension.toString()}}</span>\n\n          <div class=\"alpheios-morph__inflgroup\" v-for=\"group in inflset.inflections\">\n            <span class=\"alpheios-morph__number\" v-if=\"group.groupingKey.number\">{{ group.groupingKey.number.toString() }}</span>\n            <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.tense\">{{ group.groupingKey.tense.toString() }}</span>\n            <span v-for=\"nextGroup in group.inflections\">\n              <span class=\"alpheios-morph__voice\" v-if=\"nextGroup.groupingKey.voice\">{{ nextGroup.groupingKey.voice.toString() }}</span>\n              <span class=\"alpheios-morph__tense\" v-if=\"nextGroup.groupingKey.tense\">{{ nextGroup.groupingKey.tense.toString() }}</span>\n              <span class=\"alpheios-morph__inflgroupdetail\">\n                <span v-for=\"infl in nextGroup.inflections\">\n\n                  <span class=\"alpheios-morph__case\" v-if=\"infl.groupingKey.case\">\n                    {{ infl.groupingKey.case.toString() }}\n                    <span class=\"alpheios-morph__gender alpheios-morph__parenthesized\"\n                      v-if=\"infl.groupingKey.gender && ! featureMatch(infl.groupingKey.gender,lex.lemma.features.gender) \">\n                      {{ infl.groupingKey.gender.map((g) => g.toLocaleStringAbbr()).toString()}}\n                    </span>\n\n                    <span class=\"alpheios-morph__comparative\" v-if=\"infl.groupingKey.comparative && infl.groupingKey.filter((f)=> f.toString() !== 'positive')\">\n                      {{ infl.groupingKey.comparative.toString() }}\n                    </span>\n\n                  </span>\n\n                  <span class=\"alpheios-morph__person\" v-if=\"infl.groupingKey.person\">\n                    {{ infl.groupingKey.person.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__mood\" v-if=\"infl.groupingKey.mood && !infl.groupingKey.case\">\n                    {{ infl.groupingKey.mood.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__sort\" v-if=\"infl.groupingKey.sort\">\n                    {{ infl.groupingKey.sort.toString() }}\n                  </span>\n\n                  <span v-for=\"item in infl.inflections\">\n                    <span class=\"alpheios-morph__example\" v-if=\"item.example\">{{ item.example.toString() }}</span>\n                  </span>\n\n                </span><!-- end span infl -->\n              </span>\n            </span><!-- end span groupinflections -->\n          </div>\n        </div>\n      </div>\n      <div class=\"alpheios-morph__provider\">\n        {{ lex.provider.toString() }}\n      </div>\n    </div>\n  </div>\n</template>\n<script>\n  export default {\n    name: 'Morph',\n    props: ['lexemes'],\n    methods: {\n      featureMatch(a,b) {\n        let matches = false\n        for (let f of a) {\n          if (b && b.filter((x) => x.isEqual(f)).length > 0) {\n            matches = true\n            break\n          }\n        }\n        return matches\n      }\n    },\n    mounted () {\n      console.log('Morph is mounted')\n        // for each infl without dial\n        //   group by stem, pref, suff, pofs, comp\n        //   sort by pofs\n        // for each infl without dial and without either stem or pofs\n        // for each infl with dial\n        // inflection-set:\n        //  ignores conjunction, preposition, interjection, particle\n        //  take pofs and decl from infl if it differs from dict\n        //  add dialect\n    },\n  }\n</script>\n<style>\n\n  .alpheios-morph__dict {\n    margin-bottom: .5em;\n    clear: both;\n  }\n\n  .alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n    font-weight: bold;\n  }\n\n  .alpheios-morph__source {\n    font-size: small;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n  }\n\n  .alpheios-morph__dial {\n      font-size: smaller;\n  }\n\n  .alpheios-morph__attr {\n      font-weight: normal;\n      color: #0E2233; /** TODO use alpheios variable **/\n  }\n\n  .alpheios-morph__linked-attr {\n  \tcolor:#3E8D9C; /** TODO use alpheios variable **/\n  \tfont-weight: bold;\n  \tcursor: pointer;\n  }\n\n  .alpheios-morph__linked-attr:hover {\n      color: #5BC8DC !important;\n  }\n\n  .alpheios-morph__pofs:after {\n      content: \";\";\n  }\n\n  .alpheios-morph__provider {\n    font-size: small;\n    font-weight: normal;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n    padding-left: .5em;\n  }\n\n  .alpheios-morph__listitem:after {\n      content: \", \";\n   }\n\n  .alpheios-morph__listitem:last-child:after {\n      content: \"\";\n   }\n\n  .alpheios-morph__parenthesized:before {\n      content: \"(\";\n   }\n\n  .alpheios-morph__parenthesized:after {\n      content: \")\";\n   }\n\n   .alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n     display: block;\n   }\n\n   .alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n     display: none;\n   }\n\n   .alpheios-popup__content .alpheios-shortdef__lemma {\n     display: none;\n   }\n\n   .alpheios-popup .alpheios-fulldef__lemma {\n     display: none;\n   }\n\n   .alpheios-morph__inflgroupdetail:before {\n     content: \":\"\n   }\n\n</style>\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: small;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n}\n.alpheios-morph__dial {\n    font-size: smaller;\n}\n.alpheios-morph__attr {\n    font-weight: normal;\n    color: #0E2233; /** TODO use alpheios variable **/\n}\n.alpheios-morph__linked-attr {\n\tcolor:#3E8D9C; /** TODO use alpheios variable **/\n\tfont-weight: bold;\n\tcursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n    color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n    content: \";\";\n}\n.alpheios-morph__provider {\n  font-size: small;\n  font-weight: normal;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n  padding-left: .5em;\n}\n.alpheios-morph__listitem:after {\n    content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n    content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n    content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n    content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n   display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n   display: none;\n}\n.alpheios-popup__content .alpheios-shortdef__lemma {\n   display: none;\n}\n.alpheios-popup .alpheios-fulldef__lemma {\n   display: none;\n}\n\n\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/morph.vue?03c8d82d"],"names":[],"mappings":";AAoIA;EACA,oBAAA;EACA,YAAA;CACA;AAEA;EACA,kBAAA;CACA;AAEA;EACA,iBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;CACA;AAEA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;IACA,eAAA,CAAA,kCAAA;CACA;AAEA;CACA,cAAA,CAAA,kCAAA;CACA,kBAAA;CACA,gBAAA;CACA;AAEA;IACA,0BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;EACA,iBAAA;EACA,oBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;EACA,mBAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,YAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;GACA,eAAA;CACA;AAEA;GACA,cAAA;CACA;AAEA;GACA,cAAA;CACA;AAEA;GACA,cAAA;CACA","file":"morph.vue","sourcesContent":["<template>\n  <div id=\"alpheios-morph__lexemes\">\n    <div class=\"alpheios-morph__dict\" v-for=\"lex in lexemes\">\n      <span class=\"alpheios-morph__lemma\" v-if=\"! lex.lemma.principalParts.includes(lex.lemma.word)\" :lang=\"lex.lemma.language\">{{ lex.lemma.word }}</span>\n      <span class=\"alpheios-morph__pparts\">\n        <span class=\"alpheios-morph__listitem\" v-for=\"part in lex.lemma.principalParts\" :lang=\"lex.lemma.language\">{{ part }}</span>\n      </span>\n      <span class=\"alpheios-morph__pronunciation\" v-for=\"pron in lex.lemma.features.pronunciation\" v-if=\"lex.lemma.features.pronunciation\">\n        [{{pron}}]\n      </span>\n      <div class=\"alpheios-morph__morph\">\n        <span class=\"alpheios-morph__pofs\">\n          <span class=\"alpheios-morph__attr\" v-for=\"kase in lex.lemma.features['case']\" v-if=\"lex.lemma.features['case']\">{{kase.value}}</span>\n          <span class=\"alpheios-morph__attr\" v-for=\"gender in lex.lemma.features.gender\" v-if=\"lex.lemma.features.gender\">{{gender.value}}</span>\n          {{ lex.lemma.features['part of speech'].toString() }}\n        </span>\n        <span class=\"alpheios-morph__attr\" v-for=\"kind in lex.lemma.features.kind\" v-if=\"lex.lemma.features.kind\">{{kind.value}}</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"decl in lex.lemma.features.declension\" v-if=\"lex.lemma.features.declension\">{{decl.value}} declension</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"conj in lex.lemma.features.conjugation\" v-if=\"lex.lemma.features.conjugation\">{{conj.value}}</span>\n        <span class=\"alpheios-morph__parenthesized\" v-if=\"lex.lemma.features.age || lex.lemma.features.area || lex.lemma.features.geo || lex.lemma.features.frequency\">\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"age in lex.lemma.features.age\" v-if=\"lex.lemma.features.age\">( {{age.value}} )</span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"area in lex.lemma.features.area\" v-if=\"lex.lemma.features.area\">{{area.value}} </span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"geo in lex.lemma.features.geo\" v-if=\"lex.lemma.features.geo\">{{geo.value}}</span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"freq in lex.lemma.features.frequency\" v-if=\"lex.lemma.features.frequency\">{{freq.value}}</span>\n        </span>\n        <span class=\"alpheios-morph__attr\" v-for=\"source in lex.lemma.features.source\" v-if=\"lex.lemma.features.source\">[{{source.value}}]</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"note in lex.lemma.features.note\" v-if=\"lex.lemma.features.note\">[{{source.note}}]</span>\n      </div>\n      <div class=\"alpheios-morph__inflections\">\n        <div class=\"alpheios-morph__inflset\" v-for=\"inflset in lex.getGroupedInflections()\">\n\n          <span class=\"alpheios-morph__prefix\" v-if=\"inflset.groupingKey.prefix\">{{inflset.groupingKey.prefix}} </span>\n          <span class=\"alpheios-morph__stem\">{{inflset.groupingKey.stem}}</span>\n          <span class=\"alpheios-morph__suffix\" v-if=\"inflset.groupingKey.suffix\"> -{{inflset.groupingKey.suffix}}</span>\n          <span class=\"alpheios-morph__pofs alpheios-morph__parenthesized\"\n            v-if=\"! featureMatch(lex.lemma.features['part of speech'],inflset.groupingKey['part of speech'])\">{{inflset.groupingKey[\"part of speech\"].toString()}}</span>\n          <span class=\"alpheios-morph__declension alpheios-morph__parenthesized\"\n            v-if=\"inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension\">{{inflset.groupingKey.declension.toString()}}</span>\n\n          <div class=\"alpheios-morph__inflgroup\" v-for=\"group in inflset.inflections\">\n            <span class=\"alpheios-morph__number\" v-if=\"group.groupingKey.number && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.number.toString() }}</span>\n            <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.tense && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.tense.toString() }}</span>\n            <span v-for=\"nextGroup in group.inflections\">\n              <span v-if=\"group.groupingKey.isCaseInflectionSet\">\n                <span class=\"alpheios-morph__voice\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.voice\">{{ nextGroup.groupingKey.voice.toString() }}</span>\n                <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.tense\">{{ nextGroup.groupingKey.tense.toString() }}</span>\n                :\n              </span>\n              <span>\n                <span v-for=\"infl in nextGroup.inflections\">\n\n                  <span class=\"alpheios-morph__case\" v-if=\"infl.groupingKey.case\">\n                    {{ infl.groupingKey.case.toString() }}\n                    <span class=\"alpheios-morph__gender alpheios-morph__parenthesized\"\n                      v-if=\"infl.groupingKey.gender && ! featureMatch(infl.groupingKey.gender,lex.lemma.features.gender) \">\n                      {{ infl.groupingKey.gender.map((g) => g.toLocaleStringAbbr()).toString()}}\n                    </span>\n\n                    <span class=\"alpheios-morph__comparative\" v-if=\"infl.groupingKey.comparative && infl.groupingKey.filter((f)=> f.toString() !== 'positive')\">\n                      {{ infl.groupingKey.comparative.toString() }}\n                    </span>\n\n                  </span>\n\n                  <span class=\"alpheios-morph__person\" v-if=\"infl.groupingKey.person\">\n                    {{ infl.groupingKey.person.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__number\" v-if=\"infl.groupingKey.number && ! group.groupingKey.isCaseInflectionSet\">\n                    {{ infl.groupingKey.number.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__tense\" v-if=\"infl.groupingKey.tense && ! group.groupingKey.isCaseInflectionSet && ! nextGroup.groupingKey.tense\">\n                    {{ infl.groupingKey.tense.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__mood\" v-if=\"infl.groupingKey.mood && !group.groupingKey.isCaseInflectionSet\">\n                    {{ infl.groupingKey.mood.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__voice\" v-if=\"infl.groupingKey.voice && !group.groupingKey.isCaseInflectionSet\">\n                    {{ infl.groupingKey.voice.toString() }}\n                  </span>\n\n                  <span v-for=\"item in infl.inflections\">\n                    <span class=\"alpheios-morph__example\" v-if=\"item.example\">{{ item.example.toString() }}</span>\n                  </span>\n\n                </span><!-- end span infl -->\n              </span>\n            </span><!-- end span groupinflections -->\n          </div>\n        </div>\n      </div>\n      <div class=\"alpheios-morph__provider\">\n        {{ lex.provider.toString() }}\n      </div>\n    </div>\n  </div>\n</template>\n<script>\n  export default {\n    name: 'Morph',\n    props: ['lexemes'],\n    methods: {\n      featureMatch(a,b) {\n        let matches = false\n        for (let f of a) {\n          if (b && b.filter((x) => x.isEqual(f)).length > 0) {\n            matches = true\n            break\n          }\n        }\n        return matches\n      }\n    },\n    mounted () {\n      console.log('Morph is mounted')\n        // for each infl without dial\n        //   group by stem, pref, suff, pofs, comp\n        //   sort by pofs\n        // for each infl without dial and without either stem or pofs\n        // for each infl with dial\n        // inflection-set:\n        //  ignores conjunction, preposition, interjection, particle\n        //  take pofs and decl from infl if it differs from dict\n        //  add dialect\n    },\n  }\n</script>\n<style>\n\n  .alpheios-morph__dict {\n    margin-bottom: .5em;\n    clear: both;\n  }\n\n  .alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n    font-weight: bold;\n  }\n\n  .alpheios-morph__source {\n    font-size: small;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n  }\n\n  .alpheios-morph__dial {\n      font-size: smaller;\n  }\n\n  .alpheios-morph__attr {\n      font-weight: normal;\n      color: #0E2233; /** TODO use alpheios variable **/\n  }\n\n  .alpheios-morph__linked-attr {\n  \tcolor:#3E8D9C; /** TODO use alpheios variable **/\n  \tfont-weight: bold;\n  \tcursor: pointer;\n  }\n\n  .alpheios-morph__linked-attr:hover {\n      color: #5BC8DC !important;\n  }\n\n  .alpheios-morph__pofs:after {\n      content: \";\";\n  }\n\n  .alpheios-morph__provider {\n    font-size: small;\n    font-weight: normal;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n    padding-left: .5em;\n  }\n\n  .alpheios-morph__listitem:after {\n      content: \", \";\n   }\n\n  .alpheios-morph__listitem:last-child:after {\n      content: \"\";\n   }\n\n  .alpheios-morph__parenthesized:before {\n      content: \"(\";\n   }\n\n  .alpheios-morph__parenthesized:after {\n      content: \")\";\n   }\n\n   .alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n     display: block;\n   }\n\n   .alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n     display: none;\n   }\n\n   .alpheios-popup__content .alpheios-shortdef__lemma {\n     display: none;\n   }\n\n   .alpheios-popup .alpheios-fulldef__lemma {\n     display: none;\n   }\n\n\n</style>\n"],"sourceRoot":""}]);
 
 // exports
 
@@ -34287,7 +34309,8 @@ var render = function() {
                       "div",
                       { staticClass: "alpheios-morph__inflgroup" },
                       [
-                        group.groupingKey.number
+                        group.groupingKey.number &&
+                        group.groupingKey.isCaseInflectionSet
                           ? _c(
                               "span",
                               { staticClass: "alpheios-morph__number" },
@@ -34299,7 +34322,8 @@ var render = function() {
                             )
                           : _vm._e(),
                         _vm._v(" "),
-                        group.groupingKey.tense
+                        group.groupingKey.tense &&
+                        group.groupingKey.isCaseInflectionSet
                           ? _c(
                               "span",
                               { staticClass: "alpheios-morph__tense" },
@@ -34313,39 +34337,47 @@ var render = function() {
                         _vm._v(" "),
                         _vm._l(group.inflections, function(nextGroup) {
                           return _c("span", [
-                            nextGroup.groupingKey.voice
-                              ? _c(
-                                  "span",
-                                  { staticClass: "alpheios-morph__voice" },
-                                  [
-                                    _vm._v(
-                                      _vm._s(
-                                        nextGroup.groupingKey.voice.toString()
+                            group.groupingKey.isCaseInflectionSet
+                              ? _c("span", [
+                                  group.groupingKey.isCaseInflectionSet &&
+                                  nextGroup.groupingKey.voice
+                                    ? _c(
+                                        "span",
+                                        {
+                                          staticClass: "alpheios-morph__voice"
+                                        },
+                                        [
+                                          _vm._v(
+                                            _vm._s(
+                                              nextGroup.groupingKey.voice.toString()
+                                            )
+                                          )
+                                        ]
                                       )
-                                    )
-                                  ]
-                                )
-                              : _vm._e(),
-                            _vm._v(" "),
-                            nextGroup.groupingKey.tense
-                              ? _c(
-                                  "span",
-                                  { staticClass: "alpheios-morph__tense" },
-                                  [
-                                    _vm._v(
-                                      _vm._s(
-                                        nextGroup.groupingKey.tense.toString()
+                                    : _vm._e(),
+                                  _vm._v(" "),
+                                  group.groupingKey.isCaseInflectionSet &&
+                                  nextGroup.groupingKey.tense
+                                    ? _c(
+                                        "span",
+                                        {
+                                          staticClass: "alpheios-morph__tense"
+                                        },
+                                        [
+                                          _vm._v(
+                                            _vm._s(
+                                              nextGroup.groupingKey.tense.toString()
+                                            )
+                                          )
+                                        ]
                                       )
-                                    )
-                                  ]
-                                )
+                                    : _vm._e(),
+                                  _vm._v("\n              :\n            ")
+                                ])
                               : _vm._e(),
                             _vm._v(" "),
                             _c(
                               "span",
-                              {
-                                staticClass: "alpheios-morph__inflgroupdetail"
-                              },
                               _vm._l(nextGroup.inflections, function(infl) {
                                 return _c(
                                   "span",
@@ -34437,8 +34469,48 @@ var render = function() {
                                         )
                                       : _vm._e(),
                                     _vm._v(" "),
+                                    infl.groupingKey.number &&
+                                    !group.groupingKey.isCaseInflectionSet
+                                      ? _c(
+                                          "span",
+                                          {
+                                            staticClass:
+                                              "alpheios-morph__number"
+                                          },
+                                          [
+                                            _vm._v(
+                                              "\n                  " +
+                                                _vm._s(
+                                                  infl.groupingKey.number.toString()
+                                                ) +
+                                                "\n                "
+                                            )
+                                          ]
+                                        )
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    infl.groupingKey.tense &&
+                                    !group.groupingKey.isCaseInflectionSet &&
+                                    !nextGroup.groupingKey.tense
+                                      ? _c(
+                                          "span",
+                                          {
+                                            staticClass: "alpheios-morph__tense"
+                                          },
+                                          [
+                                            _vm._v(
+                                              "\n                  " +
+                                                _vm._s(
+                                                  infl.groupingKey.tense.toString()
+                                                ) +
+                                                "\n                "
+                                            )
+                                          ]
+                                        )
+                                      : _vm._e(),
+                                    _vm._v(" "),
                                     infl.groupingKey.mood &&
-                                    !infl.groupingKey.case
+                                    !group.groupingKey.isCaseInflectionSet
                                       ? _c(
                                           "span",
                                           {
@@ -34456,17 +34528,18 @@ var render = function() {
                                         )
                                       : _vm._e(),
                                     _vm._v(" "),
-                                    infl.groupingKey.sort
+                                    infl.groupingKey.voice &&
+                                    !group.groupingKey.isCaseInflectionSet
                                       ? _c(
                                           "span",
                                           {
-                                            staticClass: "alpheios-morph__sort"
+                                            staticClass: "alpheios-morph__voice"
                                           },
                                           [
                                             _vm._v(
                                               "\n                  " +
                                                 _vm._s(
-                                                  infl.groupingKey.sort.toString()
+                                                  infl.groupingKey.voice.toString()
                                                 ) +
                                                 "\n                "
                                             )
