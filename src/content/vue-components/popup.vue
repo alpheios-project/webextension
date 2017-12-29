@@ -95,7 +95,7 @@
         preserveAspectRatio: false,
         edges: { left: true, right: true, bottom: true, top: true },
         restrictSize: {
-          min: { width: 300, height: 300 }
+          min: { width: 100, height: 300 }
         },
         restrictEdges: {
           outer: document.body,

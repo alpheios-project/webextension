@@ -4,14 +4,15 @@ import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import Template from './template.htmlf'
 import Panel from './components/panel/component'
 import TabScript from '../lib/content/tab-script'
-import Options from './components/options/component'
+import Setting from './vue-components/setting.vue'
 import Popup from './vue-components/popup.vue'
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
-import UIkITIconts from '../../node_modules/uikit/dist/js/uikit-icons'
+import UIkitIconts from '../../node_modules/uikit/dist/js/uikit-icons'
 
 export default class ContentUIController {
-  constructor (state) {
+  constructor (state, options) {
     this.state = state
+    this.options = options
     this.settings = ContentUIController.settingValues
 
     // Finds a max z-index of element on the page.
@@ -37,20 +38,74 @@ export default class ContentUIController {
       methods: {
         onClose: this.closePanel.bind(this)
       }
-    })
+    }, this)
     this.panel.updateZIndex(zIndexMax)
 
     // Should be loaded after Panel because options are inserted into a panel
-    this.options = new Options({
+    this.optionsUI = new Vue({
+      el: '#alpheios-options',
+      components: { setting: Setting },
+      data: {
+        preferredLanguageValues: this.options.items.preferredLanguage.textValues(),
+        localeValues: this.options.items.locale.textValues(),
+        panelPositionValues: this.options.items.panelPosition.textValues(),
+        uiTypeValues: this.options.items.uiType.textValues(),
+
+        preferredLanguage: this.options.items.preferredLanguage.currentTextValue(),
+        locale: this.options.items.locale.currentTextValue(),
+        panelPosition: this.options.items.panelPosition.currentTextValue(),
+        uiType: this.options.items.uiType.currentTextValue(),
+
+        preferredLanguageLabel: 'Preferred language:',
+        localeLabel: 'Locale:',
+        panelPositionLabel: 'Panel position:',
+        uiTypeLabel: 'UI type:'
+      },
       methods: {
-        ready: (options) => {
-          this.state.status = TabScript.statuses.script.ACTIVE
-          this.setPanelPositionTo(options.panelPosition.currentValue)
-          this.setDefaultLanguageTo(options.defaultLanguage.currentValue)
-          console.log('Content script is set to active')
+        update (options) {
+          this.preferredLanguageValues = options.items.preferredLanguage.textValues()
+          this.locale = options.items.locale.textValues()
+          this.panelPositionValues = options.items.panelPosition.textValues()
+          this.uiTypeValues = options.items.uiType.textValues()
+
+          this.preferredLanguage = options.items.preferredLanguage.currentTextValue()
+          this.locale = options.items.locale.currentTextValue()
+          this.panelPosition = options.items.panelPosition.currentTextValue()
+          this.uiType = options.items.uiType.currentTextValue()
         },
-        onChange: this.optionChangeListener.bind(this)
+        changePreferredLanguage: function (value) {
+          this.preferredLanguage = value
+          this.options.items.preferredLanguage.setTextValue(value)
+          this.uiController.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
+        },
+        changeLocale: function (value) {
+          this.locale = value
+          this.options.items.locale.setTextValue(value)
+          // If presenter is loaded
+          if (this.uiController.presenter) { this.uiController.presenter.setLocale(this.options.items.locale.currentValue) }
+        },
+        changePanelPosition: function (value) {
+          this.options.items.panelPosition.setTextValue(value)
+          this.uiController.setPanelPositionTo(this.options.items.panelPosition.currentValue)
+        },
+        changeUiType: function (value) {
+          this.uiType = value
+          this.options.items.uiType.setTextValue(value)
+        }
+      },
+      mounted () {
+
       }
+    })
+    this.optionsUI.options = this.options
+    this.optionsUI.uiController = this
+
+    this.options.load(() => {
+      this.state.status = TabScript.statuses.script.ACTIVE
+      this.setPanelPositionTo(this.options.items.panelPosition.currentValue)
+      this.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
+      console.log('Content script is set to active')
+      this.optionsUI.update(this.options)
     })
 
     // Create a Vue instance for a popup
@@ -118,12 +173,12 @@ export default class ContentUIController {
     this.popup.panel = this.panel
 
     // Initialize UIKit
-    UIkit.use(UIkITIconts)
+    UIkit.use(UIkitIconts)
   }
 
   /**
    * A temporary solution
-   * @return {*|Options}
+   * @return {*|OptionsComponent}
    */
   getOptions () {
     return this.options
@@ -259,21 +314,28 @@ export default class ContentUIController {
     this.state.setPanelClosed()
   }
 
-  optionChangeListener (optionName, optionValue) {
-    if (optionName === 'locale' && this.presenter) { this.presenter.setLocale(optionValue) }
-    if (optionName === 'panelPosition') { this.setPanelPositionTo(optionValue) }
-    if (optionName === 'defaultLanguage') { this.setDefaultLanguageTo(optionValue) }
-  }
-
-  setDefaultLanguageTo (language) {
-    this.defaultLanguage = language
+  setPreferredLanguageTo (language) {
+    this.preferredLangauge = language
   }
 
   setPanelPositionTo (position) {
+    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
     if (position === 'right') {
-      this.panel.positionToRight()
+      this.panel.attachToRight()
     } else {
-      this.panel.positionToLeft()
+      this.panel.attachToLeft()
     }
+  }
+
+  attachPanelToLeft () {
+    this.options.items.panelPosition.setValue('left')
+    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
+    this.panel.attachToLeft()
+  }
+
+  attachPanelToRight () {
+    this.options.items.panelPosition.setValue('right')
+    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
+    this.panel.attachToRight()
   }
 }

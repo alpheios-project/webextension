@@ -8,6 +8,7 @@ import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
 import TabScript from '../lib/content/tab-script'
+import Options from './content-options'
 import HTMLSelector from '../lib/selection/media/html-selector'
 import LexicalQuery from './lexical-query'
 import ContentUIController from './content-ui-controller'
@@ -17,13 +18,13 @@ export default class ContentProcess {
     this.state = new TabScript().setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.status = TabScript.statuses.script.PENDING
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
+    this.options = new Options()
 
     this.messagingService = new MessagingService()
 
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
     this.langData = new LanguageData([LatinDataSet, GreekDataSet]).loadData()
-    this.ui = new ContentUIController(this.state)
-    this.options = this.ui.getOptions()
+    this.ui = new ContentUIController(this.state, this.options)
   }
 
   initialize () {
@@ -101,7 +102,7 @@ export default class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = HTMLSelector.getSelector(event.target, this.options.items.defaultLanguage.currentValue)
+      let textSelector = HTMLSelector.getSelector(event.target, this.options.items.preferredLanguage.currentValue)
 
       if (!textSelector.isEmpty()) {
         ExpObjMon.track(

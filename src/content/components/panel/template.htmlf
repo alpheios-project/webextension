@@ -1,11 +1,11 @@
 <div class="alpheios-panel auk" data-component="alpheios-panel" data-resizable="true">
     <div class="alpheios-panel__header">
         <div class="alpheios-panel__header-title"><img class="alpheios-panel__header-logo" src="logo.png"></div>
-        <span data-element="panelNormalWidthBtn" id="alpheios-panel-show-open" class="alpheios-panel__header-action-btn"
-              uk-icon="icon: shrink; ratio: 2"></span>
-        <span data-element="panelFullWidthBtn" id="alpheios-panel-show-fw" class="alpheios-panel__header-action-btn"
-              uk-icon="icon: expand; ratio: 2"></span>
-        <span data-element="panelCloseBtn" id="alpheios-panel-hide" class="alpheios-panel__header-action-btn"
+        <span data-element="attachToLeftBtn" id="alpheios-panel-attach-to-left" class="alpheios-panel__header-action-btn"
+              uk-icon="icon: chevron-left; ratio: 2"></span>
+        <span data-element="attachToRightBtn" id="alpheios-panel-attach-to-right" class="alpheios-panel__header-action-btn"
+              uk-icon="icon: chevron-right; ratio: 2"></span>
+        <span data-element="closeBtn" id="alpheios-panel-hide" class="alpheios-panel__header-action-btn"
               uk-icon="icon: close; ratio: 2"></span>
     </div>
 
@@ -28,6 +28,12 @@
                 <div data-content-area="messages"></div>
             </div>
             <div data-element="optionsPanel">
+                <div id="alpheios-options">
+                    <setting :items="preferredLanguageValues" :selected="preferredLanguage" :labeltext="preferredLanguageLabel" @change="changePreferredLanguage"></setting>
+                    <setting :items="localeValues" :selected="locale" :labeltext="localeLabel" @change="changeLocale"></setting>
+                    <setting :items="uiTypeValues" :selected="uiType" :labeltext="uiTypeLabel" @change="changeUiType"></setting>
+                    <setting :items="panelPositionValues" :selected="panelPosition" :labeltext="panelPositionLabel" @change="changePanelPosition"></setting>
+                </div>
                 <div data-component="alpheios-panel-options"></div>
             </div>
         </div>

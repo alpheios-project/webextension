@@ -6,22 +6,21 @@ import interact from 'interactjs' // Interact.js (for resizability)
  * This is a singleton component.
  */
 export default class Panel extends Component {
-  constructor (options) {
+  constructor (options, uiController) {
     super(Panel.defaults, options)
+    this.uiController = uiController
 
-    this.hiddenClassName = 'hidden'
     this.panelOpenedClassName = 'opened'
     this.panelFullWidthClassName = 'full-width'
     this.bodyNormalWidthClassName = 'alpheios-panel-opened'
     this.zIndex = Panel.defaults.zIndex
     this.self.element.style.zIndex = this.zIndex
 
-    this.setPositionTo(this.options.position)
     this.width = Panel.widths.zero // Sets initial width to zero because panel is closed initially
 
     // Set panel controls event handlers
-    this.innerElements.normalWidthButton.element.addEventListener('click', this.open.bind(this, Panel.widths.normal))
-    this.innerElements.fullWidthButton.element.addEventListener('click', this.open.bind(this, Panel.widths.full))
+    this.innerElements.attachToLeftButton.element.addEventListener('click', this.uiController.attachPanelToLeft.bind(this.uiController))
+    this.innerElements.attachToRightButton.element.addEventListener('click', this.uiController.attachPanelToRight.bind(this.uiController))
     this.innerElements.closeButton.element.addEventListener('click', this.close.bind(this))
 
     // Initialize Interact.js: make panel resizable
@@ -55,9 +54,9 @@ export default class Panel extends Component {
       template: template,
       selfSelector: '[data-component="alpheios-panel"]',
       innerElements: {
-        normalWidthButton: { selector: '#alpheios-panel-show-open' },
-        fullWidthButton: { selector: '#alpheios-panel-show-fw' },
-        closeButton: { selector: '#alpheios-panel-hide' }
+        attachToLeftButton: { selector: '[data-element="attachToLeftBtn"]' },
+        attachToRightButton: { selector: '[data-element="attachToRightBtn"]' },
+        closeButton: { selector: '[data-element="closeBtn"]' }
       },
       outerElements: {
         page: { selector: 'body' }
@@ -111,20 +110,16 @@ export default class Panel extends Component {
         // Panel is at the right
         this.outerElements.page.element.classList.remove(Panel.positions.left)
         this.outerElements.page.element.classList.add(Panel.positions.right)
+        this.innerElements.attachToRightButton.hide()
+        this.innerElements.attachToLeftButton.show()
       } else {
         // Default: Panel is at the left
         this.outerElements.page.element.classList.remove(Panel.positions.right)
         this.outerElements.page.element.classList.add(Panel.positions.left)
+        this.innerElements.attachToLeftButton.hide()
+        this.innerElements.attachToRightButton.show()
       }
     }
-  }
-
-  positionToLeft () {
-    this.setPositionTo(Panel.positions.left)
-  }
-
-  positionToRight () {
-    this.setPositionTo(Panel.positions.right)
   }
 
   open (width = Panel.widths.normal) {
@@ -138,23 +133,32 @@ export default class Panel extends Component {
 
       this.self.element.classList.add(this.panelOpenedClassName)
       this.self.element.classList.add(this.panelFullWidthClassName)
-      this.innerElements.normalWidthButton.element.classList.remove(this.hiddenClassName)
     } else {
       // Default: panel will to be shown in normal width
       this.self.element.classList.add(this.panelOpenedClassName)
       this.outerElements.page.element.classList.add(this.bodyNormalWidthClassName)
       this.outerElements.page.element.classList.add(this.bodyPositionClassName)
       this.self.element.classList.add(this.panelOpenedClassName)
-      this.innerElements.fullWidthButton.element.classList.remove(this.hiddenClassName)
     }
     return this
   }
+
   close () {
     if (this.isOpened) {
       this.resetWidth()
       this.options.methods.onClose()
     }
     return this
+  }
+
+  attachToLeft () {
+    this.setPositionTo(Panel.positions.left)
+    console.log('attach to left')
+  }
+
+  attachToRight () {
+    this.setPositionTo(Panel.positions.right)
+    console.log('attach to right')
   }
 
   get isOpened () {
@@ -168,8 +172,6 @@ export default class Panel extends Component {
 
     this.self.element.classList.remove(this.panelOpenedClassName)
     this.self.element.classList.remove(this.panelFullWidthClassName)
-    this.innerElements.normalWidthButton.element.classList.add(this.hiddenClassName)
-    this.innerElements.fullWidthButton.element.classList.add(this.hiddenClassName)
 
     this.width = Panel.widths.zero
   }
