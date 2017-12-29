@@ -1,16 +1,11 @@
 $alpheios-panel-header-height: 60px;
 
-/*.alpheios-panel__wrapper {
-  direction: ltr;
-  height: 100%;
-}*/
-
 .alpheios-panel {
     display: none;
     width: 400px; // Initial width
     height: 100vh;
     top: 0;
-    z-index: 1000;
+    z-index: 2000;
     position: fixed;
     background: #FFF;
     resize: both;
@@ -18,13 +13,11 @@ $alpheios-panel-header-height: 60px;
 }
 
 .alpheios-panel-left .alpheios-panel.opened {
-    //direction: ltr;
     display: block;
     left: 0;
 }
 
 .alpheios-panel-right .alpheios-panel.opened {
-    //direction: rtl;
     display: block;
     right: 0;
 }

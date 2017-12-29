@@ -8,10 +8,6 @@ let contentProcess = ExperienceMonitor.track(
       monitoredFunction: 'getWordDataStatefully',
       experience: 'Get word data',
       asyncWrapper: ExperienceMonitor.recordExperience
-    },
-    {
-      monitoredFunction: 'sendRequestToBgStatefully',
-      asyncWrapper: ExperienceMonitor.attachToMessage
     }
   ]
 )

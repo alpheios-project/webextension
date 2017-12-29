@@ -1,3 +1,0 @@
-<div class="auk" data-component="page-controls">
-    <span class="uk-icon-button alpheios-page-controls__panel-toggle" uk-icon="icon: info; ratio: 2" data-action="toggle-panel"></span>
-</div>

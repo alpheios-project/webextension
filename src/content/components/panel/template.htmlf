@@ -1,10 +1,12 @@
 <div class="alpheios-panel auk" data-component="alpheios-panel" data-resizable="true">
-  <!--<div class="alpheios-panel__wrapper">-->
     <div class="alpheios-panel__header">
         <div class="alpheios-panel__header-title"><img class="alpheios-panel__header-logo" src="logo.png"></div>
-        <span data-element="panelNormalWidthBtn" id="alpheios-panel-show-open" class="alpheios-panel__header-action-btn" uk-icon="icon: shrink; ratio: 2"></span>
-        <span data-element="panelFullWidthBtn" id="alpheios-panel-show-fw" class="alpheios-panel__header-action-btn" uk-icon="icon: expand; ratio: 2"></span>
-        <span data-element="panelCloseBtn" id="alpheios-panel-hide" class="alpheios-panel__header-action-btn" uk-icon="icon: close; ratio: 2"></span>
+        <span data-element="panelNormalWidthBtn" id="alpheios-panel-show-open" class="alpheios-panel__header-action-btn"
+              uk-icon="icon: shrink; ratio: 2"></span>
+        <span data-element="panelFullWidthBtn" id="alpheios-panel-show-fw" class="alpheios-panel__header-action-btn"
+              uk-icon="icon: expand; ratio: 2"></span>
+        <span data-element="panelCloseBtn" id="alpheios-panel-hide" class="alpheios-panel__header-action-btn"
+              uk-icon="icon: close; ratio: 2"></span>
     </div>
 
     <div class="alpheios-panel__body">
@@ -16,8 +18,10 @@
                 <div data-content-area="fullDefinitions"></div>
             </div>
             <div data-element="inflectionsPanel">
-                <div data-content-area="inflectionsLocaleSwitcher" id="alpheios-panel-content-infl-table-locale-switcher" class="alpheios-ui-form-group"></div>
-                <div data-content-area="inflectionsViewSelector" id="alpheios-panel-content-infl-table-view-selector" class="alpheios-ui-form-group"></div>
+                <div data-content-area="inflectionsLocaleSwitcher"
+                     id="alpheios-panel-content-infl-table-locale-switcher" class="alpheios-ui-form-group"></div>
+                <div data-content-area="inflectionsViewSelector" id="alpheios-panel-content-infl-table-view-selector"
+                     class="alpheios-ui-form-group"></div>
                 <div data-content-area="inflectionsTable" id="alpheios-panel-content-infl-table-body"></div>
             </div>
             <div data-element="statusPanel">
@@ -41,5 +45,4 @@
                   data-tab-group="contentTabs" data-target-name="optionsPanel"></span>
         </div>
     </div>
-  <!--</div>-->
 </div>

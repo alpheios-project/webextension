@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 5);
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -68,7 +68,7 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
 
 
@@ -154,9 +154,6 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__statuses__ = __webpack_require__(3);
-
-
 /**
  * Contains a state of a tab content script.
  * @property {Number} tabID - An ID of a tab where the content script is loaded
@@ -168,13 +165,128 @@ class TabScript {
     this.tabID = tabID
     this.status = status || TabScript.defaults.status
     this.panelStatus = panelStatus || TabScript.defaults.panelStatus
+
+    this.watchers = new Map()
+  }
+
+  static get genericProps () {
+    return ['tabID']
+  }
+
+  static get symbolProps () {
+    return ['status', 'panelStatus']
+  }
+
+  /**
+   * Only certain features will be stored within a serialized version of a TabScript. This is done
+   * to prevent context-specific features (such as local event handlers) to be passed over the network
+   * to a different context where they would make no sense. This getter returns a list of such fields.
+   * @return {String[]}
+   */
+  static get dataProps () {
+    return TabScript.genericProps.concat(TabScript.symbolProps)
+  }
+
+  /**
+   * A copy constructor.
+   * @param {TabScript} source - An instance of TabScript object we need to copy.
+   * @return {TabScript} A copy of a source object.
+   */
+  static create (source) {
+    let copy = new TabScript()
+    for (let key of Object.keys(source)) {
+      copy[key] = source[key]
+    }
+    return copy
   }
 
   static get defaults () {
     return {
-      status: __WEBPACK_IMPORTED_MODULE_0__statuses__["a" /* default */].ACTIVE,
-      panelStatus: __WEBPACK_IMPORTED_MODULE_0__statuses__["a" /* default */].PANEL_OPEN
+      status: TabScript.statuses.script.ACTIVE,
+      panelStatus: TabScript.statuses.panel.OPEN
     }
+  }
+
+  static get statuses () {
+    return {
+      script: {
+        PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
+        ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
+        DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated') // Content script has been loaded, but is deactivated
+      },
+      panel: {
+        OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
+        CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
+      }
+    }
+  }
+
+  /**
+   * Sets a watcher function that is called every time a property is changed using a setItem() method.
+   * @param {String} property - A name of a property that should be monitored
+   * @param {Function} watchFunc - A function that will be called every time a property changes
+   * @return {TabScript} Reference to self for chaining
+   */
+  setWatcher (property, watchFunc) {
+    this.watchers.set(property, watchFunc)
+    return this
+  }
+
+  /**
+   * SetItem provides a monitored way to change a TabScript state. If value is assigned to a data property directly
+   * there is no way to know if a property was changed. However, if a property was changed using setItem() method,
+   * and if there is a watcher function registered for a changed property name,
+   * this function will be called on every property change, passing a changed property name as an argument.
+   * @param key
+   * @param value
+   * @return {TabScript}
+   */
+  setItem (key, value) {
+    this[key] = value
+    if (this.watchers && this.watchers.has(key)) {
+      this.watchers.get(key)(key, this)
+    }
+    return this
+  }
+
+  isPanelOpened () {
+    return this.panelStatus === TabScript.statuses.panel.OPEN
+  }
+
+  isPanelClosed () {
+    return this.panelStatus === TabScript.statuses.panel.CLOSED
+  }
+
+  setPanelOpen () {
+    this.setItem('panelStatus', TabScript.statuses.panel.OPEN)
+    return this
+  }
+
+  setPanelClosed () {
+    this.setItem('panelStatus', TabScript.statuses.panel.CLOSED)
+    return this
+  }
+
+  hasSameID (tabID) {
+    return this.tabID === tabID
+  }
+
+  isActive () {
+    return this.status === TabScript.statuses.script.ACTIVE
+  }
+
+  isDeactivated () {
+    return this.status === TabScript.statuses.script.DEACTIVATED
+  }
+
+  activate () {
+    this.status = TabScript.statuses.script.ACTIVE
+    return this
+  }
+
+  deactivate () {
+    this.status = TabScript.statuses.script.DEACTIVATED
+    return this
   }
 
   update (source) {
@@ -185,37 +297,71 @@ class TabScript {
   }
 
   diff (state) {
-    let diff = {}
+    let diff = {
+      _changedKeys: [],
+      _changedEntries: []
+    }
     for (let key of Object.keys(state)) {
-      if (this.hasOwnProperty(key)) {
-        if (this[key] !== state[key]) {
-          diff[key] = state[key]
+      // Build diffs only for data properties
+      if (TabScript.dataProps.includes(key)) {
+        if (this.hasOwnProperty(key)) {
+          if (this[key] !== state[key]) {
+            diff[key] = state[key]
+            diff['_changedKeys'].push(key)
+            diff['_changedEntries'].push([key, state[key]])
+          }
+        } else {
+          console.warn(`TabScript has no property named "${key}"`)
         }
-      } else {
-        console.warn(`TabScript has no property named "${key}"`)
       }
+    }
+
+    diff.keys = function () {
+      return diff['_changedKeys']
+    }
+
+    diff.entries = function () {
+      return diff['_changedEntries']
+    }
+
+    diff.has = function (prop) {
+      return diff._changedKeys.includes(prop)
+    }
+
+    diff.isEmpty = function () {
+      return !diff._changedKeys.length
     }
     return diff
   }
 
+  /**
+   * Creates a serializable copy of a source object.
+   * @param {TabScript} source - An object to be serialized.
+   * @return {TabScript} A serializable copy of a source.
+   */
   static serializable (source) {
-    let serializable = new TabScript()
-    for (let key of Object.keys(source)) {
-      let value = source[key]
-      serializable[key] = (typeof value === 'symbol') ? Symbol.keyFor(value) : value
+    let serializable = TabScript.create(source)
+    for (let key of Object.keys(serializable)) {
+      if (TabScript.dataProps.includes(key)) {
+        /*
+        Only certain features will be stored within a serialized version of a TabScript. This is done
+        to prevent context-specific features (such as local event handlers) to be passed over the network
+        to a different context where they would make no sense.
+         */
+        let value = serializable[key]
+        if (typeof value === 'symbol') { serializable[key] = Symbol.keyFor(value) }
+      }
     }
     return serializable
   }
 
   static readObject (jsonObject) {
-    let props = ['tabID']
-    let symbolProps = ['status', 'panelStatus']
     let tabScript = new TabScript()
 
-    for (let prop of props) {
+    for (let prop of TabScript.genericProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
     }
-    for (let prop of symbolProps) {
+    for (let prop of TabScript.symbolProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
     }
 
@@ -228,23 +374,6 @@ class TabScript {
 
 /***/ }),
 /* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/**
- * A common object shared between content and background.
- */
-/* harmony default export */ __webpack_exports__["a"] = ({
-  PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
-  ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
-  DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
-  PANEL_OPEN: Symbol.for('Alpheios_Status_PanelOpened'), // Panel has been opened
-  PANEL_CLOSED: Symbol.for('Alpheios_Status_PanelClosed')
-});
-
-
-/***/ }),
-/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -258,7 +387,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 class Experience {
   constructor (description) {
     this.description = description;
-    this.startTime = new Date().getTime();
+    this.startTime = undefined;
     this.endTime = undefined;
     this.details = [];
   }
@@ -277,8 +406,14 @@ class Experience {
     this.details.push(experience);
   }
 
+  start () {
+    this.startTime = new Date().getTime();
+    return this
+  }
+
   complete () {
     this.endTime = new Date().getTime();
+    return this
   }
 
   get duration () {
@@ -587,6 +722,73 @@ class Monitor {
   }
 }
 
+const experienceActions = {
+  START: Symbol('Experience start'),
+  STOP: Symbol('Experience stop')
+};
+
+const eventTypes = {
+  CONSTRUCT: Symbol('Construct'),
+  GET: Symbol('Get'),
+  SET: Symbol('Set')
+};
+
+class ObjectMonitor {
+  constructor (options = {}) {
+    this.experienceDescription = '';
+    for (let event of Object.values(ObjectMonitor.events)) {
+      this[event] = [];
+    }
+
+    if (options) {
+      if (options.experience) { this.experienceDescription = options.experience; }
+      if (options.actions) {
+        for (const action of options.actions) {
+          this[action.event].push(action);
+        }
+      }
+    }
+  }
+
+  static get actions () {
+    return experienceActions
+  }
+
+  static get events () {
+    return eventTypes
+  }
+
+  static track (object, options) {
+    return new Proxy(object, new ObjectMonitor(options))
+  }
+
+  get (target, property) {
+    for (let action of this[ObjectMonitor.events.GET]) {
+      if (action.name === property) { this.experienceAction(action); }
+    }
+    return target[property]
+  }
+
+  set (target, property, value) {
+    for (let action of this[ObjectMonitor.events.SET]) {
+      if (action.name === property) { this.experienceAction(action); }
+    }
+    target[property] = value;
+    return true // Success of a set operation
+  }
+
+  experienceAction (action) {
+    if (action.action === ObjectMonitor.actions.START) {
+      this.experience = new Experience(this.experienceDescription).start();
+      console.log(`Experience started`);
+    } else if (action.action === ObjectMonitor.actions.STOP) {
+      this.experience.complete();
+      console.log(`Experience completed:`, this.experience);
+      LocalStorageAdapter.write(this.experience);
+    }
+  }
+}
+
 /**
  * Responsible form transporting experiences from one storage to the other. Current implementation
  * sends a batch of experience objects to the remote server once a certain amount of them
@@ -696,6 +898,7 @@ class TestAdapter extends RemoteStorageAdapter {
 
 exports.Experience = Experience;
 exports.Monitor = Monitor;
+exports.ObjectMonitor = ObjectMonitor;
 exports.Transporter = Transporter;
 exports.StorageAdapter = LocalStorageAdapter;
 exports.TestAdapter = TestAdapter;
@@ -703,14 +906,14 @@ exports.TestAdapter = TestAdapter;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 5 */
+/* 4 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_browser__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__background_process__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_browser__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__background_process__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_alpheios_experience__);
 
 
@@ -721,7 +924,7 @@ let browserFeatures = new __WEBPACK_IMPORTED_MODULE_0__lib_browser__["a" /* defa
 console.log(`Support of a "browser" namespace: ${browserFeatures.browserNamespace}`)
 if (!browserFeatures.browserNamespace) {
   console.log('"browser" namespace is not supported, will load a WebExtensions polyfill into the background script')
-  window.browser = __webpack_require__(18)
+  window.browser = __webpack_require__(16)
 }
 
 let monitoredBackgroundProcess = __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].track(
@@ -746,7 +949,7 @@ monitoredBackgroundProcess.initialize()
 
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -776,19 +979,17 @@ class Browser {
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_messaging_message_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_service__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_request_state_request__ = __webpack_require__(14);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__context_menu_item__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_state__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_alpheios_experience__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_alpheios_experience__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_service__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_request_state_request__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__context_menu_item__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_alpheios_experience__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_alpheios_experience__);
 /* global browser */
 
 
@@ -796,8 +997,9 @@ class Browser {
 
 
 
-
-
+// Use a logger that outputs timestamps (but loses line numbers)
+// import Logger from '../lib/logger'
+// console.log = Logger.log
 
 class BackgroundProcess {
   constructor (browserFeatures) {
@@ -805,6 +1007,7 @@ class BackgroundProcess {
     this.settings = BackgroundProcess.defaults
 
     this.tabs = new Map() // A list of tabs that have content script loaded
+    this.activeTab = undefined // A tab that is currently active in a browser window
 
     this.messagingService = new __WEBPACK_IMPORTED_MODULE_1__lib_messaging_service__["a" /* default */]()
   }
@@ -833,59 +1036,40 @@ class BackgroundProcess {
 
     this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_0__lib_messaging_message_message__["a" /* default */].types.STATE_MESSAGE, this.stateMessageHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
+    browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
     browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
+    browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
 
     this.menuItems = {
-      activate: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item__["a" /* default */](BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
-      deactivate: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item__["a" /* default */](BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
-      openPanel: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item__["a" /* default */](BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText)
+      activate: new __WEBPACK_IMPORTED_MODULE_3__context_menu_item__["a" /* default */](BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
+      deactivate: new __WEBPACK_IMPORTED_MODULE_3__context_menu_item__["a" /* default */](BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
+      openPanel: new __WEBPACK_IMPORTED_MODULE_3__context_menu_item__["a" /* default */](BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText)
     }
     this.menuItems.activate.enable() // This one will be enabled by default
 
     browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
     browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
 
-    this.transporter = new __WEBPACK_IMPORTED_MODULE_7_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_7_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_7_alpheios_experience__["TestAdapter"],
+    this.transporter = new __WEBPACK_IMPORTED_MODULE_5_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_5_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_5_alpheios_experience__["TestAdapter"],
       BackgroundProcess.defaults.experienceStorageThreshold, BackgroundProcess.defaults.experienceStorageCheckInterval)
   }
 
-  isContentLoaded (tabID) {
-    return this.tabs.has(tabID)
+  async activateContent (tabID) {
+    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
+    let tab = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen()
+    this.setContentState(tab)
   }
 
-  isContentActive (tabID) {
-    return this.isContentLoaded(tabID) && this.tabs.get(tabID).status === __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].ACTIVE
+  async deactivateContent (tabID) {
+    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
+    let tab = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].create(this.tabs.get(tabID)).deactivate().setPanelClosed()
+    this.setContentState(tab)
   }
 
-  activateContent (tabID) {
-    if (!this.isContentLoaded(tabID)) {
-      // This tab has no content loaded. loadContent will load content and set it to a tabID state
-      this.loadContent(new __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__["a" /* default */](tabID))
-    } else {
-      let tab = this.tabs.get(tabID)
-      tab.status = __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].ACTIVE
-      tab.panelStatus = __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].PANEL_OPEN
-      this.updateContentState(tabID, tab)
-    }
-  }
-
-  deactivateContent (tabID) {
-    let tab = this.tabs.get(tabID)
-    tab.status = __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].DEACTIVATED
-    tab.panelStatus = __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].PANEL_CLOSED
-    this.updateContentState(tabID, tab)
-  }
-
-  openPanel (tabID) {
-    if (!this.isContentLoaded(tabID)) {
-      // This tab has no content loaded. loadContent will load content and set it to a tabID state
-      this.loadContent(new __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__["a" /* default */](tabID))
-    } else {
-      let tab = this.tabs.get(tabID)
-      tab.status = __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].ACTIVE
-      tab.panelStatus = __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].PANEL_OPEN
-      this.updateContentState(tabID, tab)
-    }
+  async openPanel (tabID) {
+    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
+    let tab = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen()
+    this.setContentState(tab)
   }
 
   loadPolyfill (tabID) {
@@ -916,44 +1100,65 @@ class BackgroundProcess {
     })
   }
 
-  loadContent (tabScript) {
-    let polyfillScript = this.loadPolyfill(tabScript.tabID)
-    let contentScript = this.loadContentScript(tabScript.tabID)
-    let contentCSS = this.loadContentCSS(tabScript.tabID)
-    Promise.all([polyfillScript, contentScript, contentCSS]).then(() => {
-      console.log('Content script(s) has been loaded successfully or already present')
-      if (!this.tabs.has(tabScript.tabID)) { this.tabs.set(tabScript.tabID, tabScript) }
-      this.updateContentState(tabScript.tabID, this.tabs.get(tabScript.tabID))
-    }, (error) => {
-      console.log(`Content script loading failed, ${error.message}`)
-    })
+  /**
+   * Creates a TabScript object and loads content script(s) into a corresponding browser tab
+   * @param {Number} tabID - An ID of a tab
+   * @return {Promise.<TabScript>} A Promise that is resolved into a newly created TabScript object
+   */
+  async createTab (tabID) {
+    console.log(`Creating a new tab with an ID of ${tabID}`)
+    let newTab = new __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */](tabID)
+    this.tabs.set(tabID, newTab)
+    try {
+      await this.loadContentData(newTab)
+    } catch (error) {
+      console.error(`Cannot load content script for a tab with an ID of ${tabID}`)
+    }
+    return newTab
   }
 
-  sendResponseToTabStatefully (request, tabID, state = undefined) {
-    return __WEBPACK_IMPORTED_MODULE_6__lib_state__["a" /* default */].value(state, this.messagingService.sendResponseToTab(request, tabID))
-  }
-
-  updateContentState (tabID, state) {
-    this.messagingService.sendRequestToTab(new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_request_state_request__["a" /* default */](state), 10000, tabID).then(
+  /**
+   * Changes state of a tab by sending it a state update request. Content script of a tab returns
+   * its actual state after request it fulfilled. A warning will be produced if an actual
+   * state does not match desired one.
+   * @param {TabScript} tab - A TabScript object that represents a tab and it desired state
+   */
+  setContentState (tab) {
+    this.messagingService.sendRequestToTab(new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_request_state_request__["a" /* default */](tab), 10000, tab.tabID).then(
       message => {
-        let contentState = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__["a" /* default */].readObject(message.body)
-        this.updateTabState(tabID, contentState)
+        let contentState = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].readObject(message.body)
+        /*
+        ContentState is an actual state content script is in. It may not match a desired state because
+        content script may fail in one or several operations.
+         */
+        let diff = tab.diff(contentState)
+        if (!diff.isEmpty()) {
+          console.warn(`Content script was not able to update the following properties:`, diff.keys())
+        }
+        this.updateTabState(tab.tabID, contentState)
       },
       error => {
-        console.log(`No status confirmation from tab ${tabID} on state request: ${error.message}`)
+        console.log(`No status confirmation from tab ${tab.tabID} on state request: ${error.message}`)
       }
     )
   }
 
+  loadContentData (tabScript) {
+    let polyfillScript = this.loadPolyfill(tabScript.tabID)
+    let contentScript = this.loadContentScript(tabScript.tabID)
+    let contentCSS = this.loadContentCSS(tabScript.tabID)
+    return Promise.all([polyfillScript, contentScript, contentCSS])
+  }
+
   stateMessageHandler (message, sender) {
-    let contentState = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__["a" /* default */].readObject(message.body)
+    let contentState = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].readObject(message.body)
     this.updateTabState(contentState.tabID, contentState)
   }
 
-  static async getActiveTabID () {
-    let tabs = await browser.tabs.query({ active: true })
-    console.log(`Active tab ID is ${tabs[0].id}`)
-    return tabs[0].id
+  tabActivationListener (info) {
+    this.activeTab = info.tabId
+    let tab = this.tabs.has(info.tabId) ? this.tabs.get(info.tabId) : undefined
+    this.setMenuForTab(tab)
   }
 
   /**
@@ -963,15 +1168,25 @@ class BackgroundProcess {
    * @param tab
    * @return {Promise.<void>}
    */
-  tabUpdatedListener (tabID, changeInfo, tab) {
+  async tabUpdatedListener (tabID, changeInfo, tab) {
     if (changeInfo.status === 'complete') {
+      console.log('tab update complete')
       if (this.tabs.has(tabID)) {
         // If content script was loaded to that tab, restore it to the state it had before
         let tab = this.tabs.get(tabID)
-        // TODO: do we need to activate it? Then
-        // let tab = this.tabs.get(tabID).update({status: Statuses.ACTIVE, panelStatus: Statuses.PANEL_OPEN})
-        this.loadContent(tab)
+        try {
+          await this.loadContentData(tab)
+          this.setContentState(tab)
+        } catch (error) {
+          console.error(`Cannot load content script for a tab with an ID of ${tabID}`)
+        }
       }
+    }
+  }
+
+  tabRemovalListener (tabID, removeInfo) {
+    if (this.tabs.has(tabID)) {
+      this.tabs.delete(tabID)
     }
   }
 
@@ -986,10 +1201,10 @@ class BackgroundProcess {
   }
 
   async browserActionListener (tab) {
-    if (!this.isContentActive(tab.id)) {
-      this.activateContent(tab.id)
-    } else {
+    if (this.tabs.has(tab.id) && this.tabs.get(tab.id).isActive()) {
       this.deactivateContent(tab.id)
+    } else {
+      this.activateContent(tab.id)
     }
   }
 
@@ -997,24 +1212,36 @@ class BackgroundProcess {
     let tab = this.tabs.get(tabID).update(newState)
 
     // Menu state should reflect a status of a content script
-    if (tab.hasOwnProperty('status')) {
-      if (tab.status === __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].ACTIVE) {
-        this.menuItems.activate.disable()
-        this.menuItems.deactivate.enable()
-        this.menuItems.openPanel.enable()
-      } else if (tab.status === __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].DEACTIVATED) {
-        this.menuItems.deactivate.disable()
-        this.menuItems.activate.enable()
-        this.menuItems.openPanel.disable()
-      }
-    }
+    this.setMenuForTab(tab)
+  }
 
-    if (tab.hasOwnProperty('panelStatus')) {
-      if (tab.panelStatus === __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].PANEL_OPEN) {
-        this.menuItems.openPanel.disable()
-      } else if (tab.status === __WEBPACK_IMPORTED_MODULE_3__lib_content_statuses__["a" /* default */].DEACTIVATED) {
-        this.menuItems.openPanel.enable()
+  setMenuForTab (tab) {
+    if (tab) {
+      // Menu state should reflect a status of a content script
+      if (tab.hasOwnProperty('status')) {
+        if (tab.isActive()) {
+          this.menuItems.activate.disable()
+          this.menuItems.deactivate.enable()
+          this.menuItems.openPanel.enable()
+        } else if (tab.isDeactivated()) {
+          this.menuItems.deactivate.disable()
+          this.menuItems.activate.enable()
+          this.menuItems.openPanel.disable()
+        }
       }
+
+      if (tab.hasOwnProperty('panelStatus')) {
+        if (tab.isActive() && tab.isPanelClosed()) {
+          this.menuItems.openPanel.enable()
+        } else {
+          this.menuItems.openPanel.disable()
+        }
+      }
+    } else {
+      // If tab is not provided will set menu do an initial state
+      this.menuItems.activate.enable()
+      this.menuItems.deactivate.disable()
+      this.menuItems.openPanel.disable()
     }
   }
 }
@@ -1023,11 +1250,11 @@ class BackgroundProcess {
 
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(9);
-var bytesToUuid = __webpack_require__(10);
+var rng = __webpack_require__(8);
+var bytesToUuid = __webpack_require__(9);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -1058,7 +1285,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -1098,7 +1325,7 @@ module.exports = rng;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports) {
 
 /**
@@ -1127,12 +1354,12 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(12);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(12);
 /* global browser */
 
 
@@ -1276,7 +1503,7 @@ class Service {
 
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1321,7 +1548,7 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a"
 
 
 /***/ }),
-/* 13 */
+/* 12 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1343,12 +1570,12 @@ class StoredRequest {
 
 
 /***/ }),
-/* 14 */
+/* 13 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(2);
 
 
@@ -1365,7 +1592,7 @@ class StateRequest extends __WEBPACK_IMPORTED_MODULE_1__request_message__["a" /*
 
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1383,7 +1610,7 @@ class RequestMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a" 
 
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1417,43 +1644,7 @@ class ContentMenuItem {
 
 
 /***/ }),
-/* 17 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class State {
-  constructor (state, value = undefined) {
-    this.state = state
-    this.value = value
-  }
-  static value (state, value = undefined) {
-    return new State(state, value)
-  }
-
-  static emptyValue (state) {
-    return new State(state)
-  }
-
-  static getValue (state) {
-    if (!(state instanceof State)) {
-      // The object passed is of a different type, will return this object as a value
-      return state
-    }
-    if (!state.hasOwnProperty('value')) { return undefined }
-    return state.value
-  }
-
-  static getState (state) {
-    if (!state.hasOwnProperty('state')) { return undefined }
-    return state.state
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = State;
-
-
-
-/***/ }),
-/* 18 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {
