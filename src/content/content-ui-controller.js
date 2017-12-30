@@ -1,11 +1,13 @@
 /* global Node */
 import {Presenter} from 'alpheios-inflection-tables' // Required for Presenter
+import {Lexeme, Feature} from 'alpheios-data-models'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import Template from './template.htmlf'
 import Panel from './components/panel/component'
 import TabScript from '../lib/content/tab-script'
 import Setting from './vue-components/setting.vue'
 import Popup from './vue-components/popup.vue'
+import Morph from './vue-components/morph.vue'
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
 import UIkitIconts from '../../node_modules/uikit/dist/js/uikit-icons'
 
@@ -112,16 +114,20 @@ export default class ContentUIController {
       this.optionsUI.update(this.options)
     })
 
+    Vue.component('morph',Morph)
+
     // Create a Vue instance for a popup
     this.popup = new Vue({
       el: '#alpheios-popup',
-      components: { popup: Popup },
+      components: { morph:Morph, popup: Popup },
       data: {
         messages: '',
         content: '',
+        lexemes: [],
         visible: false,
         defDataReady: false,
-        inflDataReady: false
+        inflDataReady: false,
+        morphDataReady: false
       },
       methods: {
         showMessage: function (message) {
@@ -259,6 +265,12 @@ export default class ContentUIController {
   addMessage (message) {
     this.panel.appendMessage(message)
     this.popup.appendMessage(message)
+  }
+
+  updateMorphology (homonym) {
+    homonym.lexemes.sort(Lexeme.getSortByTwoLemmaFeatures(Feature.types.frequency,Feature.types.part))
+    this.popup.lexemes = homonym.lexemes
+    this.popup.morphDataReady = true
   }
 
   updateDefinitions (homonym) {

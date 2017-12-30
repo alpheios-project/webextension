@@ -62,6 +62,7 @@ export default class LexicalQuery {
     this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
 
     this.ui.addMessage(`Morphological analyzer data is ready<br>`)
+    this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)

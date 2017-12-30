@@ -2,6 +2,7 @@
 import {LanguageData, LatinDataSet, GreekDataSet} from 'alpheios-inflection-tables'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import {Lexicons} from 'alpheios-lexicon-client'
+import {Feature, Lexeme, Inflection} from 'alpheios-data-models'
 import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
 import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
@@ -15,6 +16,7 @@ import ContentUIController from './content-ui-controller'
 
 export default class ContentProcess {
   constructor () {
+
     this.state = new TabScript().setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.status = TabScript.statuses.script.PENDING
     this.state.panelStatus = TabScript.statuses.panel.CLOSED

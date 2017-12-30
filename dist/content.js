@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 16);
+/******/ 	return __webpack_require__(__webpack_require__.s = 17);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -559,85 +559,6 @@ class DefinitionSet {
   }
 }
 
-/**
- * Wrapper class for a (grammatical, usually) feature, such as part of speech or declension. Keeps both value and type information.
- */
-class Feature {
-    /**
-     * Initializes a Feature object
-     * @param {string | string[]} value - A single feature value or, if this feature could have multiple
-     * values, an array of values.
-     * @param {string} type - A type of the feature, allowed values are specified in 'types' object.
-     * @param {string} language - A language of a feature, allowed values are specified in 'languages' object.
-     */
-  constructor (value, type, language) {
-    if (!Feature.types.isAllowed(type)) {
-      throw new Error('Features of "' + type + '" type are not supported.')
-    }
-    if (!value) {
-      throw new Error('Feature should have a non-empty value.')
-    }
-    if (!type) {
-      throw new Error('Feature should have a non-empty type.')
-    }
-    if (!language) {
-      throw new Error('Feature constructor requires a language')
-    }
-    this.value = value;
-    this.type = type;
-    this.language = language;
-  };
-
-  isEqual (feature) {
-    if (Array.isArray(feature.value)) {
-      if (!Array.isArray(this.value) || this.value.length !== feature.value.length) {
-        return false
-      }
-      let equal = this.type === feature.type && this.language === feature.language;
-      equal = equal && this.value.every(function (element, index) {
-        return element === feature.value[index]
-      });
-      return equal
-    } else {
-      return this.value === feature.value && this.type === feature.type && this.language === feature.language
-    }
-  }
-}
-// Should have no spaces in values in order to be used in HTML templates
-Feature.types = {
-  word: 'word',
-  part: 'part of speech', // Part of speech
-  number: 'number',
-  grmCase: 'case',
-  declension: 'declension',
-  gender: 'gender',
-  type: 'type',
-  conjugation: 'conjugation',
-  comparison: 'comparison',
-  tense: 'tense',
-  voice: 'voice',
-  mood: 'mood',
-  person: 'person',
-  frequency: 'frequency', // How frequent this word is
-  meaning: 'meaning', // Meaning of a word
-  source: 'source', // Source of word definition
-  footnote: 'footnote', // A footnote for a word's ending
-  dialect: 'dialect', // a dialect iderntifier
-  note: 'note', // a general note
-  pronunciation: 'pronunciation',
-  area: 'area',
-  geo: 'geo', // geographical data
-  kind: 'kind', // verb kind informatin
-  derivtype: 'derivtype',
-  stemtype: 'stemtype',
-  morph: 'morph', // general morphological information
-  var: 'var', // variance?
-  isAllowed (value) {
-    let v = `${value}`;
-    return Object.values(this).includes(v)
-  }
-};
-
 class FeatureImporter {
   constructor (defaults = []) {
     this.hash = {};
@@ -723,6 +644,7 @@ class FeatureType {
 
     this.type = type;
     this.language = language;
+    this.unrestrictedValue = values.length === 1 && values[0] === '*';
 
         /*
          This is a sort order index for a grammatical feature values. It is determined by the order of values in
@@ -749,11 +671,12 @@ class FeatureType {
      * Return a Feature with an arbitrary value. This value would not be necessarily present among FeatureType values.
      * This can be especially useful for features that do not set: a list of predefined values, such as footnotes.
      * @param value
+     * @param {int} sortOrder
      * @returns {Feature}
      */
-  get (value) {
+  get (value, sortOrder = 1) {
     if (value) {
-      return new Feature(value, this.type, this.language)
+      return new Feature(value, this.type, this.language, sortOrder)
     } else {
       throw new Error('A non-empty value should be provided.')
     }
@@ -896,62 +819,69 @@ class FeatureType {
   }
 }
 
-/**
- * A list of grammatical features that characterizes a language unit. Has some additional service methods,
- * compared with standard storage objects.
- */
-class FeatureList {
-    /**
-     * Initializes a feature list.
-     * @param {FeatureType[]} features - Features that build the list (optional, can be set later).
-     */
-  constructor (features = []) {
-    this._features = [];
-    this._types = {};
-    this.add(features);
-  }
-
-  add (features) {
-    if (!features || !Array.isArray(features)) {
-      throw new Error('Features must be defined and must come in an array.')
-    }
-
+class InflectionGroupingKey {
+  /**
+   * @constructor
+   * @param {Inflection} infl inflection with features which are used as a grouping key
+   * @param {string[]} features array of feature names which are used as the key
+   * @param {Map} extras extra property name and value pairs used in the key
+   */
+  constructor (infl, features, extras = {}) {
     for (let feature of features) {
-      this._features.push(feature);
-      this._types[feature.type] = feature;
+      this[feature] = infl[feature];
     }
+    Object.assign(this, extras);
   }
 
-    /**
-     * Returns an array of grouping features.
-     * @returns {FeatureType[]} - An array of grouping features.
-     */
-  get items () {
-    return this._features
-  }
-
-  forEach (callback) {
-    this._features.forEach(callback);
-  }
-
-    /**
-     * Returns a feature of a particular type. If such feature does not exist in a list, returns undefined.
-     * @param {string} type - Feature type as defined in `types` object.
-     * @return {FeatureType | undefined} A feature if a particular type if contains it. Undefined otherwise.
-     */
-  ofType (type) {
-    if (this.hasType(type)) {
-      return this._types[type]
+  /**
+   * checks if a feature with a specific value
+   * is included in the grouping key
+   * @returns {boolean} true if found, false if not
+   */
+  hasFeatureValue (feature, value) {
+    for (let f of this[feature]) {
+      if (f.hasValue(value)) {
+        return true
+      }
     }
+    return false
   }
 
-    /**
-     * Checks whether a feature list has a feature of a specific type.
-     * @param {string} type - Feature type as defined in `types` object.
-     * @return {boolean} Whether a feature list has a feature of a particular type.
-     */
-  hasType (type) {
-    return this._types.hasOwnProperty(type)
+  /**
+   * Return this key as a string
+   * @returns {string} string representation of the key
+   */
+  toString () {
+    let values = [];
+    for (let prop of Object.getOwnPropertyNames(this).sort()) {
+      if (Array.isArray(this[prop])) {
+        values.push(this[prop].map((x) => x.toString()).sort().join(','));
+      } else {
+        values.push(this[prop]);
+      }
+    }
+    return values.join(' ')
+  }
+}
+
+class InflectionGroup {
+  /**
+   * A group of inflections or groups of inflections
+   *
+   * @param {InflectionGroupingKey} groupingKey features of the inflections in the group
+   * @param {Inflection[]|InflectionGroup[]} inflections array of Inflections or InflectionGroups in this group
+   */
+  constructor (groupingKey, inflections = [], sortKey = null) {
+    this.groupingKey = groupingKey;
+    this.inflections = inflections;
+  }
+
+  /**
+   * Add an Inflection or InflectionGroup to the group
+   * @param {Inflection|InflectionGroup} inflection
+   */
+  append (inflection) {
+    this.inflections.push(inflection);
   }
 }
 
@@ -997,6 +927,21 @@ class LanguageModel {
       [TYPE_REGULAR, TYPE_IRREGULAR], code);
     features[Feature.types.person] = new FeatureType(Feature.types.person,
       [ORD_1ST, ORD_2ND, ORD_3RD], code);
+    // some general, non-language specific grammatical features
+    features[Feature.types.area] = new FeatureType(Feature.types.area,
+      ['*'], code);
+    features[Feature.types.source] = new FeatureType(Feature.types.source,
+      ['*'], code);
+    features[Feature.types.frequency] = new FeatureType(Feature.types.frequency,
+      ['*'], code);
+    features[Feature.types.geo] = new FeatureType(Feature.types.geo,
+      ['*'], code);
+    features[Feature.types.source] = new FeatureType(Feature.types.source,
+      ['*'], code);
+    features[Feature.types.pronunciation] = new FeatureType(Feature.types.pronunciation,
+      ['*'], code);
+    features[Feature.types.kind] = new FeatureType(Feature.types.kind,
+      ['*'], code);
     return features
   }
 
@@ -1141,6 +1086,131 @@ class LanguageModel {
    */
   static isLanguageCode (language) {
     return !LanguageModel.isLanguageID(language)
+  }
+
+  /**
+   * Groups a set of inflections according to a language-specific display paradigm
+   * The default groups according to the following logic:
+   *   1. groups of groups with unique stem, prefix, suffix, part of speech dialect and comparison
+   *     2. groups of those groups with unique
+   *          number, if it's an inflection with a grammatical case
+   *          tense, if it's an inflection with tense but no case (i.e. a verb)
+   *          verbs without tense or case
+   *          adverbs
+   *          everything else
+   *       3. groups of those groups with unique voice and tense
+   *         4. groups of inflections with unique gender, person, mood, and sort
+   */
+  groupInflectionsForDisplay (inflections) {
+    let grouped = new Map();
+
+    // group inflections by part of speech
+    for (let infl of inflections) {
+      let groupingKey = new InflectionGroupingKey(infl,
+        [Feature.types.part, Feature.types.dialect, Feature.types.comparison],
+        { prefix: infl.prefix,
+          suffix: infl.suffix,
+          stem: infl.stem
+        }
+        );
+      let groupingKeyStr = groupingKey.toString();
+      if (grouped.has(groupingKeyStr)) {
+        grouped.get(groupingKeyStr).append(infl);
+      } else {
+        grouped.set(groupingKeyStr, new InflectionGroup(groupingKey, [infl]));
+      }
+    }
+
+    // iterate through each group key to group the inflections in that group
+    for (let kv of grouped) {
+      let inflgrp = new Map();
+      for (let infl of kv[1].inflections) {
+        let keyprop;
+        let isCaseInflectionSet = false;
+        if (infl[Feature.types.grmCase]) {
+          // grouping on number if case is defined
+          keyprop = Feature.types.number;
+          isCaseInflectionSet = true;
+        } else if (infl[Feature.types.tense]) {
+          // grouping on tense if tense is defined but not case
+          keyprop = Feature.types.tense;
+        } else if (infl[Feature.types.part] === POFS_VERB) {
+          // grouping on no case or tense but a verb
+          keyprop = Feature.types.part;
+        } else if (infl[Feature.types.part] === POFS_ADVERB) {
+          keyprop = Feature.types.part;
+          // grouping on adverbs without case or tense
+        } else {
+          keyprop = 'misc';
+          // grouping on adverbs without case or tense
+          // everything else
+        }
+        let groupingKey = new InflectionGroupingKey(infl, [keyprop], {isCaseInflectionSet: isCaseInflectionSet});
+        let groupingKeyStr = groupingKey.toString();
+        if (inflgrp.has(groupingKeyStr)) {
+          inflgrp.get(groupingKeyStr).append(infl);
+        } else {
+          inflgrp.set(groupingKeyStr, new InflectionGroup(groupingKey, [infl]));
+        }
+      }
+      // inflgrp is now a map of groups of inflections grouped by
+      //  inflections with number
+      //  inflections without number but with tense
+      //  inflections of verbs without tense
+      //  inflections of adverbs
+      //  everything else
+      // iterate through each inflection group key to group the inflections in that group by tense and voice
+      for (let kv of inflgrp) {
+        let nextGroup = new Map();
+        let sortOrder = new Map();
+        for (let infl of kv[1].inflections) {
+          let sortkey = infl[Feature.types.grmCase] ? Math.max(infl[Feature.types.grmCase].map((f) => { return f.sortOrder })) : 1;
+          let groupingKey = new InflectionGroupingKey(infl, [Feature.types.tense, Feature.types.voice]);
+          let groupingKeyStr = groupingKey.toString();
+          if (nextGroup.has(groupingKeyStr)) {
+            nextGroup.get(groupingKeyStr).append(infl);
+          } else {
+            nextGroup.set(groupingKeyStr, new InflectionGroup(groupingKey, [infl], sortkey));
+            sortOrder.set(groupingKeyStr, sortkey);
+          }
+        }
+        kv[1].inflections = [];
+        let sortedKeys = Array.from(nextGroup.keys()).sort(
+          (a, b) => {
+            let orderA = sortOrder.get(a);
+            let orderB = sortOrder.get(b);
+            return orderA > orderB ? -1 : orderB > orderA ? 1 : 0
+          }
+        );
+        for (let groupkey of sortedKeys) {
+          kv[1].inflections.push(nextGroup.get(groupkey));
+        }
+      }
+
+      // inflgrp is now a Map of groups of groups of inflections
+
+      for (let kv of inflgrp) {
+        let groups = kv[1];
+        for (let group of groups.inflections) {
+          let nextGroup = new Map();
+          for (let infl of group.inflections) {
+            // set key is case comp gend pers mood sort
+            let groupingKey = new InflectionGroupingKey(infl,
+              [Feature.types.grmCase, Feature.types.comparison, Feature.types.gender, Feature.types.number, Feature.types.person,
+                Feature.types.tense, Feature.types.mood, Feature.types.sort, Feature.types.voice]);
+            let groupingKeyStr = groupingKey.toString();
+            if (nextGroup.has(groupingKeyStr)) {
+              nextGroup.get(groupingKeyStr).append(infl);
+            } else {
+              nextGroup.set(groupingKeyStr, new InflectionGroup(groupingKey, [infl]));
+            }
+          }
+          group.inflections = Array.from(nextGroup.values()); // now a group of inflection groups
+        }
+      }
+      kv[1].inflections = Array.from(inflgrp.values());
+    }
+    return Array.from(grouped.values())
   }
 }
 
@@ -1626,6 +1696,206 @@ class LanguageModelFactory {
 }
 
 /**
+ * This is a temporary placeholder for an i18n library
+ */
+const i18n = {
+  en: {
+    feminine: {
+      full: 'feminine',
+      abbr: 'f'
+    },
+    masculine: {
+      full: 'masculine',
+      abbr: 'n'
+    },
+    neuter: {
+      full: 'neuter',
+      abbr: 'n'
+    }
+  }
+};
+
+/**
+ * Wrapper class for a (grammatical, usually) feature, such as part of speech or declension. Keeps both value and type information.
+ */
+class Feature {
+    /**
+     * Initializes a Feature object
+     * @param {string | string[]} value - A single feature value or, if this feature could have multiple
+     * values, an array of values.
+     * @param {string} type - A type of the feature, allowed values are specified in 'types' object.
+     * @param {string} language - A language of a feature, allowed values are specified in 'languages' object.
+     * @param {int} sortOrder - an integer used for sorting
+     */
+  constructor (value, type, language, sortOrder = 1) {
+    if (!Feature.types.isAllowed(type)) {
+      throw new Error('Features of "' + type + '" type are not supported.')
+    }
+    if (!value) {
+      throw new Error('Feature should have a non-empty value.')
+    }
+    if (!type) {
+      throw new Error('Feature should have a non-empty type.')
+    }
+    if (!language) {
+      throw new Error('Feature constructor requires a language')
+    }
+    this.value = value;
+    this.type = type;
+    this.language = language;
+    this.languageCode = language;
+    this.languageID = LanguageModelFactory.getLanguageIdFromCode(this.languageCode);
+    this.sortOrder = sortOrder;
+  };
+
+  isEqual (feature) {
+    if (Array.isArray(feature.value)) {
+      if (!Array.isArray(this.value) || this.value.length !== feature.value.length) {
+        return false
+      }
+      let equal = this.type === feature.type && this.language === feature.language;
+      equal = equal && this.value.every(function (element, index) {
+        return element === feature.value[index]
+      });
+      return equal
+    } else {
+      return this.value === feature.value && this.type === feature.type && this.language === feature.language
+    }
+  }
+
+  /**
+   * examine the feature for a specific value
+   * @param {string} value
+   * @returns {boolean} true if the value is included in the feature's values
+   */
+  hasValue (value) {
+    if (Array.isArray(this.value)) {
+      return this.value.includes(value)
+    } else {
+      return this.value === value
+    }
+  }
+
+  /**
+   * string representation of a feature
+   * @return {string}
+   */
+  toString () {
+    if (Array.isArray(this.value)) {
+      return this.value.join(',')
+    } else {
+      return this.value
+    }
+  }
+
+  /**
+   * a locale-specific abbreviation for a feature's values
+   * @return {string}
+   */
+  toLocaleStringAbbr (lang = 'en') {
+    if (Array.isArray(this.value)) {
+      return this.value.map((v) => this.toLocaleStringAbbr(v, lang))
+    } else {
+      return i18n[lang][this.value].abbr
+    }
+  }
+}
+// Should have no spaces in values in order to be used in HTML templates
+Feature.types = {
+  word: 'word',
+  part: 'part of speech', // Part of speech
+  number: 'number',
+  grmCase: 'case',
+  declension: 'declension',
+  gender: 'gender',
+  type: 'type',
+  conjugation: 'conjugation',
+  comparison: 'comparison',
+  tense: 'tense',
+  voice: 'voice',
+  mood: 'mood',
+  person: 'person',
+  frequency: 'frequency', // How frequent this word is
+  meaning: 'meaning', // Meaning of a word
+  source: 'source', // Source of word definition
+  footnote: 'footnote', // A footnote for a word's ending
+  dialect: 'dialect', // a dialect iderntifier
+  note: 'note', // a general note
+  pronunciation: 'pronunciation',
+  age: 'age',
+  area: 'area',
+  geo: 'geo', // geographical data
+  kind: 'kind', // verb kind informatin
+  derivtype: 'derivtype',
+  stemtype: 'stemtype',
+  morph: 'morph', // general morphological information
+  var: 'var', // variance?
+  isAllowed (value) {
+    let v = `${value}`;
+    return Object.values(this).includes(v)
+  }
+};
+
+/**
+ * A list of grammatical features that characterizes a language unit. Has some additional service methods,
+ * compared with standard storage objects.
+ */
+class FeatureList {
+    /**
+     * Initializes a feature list.
+     * @param {FeatureType[]} features - Features that build the list (optional, can be set later).
+     */
+  constructor (features = []) {
+    this._features = [];
+    this._types = {};
+    this.add(features);
+  }
+
+  add (features) {
+    if (!features || !Array.isArray(features)) {
+      throw new Error('Features must be defined and must come in an array.')
+    }
+
+    for (let feature of features) {
+      this._features.push(feature);
+      this._types[feature.type] = feature;
+    }
+  }
+
+    /**
+     * Returns an array of grouping features.
+     * @returns {FeatureType[]} - An array of grouping features.
+     */
+  get items () {
+    return this._features
+  }
+
+  forEach (callback) {
+    this._features.forEach(callback);
+  }
+
+    /**
+     * Returns a feature of a particular type. If such feature does not exist in a list, returns undefined.
+     * @param {string} type - Feature type as defined in `types` object.
+     * @return {FeatureType | undefined} A feature if a particular type if contains it. Undefined otherwise.
+     */
+  ofType (type) {
+    if (this.hasType(type)) {
+      return this._types[type]
+    }
+  }
+
+    /**
+     * Checks whether a feature list has a feature of a specific type.
+     * @param {string} type - Feature type as defined in `types` object.
+     * @return {boolean} Whether a feature list has a feature of a particular type.
+     */
+  hasType (type) {
+    return this._types.hasOwnProperty(type)
+  }
+}
+
+/**
  * Lemma, a canonical form of a word.
  */
 class Lemma {
@@ -1634,8 +1904,9 @@ class Lemma {
    * @param {string} word - A word.
    * @param {string} language - A language code of a word. TODO: Switch to using Language ID instead
    * @param {Array[string]} principalParts - the principalParts of a lemma
+   * @param {Object} features - the grammatical features of a lemma
    */
-  constructor (word, language, principalParts = []) {
+  constructor (word, language, principalParts = [], features = {}) {
     if (!word) {
       throw new Error('Word should not be empty.')
     }
@@ -1653,10 +1924,41 @@ class Lemma {
     this.languageCode = language;
     this.languageID = LanguageModelFactory.getLanguageIdFromCode(this.languageCode);
     this.principalParts = principalParts;
+    this.features = {};
   }
 
   static readObject (jsonObject) {
-    return new Lemma(jsonObject.word, jsonObject.language)
+    return new Lemma(jsonObject.word, jsonObject.language, jsonObject.principalParts, jsonObject.pronunciation)
+  }
+
+  /**
+   * Sets a grammatical feature for a lemma. Some features can have multiple values, In this case
+   * an array of Feature objects will be provided.
+   * Values are taken from features and stored in a 'feature.type' property as an array of values.
+   * @param {Feature | Feature[]} data
+   */
+  set feature (data) {
+    if (!data) {
+      throw new Error('feature data cannot be empty.')
+    }
+    if (!Array.isArray(data)) {
+      data = [data];
+    }
+
+    let type = data[0].type;
+    this.features[type] = [];
+    for (let element of data) {
+      if (!(element instanceof Feature)) {
+        throw new Error('feature data must be a Feature object.')
+      }
+
+      if (element.languageID !== this.languageID) {
+        throw new Error('Language "' + element.languageID + '" of a feature does not match a language "' +
+                this.languageID + '" of a Lemma object.')
+      }
+
+      this.features[type].push(element);
+    }
   }
 }
 
@@ -1688,8 +1990,11 @@ class Inflection {
      * Initializes an Inflection object.
      * @param {string} stem - A stem of a word.
      * @param {string} language - A word's language.
+     * @param {string} suffix - a suffix of a word
+     * @param {prefix} prefix - a prefix of a word
+     * @param {example} example - example
      */
-  constructor (stem, language) {
+  constructor (stem, language, suffix = null, prefix = null, example = null) {
     if (!stem) {
       throw new Error('Stem should not be empty.')
     }
@@ -1706,26 +2011,19 @@ class Inflection {
     this.language = language;
 
     // Suffix may not be present in every word. If missing, it will set to null.
-    this.suffix = null;
+    this.suffix = suffix;
 
     // Prefix may not be present in every word. If missing, it will set to null.
-    this.prefix = null;
+    this.prefix = prefix;
 
     // Example may not be provided
-    this.example = null;
+    this.example = example;
   }
 
   static readObject (jsonObject) {
-    let inflection = new Inflection(jsonObject.stem, jsonObject.language);
-    if (jsonObject.suffix) {
-      inflection.suffix = jsonObject.suffix;
-    }
-    if (jsonObject.prefix) {
-      inflection.prefix = jsonObject.prefix;
-    }
-    if (jsonObject.example) {
-      inflection.example = jsonObject.example;
-    }
+    let inflection =
+      new Inflection(
+        jsonObject.stem, jsonObject.language, jsonObject.suffix, jsonObject.prefix, jsonObject.example);
     return inflection
   }
 
@@ -1762,7 +2060,7 @@ class Inflection {
 
 /**
  * A basic unit of lexical meaning. Contains a primary Lemma object, one or more Inflection objects
- * and optional alternate Lemmas
+ * and a DefinitionSet
  */
 class Lexeme {
     /**
@@ -1770,6 +2068,7 @@ class Lexeme {
      * @param {Lemma} lemma - A lemma object.
      * @param {Inflection[]} inflections - An array of inflections.
      * @param {DefinitionSet} meaning - A set of definitions.
+
      */
   constructor (lemma, inflections, meaning = null) {
     if (!lemma) {
@@ -1799,6 +2098,11 @@ class Lexeme {
     this.meaning = meaning || new DefinitionSet(this.lemma.word, this.lemma.languageID);
   }
 
+  getGroupedInflections () {
+    let lm = LanguageModelFactory.getLanguageForCode(this.lemma.language);
+    return lm.groupInflectionsForDisplay(this.inflections)
+  }
+
   static readObject (jsonObject) {
     let lemma = Lemma.readObject(jsonObject.lemma);
     let inflections = [];
@@ -1809,6 +2113,44 @@ class Lexeme {
     let lexeme = new Lexeme(lemma, inflections);
     lexeme.meaning = DefinitionSet.readObject(jsonObject.meaning);
     return lexeme
+  }
+
+  /**
+   * Get a sort function for an array of lexemes which applies a primary and secondary
+   * sort logic using the sort order specified for each feature. Sorts in descending order -
+   * higher sort order means it should come first
+   * @param {string} primary feature name to use as primary sort key
+   * @param {string} secondary feature name to use as secondary sort key
+   * @returns {Function} function which can be passed to Array.sort
+   */
+  static getSortByTwoLemmaFeatures (primary, secondary) {
+    return (a, b) => {
+      if (a.lemma.features[primary] && b.lemma.features[primary]) {
+        if (a.lemma.features[primary][0].sortOrder < b.lemma.features[primary][0].sortOrder) {
+          return 1
+        } else if (a.lemma.features[primary][0].sortOrder > b.lemma.features[primary][0].sortOrder) {
+          return -1
+        } else if (a.lemma.features[secondary] && b.lemma.features[secondary]) {
+          if (a.lemma.features[secondary][0].sortOrder < b.lemma.features[secondary][0].sortOrder) {
+            return 1
+          } else if (a.lemma.features[secondary][0].sortOrder > b.lemma.features[secondary][0].sortOrder) {
+            return -1
+          } else if (a.lemma.features[secondary] && !b.lemma.features[secondary]) {
+            return -1
+          } else if (!a.lemma.features[secondary] && b.lemma.features[secondary]) {
+            return 1
+          } else {
+            return 0
+          }
+        }
+      } else if (a.lemma.features[primary] && !b.lemma.features[primary]) {
+        return -1
+      } else if (!a.lemma.features[primary] && b.lemma.features[primary]) {
+        return 1
+      } else {
+        return 0
+      }
+    }
   }
 }
 
@@ -2460,15 +2802,15 @@ class Suffix {
   /**
    * Checks if suffix has a feature that is a match to the one provided.
    * @param {string} featureType - Sets a type of a feature we need to match with the ones stored inside the suffix
-   * @param {Feature[]} features - A list of features we need to match with the ones stored inside the suffix
-   * @returns {string | undefined} - If provided feature is a match, returns a value of a first feature that matched.
+   * @param {string[]} featureValues - A list of feature values we need to match with the ones stored inside the suffix
+   * @returns {string | undefined} - If provided feature is a match, returns a first feature that matched.
    * If no match found, return undefined.
    */
-  featureMatch (featureType, features) {
+  featureMatch (featureType, featureValues) {
     if (this.features.hasOwnProperty(featureType)) {
-      for (let feature of features) {
-        if (feature.value === this.features[featureType]) {
-          return feature.value
+      for (let value of featureValues) {
+        if (value === this.features[featureType]) {
+          return value
         }
       }
     }
@@ -2862,15 +3204,8 @@ class LanguageDataset {
         // Group inflections by a part of speech
         let partOfSpeech = inflection[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part];
         if (!partOfSpeech) {
-          throw new Error('Part of speech data is missing in an inflection')
+          throw new Error('Part of speech data is missing in an inflection.')
         }
-        if (!Array.isArray(partOfSpeech)) {
-          throw new Error('Part of speech data should be in an array format')
-        }
-        if (partOfSpeech.length === 0 && partOfSpeech.length > 1) {
-          throw new Error('Part of speech data should be an array with exactly one element')
-        }
-        partOfSpeech = partOfSpeech[0].value;
 
         if (!inflections.hasOwnProperty(partOfSpeech)) {
           inflections[partOfSpeech] = [];
@@ -9857,8 +10192,8 @@ exports.TestAdapter = TestAdapter;
 /* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(20);
-var bytesToUuid = __webpack_require__(21);
+var rng = __webpack_require__(21);
+var bytesToUuid = __webpack_require__(22);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -9994,6 +10329,88 @@ exports.clearImmediate = clearImmediate;
 
 /***/ }),
 /* 10 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(39);
+
+
+
+class Component {
+  constructor (componentOptions = {}, userOptions = {}) {
+    this.options = {}
+    this.options = Object.assign(this.options, componentOptions)
+    this.options = Object.assign(this.options, userOptions)
+    if (componentOptions.innerElements && userOptions.innerElements) {
+      this.options.innerElements = Object.assign(componentOptions.innerElements, userOptions.innerElements)
+    }
+    if (componentOptions.outerElements && userOptions.outerElements) {
+      this.options.outerElements = Object.assign(componentOptions.outerElements, userOptions.outerElements)
+    }
+    if (componentOptions.contentAreas && userOptions.contentAreas) {
+      this.options.contentAreas = Object.assign(componentOptions.contentAreas, userOptions.contentAreas)
+    }
+    this.self = {
+      selector: this.options.selfSelector
+    }
+    this.options.elements = {}
+    this.innerElements = {}
+    this.outerElements = {}
+    this.tabGroups = {}
+    this.contentAreas = {}
+
+    this.self.element = document.querySelector(this.self.selector)
+    if (!this.self.element) {
+      throw new Error(`Element's placeholder "${this.self.selector}" does not exist. Cannot create a component`)
+    }
+    this.self.element.outerHTML = this.options.template
+    this.self.element = document.querySelector(this.self.selector)
+
+    if (this.options && this.options.innerElements) {
+      for (const [name, elementData] of Object.entries(this.options.innerElements)) {
+        this.innerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, this.self.element, elementData)
+      }
+    }
+
+    if (this.options && this.options.outerElements) {
+      for (const [name, elementData] of Object.entries(this.options.outerElements)) {
+        this.outerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, document, elementData)
+      }
+    }
+
+    // Scan for tab groups
+    let tabGroups = new Set()
+    let tabs = this.self.element.querySelectorAll('[data-tab-group]')
+    for (let tab of tabs) {
+      let groupName = tab.dataset.tabGroup
+      if (!tabGroups.has(groupName)) { tabGroups.add(groupName) }
+    }
+    for (let groupNames of tabGroups.entries()) {
+      let groupName = groupNames[0] // entries() returns [groupName, groupName]
+      this.tabGroups[groupName] = new __WEBPACK_IMPORTED_MODULE_1__tab_group__["a" /* default */](groupName, this.self.element)
+    }
+
+    if (this.options && this.options.methods) {
+      for (const [key, value] of Object.entries(this.options.methods)) {
+        this[key] = value
+      }
+    }
+
+    if (this.options && this.options.contentAreas) {
+      for (const [areaName, areaData] of Object.entries(this.options.contentAreas)) {
+        areaData.selector = `[data-content-area="${areaName}"]`
+        this.contentAreas[areaName] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](areaName, this.self.element, areaData)
+      }
+    }
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Component;
+
+
+
+/***/ }),
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var require;var require;/**
@@ -17148,7 +17565,7 @@ win.init = init;
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports) {
 
 /*
@@ -17230,7 +17647,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -17249,7 +17666,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(47)
+var listToStyles = __webpack_require__(48)
 
 /*
 type StyleObject = {
@@ -17451,7 +17868,7 @@ function applyToTag (styleElement, obj) {
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports) {
 
 /* globals __VUE_SSR_CONTEXT__ */
@@ -17560,54 +17977,13 @@ module.exports = function normalizeComponent (
 
 
 /***/ }),
-/* 14 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-  name: 'Setting',
-  props: {
-    selected: {
-      type: String,
-      required: true
-    },
-    items: {
-      type: Array,
-      required: true
-    },
-    labeltext: {
-      type: String,
-      required: true
-    }
-  },
-  computed: {
-    selectedItem: {
-      get: function () {
-        return this.selected;
-      },
-      set: function (newValue) {
-        this.$emit('change', newValue);
-      }
-    }
-  }
-});
-
-/***/ }),
 /* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_interactjs__);
+//
 //
 //
 //
@@ -17637,6 +18013,10 @@ module.exports = function normalizeComponent (
       type: String,
       required: true
     },
+    lexemes: {
+      type: Array,
+      required: true
+    },
     visible: {
       type: Boolean,
       required: true
@@ -17646,6 +18026,10 @@ module.exports = function normalizeComponent (
       required: true
     },
     infldataready: {
+      type: Boolean,
+      required: true
+    },
+    morphdataready: {
       type: Boolean,
       required: true
     }
@@ -17705,7 +18089,7 @@ module.exports = function normalizeComponent (
       preserveAspectRatio: false,
       edges: { left: true, right: true, bottom: true, top: true },
       restrictSize: {
-        min: { width: 100, height: 300 }
+        min: { width: 300, height: 300 }
       },
       restrictEdges: {
         outer: document.body,
@@ -17730,8 +18114,143 @@ module.exports = function normalizeComponent (
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+  name: 'Morph',
+  props: ['lexemes'],
+  methods: {
+    featureMatch(a, b) {
+      let matches = false;
+      for (let f of a) {
+        if (b && b.filter(x => x.isEqual(f)).length > 0) {
+          matches = true;
+          break;
+        }
+      }
+      return matches;
+    }
+  },
+  mounted() {
+    console.log('Morph is mounted');
+    // for each infl without dial
+    //   group by stem, pref, suff, pofs, comp
+    //   sort by pofs
+    // for each infl without dial and without either stem or pofs
+    // for each infl with dial
+    // inflection-set:
+    //  ignores conjunction, preposition, interjection, particle
+    //  take pofs and decl from infl if it differs from dict
+    //  add dialect
+  }
+});
+
+/***/ }),
+/* 17 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(18);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
 
@@ -17752,21 +18271,21 @@ contentProcess.initialize()
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_alpheios_experience__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__content_options__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_alpheios_experience__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_message__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_service__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_message_state_message__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_messaging_response_state_response__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__ = __webpack_require__(27);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lexical_query__ = __webpack_require__(32);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__content_ui_controller__ = __webpack_require__(33);
@@ -17787,21 +18306,22 @@ contentProcess.initialize()
 
 class ContentProcess {
   constructor () {
-    this.state = new __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */]().setWatcher('panelStatus', this.sendStateToBackground.bind(this))
-    this.state.status = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.PENDING
-    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED
-    this.options = new __WEBPACK_IMPORTED_MODULE_9__content_options__["a" /* default */]()
 
-    this.messagingService = new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__["a" /* default */]()
+    this.state = new __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */]().setWatcher('panelStatus', this.sendStateToBackground.bind(this))
+    this.state.status = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.PENDING
+    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED
+
+    this.messagingService = new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_service__["a" /* default */]()
 
     this.maAdapter = new __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__["a" /* default */]() // Morphological analyzer adapter, with default arguments
     this.langData = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* LanguageData */]([__WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["c" /* LatinDataSet */], __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* GreekDataSet */]]).loadData()
-    this.ui = new __WEBPACK_IMPORTED_MODULE_12__content_ui_controller__["a" /* default */](this.state, this.options)
+    this.ui = new __WEBPACK_IMPORTED_MODULE_12__content_ui_controller__["a" /* default */](this.state)
+    this.options = this.ui.getOptions()
   }
 
   initialize () {
     // Adds message listeners
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__["a" /* default */].types.STATE_REQUEST, this.handleStateRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_message__["a" /* default */].types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
@@ -17817,24 +18337,24 @@ class ContentProcess {
   }
 
   get isActive () {
-    return this.state.status === __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+    return this.state.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
   }
 
   deactivate () {
     console.log('Content has been deactivated.')
     this.ui.closePanel()
-    this.state.status = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.DEACTIVATED
+    this.state.status = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
-    this.state.status = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+    this.state.status = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
   }
 
   handleStateRequest (request, sender) {
     // Send a status response
     console.log(`State request has been received`)
-    let state = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].readObject(request.body)
+    let state = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].readObject(request.body)
     let diff = this.state.diff(state)
     if (diff.has('tabID')) {
       if (!this.state.tabID) {
@@ -17846,7 +18366,7 @@ class ContentProcess {
       }
     }
     if (diff.has('status')) {
-      if (diff.status === __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE) {
+      if (diff.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE) {
         this.state.activate()
       } else {
         this.state.deactivate()
@@ -17855,9 +18375,9 @@ class ContentProcess {
       }
     }
     if (diff.hasOwnProperty('panelStatus')) {
-      if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN) { this.ui.openPanel() } else { this.ui.closePanel() }
+      if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN) { this.ui.openPanel() } else { this.ui.closePanel() }
     }
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__["a" /* default */](request, this.state)).catch(
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_8__lib_messaging_response_state_response__["a" /* default */](request, this.state)).catch(
       (error) => {
         console.error(`Unable to send a response to a state request: ${error}`)
       }
@@ -17865,7 +18385,7 @@ class ContentProcess {
   }
 
   sendStateToBackground () {
-    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
+    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -17874,10 +18394,10 @@ class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.options.items.preferredLanguage.currentValue)
+      let textSelector = __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.options.items.defaultLanguage.currentValue)
 
       if (!textSelector.isEmpty()) {
-        __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].track(
+        __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].track(
           __WEBPACK_IMPORTED_MODULE_11__lexical_query__["a" /* default */].create(textSelector, {
             uiController: this.ui,
             maAdapter: this.maAdapter,
@@ -17887,8 +18407,8 @@ class ContentProcess {
           {
             experience: 'Get word data',
             actions: [
-              { name: 'getData', action: __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].actions.START, event: __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].events.GET },
-              { name: 'finalize', action: __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].actions.STOP, event: __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].events.GET }
+              { name: 'getData', action: __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].actions.START, event: __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].events.GET },
+              { name: 'finalize', action: __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].actions.STOP, event: __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].events.GET }
             ]
           })
         .getData()
@@ -17901,7 +18421,7 @@ class ContentProcess {
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -18014,24 +18534,34 @@ class ImportData {
     let language = this.language;
 
     this[featureName].add = function add (providerValue, alpheiosValue) {
-      'use strict';
       this[providerValue] = alpheiosValue;
       return this
     };
 
-    this[featureName].get = function get (providerValue) {
-      'use strict';
+    this[featureName].get = function get (providerValue, sortOrder) {
+      let mappedValue = [];
       if (!this.importer.has(providerValue)) {
-        // if the providerValue matches the model value return that
-        if (language.features[featureName][providerValue]) {
-          return language.features[featureName][providerValue]
+        // if the providerValue matches the model value or the model value
+        // is unrestricted, return a feature with the providerValue and order
+        if (language.features[featureName][providerValue] ||
+            language.features[featureName].unrestrictedValue) {
+          mappedValue = language.features[featureName].get(providerValue, sortOrder);
         } else {
           throw new Error("Skipping an unknown value '" +
                     providerValue + "' of a grammatical feature '" + featureName + "' of " + language + ' language.')
         }
       } else {
-        return this.importer.get(providerValue)
+        let tempValue = this.importer.get(providerValue);
+        if (Array.isArray(tempValue)) {
+          mappedValue = [];
+          for (let feature of tempValue) {
+            mappedValue.push(language.features[featureName].get(feature.value, sortOrder));
+          }
+        } else {
+          mappedValue = language.features[featureName].get(tempValue.value, sortOrder);
+        }
       }
+      return mappedValue
     };
 
     this[featureName].importer = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["e" /* FeatureImporter */]();
@@ -18132,7 +18662,7 @@ data$3.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feat
 
 var Cupidinibus = "{\n  \"RDF\": {\n    \"Annotation\": {\n      \"about\": \"urn:TuftsMorphologyService:cupidinibus:whitakerLat\",\n      \"creator\": {\n        \"Agent\": {\n          \"about\": \"net.alpheios:tools:wordsxml.v1\"\n        }\n      },\n      \"created\": {\n        \"$\": \"2017-08-10T23:15:29.185581\"\n      },\n      \"hasTarget\": {\n        \"Description\": {\n          \"about\": \"urn:word:cupidinibus\"\n        }\n      },\n      \"title\": {},\n      \"hasBody\": [\n        {\n          \"resource\": \"urn:uuid:idm140578094883136\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140578158026160\"\n        }\n      ],\n      \"Body\": [\n        {\n          \"about\": \"urn:uuid:idm140578094883136\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 2,\n                    \"$\": \"locative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 5,\n                    \"$\": \"dative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  }\n                }\n              ],\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"Cupido, Cupidinis\"\n                },\n                \"pofs\": {\n                  \"order\": 5,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                },\n                \"gend\": {\n                  \"$\": \"masculine\"\n                },\n                \"area\": {\n                  \"$\": \"religion\"\n                },\n                \"freq\": {\n                  \"order\": 4,\n                  \"$\": \"common\"\n                },\n                \"src\": {\n                  \"$\": \"Ox.Lat.Dict.\"\n                }\n              },\n              \"mean\": {\n                \"$\": \"Cupid, son of Venus; personification of carnal desire;\"\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140578158026160\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 2,\n                    \"$\": \"locative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"common\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 5,\n                    \"$\": \"dative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"common\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"cupidin\"\n                    },\n                    \"suff\": {\n                      \"$\": \"ibus\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 5,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"var\": {\n                    \"$\": \"1st\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"num\": {\n                    \"$\": \"plural\"\n                  },\n                  \"gend\": {\n                    \"$\": \"common\"\n                  }\n                }\n              ],\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"cupido, cupidinis\"\n                },\n                \"pofs\": {\n                  \"order\": 5,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                },\n                \"gend\": {\n                  \"$\": \"common\"\n                },\n                \"freq\": {\n                  \"order\": 5,\n                  \"$\": \"frequent\"\n                },\n                \"src\": {\n                  \"$\": \"Ox.Lat.Dict.\"\n                }\n              },\n              \"mean\": {\n                \"$\": \"desire/love/wish/longing (passionate); lust; greed, appetite; desire for gain;\"\n              }\n            }\n          }\n        }\n      ]\n    }\n  }\n}\n";
 
-var Mare = "{\n  \"RDF\": {\n    \"Annotation\": {\n      \"about\": \"urn:TuftsMorphologyService:mare:morpheuslat\",\n      \"creator\": {\n        \"Agent\": {\n          \"about\": \"org.perseus:tools:morpheus.v1\"\n        }\n      },\n      \"created\": {\n        \"$\": \"2017-09-08T06:59:48.639180\"\n      },\n      \"hasTarget\": {\n        \"Description\": {\n          \"about\": \"urn:word:mare\"\n        }\n      },\n      \"title\": {},\n      \"hasBody\": [\n        {\n          \"resource\": \"urn:uuid:idm140446402389888\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140446402332400\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140446402303648\"\n        }\n      ],\n      \"Body\": [\n        {\n          \"about\": \"urn:uuid:idm140446402389888\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34070.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"mare\"\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                }\n              },\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 7,\n                    \"$\": \"nominative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 1,\n                    \"$\": \"vocative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 4,\n                    \"$\": \"accusative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                }\n              ],\n              \"mean\": {\n                \"$\": \"the sea\"\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140446402332400\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34118.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"marum\"\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"2nd\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                }\n              },\n              \"infl\": {\n                \"term\": {\n                  \"lang\": \"lat\",\n                  \"stem\": {\n                    \"$\": \"mar\"\n                  },\n                  \"suff\": {\n                    \"$\": \"e\"\n                  }\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"2nd\"\n                },\n                \"case\": {\n                  \"order\": 1,\n                  \"$\": \"vocative\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                },\n                \"num\": {\n                  \"$\": \"singular\"\n                },\n                \"stemtype\": {\n                  \"$\": \"us_i\"\n                }\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140446402303648\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34119.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"mas\"\n                },\n                \"pofs\": {\n                  \"order\": 2,\n                  \"$\": \"adjective\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                }\n              },\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"feminine\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                }\n              ]\n            }\n          }\n        }\n      ]\n    }\n  }\n}\n";
+var Mare = "{\n  \"RDF\": {\n    \"Annotation\": {\n      \"about\": \"urn:TuftsMorphologyService:mare:morpheuslat\",\n      \"creator\": {\n        \"Agent\": {\n          \"about\": \"org.perseus:tools:morpheus.v1\"\n        }\n      },\n      \"created\": {\n        \"$\": \"2017-09-08T06:59:48.639180\"\n      },\n      \"rights\": {\n        \"$\": \"Morphology provided by Morpheus from the Perseus Digital Library at Tufts University.\"\n      },\n      \"hasTarget\": {\n        \"Description\": {\n          \"about\": \"urn:word:mare\"\n        }\n      },\n      \"title\": {},\n      \"hasBody\": [\n        {\n          \"resource\": \"urn:uuid:idm140446402389888\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140446402332400\"\n        },\n        {\n          \"resource\": \"urn:uuid:idm140446402303648\"\n        }\n      ],\n      \"Body\": [\n        {\n          \"about\": \"urn:uuid:idm140446402389888\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34070.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"mare\"\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                }\n              },\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 7,\n                    \"$\": \"nominative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 1,\n                    \"$\": \"vocative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mar\"\n                    },\n                    \"suff\": {\n                      \"$\": \"e\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 3,\n                    \"$\": \"noun\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 4,\n                    \"$\": \"accusative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"is_is\"\n                  }\n                }\n              ],\n              \"mean\": {\n                \"$\": \"the sea\"\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140446402332400\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34118.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"marum\"\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"2nd\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                }\n              },\n              \"infl\": {\n                \"term\": {\n                  \"lang\": \"lat\",\n                  \"stem\": {\n                    \"$\": \"mar\"\n                  },\n                  \"suff\": {\n                    \"$\": \"e\"\n                  }\n                },\n                \"pofs\": {\n                  \"order\": 3,\n                  \"$\": \"noun\"\n                },\n                \"decl\": {\n                  \"$\": \"2nd\"\n                },\n                \"case\": {\n                  \"order\": 1,\n                  \"$\": \"vocative\"\n                },\n                \"gend\": {\n                  \"$\": \"neuter\"\n                },\n                \"num\": {\n                  \"$\": \"singular\"\n                },\n                \"stemtype\": {\n                  \"$\": \"us_i\"\n                }\n              }\n            }\n          }\n        },\n        {\n          \"about\": \"urn:uuid:idm140446402303648\",\n          \"type\": {\n            \"resource\": \"cnt:ContentAsXML\"\n          },\n          \"rest\": {\n            \"entry\": {\n              \"uri\": \"http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34119.1\",\n              \"dict\": {\n                \"hdwd\": {\n                  \"lang\": \"lat\",\n                  \"$\": \"mas\"\n                },\n                \"pofs\": {\n                  \"order\": 2,\n                  \"$\": \"adjective\"\n                },\n                \"decl\": {\n                  \"$\": \"3rd\"\n                }\n              },\n              \"infl\": [\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"masculine\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"feminine\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                },\n                {\n                  \"term\": {\n                    \"lang\": \"lat\",\n                    \"stem\": {\n                      \"$\": \"mare\"\n                    }\n                  },\n                  \"pofs\": {\n                    \"order\": 2,\n                    \"$\": \"adjective\"\n                  },\n                  \"decl\": {\n                    \"$\": \"3rd\"\n                  },\n                  \"case\": {\n                    \"order\": 3,\n                    \"$\": \"ablative\"\n                  },\n                  \"gend\": {\n                    \"$\": \"neuter\"\n                  },\n                  \"num\": {\n                    \"$\": \"singular\"\n                  },\n                  \"stemtype\": {\n                    \"$\": \"irreg_adj3\"\n                  },\n                  \"morph\": {\n                    \"$\": \"indeclform\"\n                  }\n                }\n              ]\n            }\n          }\n        }\n      ]\n    }\n  }\n}\n";
 
 var Cepit = "{\n  \"RDF\": {\n    \"Annotation\": {\n      \"about\": \"urn:TuftsMorphologyService:cepit:whitakerLat\",\n      \"creator\": {\n        \"Agent\": {\n          \"about\": \"net.alpheios:tools:wordsxml.v1\"\n        }\n      },\n      \"created\": {\n        \"$\": \"2017-08-10T23:16:53.672068\"\n      },\n      \"hasTarget\": {\n        \"Description\": {\n          \"about\": \"urn:word:cepit\"\n        }\n      },\n      \"title\": {},\n      \"hasBody\": {\n        \"resource\": \"urn:uuid:idm140578133848416\"\n      },\n      \"Body\": {\n        \"about\": \"urn:uuid:idm140578133848416\",\n        \"type\": {\n          \"resource\": \"cnt:ContentAsXML\"\n        },\n        \"rest\": {\n          \"entry\": {\n            \"infl\": {\n              \"term\": {\n                \"lang\": \"lat\",\n                \"stem\": {\n                  \"$\": \"cep\"\n                },\n                \"suff\": {\n                  \"$\": \"it\"\n                }\n              },\n              \"pofs\": {\n                \"order\": 3,\n                \"$\": \"verb\"\n              },\n              \"conj\": {\n                \"$\": \"3rd\"\n              },\n              \"var\": {\n                \"$\": \"1st\"\n              },\n              \"tense\": {\n                \"$\": \"perfect\"\n              },\n              \"voice\": {\n                \"$\": \"active\"\n              },\n              \"mood\": {\n                \"$\": \"indicative\"\n              },\n              \"pers\": {\n                \"$\": \"3rd\"\n              },\n              \"num\": {\n                \"$\": \"singular\"\n              }\n            },\n            \"dict\": {\n              \"hdwd\": {\n                \"lang\": \"lat\",\n                \"$\": \"capio, capere, cepi, captus\"\n              },\n              \"pofs\": {\n                \"order\": 3,\n                \"$\": \"verb\"\n              },\n              \"conj\": {\n                \"$\": \"3rd\"\n              },\n              \"kind\": {\n                \"$\": \"transitive\"\n              },\n              \"freq\": {\n                \"order\": 6,\n                \"$\": \"very frequent\"\n              },\n              \"src\": {\n                \"$\": \"Ox.Lat.Dict.\"\n              }\n            },\n            \"mean\": {\n              \"$\": \"take hold, seize; grasp; take bribe; arrest/capture; put on; occupy; captivate;\"\n            }\n          }\n        }\n      }\n    }\n  }\n}\n";
 
@@ -18233,9 +18763,57 @@ class TuftsAdapter extends BaseAdapter {
       let language = lexeme.rest.entry.dict.hdwd.lang;
       let mappingData = this.getEngineLanguageMap(language);
       let lemma = mappingData.parseLemma(lexeme.rest.entry.dict.hdwd.$, language);
+      if (lexeme.rest.entry.dict.pofs) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(
+          lexeme.rest.entry.dict.pofs.$.trim(), lexeme.rest.entry.dict.pofs.order);
+      }
+      if (lexeme.rest.entry.dict.case) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase].get(
+          lexeme.rest.entry.dict.case.$, lexeme.rest.entry.dict.case.order);
+      }
+      if (lexeme.rest.entry.dict.gend) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender].get(
+          lexeme.rest.entry.dict.gend.$, lexeme.rest.entry.dict.gend.order);
+      }
+      if (lexeme.rest.entry.dict.decl) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(
+          lexeme.rest.entry.dict.decl.$, lexeme.rest.entry.dict.decl.order);
+      }
+      if (lexeme.rest.entry.dict.conj) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(
+          lexeme.rest.entry.dict.conj.$, lexeme.rest.entry.dict.conj.order);
+      }
+      if (lexeme.rest.entry.dict.area) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.area].get(
+          lexeme.rest.entry.dict.area.$, lexeme.rest.entry.dict.area.order);
+      }
+      if (lexeme.rest.entry.dict.age) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.age].get(
+          lexeme.rest.entry.dict.age.$, lexeme.rest.entry.dict.age.order);
+      }
+      if (lexeme.rest.entry.dict.geo) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.geo].get(
+          lexeme.rest.entry.dict.geo.$, lexeme.rest.entry.dict.geo.order);
+      }
+      if (lexeme.rest.entry.dict.freq) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.frequency].get(
+          lexeme.rest.entry.dict.freq.$, lexeme.rest.entry.dict.freq.order);
+      }
+      if (lexeme.rest.entry.dict.note) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.note].get(
+          lexeme.rest.entry.dict.note.$, lexeme.rest.entry.dict.note.order);
+      }
+      if (lexeme.rest.entry.dict.pron) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.pronunciation].get(
+          lexeme.rest.entry.dict.pron.$, lexeme.rest.entry.dict.pron.order);
+      }
+      if (lexeme.rest.entry.dict.src) {
+        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.source].get(
+          lexeme.rest.entry.dict.src.$, lexeme.rest.entry.dict.src.order);
+      }
 
       if (!provider) {
-        let providerUri = jsonObj.RDF.Annotation.about;
+        let providerUri = jsonObj.RDF.Annotation.creator.Agent.about;
         let providerRights = '';
         if (jsonObj.RDF.Annotation.rights) {
           providerRights = jsonObj.RDF.Annotation.rights.$;
@@ -18267,43 +18845,68 @@ class TuftsAdapter extends BaseAdapter {
         }
                 // Parse whatever grammatical features we're interested in
         if (inflectionJSON.pofs) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(inflectionJSON.pofs.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(
+            inflectionJSON.pofs.$, inflectionJSON.pofs.order);
+          // inflection pofs can provide missing lemma pofs
+          if (!lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part]) {
+            lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(
+              inflectionJSON.pofs.$, inflectionJSON.pofs.order);
+          }
         }
 
         if (inflectionJSON.case) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase].get(inflectionJSON.case.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase].get(
+            inflectionJSON.case.$, inflectionJSON.case.order);
         }
 
         if (inflectionJSON.decl) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(inflectionJSON.decl.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(
+            inflectionJSON.decl.$, inflectionJSON.decl.order);
+          // inflection decl can provide lemma decl
+          if (!lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension]) {
+            lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(
+              inflectionJSON.decl.$, inflectionJSON.decl.order);
+          }
         }
 
         if (inflectionJSON.num) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number].get(inflectionJSON.num.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number].get(
+            inflectionJSON.num.$, inflectionJSON.num.order);
         }
 
         if (inflectionJSON.gend) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender].get(inflectionJSON.gend.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender].get(
+            inflectionJSON.gend.$, inflectionJSON.gend.order);
         }
 
         if (inflectionJSON.conj) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(inflectionJSON.conj.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(
+            inflectionJSON.conj.$, inflectionJSON.conj.order);
+          // inflection conj can provide lemma conj
+          if (!lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation]) {
+            lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(
+              inflectionJSON.conj.$, inflectionJSON.conj.order);
+          }
         }
 
         if (inflectionJSON.tense) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense].get(inflectionJSON.tense.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense].get(
+            inflectionJSON.tense.$, inflectionJSON.tense.order);
         }
 
         if (inflectionJSON.voice) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.voice].get(inflectionJSON.voice.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.voice].get(
+            inflectionJSON.voice.$, inflectionJSON.voice.order);
         }
 
         if (inflectionJSON.mood) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood].get(inflectionJSON.mood.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood].get(
+            inflectionJSON.mood.$, inflectionJSON.mood.order);
         }
 
         if (inflectionJSON.pers) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person].get(inflectionJSON.pers.$);
+          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person].get(
+            inflectionJSON.pers.$, inflectionJSON.pers.order);
         }
 
         inflections.push(inflection);
@@ -18333,7 +18936,7 @@ class TuftsAdapter extends BaseAdapter {
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20305,7 +20908,7 @@ class Lexicons {
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -20345,7 +20948,7 @@ module.exports = rng;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports) {
 
 /**
@@ -20374,12 +20977,12 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(24);
 /* global browser */
 
 
@@ -20523,7 +21126,7 @@ class Service {
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20545,7 +21148,7 @@ class StoredRequest {
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20565,7 +21168,7 @@ class StateMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20589,129 +21192,6 @@ class StateResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a" 
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = StateResponse;
-
-
-
-/***/ }),
-/* 26 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* global browser */
-
-class ContentOptions {
-  constructor () {
-    this.items = ContentOptions.initItems()
-  }
-
-  static get defaults () {
-    return {
-      locale: {
-        defaultValue: 'en-US',
-        values: [
-          {value: 'en-US', text: 'English (US)'},
-          {value: 'en-GB', text: 'English (GB)'}
-        ]
-      },
-      panelPosition: {
-        defaultValue: 'left',
-        values: [
-          {value: 'left', text: 'Left'},
-          {value: 'right', text: 'Right'}
-        ]
-      },
-      uiType: {
-        defaultValue: 'panel',
-        values: [
-          {value: 'popup', text: 'Pop-up'},
-          {value: 'panel', text: 'Panel'}
-        ]
-      },
-      preferredLanguage: {
-        defaultValue: 'lat',
-        values: [
-          {value: 'lat', text: 'Latin'},
-          {value: 'grc', text: 'Greek'},
-          {value: 'ara', text: 'Arabic'},
-          {value: 'per', text: 'Persian'}
-        ]
-      }
-    }
-  }
-
-  static initItems () {
-    let items = {}
-    for (let [key, item] of Object.entries(ContentOptions.defaults)) {
-      items[key] = item
-      item.currentValue = item.defaultValue
-      item.name = key
-      item.textValues = function () {
-        return this.values.map(value => value.text)
-      }
-      item.currentTextValue = function () {
-        for (let value of this.values) {
-          if (value.value === this.currentValue) { return value.text }
-        }
-      }
-      item.setValue = function (value) {
-        item.currentValue = value
-        ContentOptions.save(item.name, item.currentValue)
-        return this
-      }
-      item.setTextValue = function (textValue) {
-        for (let value of item.values) {
-          if (value.text === textValue) { item.currentValue = value.value }
-        }
-        ContentOptions.save(item.name, item.currentValue)
-        return this
-      }
-    }
-    return items
-  }
-
-  get names () {
-    return Object.keys(this.items)
-  }
-
-  /**
-   * Will always return a resolved promise.
-   */
-  load (callbackFunc) {
-    browser.storage.sync.get().then(
-      values => {
-        for (let key in values) {
-          if (this.items.hasOwnProperty(key)) {
-            this.items[key].currentValue = values[key]
-          }
-        }
-        console.log('Content options are loaded successfully', this.items)
-        callbackFunc(this)
-      },
-      error => {
-        console.error(`Cannot retrieve options for Alpheios extension from a local storage: ${error}. Default values
-          will be used instead`)
-        callbackFunc(this)
-      }
-    )
-  }
-
-  static save (optionName, optionValue) {
-    // Update value in the local storage
-    let option = {}
-    option[optionName] = optionValue
-
-    browser.storage.sync.set(option).then(
-      () => {
-        // Options storage succeeded
-        console.log(`Value "${optionValue}" of "${optionName}" option value was stored successfully`)
-      },
-      (errorMessage) => {
-        console.error(`Storage of an option value failed: ${errorMessage}`)
-      }
-    )
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = ContentOptions;
 
 
 
@@ -21056,6 +21536,9 @@ class TextQuoteSelector {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(0);
+
+
 class MediaSelector {
   constructor (target) {
     this.target = target // A selected text area in a document
@@ -21087,7 +21570,14 @@ class MediaSelector {
    * @return {string} A language code of a selection
    */
   getLanguageCode (defaultLanguageCode) {
-    return this.getLanguageCodeFromSource() || defaultLanguageCode
+    let code = this.getLanguageCodeFromSource() || defaultLanguageCode
+    let langId = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(code)
+    if (langId) {
+      code = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageCodeFromId(langId)
+    } else {
+      code = defaultLanguageCode
+    }
+    return code
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = MediaSelector;
@@ -21165,6 +21655,7 @@ class LexicalQuery {
     this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
 
     this.ui.addMessage(`Morphological analyzer data is ready<br>`)
+    this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)
@@ -21247,20 +21738,23 @@ class LexicalQuery {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue__ = __webpack_require__(34);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__template_htmlf__ = __webpack_require__(37);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__components_panel_component__ = __webpack_require__(38);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__vue_components_setting_vue__ = __webpack_require__(44);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_popup_vue__ = __webpack_require__(49);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__ = __webpack_require__(53);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(54);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3__template_htmlf__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_panel_component__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__components_options_component__ = __webpack_require__(43);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__ = __webpack_require__(45);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__ = __webpack_require__(50);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit__ = __webpack_require__(54);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(55);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons__);
 /* global Node */
  // Required for Presenter
+
  // Vue in a runtime + compiler configuration
 
 
@@ -21270,10 +21764,10 @@ class LexicalQuery {
 
 
 
+
 class ContentUIController {
-  constructor (state, options) {
+  constructor (state) {
     this.state = state
-    this.options = options
     this.settings = ContentUIController.settingValues
 
     // Finds a max z-index of element on the page.
@@ -21284,10 +21778,10 @@ class ContentUIController {
     document.body.classList.add('alpheios')
     let container = document.createElement('div')
     document.body.insertBefore(container, null)
-    container.outerHTML = __WEBPACK_IMPORTED_MODULE_2__template_htmlf___default.a
+    container.outerHTML = __WEBPACK_IMPORTED_MODULE_3__template_htmlf___default.a
 
     // Initialize components
-    this.panel = new __WEBPACK_IMPORTED_MODULE_3__components_panel_component__["a" /* default */]({
+    this.panel = new __WEBPACK_IMPORTED_MODULE_4__components_panel_component__["a" /* default */]({
       contentAreas: {
         shortDefinitions: {
           dataFunction: this.formatShortDefinitions.bind(this)
@@ -21300,89 +21794,35 @@ class ContentUIController {
         onClose: this.closePanel.bind(this)
       }
     })
-    // Set panel controls event handlers
-    this.panel.innerElements.attachToLeftButton.element.addEventListener('click', this.attachPanelToLeft.bind(this))
-    this.panel.innerElements.attachToRightButton.element.addEventListener('click', this.attachPanelToRight.bind(this))
-    this.panel.innerElements.closeButton.element.addEventListener('click', this.closePanel.bind(this))
     this.panel.updateZIndex(zIndexMax)
 
     // Should be loaded after Panel because options are inserted into a panel
-    this.optionsUI = new __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue___default.a({
-      el: '#alpheios-options',
-      components: { setting: __WEBPACK_IMPORTED_MODULE_5__vue_components_setting_vue__["a" /* default */] },
-      data: {
-        preferredLanguageValues: this.options.items.preferredLanguage.textValues(),
-        localeValues: this.options.items.locale.textValues(),
-        panelPositionValues: this.options.items.panelPosition.textValues(),
-        uiTypeValues: this.options.items.uiType.textValues(),
-
-        preferredLanguage: this.options.items.preferredLanguage.currentTextValue(),
-        locale: this.options.items.locale.currentTextValue(),
-        panelPosition: this.options.items.panelPosition.currentTextValue(),
-        uiType: this.options.items.uiType.currentTextValue(),
-
-        preferredLanguageLabel: 'Preferred language:',
-        localeLabel: 'Locale:',
-        panelPositionLabel: 'Panel position:',
-        uiTypeLabel: 'UI type:'
-      },
+    this.options = new __WEBPACK_IMPORTED_MODULE_6__components_options_component__["a" /* default */]({
       methods: {
-        update (options) {
-          this.preferredLanguageValues = options.items.preferredLanguage.textValues()
-          this.locale = options.items.locale.textValues()
-          this.panelPositionValues = options.items.panelPosition.textValues()
-          this.uiTypeValues = options.items.uiType.textValues()
-
-          this.preferredLanguage = options.items.preferredLanguage.currentTextValue()
-          this.locale = options.items.locale.currentTextValue()
-          this.panelPosition = options.items.panelPosition.currentTextValue()
-          this.uiType = options.items.uiType.currentTextValue()
+        ready: (options) => {
+          this.state.status = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+          this.setPanelPositionTo(options.panelPosition.currentValue)
+          this.setDefaultLanguageTo(options.defaultLanguage.currentValue)
+          console.log('Content script is set to active')
         },
-        changePreferredLanguage: function (value) {
-          this.preferredLanguage = value
-          this.options.items.preferredLanguage.setTextValue(value)
-          this.uiController.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
-        },
-        changeLocale: function (value) {
-          this.locale = value
-          this.options.items.locale.setTextValue(value)
-          // If presenter is loaded
-          if (this.uiController.presenter) { this.uiController.presenter.setLocale(this.options.items.locale.currentValue) }
-        },
-        changePanelPosition: function (value) {
-          this.options.items.panelPosition.setTextValue(value)
-          this.uiController.setPanelPositionTo(this.options.items.panelPosition.currentValue)
-        },
-        changeUiType: function (value) {
-          this.uiType = value
-          this.options.items.uiType.setTextValue(value)
-        }
-      },
-      mounted () {
-
+        onChange: this.optionChangeListener.bind(this)
       }
     })
-    this.optionsUI.options = this.options
-    this.optionsUI.uiController = this
 
-    this.options.load(() => {
-      this.state.status = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
-      this.setPanelPositionTo(this.options.items.panelPosition.currentValue)
-      this.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
-      console.log('Content script is set to active')
-      this.optionsUI.update(this.options)
-    })
+    __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a.component('morph',__WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */])
 
     // Create a Vue instance for a popup
-    this.popup = new __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue___default.a({
+    this.popup = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
       el: '#alpheios-popup',
-      components: { popup: __WEBPACK_IMPORTED_MODULE_6__vue_components_popup_vue__["a" /* default */] },
+      components: { morph:__WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */], popup: __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__["a" /* default */] },
       data: {
         messages: '',
         content: '',
+        lexemes: [],
         visible: false,
         defDataReady: false,
-        inflDataReady: false
+        inflDataReady: false,
+        morphDataReady: false
       },
       methods: {
         showMessage: function (message) {
@@ -21438,12 +21878,12 @@ class ContentUIController {
     this.popup.panel = this.panel
 
     // Initialize UIKit
-    __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons___default.a)
+    __WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons___default.a)
   }
 
   /**
    * A temporary solution
-   * @return {*|OptionsComponent}
+   * @return {*|Options}
    */
   getOptions () {
     return this.options
@@ -21522,6 +21962,12 @@ class ContentUIController {
     this.popup.appendMessage(message)
   }
 
+  updateMorphology (homonym) {
+    homonym.lexemes.sort(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["n" /* Lexeme */].getSortByTwoLemmaFeatures(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["d" /* Feature */].types.frequency,__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["d" /* Feature */].types.part))
+    this.popup.lexemes = homonym.lexemes
+    this.popup.morphDataReady = true
+  }
+
   updateDefinitions (homonym) {
     this.panel.contentAreas.shortDefinitions.clearContent()
     this.panel.contentAreas.fullDefinitions.clearContent()
@@ -21579,28 +22025,22 @@ class ContentUIController {
     this.state.setPanelClosed()
   }
 
-  setPreferredLanguageTo (language) {
-    this.preferredLangauge = language
+  optionChangeListener (optionName, optionValue) {
+    if (optionName === 'locale' && this.presenter) { this.presenter.setLocale(optionValue) }
+    if (optionName === 'panelPosition') { this.setPanelPositionTo(optionValue) }
+    if (optionName === 'defaultLanguage') { this.setDefaultLanguageTo(optionValue) }
+  }
+
+  setDefaultLanguageTo (language) {
+    this.defaultLanguage = language
   }
 
   setPanelPositionTo (position) {
     if (position === 'right') {
-      this.attachPanelToRight()
+      this.panel.positionToRight()
     } else {
-      this.attachPanelToLeft()
+      this.panel.positionToLeft()
     }
-  }
-
-  attachPanelToLeft () {
-    this.options.items.panelPosition.setValue('left')
-    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
-    this.panel.attachToLeft()
-  }
-
-  attachPanelToRight () {
-    this.options.items.panelPosition.setValue('right')
-    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
-    this.panel.attachToRight()
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = ContentUIController;
@@ -32799,17 +33239,17 @@ process.umask = function() { return 0; };
 /* 37 */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :content=\"content\" :visible=\"visible\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div data-component=\"alpheios-panel\"></div>";
+module.exports = "<div id=\"alpheios-popup\" >\n    <popup class='auk' :messages=\"messages\" :content=\"content\" :visible=\"visible\" :lexemes=\"lexemes\"\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\n    </popup>\n</div>\n<div data-component=\"alpheios-panel\"></div>\n";
 
 /***/ }),
 /* 38 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(42);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(41);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_interactjs__);
 
 
@@ -32822,13 +33262,20 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
   constructor (options) {
     super(Panel.defaults, options)
 
+    this.hiddenClassName = 'hidden'
     this.panelOpenedClassName = 'opened'
     this.panelFullWidthClassName = 'full-width'
     this.bodyNormalWidthClassName = 'alpheios-panel-opened'
     this.zIndex = Panel.defaults.zIndex
     this.self.element.style.zIndex = this.zIndex
 
+    this.setPositionTo(this.options.position)
     this.width = Panel.widths.zero // Sets initial width to zero because panel is closed initially
+
+    // Set panel controls event handlers
+    this.innerElements.normalWidthButton.element.addEventListener('click', this.open.bind(this, Panel.widths.normal))
+    this.innerElements.fullWidthButton.element.addEventListener('click', this.open.bind(this, Panel.widths.full))
+    this.innerElements.closeButton.element.addEventListener('click', this.close.bind(this))
 
     // Initialize Interact.js: make panel resizable
     __WEBPACK_IMPORTED_MODULE_2_interactjs___default()(this.self.element)
@@ -32861,9 +33308,9 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
       template: __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default.a,
       selfSelector: '[data-component="alpheios-panel"]',
       innerElements: {
-        attachToLeftButton: { selector: '[data-element="attachToLeftBtn"]' },
-        attachToRightButton: { selector: '[data-element="attachToRightBtn"]' },
-        closeButton: { selector: '[data-element="closeBtn"]' }
+        normalWidthButton: { selector: '#alpheios-panel-show-open' },
+        fullWidthButton: { selector: '#alpheios-panel-show-fw' },
+        closeButton: { selector: '#alpheios-panel-hide' }
       },
       outerElements: {
         page: { selector: 'body' }
@@ -32917,16 +33364,20 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
         // Panel is at the right
         this.outerElements.page.element.classList.remove(Panel.positions.left)
         this.outerElements.page.element.classList.add(Panel.positions.right)
-        this.innerElements.attachToRightButton.hide()
-        this.innerElements.attachToLeftButton.show()
       } else {
         // Default: Panel is at the left
         this.outerElements.page.element.classList.remove(Panel.positions.right)
         this.outerElements.page.element.classList.add(Panel.positions.left)
-        this.innerElements.attachToLeftButton.hide()
-        this.innerElements.attachToRightButton.show()
       }
     }
+  }
+
+  positionToLeft () {
+    this.setPositionTo(Panel.positions.left)
+  }
+
+  positionToRight () {
+    this.setPositionTo(Panel.positions.right)
   }
 
   open (width = Panel.widths.normal) {
@@ -32940,32 +33391,23 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
 
       this.self.element.classList.add(this.panelOpenedClassName)
       this.self.element.classList.add(this.panelFullWidthClassName)
+      this.innerElements.normalWidthButton.element.classList.remove(this.hiddenClassName)
     } else {
       // Default: panel will to be shown in normal width
       this.self.element.classList.add(this.panelOpenedClassName)
       this.outerElements.page.element.classList.add(this.bodyNormalWidthClassName)
       this.outerElements.page.element.classList.add(this.bodyPositionClassName)
       this.self.element.classList.add(this.panelOpenedClassName)
+      this.innerElements.fullWidthButton.element.classList.remove(this.hiddenClassName)
     }
     return this
   }
-
   close () {
     if (this.isOpened) {
       this.resetWidth()
       this.options.methods.onClose()
     }
     return this
-  }
-
-  attachToLeft () {
-    this.setPositionTo(Panel.positions.left)
-    console.log('attach to left')
-  }
-
-  attachToRight () {
-    this.setPositionTo(Panel.positions.right)
-    console.log('attach to right')
   }
 
   get isOpened () {
@@ -32979,6 +33421,8 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
 
     this.self.element.classList.remove(this.panelOpenedClassName)
     this.self.element.classList.remove(this.panelFullWidthClassName)
+    this.innerElements.normalWidthButton.element.classList.add(this.hiddenClassName)
+    this.innerElements.fullWidthButton.element.classList.add(this.hiddenClassName)
 
     this.width = Panel.widths.zero
   }
@@ -33024,89 +33468,7 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(40);
-
-
-
-class Component {
-  constructor (componentOptions = {}, userOptions = {}) {
-    this.options = {}
-    this.options = Object.assign(this.options, componentOptions)
-    this.options = Object.assign(this.options, userOptions)
-    if (componentOptions.innerElements && userOptions.innerElements) {
-      this.options.innerElements = Object.assign(componentOptions.innerElements, userOptions.innerElements)
-    }
-    if (componentOptions.outerElements && userOptions.outerElements) {
-      this.options.outerElements = Object.assign(componentOptions.outerElements, userOptions.outerElements)
-    }
-    if (componentOptions.contentAreas && userOptions.contentAreas) {
-      this.options.contentAreas = Object.assign(componentOptions.contentAreas, userOptions.contentAreas)
-    }
-    this.self = {
-      selector: this.options.selfSelector
-    }
-    this.options.elements = {}
-    this.innerElements = {}
-    this.outerElements = {}
-    this.tabGroups = {}
-    this.contentAreas = {}
-
-    this.self.element = document.querySelector(this.self.selector)
-    if (!this.self.element) {
-      throw new Error(`Element's placeholder "${this.self.selector}" does not exist. Cannot create a component`)
-    }
-    this.self.element.outerHTML = this.options.template
-    this.self.element = document.querySelector(this.self.selector)
-
-    if (this.options && this.options.innerElements) {
-      for (const [name, elementData] of Object.entries(this.options.innerElements)) {
-        this.innerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, this.self.element, elementData)
-      }
-    }
-
-    if (this.options && this.options.outerElements) {
-      for (const [name, elementData] of Object.entries(this.options.outerElements)) {
-        this.outerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, document, elementData)
-      }
-    }
-
-    // Scan for tab groups
-    let tabGroups = new Set()
-    let tabs = this.self.element.querySelectorAll('[data-tab-group]')
-    for (let tab of tabs) {
-      let groupName = tab.dataset.tabGroup
-      if (!tabGroups.has(groupName)) { tabGroups.add(groupName) }
-    }
-    for (let groupNames of tabGroups.entries()) {
-      let groupName = groupNames[0] // entries() returns [groupName, groupName]
-      this.tabGroups[groupName] = new __WEBPACK_IMPORTED_MODULE_1__tab_group__["a" /* default */](groupName, this.self.element)
-    }
-
-    if (this.options && this.options.methods) {
-      for (const [key, value] of Object.entries(this.options.methods)) {
-        this[key] = value
-      }
-    }
-
-    if (this.options && this.options.contentAreas) {
-      for (const [areaName, areaData] of Object.entries(this.options.contentAreas)) {
-        areaData.selector = `[data-content-area="${areaName}"]`
-        this.contentAreas[areaName] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](areaName, this.self.element, areaData)
-      }
-    }
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Component;
-
-
-
-/***/ }),
-/* 40 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(40);
 
 
 
@@ -33161,7 +33523,7 @@ class TabGroup {
 
 
 /***/ }),
-/* 41 */
+/* 40 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -33192,31 +33554,188 @@ class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default *
 
 
 /***/ }),
-/* 42 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(43) + "\"></div>\r\n        <span data-element=\"attachToLeftBtn\" id=\"alpheios-panel-attach-to-left\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: chevron-left; ratio: 2\"></span>\r\n        <span data-element=\"attachToRightBtn\" id=\"alpheios-panel-attach-to-right\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: chevron-right; ratio: 2\"></span>\r\n        <span data-element=\"closeBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\"\r\n                     id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\"\r\n                     class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div id=\"alpheios-options\">\r\n                    <setting :items=\"preferredLanguageValues\" :selected=\"preferredLanguage\" :labeltext=\"preferredLanguageLabel\" @change=\"changePreferredLanguage\"></setting>\r\n                    <setting :items=\"localeValues\" :selected=\"locale\" :labeltext=\"localeLabel\" @change=\"changeLocale\"></setting>\r\n                    <setting :items=\"uiTypeValues\" :selected=\"uiType\" :labeltext=\"uiTypeLabel\" @change=\"changeUiType\"></setting>\r\n                    <setting :items=\"panelPositionValues\" :selected=\"panelPosition\" :labeltext=\"panelPositionLabel\" @change=\"changePanelPosition\"></setting>\r\n                </div>\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n</div>\r\n";
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\n    <div class=\"alpheios-panel__header\">\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(42) + "\"></div>\n        <span data-element=\"panelNormalWidthBtn\" id=\"alpheios-panel-show-open\" class=\"alpheios-panel__header-action-btn\"\n              uk-icon=\"icon: shrink; ratio: 2\"></span>\n        <span data-element=\"panelFullWidthBtn\" id=\"alpheios-panel-show-fw\" class=\"alpheios-panel__header-action-btn\"\n              uk-icon=\"icon: expand; ratio: 2\"></span>\n        <span data-element=\"panelCloseBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\"\n              uk-icon=\"icon: close; ratio: 2\"></span>\n    </div>\n\n    <div class=\"alpheios-panel__body\">\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\n            <div data-element=\"definitionsPanel\">\n                <h2>Short Definitions</h2>\n                <div data-content-area=\"shortDefinitions\"></div>\n                <h2>Full Definitions</h2>\n                <div data-content-area=\"fullDefinitions\"></div>\n            </div>\n            <div data-element=\"inflectionsPanel\">\n                <div data-content-area=\"inflectionsLocaleSwitcher\"\n                     id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\"\n                     class=\"alpheios-ui-form-group\"></div>\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\n            </div>\n            <div data-element=\"statusPanel\">\n                <div data-content-area=\"messages\"></div>\n            </div>\n            <div data-element=\"optionsPanel\">\n                <div data-component=\"alpheios-panel-options\"></div>\n            </div>\n        </div>\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\n        </div>\n    </div>\n</div>\n";
 
 /***/ }),
-/* 43 */
+/* 42 */
 /***/ (function(module, exports) {
 
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAzMYbbAAAAolBMVEUAAAD///8GITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITWPtMG85fAGITW85fAGITVPb4C85fAGITWbwc685fAGITW85fAGITU+XW+85fAGITU6WWq85fAGITW85fAGITURLUEdOkwoRlg0UmQ/Xm9Ka3tWd4dhg5Nsj554nKqDqLaPtMGawM2lzdmx2eS85fBSA/ZbAAAAJXRSTlMAABAQICAwMEBAUFBgYHBwgICAj4+fn5+vr6+/v8/Pz9/f3+/vxRX+wgAABfhJREFUaN7dWn9XqzgQpTykkYeVFVnZh+zjicOPUoqU9vt/tZ1JQggt1dZ/lJ1zPIcmBHIzd+5MgsbCmLLlLZkxXzuBdfvw/HKQ9vrr/ub/AGv59Ho4sufbucO6ez5M2fNyzrCW06DI7ucL6/Hwjj19g5lan4D14/fh8L1xmQm7Gtby9fCBfTUPzQhSdiWsE1Rt29R13bS7oemLdcMDgNi6CtaIgbu6zEBZtm5k++8vdpcD4ZUk/KUwdZucsJQb9FTbbus1/iyky+6+GJdnXgfrpwJVIaZ10+l03K0hE7heLgiAbyTwP/paqckgb/Yc31tNtuV4mh7XR9FlhiOxcj2G5niqjXm9ubZskWYZlrziHcxhg42GutrjwwSjLXS1pbSCBNLIYybBupeoKsi23D/VEFv5GzZsoeA3PL6Pyk5xgPZe26OGZKXi3GKxenDE5+9FdJ34zGA+3QwhH295yRDdYqhDQ9N+OTDS1B3pSp9AHGEHI1jSWW/CKV1JOlG3ZFskZYVta6jHomGZk6iC1QiX4eNbHf0ehg0BLjS+PxVoaXbiyhV9vT4g2ggtBnto8UdPjhzmhKCNwmcRRCf1ENZSoNpnsBNELJohsrqCcHVZxrkpuebGEE1kS2pEXPZYlNkxLG8EIer9ofqOfgRsottVvGCpepTdP2qF8BeyaGq4X1oAQcRNWWRl1R72BXmqFu6iWt4OKIE4J7B8seoRJObHsAxa7Mtg2ROwLO2a2sVLmMKKK7uQBe6aOyuHRhIR4wqIgl0G3aGDjMMiR0HqT2RFXKpQrqN3GSz/EljO6VDyIF7T4pmm/MFfbXJCykVdSLrlGY8vctmOiEisa3L00hZKkhPUju5f9HjkTupFIFcKFzK9jISWgsVIuk5hRZ7nD6Gpd6fS174vuZeqgIPUG8GiySPZSPlKDk4GXIce3CHedYMuTIMz5QutlN3HrfMRLAoIuTpRL2hxfAxLGDuFZUkKe6JFyaUphDa2T2G16BR+2Ufchkfdju4v/jZVgkjH+FzFpUjTs0lYCaobqAQXgW6n3nInvMUELFocqn4HHpu+kHx7ClYr9EG6K6M/CrNyd/ipQOnCIP2fKjYm78LC2a4GtZRzwrQbXBxbPe3MhM8i1nhvi0SowSp4bG3IW/mg8BVUBVVUGyLmLZf3iAh8lLjGi/6xZBzDOq+EZ2KLM12UIL1kSN6Izh5WCeQcrngYW3uRtZoq55K4RtiI9cb2iL6xe5KNiVeivIk0KBos5n8aljmphLGeuflLXEf99pTAb7haVERA1PSsRBM7ExSNDAhrzRti3+5rI212Kg+NPDRcWyIWPwHLiify1pCDqQyQr3YCNZeVSsdC2zteQe25k6DAGgrzGf2VBeds4Fqas61LYPElZHFwPQmFf2PvTJUBIb3fRp7Epgy5PiunpiqeDqJA2vblem8bnpZRMaD8S2N6NKr+LFBCEWj1bjCEmzNR2En2gqn6lIau4FjhR91Y93HmkKhC1IcEhjxjrkgeqtSthABidbuRG659K3iXV6QnWd5vTLhqRIOayYI7wsV0OZLUp7l4Q70upIrxkh4CrQzhpWqCexfZ5/MVcaJj/emHqqU0RQMOHlY3EE08eSyMB1nVQtbJXRfkFFqZgESBlQNVV5x09irkqqHn4l4WTMMWxLQsUZkdnYjZo9vFCP5MS/XZ0xuEUXcv5u6wcdN2dHa/jZTnM7XcVu23ElG5oY0yFYsVBtgWPMcL+RbKt+dw/CnddShU0aTbFuq2grUQDUjD1ffHJI9o5METbkKKsV7gsVqZq/hAd1nGTGyhHRPuUSFKsTF+qzcSECaxeovJ+CaE2YCSx593qrTN9SKorOp2j9ykZPyEouvO7dPC8F2ha/ihE/psr8rCFrMXw+QUzg2W8XT+9H2LO+Y3OvxIYH4fgs5/B2qxrP+HPOXa84Nl3J39aALlk5Ems/0aee4TV4HkC2GusDAvTzvsD+mFPV9Yxs2EcrzcusCMudnR/2XcPLyMQdHnn/mhOv13E2N5/0tCe36c4b8ucPsPj8KYSwhZmDoAAAAASUVORK5CYII="
 
 /***/ }),
-/* 44 */
+/* 43 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(44);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
+/* global browser */
+
+
+
+class Options extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default */] {
+  constructor (options) {
+    super(Options.defaults, options)
+
+    for (let [optionName, optionData] of Object.entries(this.options.data)) {
+      if (this.options.data.hasOwnProperty(optionName)) {
+        /*
+        Initialize current values with defaults. Actual values will be set after options are loaded from a
+        local storage.
+         */
+        optionData.currentValue = optionData.defaultValue
+        let element = this.self.element.querySelector(optionData.selector)
+        if (element) {
+          optionData.element = element
+        } else {
+          console.warn(`Option element with "${optionData.selector}" selector is not found`)
+        }
+      }
+    }
+
+    this.load().then(
+      () => {
+        this.render()
+      },
+      (error) => {
+        console.error(`Cannot retrieve options for Alpheios extension from a local storage: ${error}. Default values
+          will be used instead`)
+        this.render()
+      }
+    )
+  }
+
+  static get defaults () {
+    return {
+      template: __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default.a,
+      selfSelector: '[data-component="alpheios-panel-options"]',
+      data: {
+        locale: {
+          defaultValue: 'en-US',
+          values: [
+            {value: 'en-US', text: 'English (US)'},
+            {value: 'en-GB', text: 'English (GB)'}
+          ],
+          selector: '#alpheios-locale-selector-list'
+        },
+        panelPosition: {
+          defaultValue: 'left',
+          values: [
+            {value: 'left', text: 'Left'},
+            {value: 'right', text: 'Right'}
+          ],
+          selector: '#alpheios-position-selector-list'
+        },
+        uiType: {
+          defaultValue: 'panel',
+          values: [
+            {value: 'popup', text: 'Pop-up'},
+            {value: 'panel', text: 'Panel'}
+          ],
+          selector: '#alpheios-ui-type-selector-list'
+        },
+        defaultLanguage: {
+          defaultValue: 'lat',
+          values: [
+            {value: 'lat', text: 'Latin'},
+            {value: 'grc', text: 'Greek'},
+            {value: 'ara', text: 'Arabic'},
+            {value: 'per', text: 'Persian'}
+          ],
+          selector: '#alpheios-language-selector-list'
+        }
+      }
+    }
+  }
+
+  /**
+   * Will always return a resolved promise.
+   * @return {Promise.<void>}
+   */
+  async load () {
+    let values = await browser.storage.sync.get()
+    for (let key in values) {
+      if (this.options.data.hasOwnProperty(key)) {
+        this.options.data[key].currentValue = values[key]
+      }
+    }
+    console.log('Options are loaded successfully', this.options.data)
+    if (this.options.methods.ready) {
+      this.options.methods.ready(this.options.data)
+    }
+  }
+
+  save (optionName, optionValue) {
+    // Update value in the local storage
+    let option = {}
+    option[optionName] = optionValue
+
+    browser.storage.sync.set(option).then(
+      () => {
+        // Options storage succeeded
+        console.log(`Value "${optionValue}" of "${optionName}" option value was stored successfully`)
+      },
+      (errorMessage) => {
+        console.error(`Storage of an option value failed: ${errorMessage}`)
+      }
+    )
+  }
+
+  render () {
+    for (let [optionName, optionData] of Object.entries(this.options.data)) {
+      for (let optionValue of optionData.values) {
+        let optionElement = document.createElement('option')
+        optionElement.value = optionValue.value
+        optionElement.text = optionValue.text
+        if (optionValue.value === optionData.currentValue) {
+          optionElement.setAttribute('selected', 'selected')
+        }
+        optionData.element.appendChild(optionElement)
+      }
+      optionData.element.addEventListener('change', this.changeListener.bind(this, optionName, optionData))
+    }
+  }
+
+  changeListener (optionName, optionData, event) {
+    optionData.currentValue = event.target.value
+    this.save(optionName, optionData.currentValue)
+    if (this.options.methods.onChange) {
+      this.options.methods.onChange(optionName, optionData.currentValue)
+    }
+  }
+
+  get items () {
+    return this.options.data
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Options;
+
+
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports) {
+
+module.exports = "<div class=\"auk\" data-component=\"alpheios-panel-options\">\n    <h4>Options</h4>\n    <div id=\"alpheios-language-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-language-selector-list\" class=\"uk-form-label\">Preferred Language:</label>\n        <select id=\"alpheios-language-selector-list\" class=\"uk-select\"></select>\n    </div>\n\n    <div id=\"alpheios-locale-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-locale-selector-list\" class=\"uk-form-label\">Locale:</label>\n        <select id=\"alpheios-locale-selector-list\" class=\"uk-select\"></select>\n    </div>\n\n    <div id=\"alpheios-ui-type-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-ui-type-selector-list\" class=\"uk-form-label\">UI Type:</label>\n        <select id=\"alpheios-ui-type-selector-list\" class=\"uk-select\"></select>\n    </div>\n\n    <div id=\"alpheios-position-switcher\" class=\"uk-margin\">\n        <label for=\"alpheios-position-selector-list\" class=\"uk-form-label\">Panel position:</label>\n        <select id=\"alpheios-position-selector-list\" class=\"uk-select\"></select>\n    </div>\n</div>\n";
+
+/***/ }),
+/* 45 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(15);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_190d0968_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(49);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(45)
+  __webpack_require__(46)
 }
-var normalizeComponent = __webpack_require__(13)
+var normalizeComponent = __webpack_require__(14)
 /* script */
 
 
@@ -33231,14 +33750,14 @@ var __vue_scopeId__ = null
 /* moduleIdentifier (server only) */
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
-  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_190d0968_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "vue-components\\setting.vue"
+Component.options.__file = "vue-components/popup.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -33247,9 +33766,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-7b21cdbf", Component.options)
+    hotAPI.createRecord("data-v-190d0968", Component.options)
   } else {
-    hotAPI.reload("data-v-7b21cdbf", Component.options)
+    hotAPI.reload("data-v-190d0968", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -33260,23 +33779,23 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(46);
+var content = __webpack_require__(47);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(12)("efa9aa7a", content, false);
+var update = __webpack_require__(13)("1d2b91c2", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-7b21cdbf\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-7b21cdbf\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-190d0968\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-190d0968\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -33286,21 +33805,21 @@ if(false) {
 }
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(11)(true);
+exports = module.exports = __webpack_require__(12)(true);
 // imports
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", "", {"version":3,"sources":[],"names":[],"mappings":"","file":"setting.vue","sourceRoot":""}]);
+exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border: 1px solid lightgray;\n    width: 400px;\n    height: 500px;\n    z-index: 1000;\n    position: fixed;\n    left: 200px;\n    top: 100px;\n    padding: 50px 20px 20px;\n    box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n    overflow: auto;\n}\n.alpheios-popup__close-btn {\n    color: gray;\n    display: block;\n    width: 40px;\n    height: 40px;\n    top: 0;\n    right: 0;\n    margin: 10px;\n    cursor: pointer;\n    position: absolute;\n}\n.alpheios-popup__message-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__content-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__more-btn {\n    float: right;\n    margin-bottom: 10px;\n}\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/popup.vue?88f35bfa"],"names":[],"mappings":";AAkIA;IACA,iBAAA;IACA,4BAAA;IACA,aAAA;IACA,cAAA;IACA,cAAA;IACA,gBAAA;IACA,YAAA;IACA,WAAA;IACA,wBAAA;IACA,uBAAA,EAAA,oFAAA;IACA,eAAA;CACA;AAEA;IACA,YAAA;IACA,eAAA;IACA,YAAA;IACA,aAAA;IACA,OAAA;IACA,SAAA;IACA,aAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,aAAA;IACA,oBAAA;CACA","file":"popup.vue","sourcesContent":["<template>\n    <div ref=\"popup\" class=\"alpheios-popup\" v-show=\"visible\">\n        <span class=\"alpheios-popup__close-btn\" @click=\"closePopup\" uk-icon=\"icon: close; ratio: 2\"></span>\n        <div class=\"alpheios-popup__message-area\" v-html=\"messages\"></div>\n        <div class=\"alpheios-popup__content-area\" v-html=\"content\"></div>\n        <morph v-show=\"morphdataready\" :lexemes=\"lexemes\"></morph>\n        <button @click=\"showInflectionsPanelTab\" v-show=\"defdataready\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Inflections</button>\n        <button @click=\"showDefinitionsPanelTab\" v-show=\"infldataready\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Full Definitions</button>\n    </div>\n</template>\n<script>\n  import interact from 'interactjs'\n\n  export default {\n    name: 'Popup',\n    data: function () {\n      return {\n        resizable: true,\n        draggable: true,\n      }\n    },\n    props: {\n      messages: {\n        type: String,\n        required: true\n      },\n      content: {\n        type: String,\n        required: true\n      },\n      lexemes: {\n        type: Array,\n        required: true\n      },\n      visible: {\n        type: Boolean,\n        required: true\n      },\n      defdataready: {\n        type: Boolean,\n        required: true\n      },\n      infldataready: {\n        type: Boolean,\n        required: true\n      },\n      morphdataready: {\n        type: Boolean,\n        required: true\n      }\n    },\n    methods: {\n      closePopup () {\n        this.$emit('close')\n      },\n\n      showDefinitionsPanelTab () {\n        this.$emit('showdefspaneltab')\n      },\n\n      showInflectionsPanelTab () {\n        this.$emit('showinflpaneltab')\n      },\n\n      resizeListener(event) {\n        console.log('Resize listener')\n        if (this.resizable) {\n          const target = event.target\n          let x = (parseFloat(target.getAttribute('data-x')) || 0)\n          let y = (parseFloat(target.getAttribute('data-y')) || 0)\n\n          // update the element's style\n          target.style.width  = event.rect.width + 'px'\n          target.style.height = event.rect.height + 'px'\n\n          // translate when resizing from top or left edges\n          x += event.deltaRect.left\n          y += event.deltaRect.top\n\n          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)'\n\n          target.setAttribute('data-x', x)\n          target.setAttribute('data-y', y)\n        }\n      },\n\n      dragMoveListener(event) {\n        if (this.draggable) {\n          const target = event.target;\n          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;\n          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;\n\n          target.style.webkitTransform = `translate(${x}px, ${y}px)`;\n          target.style.transform = `translate(${x}px, ${y}px)`;\n\n          target.setAttribute('data-x', x);\n          target.setAttribute('data-y', y);\n        }\n      }\n    },\n    mounted () {\n      console.log('mounted')\n      const resizableSettings = {\n        preserveAspectRatio: false,\n        edges: { left: true, right: true, bottom: true, top: true },\n        restrictSize: {\n          min: { width: 300, height: 300 }\n        },\n        restrictEdges: {\n          outer: document.body,\n          endOnly: true,\n        }\n      };\n      const draggableSettings = {\n        inertia: true,\n        autoScroll: false,\n        restrict: {\n          restriction: document.body,\n          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }\n        },\n        onmove: this.dragMoveListener\n      };\n      interact(this.$el)\n        .resizable(resizableSettings)\n        .draggable(draggableSettings)\n        .on('resizemove', this.resizeListener);\n    }\n  }\n</script>\n<style>\n    .alpheios-popup {\n        background: #FFF;\n        border: 1px solid lightgray;\n        width: 400px;\n        height: 500px;\n        z-index: 1000;\n        position: fixed;\n        left: 200px;\n        top: 100px;\n        padding: 50px 20px 20px;\n        box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n        overflow: auto;\n    }\n\n    .alpheios-popup__close-btn {\n        color: gray;\n        display: block;\n        width: 40px;\n        height: 40px;\n        top: 0;\n        right: 0;\n        margin: 10px;\n        cursor: pointer;\n        position: absolute;\n    }\n\n    .alpheios-popup__message-area {\n        margin-bottom: 20px;\n    }\n\n    .alpheios-popup__content-area {\n        margin-bottom: 20px;\n    }\n\n    .alpheios-popup__more-btn {\n        float: right;\n        margin-bottom: 10px;\n    }\n</style>\n"],"sourceRoot":""}]);
 
 // exports
 
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, exports) {
 
 /**
@@ -33333,162 +33852,7 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 48 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "auk-margin" }, [
-    _c("label", { staticClass: "uk-form-label" }, [
-      _vm._v(_vm._s(_vm.labeltext))
-    ]),
-    _vm._v(" "),
-    _c(
-      "select",
-      {
-        directives: [
-          {
-            name: "model",
-            rawName: "v-model",
-            value: _vm.selectedItem,
-            expression: "selectedItem"
-          }
-        ],
-        staticClass: "uk-select",
-        on: {
-          change: function($event) {
-            var $$selectedVal = Array.prototype.filter
-              .call($event.target.options, function(o) {
-                return o.selected
-              })
-              .map(function(o) {
-                var val = "_value" in o ? o._value : o.value
-                return val
-              })
-            _vm.selectedItem = $event.target.multiple
-              ? $$selectedVal
-              : $$selectedVal[0]
-          }
-        }
-      },
-      _vm._l(_vm.items, function(item) {
-        return _c("option", [_vm._v(_vm._s(item))])
-      })
-    )
-  ])
-}
-var staticRenderFns = []
-render._withStripped = true
-var esExports = { render: render, staticRenderFns: staticRenderFns }
-/* harmony default export */ __webpack_exports__["a"] = (esExports);
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-7b21cdbf", esExports)
-  }
-}
-
-/***/ }),
 /* 49 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(15);
-/* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(52);
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(50)
-}
-var normalizeComponent = __webpack_require__(13)
-/* script */
-
-
-/* template */
-
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__["a" /* default */],
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "vue-components\\popup.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-09f5ebdb", Component.options)
-  } else {
-    hotAPI.reload("data-v-09f5ebdb", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
-
-
-/***/ }),
-/* 50 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(51);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(12)("449bb36b", content, false);
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-09f5ebdb\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-09f5ebdb\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 51 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(11)(true);
-// imports
-
-
-// module
-exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border: 1px solid lightgray;\n    width: 400px;\n    height: 500px;\n    z-index: 1000;\n    position: fixed;\n    left: 200px;\n    top: 100px;\n    padding: 50px 20px 20px;\n    box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n    overflow: auto;\n}\n.alpheios-popup__close-btn {\n    color: gray;\n    display: block;\n    width: 40px;\n    height: 40px;\n    top: 0;\n    right: 0;\n    margin: 10px;\n    cursor: pointer;\n    position: absolute;\n}\n.alpheios-popup__message-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__content-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__more-btn {\n    float: right;\n    margin-bottom: 10px;\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?542a8fbd"],"names":[],"mappings":";AAyHA;IACA,iBAAA;IACA,4BAAA;IACA,aAAA;IACA,cAAA;IACA,cAAA;IACA,gBAAA;IACA,YAAA;IACA,WAAA;IACA,wBAAA;IACA,uBAAA,EAAA,oFAAA;IACA,eAAA;CACA;AAEA;IACA,YAAA;IACA,eAAA;IACA,YAAA;IACA,aAAA;IACA,OAAA;IACA,SAAA;IACA,aAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,aAAA;IACA,oBAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <div ref=\"popup\" class=\"alpheios-popup\" v-show=\"visible\">\r\n        <span class=\"alpheios-popup__close-btn\" @click=\"closePopup\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n        <div class=\"alpheios-popup__message-area\" v-html=\"messages\"></div>\r\n        <div class=\"alpheios-popup__content-area\" v-html=\"content\"></div>\r\n        <button @click=\"showInflectionsPanelTab\" v-show=\"defdataready\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Inflections</button>\r\n        <button @click=\"showDefinitionsPanelTab\" v-show=\"infldataready\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Full Definitions</button>\r\n    </div>\r\n</template>\r\n<script>\r\n  import interact from 'interactjs'\r\n\r\n  export default {\r\n    name: 'Popup',\r\n    data: function () {\r\n      return {\r\n        resizable: true,\r\n        draggable: true,\r\n      }\r\n    },\r\n    props: {\r\n      messages: {\r\n        type: String,\r\n        required: true\r\n      },\r\n      content: {\r\n        type: String,\r\n        required: true\r\n      },\r\n      visible: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      defdataready: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      infldataready: {\r\n        type: Boolean,\r\n        required: true\r\n      }\r\n    },\r\n    methods: {\r\n      closePopup () {\r\n        this.$emit('close')\r\n      },\r\n\r\n      showDefinitionsPanelTab () {\r\n        this.$emit('showdefspaneltab')\r\n      },\r\n\r\n      showInflectionsPanelTab () {\r\n        this.$emit('showinflpaneltab')\r\n      },\r\n\r\n      resizeListener(event) {\r\n        console.log('Resize listener')\r\n        if (this.resizable) {\r\n          const target = event.target\r\n          let x = (parseFloat(target.getAttribute('data-x')) || 0)\r\n          let y = (parseFloat(target.getAttribute('data-y')) || 0)\r\n\r\n          // update the element's style\r\n          target.style.width  = event.rect.width + 'px'\r\n          target.style.height = event.rect.height + 'px'\r\n\r\n          // translate when resizing from top or left edges\r\n          x += event.deltaRect.left\r\n          y += event.deltaRect.top\r\n\r\n          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)'\r\n\r\n          target.setAttribute('data-x', x)\r\n          target.setAttribute('data-y', y)\r\n        }\r\n      },\r\n\r\n      dragMoveListener(event) {\r\n        if (this.draggable) {\r\n          const target = event.target;\r\n          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;\r\n          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;\r\n\r\n          target.style.webkitTransform = `translate(${x}px, ${y}px)`;\r\n          target.style.transform = `translate(${x}px, ${y}px)`;\r\n\r\n          target.setAttribute('data-x', x);\r\n          target.setAttribute('data-y', y);\r\n        }\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('mounted')\r\n      const resizableSettings = {\r\n        preserveAspectRatio: false,\r\n        edges: { left: true, right: true, bottom: true, top: true },\r\n        restrictSize: {\r\n          min: { width: 100, height: 300 }\r\n        },\r\n        restrictEdges: {\r\n          outer: document.body,\r\n          endOnly: true,\r\n        }\r\n      };\r\n      const draggableSettings = {\r\n        inertia: true,\r\n        autoScroll: false,\r\n        restrict: {\r\n          restriction: document.body,\r\n          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }\r\n        },\r\n        onmove: this.dragMoveListener\r\n      };\r\n      interact(this.$el)\r\n        .resizable(resizableSettings)\r\n        .draggable(draggableSettings)\r\n        .on('resizemove', this.resizeListener);\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .alpheios-popup {\r\n        background: #FFF;\r\n        border: 1px solid lightgray;\r\n        width: 400px;\r\n        height: 500px;\r\n        z-index: 1000;\r\n        position: fixed;\r\n        left: 200px;\r\n        top: 100px;\r\n        padding: 50px 20px 20px;\r\n        box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\r\n        overflow: auto;\r\n    }\r\n\r\n    .alpheios-popup__close-btn {\r\n        color: gray;\r\n        display: block;\r\n        width: 40px;\r\n        height: 40px;\r\n        top: 0;\r\n        right: 0;\r\n        margin: 10px;\r\n        cursor: pointer;\r\n        position: absolute;\r\n    }\r\n\r\n    .alpheios-popup__message-area {\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .alpheios-popup__content-area {\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .alpheios-popup__more-btn {\r\n        float: right;\r\n        margin-bottom: 10px;\r\n    }\r\n</style>"],"sourceRoot":""}]);
-
-// exports
-
-
-/***/ }),
-/* 52 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -33527,6 +33891,18 @@ var render = function() {
         domProps: { innerHTML: _vm._s(_vm.content) }
       }),
       _vm._v(" "),
+      _c("morph", {
+        directives: [
+          {
+            name: "show",
+            rawName: "v-show",
+            value: _vm.morphdataready,
+            expression: "morphdataready"
+          }
+        ],
+        attrs: { lexemes: _vm.lexemes }
+      }),
+      _vm._v(" "),
       _c(
         "button",
         {
@@ -33560,7 +33936,8 @@ var render = function() {
         },
         [_vm._v("Go to Full Definitions")]
       )
-    ]
+    ],
+    1
   )
 }
 var staticRenderFns = []
@@ -33570,12 +33947,659 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-09f5ebdb", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-190d0968", esExports)
   }
 }
 
 /***/ }),
+/* 50 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__ = __webpack_require__(16);
+/* unused harmony namespace reexport */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_85d98878_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__ = __webpack_require__(53);
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(51)
+}
+var normalizeComponent = __webpack_require__(14)
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_85d98878_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__["a" /* default */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "vue-components/morph.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-85d98878", Component.options)
+  } else {
+    hotAPI.reload("data-v-85d98878", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
+
+
+/***/ }),
+/* 51 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(52);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(13)("51a66b4f", content, false);
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-85d98878\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./morph.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-85d98878\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./morph.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 52 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(12)(true);
+// imports
+
+
+// module
+exports.push([module.i, "\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: small;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n}\n.alpheios-morph__dial {\n    font-size: smaller;\n}\n.alpheios-morph__attr {\n    font-weight: normal;\n    color: #0E2233; /** TODO use alpheios variable **/\n}\n.alpheios-morph__linked-attr {\n\tcolor:#3E8D9C; /** TODO use alpheios variable **/\n\tfont-weight: bold;\n\tcursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n    color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n    content: \";\";\n}\n.alpheios-morph__provider {\n  font-size: small;\n  font-weight: normal;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n  padding-left: .5em;\n}\n.alpheios-morph__listitem:after {\n    content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n    content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n    content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n    content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n   display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n   display: none;\n}\n.alpheios-popup__content .alpheios-shortdef__lemma {\n   display: none;\n}\n.alpheios-popup .alpheios-fulldef__lemma {\n   display: none;\n}\n\n\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/morph.vue?03c8d82d"],"names":[],"mappings":";AAoIA;EACA,oBAAA;EACA,YAAA;CACA;AAEA;EACA,kBAAA;CACA;AAEA;EACA,iBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;CACA;AAEA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;IACA,eAAA,CAAA,kCAAA;CACA;AAEA;CACA,cAAA,CAAA,kCAAA;CACA,kBAAA;CACA,gBAAA;CACA;AAEA;IACA,0BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;EACA,iBAAA;EACA,oBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;EACA,mBAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,YAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;GACA,eAAA;CACA;AAEA;GACA,cAAA;CACA;AAEA;GACA,cAAA;CACA;AAEA;GACA,cAAA;CACA","file":"morph.vue","sourcesContent":["<template>\n  <div id=\"alpheios-morph__lexemes\">\n    <div class=\"alpheios-morph__dict\" v-for=\"lex in lexemes\">\n      <span class=\"alpheios-morph__lemma\" v-if=\"! lex.lemma.principalParts.includes(lex.lemma.word)\" :lang=\"lex.lemma.language\">{{ lex.lemma.word }}</span>\n      <span class=\"alpheios-morph__pparts\">\n        <span class=\"alpheios-morph__listitem\" v-for=\"part in lex.lemma.principalParts\" :lang=\"lex.lemma.language\">{{ part }}</span>\n      </span>\n      <span class=\"alpheios-morph__pronunciation\" v-for=\"pron in lex.lemma.features.pronunciation\" v-if=\"lex.lemma.features.pronunciation\">\n        [{{pron}}]\n      </span>\n      <div class=\"alpheios-morph__morph\">\n        <span class=\"alpheios-morph__pofs\">\n          <span class=\"alpheios-morph__attr\" v-for=\"kase in lex.lemma.features['case']\" v-if=\"lex.lemma.features['case']\">{{kase.value}}</span>\n          <span class=\"alpheios-morph__attr\" v-for=\"gender in lex.lemma.features.gender\" v-if=\"lex.lemma.features.gender\">{{gender.value}}</span>\n          {{ lex.lemma.features['part of speech'].toString() }}\n        </span>\n        <span class=\"alpheios-morph__attr\" v-for=\"kind in lex.lemma.features.kind\" v-if=\"lex.lemma.features.kind\">{{kind.value}}</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"decl in lex.lemma.features.declension\" v-if=\"lex.lemma.features.declension\">{{decl.value}} declension</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"conj in lex.lemma.features.conjugation\" v-if=\"lex.lemma.features.conjugation\">{{conj.value}}</span>\n        <span class=\"alpheios-morph__parenthesized\" v-if=\"lex.lemma.features.age || lex.lemma.features.area || lex.lemma.features.geo || lex.lemma.features.frequency\">\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"age in lex.lemma.features.age\" v-if=\"lex.lemma.features.age\">( {{age.value}} )</span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"area in lex.lemma.features.area\" v-if=\"lex.lemma.features.area\">{{area.value}} </span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"geo in lex.lemma.features.geo\" v-if=\"lex.lemma.features.geo\">{{geo.value}}</span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"freq in lex.lemma.features.frequency\" v-if=\"lex.lemma.features.frequency\">{{freq.value}}</span>\n        </span>\n        <span class=\"alpheios-morph__attr\" v-for=\"source in lex.lemma.features.source\" v-if=\"lex.lemma.features.source\">[{{source.value}}]</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"note in lex.lemma.features.note\" v-if=\"lex.lemma.features.note\">[{{source.note}}]</span>\n      </div>\n      <div class=\"alpheios-morph__inflections\">\n        <div class=\"alpheios-morph__inflset\" v-for=\"inflset in lex.getGroupedInflections()\">\n\n          <span class=\"alpheios-morph__prefix\" v-if=\"inflset.groupingKey.prefix\">{{inflset.groupingKey.prefix}} </span>\n          <span class=\"alpheios-morph__stem\">{{inflset.groupingKey.stem}}</span>\n          <span class=\"alpheios-morph__suffix\" v-if=\"inflset.groupingKey.suffix\"> -{{inflset.groupingKey.suffix}}</span>\n          <span class=\"alpheios-morph__pofs alpheios-morph__parenthesized\"\n            v-if=\"! featureMatch(lex.lemma.features['part of speech'],inflset.groupingKey['part of speech'])\">{{inflset.groupingKey[\"part of speech\"].toString()}}</span>\n          <span class=\"alpheios-morph__declension alpheios-morph__parenthesized\"\n            v-if=\"inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension\">{{inflset.groupingKey.declension.toString()}}</span>\n\n          <div class=\"alpheios-morph__inflgroup\" v-for=\"group in inflset.inflections\">\n            <span class=\"alpheios-morph__number\" v-if=\"group.groupingKey.number && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.number.toString() }}</span>\n            <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.tense && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.tense.toString() }}</span>\n            <span v-for=\"nextGroup in group.inflections\">\n              <span v-if=\"group.groupingKey.isCaseInflectionSet\">\n                <span class=\"alpheios-morph__voice\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.voice\">{{ nextGroup.groupingKey.voice.toString() }}</span>\n                <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.tense\">{{ nextGroup.groupingKey.tense.toString() }}</span>\n                :\n              </span>\n              <span>\n                <span v-for=\"infl in nextGroup.inflections\">\n\n                  <span class=\"alpheios-morph__case\" v-if=\"infl.groupingKey.case\">\n                    {{ infl.groupingKey.case.toString() }}\n                    <span class=\"alpheios-morph__gender alpheios-morph__parenthesized\"\n                      v-if=\"infl.groupingKey.gender && ! featureMatch(infl.groupingKey.gender,lex.lemma.features.gender) \">\n                      {{ infl.groupingKey.gender.map((g) => g.toLocaleStringAbbr()).toString()}}\n                    </span>\n\n                    <span class=\"alpheios-morph__comparative\" v-if=\"infl.groupingKey.comparative && infl.groupingKey.filter((f)=> f.toString() !== 'positive')\">\n                      {{ infl.groupingKey.comparative.toString() }}\n                    </span>\n\n                  </span>\n\n                  <span class=\"alpheios-morph__person\" v-if=\"infl.groupingKey.person\">\n                    {{ infl.groupingKey.person.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__number\" v-if=\"infl.groupingKey.number && ! group.groupingKey.isCaseInflectionSet\">\n                    {{ infl.groupingKey.number.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__tense\" v-if=\"infl.groupingKey.tense && ! group.groupingKey.isCaseInflectionSet && ! nextGroup.groupingKey.tense\">\n                    {{ infl.groupingKey.tense.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__mood\" v-if=\"infl.groupingKey.mood && !group.groupingKey.isCaseInflectionSet\">\n                    {{ infl.groupingKey.mood.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__voice\" v-if=\"infl.groupingKey.voice && !group.groupingKey.isCaseInflectionSet\">\n                    {{ infl.groupingKey.voice.toString() }}\n                  </span>\n\n                  <span v-for=\"item in infl.inflections\">\n                    <span class=\"alpheios-morph__example\" v-if=\"item.example\">{{ item.example.toString() }}</span>\n                  </span>\n\n                </span><!-- end span infl -->\n              </span>\n            </span><!-- end span groupinflections -->\n          </div>\n        </div>\n      </div>\n      <div class=\"alpheios-morph__provider\">\n        {{ lex.provider.toString() }}\n      </div>\n    </div>\n  </div>\n</template>\n<script>\n  export default {\n    name: 'Morph',\n    props: ['lexemes'],\n    methods: {\n      featureMatch(a,b) {\n        let matches = false\n        for (let f of a) {\n          if (b && b.filter((x) => x.isEqual(f)).length > 0) {\n            matches = true\n            break\n          }\n        }\n        return matches\n      }\n    },\n    mounted () {\n      console.log('Morph is mounted')\n        // for each infl without dial\n        //   group by stem, pref, suff, pofs, comp\n        //   sort by pofs\n        // for each infl without dial and without either stem or pofs\n        // for each infl with dial\n        // inflection-set:\n        //  ignores conjunction, preposition, interjection, particle\n        //  take pofs and decl from infl if it differs from dict\n        //  add dialect\n    },\n  }\n</script>\n<style>\n\n  .alpheios-morph__dict {\n    margin-bottom: .5em;\n    clear: both;\n  }\n\n  .alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n    font-weight: bold;\n  }\n\n  .alpheios-morph__source {\n    font-size: small;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n  }\n\n  .alpheios-morph__dial {\n      font-size: smaller;\n  }\n\n  .alpheios-morph__attr {\n      font-weight: normal;\n      color: #0E2233; /** TODO use alpheios variable **/\n  }\n\n  .alpheios-morph__linked-attr {\n  \tcolor:#3E8D9C; /** TODO use alpheios variable **/\n  \tfont-weight: bold;\n  \tcursor: pointer;\n  }\n\n  .alpheios-morph__linked-attr:hover {\n      color: #5BC8DC !important;\n  }\n\n  .alpheios-morph__pofs:after {\n      content: \";\";\n  }\n\n  .alpheios-morph__provider {\n    font-size: small;\n    font-weight: normal;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n    padding-left: .5em;\n  }\n\n  .alpheios-morph__listitem:after {\n      content: \", \";\n   }\n\n  .alpheios-morph__listitem:last-child:after {\n      content: \"\";\n   }\n\n  .alpheios-morph__parenthesized:before {\n      content: \"(\";\n   }\n\n  .alpheios-morph__parenthesized:after {\n      content: \")\";\n   }\n\n   .alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n     display: block;\n   }\n\n   .alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n     display: none;\n   }\n\n   .alpheios-popup__content .alpheios-shortdef__lemma {\n     display: none;\n   }\n\n   .alpheios-popup .alpheios-fulldef__lemma {\n     display: none;\n   }\n\n\n</style>\n"],"sourceRoot":""}]);
+
+// exports
+
+
+/***/ }),
 /* 53 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    { attrs: { id: "alpheios-morph__lexemes" } },
+    _vm._l(_vm.lexemes, function(lex) {
+      return _c(
+        "div",
+        { staticClass: "alpheios-morph__dict" },
+        [
+          !lex.lemma.principalParts.includes(lex.lemma.word)
+            ? _c(
+                "span",
+                {
+                  staticClass: "alpheios-morph__lemma",
+                  attrs: { lang: lex.lemma.language }
+                },
+                [_vm._v(_vm._s(lex.lemma.word))]
+              )
+            : _vm._e(),
+          _vm._v(" "),
+          _c(
+            "span",
+            { staticClass: "alpheios-morph__pparts" },
+            _vm._l(lex.lemma.principalParts, function(part) {
+              return _c(
+                "span",
+                {
+                  staticClass: "alpheios-morph__listitem",
+                  attrs: { lang: lex.lemma.language }
+                },
+                [_vm._v(_vm._s(part))]
+              )
+            })
+          ),
+          _vm._v(" "),
+          _vm._l(lex.lemma.features.pronunciation, function(pron) {
+            return lex.lemma.features.pronunciation
+              ? _c("span", { staticClass: "alpheios-morph__pronunciation" }, [
+                  _vm._v("\n      [" + _vm._s(pron) + "]\n    ")
+                ])
+              : _vm._e()
+          }),
+          _vm._v(" "),
+          _c(
+            "div",
+            { staticClass: "alpheios-morph__morph" },
+            [
+              _c(
+                "span",
+                { staticClass: "alpheios-morph__pofs" },
+                [
+                  _vm._l(lex.lemma.features["case"], function(kase) {
+                    return lex.lemma.features["case"]
+                      ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                          _vm._v(_vm._s(kase.value))
+                        ])
+                      : _vm._e()
+                  }),
+                  _vm._v(" "),
+                  _vm._l(lex.lemma.features.gender, function(gender) {
+                    return lex.lemma.features.gender
+                      ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                          _vm._v(_vm._s(gender.value))
+                        ])
+                      : _vm._e()
+                  }),
+                  _vm._v(
+                    "\n        " +
+                      _vm._s(lex.lemma.features["part of speech"].toString()) +
+                      "\n      "
+                  )
+                ],
+                2
+              ),
+              _vm._v(" "),
+              _vm._l(lex.lemma.features.kind, function(kind) {
+                return lex.lemma.features.kind
+                  ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                      _vm._v(_vm._s(kind.value))
+                    ])
+                  : _vm._e()
+              }),
+              _vm._v(" "),
+              _vm._l(lex.lemma.features.declension, function(decl) {
+                return lex.lemma.features.declension
+                  ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                      _vm._v(_vm._s(decl.value) + " declension")
+                    ])
+                  : _vm._e()
+              }),
+              _vm._v(" "),
+              _vm._l(lex.lemma.features.conjugation, function(conj) {
+                return lex.lemma.features.conjugation
+                  ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                      _vm._v(_vm._s(conj.value))
+                    ])
+                  : _vm._e()
+              }),
+              _vm._v(" "),
+              lex.lemma.features.age ||
+              lex.lemma.features.area ||
+              lex.lemma.features.geo ||
+              lex.lemma.features.frequency
+                ? _c(
+                    "span",
+                    { staticClass: "alpheios-morph__parenthesized" },
+                    [
+                      _vm._l(lex.lemma.features.age, function(age) {
+                        return lex.lemma.features.age
+                          ? _c(
+                              "span",
+                              {
+                                staticClass:
+                                  "alpheios-morph__attr alpheios-morph__listitem"
+                              },
+                              [_vm._v("( " + _vm._s(age.value) + " )")]
+                            )
+                          : _vm._e()
+                      }),
+                      _vm._v(" "),
+                      _vm._l(lex.lemma.features.area, function(area) {
+                        return lex.lemma.features.area
+                          ? _c(
+                              "span",
+                              {
+                                staticClass:
+                                  "alpheios-morph__attr alpheios-morph__listitem"
+                              },
+                              [_vm._v(_vm._s(area.value) + " ")]
+                            )
+                          : _vm._e()
+                      }),
+                      _vm._v(" "),
+                      _vm._l(lex.lemma.features.geo, function(geo) {
+                        return lex.lemma.features.geo
+                          ? _c(
+                              "span",
+                              {
+                                staticClass:
+                                  "alpheios-morph__attr alpheios-morph__listitem"
+                              },
+                              [_vm._v(_vm._s(geo.value))]
+                            )
+                          : _vm._e()
+                      }),
+                      _vm._v(" "),
+                      _vm._l(lex.lemma.features.frequency, function(freq) {
+                        return lex.lemma.features.frequency
+                          ? _c(
+                              "span",
+                              {
+                                staticClass:
+                                  "alpheios-morph__attr alpheios-morph__listitem"
+                              },
+                              [_vm._v(_vm._s(freq.value))]
+                            )
+                          : _vm._e()
+                      })
+                    ],
+                    2
+                  )
+                : _vm._e(),
+              _vm._v(" "),
+              _vm._l(lex.lemma.features.source, function(source) {
+                return lex.lemma.features.source
+                  ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                      _vm._v("[" + _vm._s(source.value) + "]")
+                    ])
+                  : _vm._e()
+              }),
+              _vm._v(" "),
+              _vm._l(lex.lemma.features.note, function(note) {
+                return lex.lemma.features.note
+                  ? _c("span", { staticClass: "alpheios-morph__attr" }, [
+                      _vm._v("[" + _vm._s(_vm.source.note) + "]")
+                    ])
+                  : _vm._e()
+              })
+            ],
+            2
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            { staticClass: "alpheios-morph__inflections" },
+            _vm._l(lex.getGroupedInflections(), function(inflset) {
+              return _c(
+                "div",
+                { staticClass: "alpheios-morph__inflset" },
+                [
+                  inflset.groupingKey.prefix
+                    ? _c("span", { staticClass: "alpheios-morph__prefix" }, [
+                        _vm._v(_vm._s(inflset.groupingKey.prefix) + " ")
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _c("span", { staticClass: "alpheios-morph__stem" }, [
+                    _vm._v(_vm._s(inflset.groupingKey.stem))
+                  ]),
+                  _vm._v(" "),
+                  inflset.groupingKey.suffix
+                    ? _c("span", { staticClass: "alpheios-morph__suffix" }, [
+                        _vm._v(" -" + _vm._s(inflset.groupingKey.suffix))
+                      ])
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.featureMatch(
+                    lex.lemma.features["part of speech"],
+                    inflset.groupingKey["part of speech"]
+                  )
+                    ? _c(
+                        "span",
+                        {
+                          staticClass:
+                            "alpheios-morph__pofs alpheios-morph__parenthesized"
+                        },
+                        [
+                          _vm._v(
+                            _vm._s(
+                              inflset.groupingKey["part of speech"].toString()
+                            )
+                          )
+                        ]
+                      )
+                    : _vm._e(),
+                  _vm._v(" "),
+                  inflset.groupingKey.declension &&
+                  inflset.groupingKey.declension !==
+                    lex.lemma.features.declension
+                    ? _c(
+                        "span",
+                        {
+                          staticClass:
+                            "alpheios-morph__declension alpheios-morph__parenthesized"
+                        },
+                        [
+                          _vm._v(
+                            _vm._s(inflset.groupingKey.declension.toString())
+                          )
+                        ]
+                      )
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _vm._l(inflset.inflections, function(group) {
+                    return _c(
+                      "div",
+                      { staticClass: "alpheios-morph__inflgroup" },
+                      [
+                        group.groupingKey.number &&
+                        group.groupingKey.isCaseInflectionSet
+                          ? _c(
+                              "span",
+                              { staticClass: "alpheios-morph__number" },
+                              [
+                                _vm._v(
+                                  _vm._s(group.groupingKey.number.toString())
+                                )
+                              ]
+                            )
+                          : _vm._e(),
+                        _vm._v(" "),
+                        group.groupingKey.tense &&
+                        group.groupingKey.isCaseInflectionSet
+                          ? _c(
+                              "span",
+                              { staticClass: "alpheios-morph__tense" },
+                              [
+                                _vm._v(
+                                  _vm._s(group.groupingKey.tense.toString())
+                                )
+                              ]
+                            )
+                          : _vm._e(),
+                        _vm._v(" "),
+                        _vm._l(group.inflections, function(nextGroup) {
+                          return _c("span", [
+                            group.groupingKey.isCaseInflectionSet
+                              ? _c("span", [
+                                  group.groupingKey.isCaseInflectionSet &&
+                                  nextGroup.groupingKey.voice
+                                    ? _c(
+                                        "span",
+                                        {
+                                          staticClass: "alpheios-morph__voice"
+                                        },
+                                        [
+                                          _vm._v(
+                                            _vm._s(
+                                              nextGroup.groupingKey.voice.toString()
+                                            )
+                                          )
+                                        ]
+                                      )
+                                    : _vm._e(),
+                                  _vm._v(" "),
+                                  group.groupingKey.isCaseInflectionSet &&
+                                  nextGroup.groupingKey.tense
+                                    ? _c(
+                                        "span",
+                                        {
+                                          staticClass: "alpheios-morph__tense"
+                                        },
+                                        [
+                                          _vm._v(
+                                            _vm._s(
+                                              nextGroup.groupingKey.tense.toString()
+                                            )
+                                          )
+                                        ]
+                                      )
+                                    : _vm._e(),
+                                  _vm._v("\n              :\n            ")
+                                ])
+                              : _vm._e(),
+                            _vm._v(" "),
+                            _c(
+                              "span",
+                              _vm._l(nextGroup.inflections, function(infl) {
+                                return _c(
+                                  "span",
+                                  [
+                                    infl.groupingKey.case
+                                      ? _c(
+                                          "span",
+                                          {
+                                            staticClass: "alpheios-morph__case"
+                                          },
+                                          [
+                                            _vm._v(
+                                              "\n                  " +
+                                                _vm._s(
+                                                  infl.groupingKey.case.toString()
+                                                ) +
+                                                "\n                  "
+                                            ),
+                                            infl.groupingKey.gender &&
+                                            !_vm.featureMatch(
+                                              infl.groupingKey.gender,
+                                              lex.lemma.features.gender
+                                            )
+                                              ? _c(
+                                                  "span",
+                                                  {
+                                                    staticClass:
+                                                      "alpheios-morph__gender alpheios-morph__parenthesized"
+                                                  },
+                                                  [
+                                                    _vm._v(
+                                                      "\n                    " +
+                                                        _vm._s(
+                                                          infl.groupingKey.gender
+                                                            .map(function(g) {
+                                                              return g.toLocaleStringAbbr()
+                                                            })
+                                                            .toString()
+                                                        ) +
+                                                        "\n                  "
+                                                    )
+                                                  ]
+                                                )
+                                              : _vm._e(),
+                                            _vm._v(" "),
+                                            infl.groupingKey.comparative &&
+                                            infl.groupingKey.filter(function(
+                                              f
+                                            ) {
+                                              return f.toString() !== "positive"
+                                            })
+                                              ? _c(
+                                                  "span",
+                                                  {
+                                                    staticClass:
+                                                      "alpheios-morph__comparative"
+                                                  },
+                                                  [
+                                                    _vm._v(
+                                                      "\n                    " +
+                                                        _vm._s(
+                                                          infl.groupingKey.comparative.toString()
+                                                        ) +
+                                                        "\n                  "
+                                                    )
+                                                  ]
+                                                )
+                                              : _vm._e()
+                                          ]
+                                        )
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    infl.groupingKey.person
+                                      ? _c(
+                                          "span",
+                                          {
+                                            staticClass:
+                                              "alpheios-morph__person"
+                                          },
+                                          [
+                                            _vm._v(
+                                              "\n                  " +
+                                                _vm._s(
+                                                  infl.groupingKey.person.toString()
+                                                ) +
+                                                "\n                "
+                                            )
+                                          ]
+                                        )
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    infl.groupingKey.number &&
+                                    !group.groupingKey.isCaseInflectionSet
+                                      ? _c(
+                                          "span",
+                                          {
+                                            staticClass:
+                                              "alpheios-morph__number"
+                                          },
+                                          [
+                                            _vm._v(
+                                              "\n                  " +
+                                                _vm._s(
+                                                  infl.groupingKey.number.toString()
+                                                ) +
+                                                "\n                "
+                                            )
+                                          ]
+                                        )
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    infl.groupingKey.tense &&
+                                    !group.groupingKey.isCaseInflectionSet &&
+                                    !nextGroup.groupingKey.tense
+                                      ? _c(
+                                          "span",
+                                          {
+                                            staticClass: "alpheios-morph__tense"
+                                          },
+                                          [
+                                            _vm._v(
+                                              "\n                  " +
+                                                _vm._s(
+                                                  infl.groupingKey.tense.toString()
+                                                ) +
+                                                "\n                "
+                                            )
+                                          ]
+                                        )
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    infl.groupingKey.mood &&
+                                    !group.groupingKey.isCaseInflectionSet
+                                      ? _c(
+                                          "span",
+                                          {
+                                            staticClass: "alpheios-morph__mood"
+                                          },
+                                          [
+                                            _vm._v(
+                                              "\n                  " +
+                                                _vm._s(
+                                                  infl.groupingKey.mood.toString()
+                                                ) +
+                                                "\n                "
+                                            )
+                                          ]
+                                        )
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    infl.groupingKey.voice &&
+                                    !group.groupingKey.isCaseInflectionSet
+                                      ? _c(
+                                          "span",
+                                          {
+                                            staticClass: "alpheios-morph__voice"
+                                          },
+                                          [
+                                            _vm._v(
+                                              "\n                  " +
+                                                _vm._s(
+                                                  infl.groupingKey.voice.toString()
+                                                ) +
+                                                "\n                "
+                                            )
+                                          ]
+                                        )
+                                      : _vm._e(),
+                                    _vm._v(" "),
+                                    _vm._l(infl.inflections, function(item) {
+                                      return _c("span", [
+                                        item.example
+                                          ? _c(
+                                              "span",
+                                              {
+                                                staticClass:
+                                                  "alpheios-morph__example"
+                                              },
+                                              [
+                                                _vm._v(
+                                                  _vm._s(
+                                                    item.example.toString()
+                                                  )
+                                                )
+                                              ]
+                                            )
+                                          : _vm._e()
+                                      ])
+                                    })
+                                  ],
+                                  2
+                                )
+                              })
+                            )
+                          ])
+                        })
+                      ],
+                      2
+                    )
+                  })
+                ],
+                2
+              )
+            })
+          ),
+          _vm._v(" "),
+          _c("div", { staticClass: "alpheios-morph__provider" }, [
+            _vm._v("\n      " + _vm._s(lex.provider.toString()) + "\n    ")
+          ])
+        ],
+        2
+      )
+    })
+  )
+}
+var staticRenderFns = []
+render._withStripped = true
+var esExports = { render: render, staticRenderFns: staticRenderFns }
+/* harmony default export */ __webpack_exports__["a"] = (esExports);
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-85d98878", esExports)
+  }
+}
+
+/***/ }),
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(setImmediate) {/*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -44073,7 +45097,7 @@ return UIkit$2;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(9).setImmediate))
 
 /***/ }),
-/* 54 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
