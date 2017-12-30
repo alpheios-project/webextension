@@ -6,9 +6,8 @@ import interact from 'interactjs' // Interact.js (for resizability)
  * This is a singleton component.
  */
 export default class Panel extends Component {
-  constructor (options, uiController) {
+  constructor (options) {
     super(Panel.defaults, options)
-    this.uiController = uiController
 
     this.panelOpenedClassName = 'opened'
     this.panelFullWidthClassName = 'full-width'
@@ -17,11 +16,6 @@ export default class Panel extends Component {
     this.self.element.style.zIndex = this.zIndex
 
     this.width = Panel.widths.zero // Sets initial width to zero because panel is closed initially
-
-    // Set panel controls event handlers
-    this.innerElements.attachToLeftButton.element.addEventListener('click', this.uiController.attachPanelToLeft.bind(this.uiController))
-    this.innerElements.attachToRightButton.element.addEventListener('click', this.uiController.attachPanelToRight.bind(this.uiController))
-    this.innerElements.closeButton.element.addEventListener('click', this.close.bind(this))
 
     // Initialize Interact.js: make panel resizable
     interact(this.self.element)

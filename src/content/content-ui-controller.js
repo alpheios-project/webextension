@@ -38,7 +38,11 @@ export default class ContentUIController {
       methods: {
         onClose: this.closePanel.bind(this)
       }
-    }, this)
+    })
+    // Set panel controls event handlers
+    this.panel.innerElements.attachToLeftButton.element.addEventListener('click', this.attachPanelToLeft.bind(this))
+    this.panel.innerElements.attachToRightButton.element.addEventListener('click', this.attachPanelToRight.bind(this))
+    this.panel.innerElements.closeButton.element.addEventListener('click', this.closePanel.bind(this))
     this.panel.updateZIndex(zIndexMax)
 
     // Should be loaded after Panel because options are inserted into a panel
@@ -319,11 +323,10 @@ export default class ContentUIController {
   }
 
   setPanelPositionTo (position) {
-    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
     if (position === 'right') {
-      this.panel.attachToRight()
+      this.attachPanelToRight()
     } else {
-      this.panel.attachToLeft()
+      this.attachPanelToLeft()
     }
   }
 

@@ -21299,7 +21299,11 @@ class ContentUIController {
       methods: {
         onClose: this.closePanel.bind(this)
       }
-    }, this)
+    })
+    // Set panel controls event handlers
+    this.panel.innerElements.attachToLeftButton.element.addEventListener('click', this.attachPanelToLeft.bind(this))
+    this.panel.innerElements.attachToRightButton.element.addEventListener('click', this.attachPanelToRight.bind(this))
+    this.panel.innerElements.closeButton.element.addEventListener('click', this.closePanel.bind(this))
     this.panel.updateZIndex(zIndexMax)
 
     // Should be loaded after Panel because options are inserted into a panel
@@ -21580,11 +21584,10 @@ class ContentUIController {
   }
 
   setPanelPositionTo (position) {
-    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
     if (position === 'right') {
-      this.panel.attachToRight()
+      this.attachPanelToRight()
     } else {
-      this.panel.attachToLeft()
+      this.attachPanelToLeft()
     }
   }
 
@@ -32816,9 +32819,8 @@ module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messag
  * This is a singleton component.
  */
 class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default */] {
-  constructor (options, uiController) {
+  constructor (options) {
     super(Panel.defaults, options)
-    this.uiController = uiController
 
     this.panelOpenedClassName = 'opened'
     this.panelFullWidthClassName = 'full-width'
@@ -32827,11 +32829,6 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
     this.self.element.style.zIndex = this.zIndex
 
     this.width = Panel.widths.zero // Sets initial width to zero because panel is closed initially
-
-    // Set panel controls event handlers
-    this.innerElements.attachToLeftButton.element.addEventListener('click', this.uiController.attachPanelToLeft.bind(this.uiController))
-    this.innerElements.attachToRightButton.element.addEventListener('click', this.uiController.attachPanelToRight.bind(this.uiController))
-    this.innerElements.closeButton.element.addEventListener('click', this.close.bind(this))
 
     // Initialize Interact.js: make panel resizable
     __WEBPACK_IMPORTED_MODULE_2_interactjs___default()(this.self.element)
