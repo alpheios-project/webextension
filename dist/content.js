@@ -2271,95 +2271,36 @@ class ResourceProvider {
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
+const propTypes = {
+  NUMERIC: Symbol('Numeric'),
+  SYMBOL: Symbol('Symbol')
+}
 
-
-class Message {
-  constructor (body) {
-    /** @member {Symbol} requestType - */
-    this.role = undefined
-    this.type = Message.types.GENERIC_MESSAGE
-    this.ID = __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()
-    this.body = body
-  }
-
-  static get types () {
-    return {
-      GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
-      STATE_MESSAGE: Symbol.for('Alpheios_StateMessage'),
-      STATE_REQUEST: Symbol.for('Alpheios_StateRequest'),
-      STATE_RESPONSE: Symbol.for('Alpheios_StateResponse'),
-      ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
-      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
-      OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
-      PANEL_STATUS_CHANGE_REQUEST: Symbol.for('Alpheios_PanelStatusChangeRequest')
-    }
-  }
-
-  static get roles () {
-    return {
-      REQUEST: Symbol.for('Alpheios_Request'),
-      RESPONSE: Symbol.for('Alpheios_Response')
-    }
-  }
-
-  static get statuses () {
-    return {
-      DATA_FOUND: Symbol.for('Alpheios_DataFound'), // Requested word's data has been found
-      NO_DATA_FOUND: Symbol.for('Alpheios_NoDataFound'), // Requested word's data has not been found,
-      ACTIVE: Symbol.for('Alpheios_Active'), // Content script is loaded and active
-      DEACTIVATED: Symbol.for('Alpheios_Deactivated') // Content script has been loaded, but is deactivated
-    }
-  }
-
-  static statusSym (message) {
-    return Symbol.for(message.status)
-  }
-
-  static statusSymIs (message, status) {
-    return Message.statusSym(message) === status
+const props = {
+  status: {
+    name: 'status',
+    valueType: propTypes.SYMBOL,
+    values: {
+      PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
+      ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
+      DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated') // Content script has been loaded, but is deactivated
+    },
+    defaultValueIndex: 0
+  },
+  panelStatus: {
+    name: 'panelStatus',
+    valueType: propTypes.SYMBOL,
+    values: {
+      OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
+      CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
+    },
+    defaultValueIndex: 1
   }
 }
-/* harmony export (immutable) */ __webpack_exports__["a"] = Message;
 
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 /**
  * Contains a state of a tab content script.
  * @property {Number} tabID - An ID of a tab where the content script is loaded
@@ -2367,20 +2308,16 @@ class Message {
  * @property {panelStatus} panelStatus
  */
 class TabScript {
-  constructor (tabID, status, panelStatus) {
+  constructor (tabID) {
     this.tabID = tabID
-    this.status = status || TabScript.defaults.status
-    this.panelStatus = panelStatus || TabScript.defaults.panelStatus
+    this.status = undefined
+    this.panelStatus = undefined
 
     this.watchers = new Map()
   }
 
-  static get genericProps () {
-    return ['tabID']
-  }
-
   static get symbolProps () {
-    return ['status', 'panelStatus']
+    return [props.status.name, props.panelStatus.name]
   }
 
   /**
@@ -2390,7 +2327,7 @@ class TabScript {
    * @return {String[]}
    */
   static get dataProps () {
-    return TabScript.genericProps.concat(TabScript.symbolProps)
+    return TabScript.symbolProps
   }
 
   /**
@@ -2455,7 +2392,7 @@ class TabScript {
     return this
   }
 
-  isPanelOpened () {
+  isPanelOpen () {
     return this.panelStatus === TabScript.statuses.panel.OPEN
   }
 
@@ -2509,6 +2446,11 @@ class TabScript {
     }
     for (let key of Object.keys(state)) {
       // Build diffs only for data properties
+      if (this.tabID !== state.tabID) {
+        diff.tabID = state.tabID
+        diff['_changedKeys'].push('tabID')
+        diff['_changedEntries'].push(['tabID', state.tabID])
+      }
       if (TabScript.dataProps.includes(key)) {
         if (this.hasOwnProperty(key)) {
           if (this[key] !== state[key]) {
@@ -2547,6 +2489,7 @@ class TabScript {
    */
   static serializable (source) {
     let serializable = TabScript.create(source)
+    serializable.tabID = source.tabID
     for (let key of Object.keys(serializable)) {
       if (TabScript.dataProps.includes(key)) {
         /*
@@ -2562,11 +2505,8 @@ class TabScript {
   }
 
   static readObject (jsonObject) {
-    let tabScript = new TabScript()
+    let tabScript = new TabScript(jsonObject.tabID)
 
-    for (let prop of TabScript.genericProps) {
-      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
-    }
     for (let prop of TabScript.symbolProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
     }
@@ -2575,6 +2515,92 @@ class TabScript {
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = TabScript;
+
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
+
+
+class Message {
+  constructor (body) {
+    /** @member {Symbol} requestType - */
+    this.role = undefined
+    this.type = Message.types.GENERIC_MESSAGE
+    this.ID = __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()
+    this.body = body
+  }
+
+  static get types () {
+    return {
+      GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
+      STATE_MESSAGE: Symbol.for('Alpheios_StateMessage'),
+      STATE_REQUEST: Symbol.for('Alpheios_StateRequest'),
+      STATE_RESPONSE: Symbol.for('Alpheios_StateResponse'),
+      ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
+      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
+      OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
+      PANEL_STATUS_CHANGE_REQUEST: Symbol.for('Alpheios_PanelStatusChangeRequest')
+    }
+  }
+
+  static get roles () {
+    return {
+      REQUEST: Symbol.for('Alpheios_Request'),
+      RESPONSE: Symbol.for('Alpheios_Response')
+    }
+  }
+
+  static get statuses () {
+    return {
+      DATA_FOUND: Symbol.for('Alpheios_DataFound'), // Requested word's data has been found
+      NO_DATA_FOUND: Symbol.for('Alpheios_NoDataFound'), // Requested word's data has not been found,
+      ACTIVE: Symbol.for('Alpheios_Active'), // Content script is loaded and active
+      DEACTIVATED: Symbol.for('Alpheios_Deactivated') // Content script has been loaded, but is deactivated
+    }
+  }
+
+  static statusSym (message) {
+    return Symbol.for(message.status)
+  }
+
+  static statusSymIs (message, status) {
+    return Message.statusSym(message) === status
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Message;
 
 
 
@@ -10607,7 +10633,7 @@ exports.Transporter = Transporter;
 exports.StorageAdapter = LocalStorageAdapter;
 exports.TestAdapter = TestAdapter;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ }),
 /* 10 */
@@ -10649,7 +10675,7 @@ module.exports = v4;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(3);
 
 
 /**
@@ -18247,20 +18273,18 @@ contentProcess.initialize()
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_data_models__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_alpheios_experience__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_message__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_service__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_message_state_message__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_messaging_response_state_response__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__content_options__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_selection_media_html_selector__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lexical_query__ = __webpack_require__(33);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__content_ui_controller__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_alpheios_experience__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__content_options__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lexical_query__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__content_ui_controller__ = __webpack_require__(34);
 /* global browser */
-
 
 
 
@@ -18277,55 +18301,47 @@ contentProcess.initialize()
 
 class ContentProcess {
   constructor () {
+    this.state = new __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */]()
+    this.state.status = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.PENDING
+    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED
+    this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
+    this.options = new __WEBPACK_IMPORTED_MODULE_9__content_options__["a" /* default */]()
 
-    this.state = new __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */]().setWatcher('panelStatus', this.sendStateToBackground.bind(this))
-    this.state.status = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.PENDING
-    this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED
-    this.options = new __WEBPACK_IMPORTED_MODULE_10__content_options__["a" /* default */]()
-
-    this.messagingService = new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_service__["a" /* default */]()
+    this.messagingService = new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__["a" /* default */]()
 
     this.maAdapter = new __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__["a" /* default */]() // Morphological analyzer adapter, with default arguments
     this.langData = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* LanguageData */]([__WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["c" /* LatinDataSet */], __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* GreekDataSet */]]).loadData()
-    this.ui = new __WEBPACK_IMPORTED_MODULE_13__content_ui_controller__["a" /* default */](this.state, this.options)
+    this.ui = new __WEBPACK_IMPORTED_MODULE_12__content_ui_controller__["a" /* default */](this.state, this.options)
   }
 
   initialize () {
     // Adds message listeners
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_message__["a" /* default */].types.STATE_REQUEST, this.handleStateRequest, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__["a" /* default */].types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
 
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
     this.reactivate()
   }
 
-  /**
-   * Loads any asynchronous data that there might be.
-   * @return {Promise}
-   */
-  async loadData () {
-    return this.options.load()
-  }
-
   get isActive () {
-    return this.state.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+    return this.state.status === __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
   }
 
   deactivate () {
     console.log('Content has been deactivated.')
     this.ui.closePanel()
-    this.state.status = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.DEACTIVATED
+    this.state.status = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.DEACTIVATED
   }
 
   reactivate () {
     console.log('Content has been reactivated.')
-    this.state.status = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+    this.state.status = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
   }
 
   handleStateRequest (request, sender) {
     // Send a status response
     console.log(`State request has been received`)
-    let state = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].readObject(request.body)
+    let state = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].readObject(request.body)
     let diff = this.state.diff(state)
     if (diff.has('tabID')) {
       if (!this.state.tabID) {
@@ -18337,18 +18353,18 @@ class ContentProcess {
       }
     }
     if (diff.has('status')) {
-      if (diff.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE) {
+      if (diff.status === __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE) {
         this.state.activate()
       } else {
         this.state.deactivate()
-        this.closePanel()
+        this.ui.closePanel()
         console.log('Content has been deactivated')
       }
     }
     if (diff.hasOwnProperty('panelStatus')) {
-      if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN) { this.ui.openPanel() } else { this.ui.closePanel() }
+      if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN) { this.ui.openPanel() } else { this.ui.closePanel() }
     }
-    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_8__lib_messaging_response_state_response__["a" /* default */](request, this.state)).catch(
+    this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__["a" /* default */](request, this.state)).catch(
       (error) => {
         console.error(`Unable to send a response to a state request: ${error}`)
       }
@@ -18356,7 +18372,7 @@ class ContentProcess {
   }
 
   sendStateToBackground () {
-    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
+    this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
       (error) => {
         console.error(`Unable to send a response to activation request: ${error}`)
       }
@@ -18365,11 +18381,11 @@ class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = __WEBPACK_IMPORTED_MODULE_11__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.options.items.preferredLanguage.currentValue)
+      let textSelector = __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.options.items.preferredLanguage.currentValue)
 
       if (!textSelector.isEmpty()) {
-        __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].track(
-          __WEBPACK_IMPORTED_MODULE_12__lexical_query__["a" /* default */].create(textSelector, {
+        __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].track(
+          __WEBPACK_IMPORTED_MODULE_11__lexical_query__["a" /* default */].create(textSelector, {
             uiController: this.ui,
             maAdapter: this.maAdapter,
             langData: this.langData,
@@ -18378,8 +18394,8 @@ class ContentProcess {
           {
             experience: 'Get word data',
             actions: [
-              { name: 'getData', action: __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].actions.START, event: __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].events.GET },
-              { name: 'finalize', action: __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].actions.STOP, event: __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].events.GET }
+              { name: 'getData', action: __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].actions.START, event: __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].events.GET },
+              { name: 'finalize', action: __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].actions.STOP, event: __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].events.GET }
             ]
           })
         .getData()
@@ -20916,7 +20932,7 @@ if (!rng) {
 
 module.exports = rng;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ }),
 /* 22 */
@@ -21123,8 +21139,8 @@ class StoredRequest {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__content_tab_script__ = __webpack_require__(1);
 
 
 
@@ -21143,9 +21159,9 @@ class StateMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(1);
 
 
 
@@ -21838,7 +21854,7 @@ class LexicalQuery {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3__template_htmlf__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_panel_component__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_setting_vue__ = __webpack_require__(45);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__ = __webpack_require__(50);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__ = __webpack_require__(54);
@@ -21888,7 +21904,7 @@ class ContentUIController {
       methods: {
         onClose: this.closePanel.bind(this)
       }
-    })
+    }, this.state)
     // Set panel controls event handlers
     this.panel.innerElements.attachToLeftButton.element.addEventListener('click', this.attachPanelToLeft.bind(this))
     this.panel.innerElements.attachToRightButton.element.addEventListener('click', this.attachPanelToRight.bind(this))
@@ -21910,8 +21926,8 @@ class ContentUIController {
         panelPosition: this.options.items.panelPosition.currentTextValue(),
         uiType: this.options.items.uiType.currentTextValue(),
 
-        preferredLanguageLabel: 'Preferred language:',
-        localeLabel: 'Locale:',
+        preferredLanguageLabel: 'Page language:',
+        localeLabel: 'UI Locale:',
         panelPositionLabel: 'Panel position:',
         uiTypeLabel: 'UI type:'
       },
@@ -22170,12 +22186,10 @@ class ContentUIController {
 
   openPanel () {
     this.panel.open()
-    this.state.setPanelOpen()
   }
 
   closePanel () {
     this.panel.close()
-    this.state.setPanelClosed()
   }
 
   setPreferredLanguageTo (language) {
@@ -33009,7 +33023,7 @@ return Vue$3;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(12).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(12).setImmediate))
 
 /***/ }),
 /* 36 */
@@ -33202,7 +33216,7 @@ return Vue$3;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(37)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(37)))
 
 /***/ }),
 /* 37 */
@@ -33410,24 +33424,24 @@ module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messag
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_interactjs__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_content_tab_script__ = __webpack_require__(1);
 
 
  // Interact.js (for resizability)
+
 
 /**
  * This is a singleton component.
  */
 class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default */] {
-  constructor (options) {
+  constructor (options, state) {
     super(Panel.defaults, options)
+    this.state = state
 
     this.panelOpenedClassName = 'opened'
-    this.panelFullWidthClassName = 'full-width'
-    this.bodyNormalWidthClassName = 'alpheios-panel-opened'
     this.zIndex = Panel.defaults.zIndex
     this.self.element.style.zIndex = this.zIndex
-
-    this.width = Panel.widths.zero // Sets initial width to zero because panel is closed initially
+    this.opened = false
 
     // Initialize Interact.js: make panel resizable
     __WEBPACK_IMPORTED_MODULE_2_interactjs___default()(this.self.element)
@@ -33488,15 +33502,6 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
     }
   }
 
-  static get widths () {
-    return {
-      default: 'alpheios-panel-opened',
-      zero: 'alpheios-panel-zero-width',
-      normal: 'alpheios-panel-opened',
-      full: 'alpheios-panel-full-width'
-    }
-  }
-
   /**
    * Sets a z-index of a panel to be higher than a z-index of any page element.
    * @param {Number} zIndexMax - A maximum z-index of elements on a page.
@@ -33528,31 +33533,18 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
     }
   }
 
-  open (width = Panel.widths.normal) {
-    this.resetWidth()
-    this.width = width
-
-    if (this.width === Panel.widths.full) {
-      // Panel will to be shown in full width
+  open () {
+    if (!this.state.isPanelOpen()) {
       this.self.element.classList.add(this.panelOpenedClassName)
-      this.outerElements.page.element.classList.add(this.bodyPositionClassName)
-
-      this.self.element.classList.add(this.panelOpenedClassName)
-      this.self.element.classList.add(this.panelFullWidthClassName)
-    } else {
-      // Default: panel will to be shown in normal width
-      this.self.element.classList.add(this.panelOpenedClassName)
-      this.outerElements.page.element.classList.add(this.bodyNormalWidthClassName)
-      this.outerElements.page.element.classList.add(this.bodyPositionClassName)
-      this.self.element.classList.add(this.panelOpenedClassName)
+      this.state.setItem('panelStatus', __WEBPACK_IMPORTED_MODULE_3__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN)
     }
     return this
   }
 
   close () {
-    if (this.isOpened) {
-      this.resetWidth()
-      this.options.methods.onClose()
+    if (!this.state.isPanelClosed()) {
+      this.self.element.classList.remove(this.panelOpenedClassName)
+      this.state.setItem('panelStatus', __WEBPACK_IMPORTED_MODULE_3__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED)
     }
     return this
   }
@@ -33567,23 +33559,8 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
     console.log('attach to right')
   }
 
-  get isOpened () {
-    return !(this.width === Panel.widths.zero)
-  }
-
-  resetWidth () {
-    this.self.element.classList.remove(this.panelOpenedClassName)
-    this.outerElements.page.element.classList.remove(this.bodyNormalWidthClassName)
-    this.outerElements.page.element.classList.remove(this.bodyPositionClassName)
-
-    this.self.element.classList.remove(this.panelOpenedClassName)
-    this.self.element.classList.remove(this.panelFullWidthClassName)
-
-    this.width = Panel.widths.zero
-  }
-
   toggle () {
-    if (this.isOpened) {
+    if (this.state.isPanelOpen()) {
       this.close()
     } else {
       this.open()
@@ -33794,7 +33771,7 @@ class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default *
 /* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(44) + "\"></div>\r\n        <span data-element=\"attachToLeftBtn\" id=\"alpheios-panel-attach-to-left\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: chevron-left; ratio: 2\"></span>\r\n        <span data-element=\"attachToRightBtn\" id=\"alpheios-panel-attach-to-right\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: chevron-right; ratio: 2\"></span>\r\n        <span data-element=\"closeBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\"\r\n                     id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\"\r\n                     class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div id=\"alpheios-options\">\r\n                    <setting :items=\"preferredLanguageValues\" :selected=\"preferredLanguage\" :labeltext=\"preferredLanguageLabel\" @change=\"changePreferredLanguage\"></setting>\r\n                    <setting :items=\"localeValues\" :selected=\"locale\" :labeltext=\"localeLabel\" @change=\"changeLocale\"></setting>\r\n                    <setting :items=\"uiTypeValues\" :selected=\"uiType\" :labeltext=\"uiTypeLabel\" @change=\"changeUiType\"></setting>\r\n                    <setting :items=\"panelPositionValues\" :selected=\"panelPosition\" :labeltext=\"panelPositionLabel\" @change=\"changePanelPosition\"></setting>\r\n                </div>\r\n                <div data-component=\"alpheios-panel-options\"></div>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n        </div>\r\n    </div>\r\n</div>\r\n";
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(44) + "\"></div>\r\n        <span data-element=\"attachToLeftBtn\" id=\"alpheios-panel-attach-to-left\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: chevron-left; ratio: 2\"></span>\r\n        <span data-element=\"attachToRightBtn\" id=\"alpheios-panel-attach-to-right\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: chevron-right; ratio: 2\"></span>\r\n        <span data-element=\"closeBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\"\r\n                     id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\"\r\n                     class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div id=\"alpheios-options\">\r\n                    <setting :items=\"preferredLanguageValues\" :selected=\"preferredLanguage\" :labeltext=\"preferredLanguageLabel\" @change=\"changePreferredLanguage\"></setting>\r\n                    <setting :items=\"localeValues\" :selected=\"locale\" :labeltext=\"localeLabel\" @change=\"changeLocale\"></setting>\r\n                    <setting :items=\"uiTypeValues\" :selected=\"uiType\" :labeltext=\"uiTypeLabel\" @change=\"changeUiType\"></setting>\r\n                    <setting :items=\"panelPositionValues\" :selected=\"panelPosition\" :labeltext=\"panelPositionLabel\" @change=\"changePanelPosition\"></setting>\r\n                </div>\r\n            </div>\r\n            <div data-element=\"infoPanel\">\r\n                <h2>Information</h2>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: info; ratio: 2\" data-element=\"infoTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"infoPanel\"></span>\r\n        </div>\r\n    </div>\r\n</div>\r\n";
 
 /***/ }),
 /* 44 */

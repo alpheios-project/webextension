@@ -34,7 +34,9 @@
                     <setting :items="uiTypeValues" :selected="uiType" :labeltext="uiTypeLabel" @change="changeUiType"></setting>
                     <setting :items="panelPositionValues" :selected="panelPosition" :labeltext="panelPositionLabel" @change="changePanelPosition"></setting>
                 </div>
-                <div data-component="alpheios-panel-options"></div>
+            </div>
+            <div data-element="infoPanel">
+                <h2>Information</h2>
             </div>
         </div>
         <div id="alpheios-panel__nav" class="alpheios-panel__nav">
@@ -49,6 +51,9 @@
 
             <span class="alpheios-panel__nav-btn" uk-icon="icon: cog; ratio: 2" data-element="optionsTab"
                   data-tab-group="contentTabs" data-target-name="optionsPanel"></span>
+
+            <span class="alpheios-panel__nav-btn" uk-icon="icon: info; ratio: 2" data-element="infoTab"
+                  data-tab-group="contentTabs" data-target-name="infoPanel"></span>
         </div>
     </div>
 </div>

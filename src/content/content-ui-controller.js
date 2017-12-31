@@ -40,7 +40,7 @@ export default class ContentUIController {
       methods: {
         onClose: this.closePanel.bind(this)
       }
-    })
+    }, this.state)
     // Set panel controls event handlers
     this.panel.innerElements.attachToLeftButton.element.addEventListener('click', this.attachPanelToLeft.bind(this))
     this.panel.innerElements.attachToRightButton.element.addEventListener('click', this.attachPanelToRight.bind(this))
@@ -62,8 +62,8 @@ export default class ContentUIController {
         panelPosition: this.options.items.panelPosition.currentTextValue(),
         uiType: this.options.items.uiType.currentTextValue(),
 
-        preferredLanguageLabel: 'Preferred language:',
-        localeLabel: 'Locale:',
+        preferredLanguageLabel: 'Page language:',
+        localeLabel: 'UI Locale:',
         panelPositionLabel: 'Panel position:',
         uiTypeLabel: 'UI type:'
       },
@@ -322,12 +322,10 @@ export default class ContentUIController {
 
   openPanel () {
     this.panel.open()
-    this.state.setPanelOpen()
   }
 
   closePanel () {
     this.panel.close()
-    this.state.setPanelClosed()
   }
 
   setPreferredLanguageTo (language) {

@@ -1,21 +1,20 @@
 import Component from '../lib/component'
 import template from './template.htmlf'
 import interact from 'interactjs' // Interact.js (for resizability)
+import TabScript from './../../../lib/content/tab-script'
 
 /**
  * This is a singleton component.
  */
 export default class Panel extends Component {
-  constructor (options) {
+  constructor (options, state) {
     super(Panel.defaults, options)
+    this.state = state
 
     this.panelOpenedClassName = 'opened'
-    this.panelFullWidthClassName = 'full-width'
-    this.bodyNormalWidthClassName = 'alpheios-panel-opened'
     this.zIndex = Panel.defaults.zIndex
     this.self.element.style.zIndex = this.zIndex
-
-    this.width = Panel.widths.zero // Sets initial width to zero because panel is closed initially
+    this.opened = false
 
     // Initialize Interact.js: make panel resizable
     interact(this.self.element)
@@ -76,15 +75,6 @@ export default class Panel extends Component {
     }
   }
 
-  static get widths () {
-    return {
-      default: 'alpheios-panel-opened',
-      zero: 'alpheios-panel-zero-width',
-      normal: 'alpheios-panel-opened',
-      full: 'alpheios-panel-full-width'
-    }
-  }
-
   /**
    * Sets a z-index of a panel to be higher than a z-index of any page element.
    * @param {Number} zIndexMax - A maximum z-index of elements on a page.
@@ -116,31 +106,18 @@ export default class Panel extends Component {
     }
   }
 
-  open (width = Panel.widths.normal) {
-    this.resetWidth()
-    this.width = width
-
-    if (this.width === Panel.widths.full) {
-      // Panel will to be shown in full width
+  open () {
+    if (!this.state.isPanelOpen()) {
       this.self.element.classList.add(this.panelOpenedClassName)
-      this.outerElements.page.element.classList.add(this.bodyPositionClassName)
-
-      this.self.element.classList.add(this.panelOpenedClassName)
-      this.self.element.classList.add(this.panelFullWidthClassName)
-    } else {
-      // Default: panel will to be shown in normal width
-      this.self.element.classList.add(this.panelOpenedClassName)
-      this.outerElements.page.element.classList.add(this.bodyNormalWidthClassName)
-      this.outerElements.page.element.classList.add(this.bodyPositionClassName)
-      this.self.element.classList.add(this.panelOpenedClassName)
+      this.state.setItem('panelStatus', TabScript.statuses.panel.OPEN)
     }
     return this
   }
 
   close () {
-    if (this.isOpened) {
-      this.resetWidth()
-      this.options.methods.onClose()
+    if (!this.state.isPanelClosed()) {
+      this.self.element.classList.remove(this.panelOpenedClassName)
+      this.state.setItem('panelStatus', TabScript.statuses.panel.CLOSED)
     }
     return this
   }
@@ -155,23 +132,8 @@ export default class Panel extends Component {
     console.log('attach to right')
   }
 
-  get isOpened () {
-    return !(this.width === Panel.widths.zero)
-  }
-
-  resetWidth () {
-    this.self.element.classList.remove(this.panelOpenedClassName)
-    this.outerElements.page.element.classList.remove(this.bodyNormalWidthClassName)
-    this.outerElements.page.element.classList.remove(this.bodyPositionClassName)
-
-    this.self.element.classList.remove(this.panelOpenedClassName)
-    this.self.element.classList.remove(this.panelFullWidthClassName)
-
-    this.width = Panel.widths.zero
-  }
-
   toggle () {
-    if (this.isOpened) {
+    if (this.state.isPanelOpen()) {
       this.close()
     } else {
       this.open()

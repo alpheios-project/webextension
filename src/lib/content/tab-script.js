@@ -1,3 +1,30 @@
+const propTypes = {
+  NUMERIC: Symbol('Numeric'),
+  SYMBOL: Symbol('Symbol')
+}
+
+const props = {
+  status: {
+    name: 'status',
+    valueType: propTypes.SYMBOL,
+    values: {
+      PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
+      ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
+      DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated') // Content script has been loaded, but is deactivated
+    },
+    defaultValueIndex: 0
+  },
+  panelStatus: {
+    name: 'panelStatus',
+    valueType: propTypes.SYMBOL,
+    values: {
+      OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
+      CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
+    },
+    defaultValueIndex: 1
+  }
+}
+
 /**
  * Contains a state of a tab content script.
  * @property {Number} tabID - An ID of a tab where the content script is loaded
@@ -5,20 +32,16 @@
  * @property {panelStatus} panelStatus
  */
 export default class TabScript {
-  constructor (tabID, status, panelStatus) {
+  constructor (tabID) {
     this.tabID = tabID
-    this.status = status || TabScript.defaults.status
-    this.panelStatus = panelStatus || TabScript.defaults.panelStatus
+    this.status = undefined
+    this.panelStatus = undefined
 
     this.watchers = new Map()
   }
 
-  static get genericProps () {
-    return ['tabID']
-  }
-
   static get symbolProps () {
-    return ['status', 'panelStatus']
+    return [props.status.name, props.panelStatus.name]
   }
 
   /**
@@ -28,7 +51,7 @@ export default class TabScript {
    * @return {String[]}
    */
   static get dataProps () {
-    return TabScript.genericProps.concat(TabScript.symbolProps)
+    return TabScript.symbolProps
   }
 
   /**
@@ -93,7 +116,7 @@ export default class TabScript {
     return this
   }
 
-  isPanelOpened () {
+  isPanelOpen () {
     return this.panelStatus === TabScript.statuses.panel.OPEN
   }
 
@@ -147,6 +170,11 @@ export default class TabScript {
     }
     for (let key of Object.keys(state)) {
       // Build diffs only for data properties
+      if (this.tabID !== state.tabID) {
+        diff.tabID = state.tabID
+        diff['_changedKeys'].push('tabID')
+        diff['_changedEntries'].push(['tabID', state.tabID])
+      }
       if (TabScript.dataProps.includes(key)) {
         if (this.hasOwnProperty(key)) {
           if (this[key] !== state[key]) {
@@ -185,6 +213,7 @@ export default class TabScript {
    */
   static serializable (source) {
     let serializable = TabScript.create(source)
+    serializable.tabID = source.tabID
     for (let key of Object.keys(serializable)) {
       if (TabScript.dataProps.includes(key)) {
         /*
@@ -200,11 +229,8 @@ export default class TabScript {
   }
 
   static readObject (jsonObject) {
-    let tabScript = new TabScript()
+    let tabScript = new TabScript(jsonObject.tabID)
 
-    for (let prop of TabScript.genericProps) {
-      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
-    }
     for (let prop of TabScript.symbolProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
     }

@@ -2,7 +2,6 @@
 import {LanguageData, LatinDataSet, GreekDataSet} from 'alpheios-inflection-tables'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import {Lexicons} from 'alpheios-lexicon-client'
-import {Feature, Lexeme, Inflection} from 'alpheios-data-models'
 import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
 import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
@@ -16,10 +15,10 @@ import ContentUIController from './content-ui-controller'
 
 export default class ContentProcess {
   constructor () {
-
-    this.state = new TabScript().setWatcher('panelStatus', this.sendStateToBackground.bind(this))
+    this.state = new TabScript()
     this.state.status = TabScript.statuses.script.PENDING
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
+    this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.options = new Options()
 
     this.messagingService = new MessagingService()
@@ -36,14 +35,6 @@ export default class ContentProcess {
 
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
     this.reactivate()
-  }
-
-  /**
-   * Loads any asynchronous data that there might be.
-   * @return {Promise}
-   */
-  async loadData () {
-    return this.options.load()
   }
 
   get isActive () {
@@ -80,7 +71,7 @@ export default class ContentProcess {
         this.state.activate()
       } else {
         this.state.deactivate()
-        this.closePanel()
+        this.ui.closePanel()
         console.log('Content has been deactivated')
       }
     }
