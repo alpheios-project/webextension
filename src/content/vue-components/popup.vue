@@ -2,8 +2,7 @@
     <div ref="popup" class="alpheios-popup" v-show="visible">
         <span class="alpheios-popup__close-btn" @click="closePopup" uk-icon="icon: close; ratio: 2"></span>
         <div class="alpheios-popup__message-area" v-html="messages"></div>
-        <div class="alpheios-popup__content-area" v-html="content"></div>
-        <morph v-show="morphdataready" :lexemes="lexemes"></morph>
+        <morph v-show="morphdataready" :lexemes="lexemes" :definitions="definitions"></morph>
         <button @click="showInflectionsPanelTab" v-show="defdataready" class="uk-button uk-button-default alpheios-popup__more-btn">Go to Inflections</button>
         <button @click="showDefinitionsPanelTab" v-show="infldataready" class="uk-button uk-button-default alpheios-popup__more-btn">Go to Full Definitions</button>
     </div>
@@ -24,12 +23,12 @@
         type: String,
         required: true
       },
-      content: {
-        type: String,
-        required: true
-      },
       lexemes: {
         type: Array,
+        required: true
+      },
+      definitions: {
+        type: Object,
         required: true
       },
       visible: {

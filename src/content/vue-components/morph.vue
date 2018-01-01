@@ -26,9 +26,12 @@
         <span class="alpheios-morph__attr" v-for="source in lex.lemma.features.source" v-if="lex.lemma.features.source">[{{source.value}}]</span>
         <span class="alpheios-morph__attr" v-for="note in lex.lemma.features.note" v-if="lex.lemma.features.note">[{{source.note}}]</span>
       </div>
+      <div v-for="definition in definitions[lex.lemma.key]">
+        <shortdef :definition="definition"></shortdef>
+      </div>
       <div class="alpheios-morph__inflections">
         <div class="alpheios-morph__inflset" v-for="inflset in lex.getGroupedInflections()">
-
+          <div class="alpheios-morph__heading">Form(s):</div>
           <span class="alpheios-morph__prefix" v-if="inflset.groupingKey.prefix">{{inflset.groupingKey.prefix}} </span>
           <span class="alpheios-morph__stem">{{inflset.groupingKey.stem}}</span>
           <span class="alpheios-morph__suffix" v-if="inflset.groupingKey.suffix"> -{{inflset.groupingKey.suffix}}</span>
@@ -101,7 +104,7 @@
 <script>
   export default {
     name: 'Morph',
-    props: ['lexemes'],
+    props: ['lexemes','definitions'],
     methods: {
       featureMatch(a,b) {
         let matches = false
@@ -116,20 +119,14 @@
     },
     mounted () {
       console.log('Morph is mounted')
-        // for each infl without dial
-        //   group by stem, pref, suff, pofs, comp
-        //   sort by pofs
-        // for each infl without dial and without either stem or pofs
-        // for each infl with dial
-        // inflection-set:
-        //  ignores conjunction, preposition, interjection, particle
-        //  take pofs and decl from infl if it differs from dict
-        //  add dialect
     },
   }
 </script>
 <style>
 
+  #alpheios-morph__lexemes {
+      color: #0E2233; /** TODO use alpheios variable **/
+  }
   .alpheios-morph__dict {
     margin-bottom: .5em;
     clear: both;
@@ -140,7 +137,7 @@
   }
 
   .alpheios-morph__source {
-    font-size: small;
+    font-size: smaller;
     color: #4E6476; /** TODO use alpheios variable **/
     font-style: italic;
   }
@@ -151,11 +148,9 @@
 
   .alpheios-morph__attr {
       font-weight: normal;
-      color: #0E2233; /** TODO use alpheios variable **/
   }
 
   .alpheios-morph__linked-attr {
-  	color:#3E8D9C; /** TODO use alpheios variable **/
   	font-weight: bold;
   	cursor: pointer;
   }
@@ -168,8 +163,17 @@
       content: ";";
   }
 
+  .alpheios-morph__inflset .alpheios-morph__heading {
+      display: none;
+  }
+
+  .alpheios-morph__inflset:first-child .alpheios-morph__heading {
+      color: #4E6476; /** TODO use alpheios variable **/
+      display: block;
+  }
+
   .alpheios-morph__provider {
-    font-size: small;
+    font-size: smaller;
     font-weight: normal;
     color: #4E6476; /** TODO use alpheios variable **/
     font-style: italic;
@@ -199,14 +203,5 @@
    .alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {
      display: none;
    }
-
-   .alpheios-popup__content .alpheios-shortdef__lemma {
-     display: none;
-   }
-
-   .alpheios-popup .alpheios-fulldef__lemma {
-     display: none;
-   }
-
 
 </style>
