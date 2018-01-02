@@ -17996,6 +17996,15 @@ win.init = init;
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -18009,7 +18018,7 @@ win.init = init;
   },
   props: {
     messages: {
-      type: String,
+      type: Array,
       required: true
     },
     lexemes: {
@@ -18038,6 +18047,12 @@ win.init = init;
     }
   },
   methods: {
+    clearMessages() {
+      while (this.messages.length > 0) {
+        this.messages.pop();
+      }
+    },
+
     closePopup() {
       this.$emit('close');
     },
@@ -18085,6 +18100,7 @@ win.init = init;
         target.setAttribute('data-y', y);
       }
     }
+
   },
   mounted() {
     console.log('mounted');
@@ -21757,7 +21773,7 @@ class LexicalQuery {
   }
 
   async getData () {
-    this.ui.clear().open().message(`Please wait while data is retrieved ...<br>`)
+    this.ui.clear().open().message(`Please wait while data is retrieved ...`)
     let iterator = this.iterations()
 
     let result = iterator.next()
@@ -21786,12 +21802,12 @@ class LexicalQuery {
   * iterations () {
     this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
 
-    this.ui.addMessage(`Morphological analyzer data is ready<br>`)
+    this.ui.addMessage(`Morphological analyzer data is ready`)
     this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)
-    this.ui.addMessage(`Inflection data is ready<br>`)
+    this.ui.addMessage(`Inflection data is ready`)
     this.ui.updateInflections(this.lexicalData)
 
     let definitionRequests = []
@@ -21828,11 +21844,11 @@ class LexicalQuery {
           definitionRequest.lexeme.meaning[definitionRequest.appendFunction](definition)
           definitionRequest.complete = true
           if (this.active) {
-            this.ui.addMessage(`${definitionRequest.type} request is completed successfully. Lemma: "${definitionRequest.lexeme.lemma.word}"<br>`)
+            this.ui.addMessage(`${definitionRequest.type} request is completed successfully. Lemma: "${definitionRequest.lexeme.lemma.word}"`)
             this.ui.updateDefinitions(this.homonym)
           }
           if (definitionRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`<strong>All lexical data is available now</strong><br>`) }
+            if (this.active) { this.ui.addMessage(`All lexical data is available now`) }
             this.finalize()
           }
         },
@@ -21840,10 +21856,10 @@ class LexicalQuery {
           console.error(`${definitionRequest.type}(s) request failed: ${error}`)
           definitionRequest.complete = true
           if (this.active) {
-            this.ui.addMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"<br>`)
+            this.ui.addMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"`)
           }
           if (definitionRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`<strong>All lexical data is available now</strong><br>`) }
+            if (this.active) { this.ui.addMessage(`All lexical data is available now`) }
             this.finalize()
           }
         }
@@ -22010,7 +22026,7 @@ class ContentUIController {
       el: '#alpheios-popup',
       components: { morph:__WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */], popup: __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__["a" /* default */], shortdef:__WEBPACK_IMPORTED_MODULE_9__vue_components_shortdef_vue__["a" /* default */] },
       data: {
-        messages: '',
+        messages: [],
         lexemes: [],
         definitions: {},
         visible: false,
@@ -22020,17 +22036,19 @@ class ContentUIController {
       },
       methods: {
         showMessage: function (message) {
-          this.messages = message
+          this.messages = [message]
           return this
         },
 
         appendMessage: function (message) {
-          this.messages += message
+          this.messages.push(message)
           return this
         },
 
         clearMessages: function () {
-          this.messages = ''
+          while (this.messages.length > 0) {
+            this.messages.pop()
+          }
           return this
         },
 
@@ -33598,13 +33616,13 @@ class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default 
     return this
   }
 
-  showMessage (messageHTML) {
-    this.contentAreas.messages.setContent(messageHTML)
+  showMessage (message) {
+    this.contentAreas.messages.setContent(`${message}<br>`)
     this.tabGroups.contentTabs.activate('statusTab')
   }
 
-  appendMessage (messageHTML) {
-    this.contentAreas.messages.appendContent(messageHTML)
+  appendMessage (message) {
+    this.contentAreas.messages.appendContent(`${message}<br>`)
   }
 
   clearMessages () {
@@ -34079,7 +34097,7 @@ exports = module.exports = __webpack_require__(4)(true);
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border: 1px solid lightgray;\n    width: 400px;\n    height: 500px;\n    z-index: 1000;\n    position: fixed;\n    left: 200px;\n    top: 100px;\n    padding: 50px 20px 20px;\n    box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n    overflow: auto;\n}\n.alpheios-popup__close-btn {\n    color: gray;\n    display: block;\n    width: 40px;\n    height: 40px;\n    top: 0;\n    right: 0;\n    margin: 10px;\n    cursor: pointer;\n    position: absolute;\n}\n.alpheios-popup__message-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__content-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__more-btn {\n    float: right;\n    margin-bottom: 10px;\n}\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/popup.vue?2eb193f8"],"names":[],"mappings":";AAiIA;IACA,iBAAA;IACA,4BAAA;IACA,aAAA;IACA,cAAA;IACA,cAAA;IACA,gBAAA;IACA,YAAA;IACA,WAAA;IACA,wBAAA;IACA,uBAAA,EAAA,oFAAA;IACA,eAAA;CACA;AAEA;IACA,YAAA;IACA,eAAA;IACA,YAAA;IACA,aAAA;IACA,OAAA;IACA,SAAA;IACA,aAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,aAAA;IACA,oBAAA;CACA","file":"popup.vue","sourcesContent":["<template>\n    <div ref=\"popup\" class=\"alpheios-popup\" v-show=\"visible\">\n        <span class=\"alpheios-popup__close-btn\" @click=\"closePopup\" uk-icon=\"icon: close; ratio: 2\"></span>\n        <div class=\"alpheios-popup__message-area\" v-html=\"messages\"></div>\n        <morph v-show=\"morphdataready\" :lexemes=\"lexemes\" :definitions=\"definitions\"></morph>\n        <button @click=\"showInflectionsPanelTab\" v-show=\"defdataready\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Inflections</button>\n        <button @click=\"showDefinitionsPanelTab\" v-show=\"infldataready\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Full Definitions</button>\n    </div>\n</template>\n<script>\n  import interact from 'interactjs'\n\n  export default {\n    name: 'Popup',\n    data: function () {\n      return {\n        resizable: true,\n        draggable: true,\n      }\n    },\n    props: {\n      messages: {\n        type: String,\n        required: true\n      },\n      lexemes: {\n        type: Array,\n        required: true\n      },\n      definitions: {\n        type: Object,\n        required: true\n      },\n      visible: {\n        type: Boolean,\n        required: true\n      },\n      defdataready: {\n        type: Boolean,\n        required: true\n      },\n      infldataready: {\n        type: Boolean,\n        required: true\n      },\n      morphdataready: {\n        type: Boolean,\n        required: true\n      }\n    },\n    methods: {\n      closePopup () {\n        this.$emit('close')\n      },\n\n      showDefinitionsPanelTab () {\n        this.$emit('showdefspaneltab')\n      },\n\n      showInflectionsPanelTab () {\n        this.$emit('showinflpaneltab')\n      },\n\n      resizeListener(event) {\n        console.log('Resize listener')\n        if (this.resizable) {\n          const target = event.target\n          let x = (parseFloat(target.getAttribute('data-x')) || 0)\n          let y = (parseFloat(target.getAttribute('data-y')) || 0)\n\n          // update the element's style\n          target.style.width  = event.rect.width + 'px'\n          target.style.height = event.rect.height + 'px'\n\n          // translate when resizing from top or left edges\n          x += event.deltaRect.left\n          y += event.deltaRect.top\n\n          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)'\n\n          target.setAttribute('data-x', x)\n          target.setAttribute('data-y', y)\n        }\n      },\n\n      dragMoveListener(event) {\n        if (this.draggable) {\n          const target = event.target;\n          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;\n          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;\n\n          target.style.webkitTransform = `translate(${x}px, ${y}px)`;\n          target.style.transform = `translate(${x}px, ${y}px)`;\n\n          target.setAttribute('data-x', x);\n          target.setAttribute('data-y', y);\n        }\n      }\n    },\n    mounted () {\n      console.log('mounted')\n      const resizableSettings = {\n        preserveAspectRatio: false,\n        edges: { left: true, right: true, bottom: true, top: true },\n        restrictSize: {\n          min: { width: 100, height: 300 }\n        },\n        restrictEdges: {\n          outer: document.body,\n          endOnly: true,\n        }\n      };\n      const draggableSettings = {\n        inertia: true,\n        autoScroll: false,\n        restrict: {\n          restriction: document.body,\n          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }\n        },\n        onmove: this.dragMoveListener\n      };\n      interact(this.$el)\n        .resizable(resizableSettings)\n        .draggable(draggableSettings)\n        .on('resizemove', this.resizeListener);\n    }\n  }\n</script>\n<style>\n    .alpheios-popup {\n        background: #FFF;\n        border: 1px solid lightgray;\n        width: 400px;\n        height: 500px;\n        z-index: 1000;\n        position: fixed;\n        left: 200px;\n        top: 100px;\n        padding: 50px 20px 20px;\n        box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n        overflow: auto;\n    }\n\n    .alpheios-popup__close-btn {\n        color: gray;\n        display: block;\n        width: 40px;\n        height: 40px;\n        top: 0;\n        right: 0;\n        margin: 10px;\n        cursor: pointer;\n        position: absolute;\n    }\n\n    .alpheios-popup__message-area {\n        margin-bottom: 20px;\n    }\n\n    .alpheios-popup__content-area {\n        margin-bottom: 20px;\n    }\n\n    .alpheios-popup__more-btn {\n        float: right;\n        margin-bottom: 10px;\n    }\n</style>\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border: 1px solid lightgray;\n    width: 400px;\n    height: 500px;\n    z-index: 1000;\n    position: fixed;\n    left: 200px;\n    top: 100px;\n    padding: 50px 20px 20px;\n    box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n    overflow: auto;\n    /* TODO use sass variables */\n    font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n    font-size: 12px;\n    color: #666666;\n}\n.alpheios-popup li {\n    list-style-type: none;\n    font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n    font-size: 12px;\n    color: #666666;\n    padding: 0;\n}\n.alpheios-popup__close-btn {\n    color: gray;\n    display: block;\n    width: 40px;\n    height: 40px;\n    top: 0;\n    right: 0;\n    margin: 10px;\n    cursor: pointer;\n    position: absolute;\n}\n.alpheios-popup__message-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__content-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__more-btn {\n    float: right;\n    margin-bottom: 10px;\n    /*TODO alpheios variables */\n}\nli.alpheios-popup__message {\n    display:none;\n}\nli.alpheios-popup__message:last-child {\n    display:block;\n}\n\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/popup.vue?0bc46985"],"names":[],"mappings":";AAiJA;IACA,iBAAA;IACA,4BAAA;IACA,aAAA;IACA,cAAA;IACA,cAAA;IACA,gBAAA;IACA,YAAA;IACA,WAAA;IACA,wBAAA;IACA,uBAAA,EAAA,oFAAA;IACA,eAAA;IACA,6BAAA;IACA,4DAAA;IACA,gBAAA;IACA,eAAA;CACA;AAEA;IACA,sBAAA;IACA,4DAAA;IACA,gBAAA;IACA,eAAA;IACA,WAAA;CACA;AAEA;IACA,YAAA;IACA,eAAA;IACA,YAAA;IACA,aAAA;IACA,OAAA;IACA,SAAA;IACA,aAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,aAAA;IACA,oBAAA;IACA,4BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,cAAA;CACA","file":"popup.vue","sourcesContent":["<template>\n    <div ref=\"popup\" class=\"alpheios-popup\" v-show=\"visible\">\n        <span class=\"alpheios-popup__close-btn\" @click=\"closePopup\" uk-icon=\"icon: close; ratio: 2\"></span>\n        <div class=\"alpheios-popup__message-area\">\n          <ul>\n            <li @beforehide=\"clearMessages\" v-for=\"message in messages\" class=\"alpheios-popup__message uk-alert-primary\" uk-alert>\n              <a class=\"uk-alert-close\" uk-close></a>\n              {{ message }}\n            </li>\n          </ul>\n        </div>\n        <morph v-show=\"morphdataready\" :lexemes=\"lexemes\" :definitions=\"definitions\"></morph>\n        <div class=\"uk-button-group\">\n          <button @click=\"showInflectionsPanelTab\" v-show=\"defdataready\" class=\"uk-button uk-button-primary uk-button-small alpheios-popup__more-btn\">Inflect</button>\n          <button @click=\"showDefinitionsPanelTab\" v-show=\"infldataready\" class=\"uk-button uk-button-primary uk-button-small alpheios-popup__more-btn\">Define</button>\n        </div>\n    </div>\n</template>\n<script>\n  import interact from 'interactjs'\n\n  export default {\n    name: 'Popup',\n    data: function () {\n      return {\n        resizable: true,\n        draggable: true,\n      }\n    },\n    props: {\n      messages: {\n        type: Array,\n        required: true\n      },\n      lexemes: {\n        type: Array,\n        required: true\n      },\n      definitions: {\n        type: Object,\n        required: true\n      },\n      visible: {\n        type: Boolean,\n        required: true\n      },\n      defdataready: {\n        type: Boolean,\n        required: true\n      },\n      infldataready: {\n        type: Boolean,\n        required: true\n      },\n      morphdataready: {\n        type: Boolean,\n        required: true\n      }\n    },\n    methods: {\n      clearMessages() {\n        while (this.messages.length >0) {\n          this.messages.pop()\n        }\n      },\n\n      closePopup () {\n        this.$emit('close')\n      },\n\n      showDefinitionsPanelTab () {\n        this.$emit('showdefspaneltab')\n      },\n\n      showInflectionsPanelTab () {\n        this.$emit('showinflpaneltab')\n      },\n\n      resizeListener(event) {\n        console.log('Resize listener')\n        if (this.resizable) {\n          const target = event.target\n          let x = (parseFloat(target.getAttribute('data-x')) || 0)\n          let y = (parseFloat(target.getAttribute('data-y')) || 0)\n\n          // update the element's style\n          target.style.width  = event.rect.width + 'px'\n          target.style.height = event.rect.height + 'px'\n\n          // translate when resizing from top or left edges\n          x += event.deltaRect.left\n          y += event.deltaRect.top\n\n          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)'\n\n          target.setAttribute('data-x', x)\n          target.setAttribute('data-y', y)\n        }\n      },\n\n      dragMoveListener(event) {\n        if (this.draggable) {\n          const target = event.target;\n          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;\n          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;\n\n          target.style.webkitTransform = `translate(${x}px, ${y}px)`;\n          target.style.transform = `translate(${x}px, ${y}px)`;\n\n          target.setAttribute('data-x', x);\n          target.setAttribute('data-y', y);\n        }\n      }\n\n    },\n    mounted () {\n      console.log('mounted')\n      const resizableSettings = {\n        preserveAspectRatio: false,\n        edges: { left: true, right: true, bottom: true, top: true },\n        restrictSize: {\n          min: { width: 100, height: 300 }\n        },\n        restrictEdges: {\n          outer: document.body,\n          endOnly: true,\n        }\n      };\n      const draggableSettings = {\n        inertia: true,\n        autoScroll: false,\n        restrict: {\n          restriction: document.body,\n          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }\n        },\n        onmove: this.dragMoveListener\n      };\n      interact(this.$el)\n        .resizable(resizableSettings)\n        .draggable(draggableSettings)\n        .on('resizemove', this.resizeListener);\n    }\n  }\n</script>\n<style>\n    .alpheios-popup {\n        background: #FFF;\n        border: 1px solid lightgray;\n        width: 400px;\n        height: 500px;\n        z-index: 1000;\n        position: fixed;\n        left: 200px;\n        top: 100px;\n        padding: 50px 20px 20px;\n        box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n        overflow: auto;\n        /* TODO use sass variables */\n        font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n        font-size: 12px;\n        color: #666666;\n    }\n\n    .alpheios-popup li {\n        list-style-type: none;\n        font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n        font-size: 12px;\n        color: #666666;\n        padding: 0;\n    }\n\n    .alpheios-popup__close-btn {\n        color: gray;\n        display: block;\n        width: 40px;\n        height: 40px;\n        top: 0;\n        right: 0;\n        margin: 10px;\n        cursor: pointer;\n        position: absolute;\n    }\n\n    .alpheios-popup__message-area {\n        margin-bottom: 20px;\n    }\n\n    .alpheios-popup__content-area {\n        margin-bottom: 20px;\n    }\n\n    .alpheios-popup__more-btn {\n        float: right;\n        margin-bottom: 10px;\n        /*TODO alpheios variables */\n    }\n\n    li.alpheios-popup__message {\n        display:none;\n    }\n\n    li.alpheios-popup__message:last-child {\n        display:block;\n    }\n\n</style>\n"],"sourceRoot":""}]);
 
 // exports
 
@@ -34114,10 +34132,28 @@ var render = function() {
         on: { click: _vm.closePopup }
       }),
       _vm._v(" "),
-      _c("div", {
-        staticClass: "alpheios-popup__message-area",
-        domProps: { innerHTML: _vm._s(_vm.messages) }
-      }),
+      _c("div", { staticClass: "alpheios-popup__message-area" }, [
+        _c(
+          "ul",
+          _vm._l(_vm.messages, function(message) {
+            return _c(
+              "li",
+              {
+                staticClass: "alpheios-popup__message uk-alert-primary",
+                attrs: { "uk-alert": "" },
+                on: { beforehide: _vm.clearMessages }
+              },
+              [
+                _c("a", {
+                  staticClass: "uk-alert-close",
+                  attrs: { "uk-close": "" }
+                }),
+                _vm._v("\n          " + _vm._s(message) + "\n        ")
+              ]
+            )
+          })
+        )
+      ]),
       _vm._v(" "),
       _c("morph", {
         directives: [
@@ -34131,39 +34167,43 @@ var render = function() {
         attrs: { lexemes: _vm.lexemes, definitions: _vm.definitions }
       }),
       _vm._v(" "),
-      _c(
-        "button",
-        {
-          directives: [
-            {
-              name: "show",
-              rawName: "v-show",
-              value: _vm.defdataready,
-              expression: "defdataready"
-            }
-          ],
-          staticClass: "uk-button uk-button-default alpheios-popup__more-btn",
-          on: { click: _vm.showInflectionsPanelTab }
-        },
-        [_vm._v("Go to Inflections")]
-      ),
-      _vm._v(" "),
-      _c(
-        "button",
-        {
-          directives: [
-            {
-              name: "show",
-              rawName: "v-show",
-              value: _vm.infldataready,
-              expression: "infldataready"
-            }
-          ],
-          staticClass: "uk-button uk-button-default alpheios-popup__more-btn",
-          on: { click: _vm.showDefinitionsPanelTab }
-        },
-        [_vm._v("Go to Full Definitions")]
-      )
+      _c("div", { staticClass: "uk-button-group" }, [
+        _c(
+          "button",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.defdataready,
+                expression: "defdataready"
+              }
+            ],
+            staticClass:
+              "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
+            on: { click: _vm.showInflectionsPanelTab }
+          },
+          [_vm._v("Inflect")]
+        ),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.infldataready,
+                expression: "infldataready"
+              }
+            ],
+            staticClass:
+              "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
+            on: { click: _vm.showDefinitionsPanelTab }
+          },
+          [_vm._v("Define")]
+        )
+      ])
     ],
     1
   )

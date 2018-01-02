@@ -123,7 +123,7 @@ export default class ContentUIController {
       el: '#alpheios-popup',
       components: { morph:Morph, popup: Popup, shortdef:ShortDef },
       data: {
-        messages: '',
+        messages: [],
         lexemes: [],
         definitions: {},
         visible: false,
@@ -133,17 +133,19 @@ export default class ContentUIController {
       },
       methods: {
         showMessage: function (message) {
-          this.messages = message
+          this.messages = [message]
           return this
         },
 
         appendMessage: function (message) {
-          this.messages += message
+          this.messages.push(message)
           return this
         },
 
         clearMessages: function () {
-          this.messages = ''
+          while (this.messages.length > 0) {
+            this.messages.pop()
+          }
           return this
         },
 
