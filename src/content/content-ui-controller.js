@@ -8,6 +8,7 @@ import TabScript from '../lib/content/tab-script'
 import Setting from './vue-components/setting.vue'
 import Popup from './vue-components/popup.vue'
 import Morph from './vue-components/morph.vue'
+import ShortDef from './vue-components/shortdef.vue'
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
 import UIkitIconts from '../../node_modules/uikit/dist/js/uikit-icons'
 
@@ -115,15 +116,16 @@ export default class ContentUIController {
     })
 
     Vue.component('morph',Morph)
+    Vue.component('shortdef',ShortDef)
 
     // Create a Vue instance for a popup
     this.popup = new Vue({
       el: '#alpheios-popup',
-      components: { morph:Morph, popup: Popup },
+      components: { morph:Morph, popup: Popup, shortdef:ShortDef },
       data: {
-        messages: '',
-        content: '',
+        messages: [],
         lexemes: [],
+        definitions: {},
         visible: false,
         defDataReady: false,
         inflDataReady: false,
@@ -131,27 +133,25 @@ export default class ContentUIController {
       },
       methods: {
         showMessage: function (message) {
-          this.messages = message
+          this.messages = [message]
           return this
         },
 
         appendMessage: function (message) {
-          this.messages += message
+          this.messages.push(message)
           return this
         },
 
         clearMessages: function () {
-          this.messages = ''
-          return this
-        },
-
-        setContent: function (content) {
-          this.content = content
+          while (this.messages.length > 0) {
+            this.messages.pop()
+          }
           return this
         },
 
         clearContent: function () {
-          this.content = ''
+          this.definitions = {}
+          this.lexemes = []
           return this
         },
 
@@ -276,11 +276,11 @@ export default class ContentUIController {
   updateDefinitions (homonym) {
     this.panel.contentAreas.shortDefinitions.clearContent()
     this.panel.contentAreas.fullDefinitions.clearContent()
-    let shortDefsText = ''
+    let definitions = {}
     for (let lexeme of homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
         this.panel.contentAreas.shortDefinitions.appendContent(lexeme)
-        shortDefsText += this.formatShortDefinitions(lexeme)
+        definitions[lexeme.lemma.key] = lexeme.meaning.shortDefs
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {
@@ -289,7 +289,7 @@ export default class ContentUIController {
     }
 
     // Populate a popup
-    this.popup.setContent(shortDefsText)
+    this.popup.definitions = definitions
     this.popup.defDataReady = true
   }
 

@@ -32,7 +32,7 @@ export default class LexicalQuery {
   }
 
   async getData () {
-    this.ui.clear().open().message(`Please wait while data is retrieved ...<br>`)
+    this.ui.clear().open().message(`Please wait while data is retrieved ...`)
     let iterator = this.iterations()
 
     let result = iterator.next()
@@ -61,12 +61,12 @@ export default class LexicalQuery {
   * iterations () {
     this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
 
-    this.ui.addMessage(`Morphological analyzer data is ready<br>`)
+    this.ui.addMessage(`Morphological analyzer data is ready`)
     this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)
-    this.ui.addMessage(`Inflection data is ready<br>`)
+    this.ui.addMessage(`Inflection data is ready`)
     this.ui.updateInflections(this.lexicalData)
 
     let definitionRequests = []
@@ -103,11 +103,11 @@ export default class LexicalQuery {
           definitionRequest.lexeme.meaning[definitionRequest.appendFunction](definition)
           definitionRequest.complete = true
           if (this.active) {
-            this.ui.addMessage(`${definitionRequest.type} request is completed successfully. Lemma: "${definitionRequest.lexeme.lemma.word}"<br>`)
+            this.ui.addMessage(`${definitionRequest.type} request is completed successfully. Lemma: "${definitionRequest.lexeme.lemma.word}"`)
             this.ui.updateDefinitions(this.homonym)
           }
           if (definitionRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`<strong>All lexical data is available now</strong><br>`) }
+            if (this.active) { this.ui.addMessage(`All lexical data is available now`) }
             this.finalize()
           }
         },
@@ -115,10 +115,10 @@ export default class LexicalQuery {
           console.error(`${definitionRequest.type}(s) request failed: ${error}`)
           definitionRequest.complete = true
           if (this.active) {
-            this.ui.addMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"<br>`)
+            this.ui.addMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"`)
           }
           if (definitionRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`<strong>All lexical data is available now</strong><br>`) }
+            if (this.active) { this.ui.addMessage(`All lexical data is available now`) }
             this.finalize()
           }
         }
