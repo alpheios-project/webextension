@@ -2,14 +2,13 @@
 @import "alpheios";
 
 // Component styles
-@import "../components/panel/style.scss";
+//@import "../components/panel/style.scss";
 
 // UIKit styles
 @import "uikit/import";
 
 // Alpheios components
-@import "components/page-controls";
 @import "components/panel";
 
 @import "theme";
-@import "content"
+@import "content";

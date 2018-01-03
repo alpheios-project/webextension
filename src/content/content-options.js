@@ -9,6 +9,7 @@ export default class ContentOptions {
     return {
       locale: {
         defaultValue: 'en-US',
+        labelText: 'UI Locale:',
         values: [
           {value: 'en-US', text: 'English (US)'},
           {value: 'en-GB', text: 'English (GB)'}
@@ -16,6 +17,7 @@ export default class ContentOptions {
       },
       panelPosition: {
         defaultValue: 'left',
+        labelText: 'Panel position:',
         values: [
           {value: 'left', text: 'Left'},
           {value: 'right', text: 'Right'}
@@ -23,6 +25,7 @@ export default class ContentOptions {
       },
       uiType: {
         defaultValue: 'panel',
+        labelText: 'UI type:',
         values: [
           {value: 'popup', text: 'Pop-up'},
           {value: 'panel', text: 'Panel'}
@@ -30,6 +33,7 @@ export default class ContentOptions {
       },
       preferredLanguage: {
         defaultValue: 'lat',
+        labelText: 'Page language:',
         values: [
           {value: 'lat', text: 'Latin'},
           {value: 'grc', text: 'Greek'},

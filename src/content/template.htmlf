@@ -4,4 +4,8 @@
            @close="close" @showdefspaneltab="showDefinitionsPanelTab"  @showinflpaneltab="showInflectionsPanelTab">
     </popup>
 </div>
-<div data-component="alpheios-panel"></div>
+<div id="alpheios-panel">
+    <panel :data="panelData" @close="close" @setposition="setPositionTo" @settingchange="settingChange"
+           @changetab="changeTab"></panel>
+</div>
+<!--<div data-component="alpheios-panel"></div>-->

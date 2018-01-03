@@ -1,8 +1,8 @@
 <template>
     <div class="auk-margin">
-        <label class="uk-form-label">{{labeltext}}</label>
-        <select v-model="selectedItem" class="uk-select">
-            <option v-for="item in items">{{item}}</option>
+        <label class="uk-form-label">{{data.labelText}}</label>
+        <select v-model="selected" class="uk-select">
+            <option v-for="item in data.textValues()">{{item}}</option>
         </select>
     </div>
 </template>
@@ -10,26 +10,18 @@
   export default {
     name: 'Setting',
     props: {
-      selected: {
-        type: String,
+      data: {
+        type: Object,
         required: true
-      },
-      items: {
-        type: Array,
-        required: true
-      },
-      labeltext: {
-        type: String,
-        required: true
-      },
+      }
     },
     computed: {
-      selectedItem: {
+      selected: {
         get: function () {
-          return this.selected
+          return this.data.currentTextValue()
         },
         set: function (newValue) {
-          this.$emit('change', newValue)
+          this.$emit('change', this.data.name, newValue)
         }
       }
     }

@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 17);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -2271,6 +2271,92 @@ class ResourceProvider {
 
 /***/ }),
 /* 1 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
+
+
+class Message {
+  constructor (body) {
+    /** @member {Symbol} requestType - */
+    this.role = undefined
+    this.type = Message.types.GENERIC_MESSAGE
+    this.ID = __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()
+    this.body = body
+  }
+
+  static get types () {
+    return {
+      GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
+      STATE_MESSAGE: Symbol.for('Alpheios_StateMessage'),
+      STATE_REQUEST: Symbol.for('Alpheios_StateRequest'),
+      STATE_RESPONSE: Symbol.for('Alpheios_StateResponse'),
+      ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
+      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
+      OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
+      PANEL_STATUS_CHANGE_REQUEST: Symbol.for('Alpheios_PanelStatusChangeRequest')
+    }
+  }
+
+  static get roles () {
+    return {
+      REQUEST: Symbol.for('Alpheios_Request'),
+      RESPONSE: Symbol.for('Alpheios_Response')
+    }
+  }
+
+  static get statuses () {
+    return {
+      DATA_FOUND: Symbol.for('Alpheios_DataFound'), // Requested word's data has been found
+      NO_DATA_FOUND: Symbol.for('Alpheios_NoDataFound'), // Requested word's data has not been found,
+      ACTIVE: Symbol.for('Alpheios_Active'), // Content script is loaded and active
+      DEACTIVATED: Symbol.for('Alpheios_Deactivated') // Content script has been loaded, but is deactivated
+    }
+  }
+
+  static statusSym (message) {
+    return Symbol.for(message.status)
+  }
+
+  static statusSymIs (message, status) {
+    return Message.statusSym(message) === status
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Message;
+
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2519,160 +2605,7 @@ class TabScript {
 
 
 /***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
-
-
-class Message {
-  constructor (body) {
-    /** @member {Symbol} requestType - */
-    this.role = undefined
-    this.type = Message.types.GENERIC_MESSAGE
-    this.ID = __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()
-    this.body = body
-  }
-
-  static get types () {
-    return {
-      GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
-      STATE_MESSAGE: Symbol.for('Alpheios_StateMessage'),
-      STATE_REQUEST: Symbol.for('Alpheios_StateRequest'),
-      STATE_RESPONSE: Symbol.for('Alpheios_StateResponse'),
-      ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
-      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
-      OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
-      PANEL_STATUS_CHANGE_REQUEST: Symbol.for('Alpheios_PanelStatusChangeRequest')
-    }
-  }
-
-  static get roles () {
-    return {
-      REQUEST: Symbol.for('Alpheios_Request'),
-      RESPONSE: Symbol.for('Alpheios_Response')
-    }
-  }
-
-  static get statuses () {
-    return {
-      DATA_FOUND: Symbol.for('Alpheios_DataFound'), // Requested word's data has been found
-      NO_DATA_FOUND: Symbol.for('Alpheios_NoDataFound'), // Requested word's data has not been found,
-      ACTIVE: Symbol.for('Alpheios_Active'), // Content script is loaded and active
-      DEACTIVATED: Symbol.for('Alpheios_Deactivated') // Content script has been loaded, but is deactivated
-    }
-  }
-
-  static statusSym (message) {
-    return Symbol.for(message.status)
-  }
-
-  static statusSymIs (message, status) {
-    return Message.statusSym(message) === status
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Message;
-
-
-
-/***/ }),
 /* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class Element {
-  constructor (name, scope, elementData = {}) {
-    this.options = Element.defaults
-
-    this.name = name
-    let defaultSelector = `[data-element="${this.name}"]`
-    this.selector = elementData.selector || defaultSelector
-    let elements = scope.querySelectorAll(this.selector)
-    if (elements.length === 0) { throw new Error(`Element "${name}" does not exist`) }
-    this.elements = (elements.length > 0) ? Array.from(elements) : [elements]
-    this.dataFunction = elementData.dataFunction
-  }
-
-  static get defaults () {
-    return {
-      classNames: {
-        hidden: 'hidden',
-        active: 'active'
-      }
-    }
-  }
-
-  get element () {
-    return this.elements[0]
-  }
-
-  setContent (...values) {
-    let contentHTML = this.dataFunction ? this.dataFunction(...values) : values[0]
-    for (let element of this.elements) {
-      element.innerHTML = contentHTML
-    }
-  }
-
-  appendContent (...values) {
-    let contentHTML = this.dataFunction ? this.dataFunction(...values) : values[0]
-    for (let element of this.elements) {
-      element.innerHTML += contentHTML
-    }
-  }
-
-  clearContent () {
-    for (let element of this.elements) {
-      element.innerHTML = ''
-    }
-  }
-
-  show () {
-    for (let element of this.elements) {
-      element.classList.remove(this.options.classNames.hidden)
-    }
-  }
-
-  hide () {
-    for (let element of this.elements) {
-      element.classList.add(this.options.classNames.hidden)
-    }
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Element;
-
-
-
-/***/ }),
-/* 5 */
 /***/ (function(module, exports) {
 
 /*
@@ -2754,7 +2687,7 @@ function toComment(sourceMap) {
 
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*
@@ -2773,7 +2706,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(48)
+var listToStyles = __webpack_require__(43)
 
 /*
 type StyleObject = {
@@ -2975,7 +2908,7 @@ function applyToTag (styleElement, obj) {
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, exports) {
 
 /* globals __VUE_SSR_CONTEXT__ */
@@ -3084,7 +3017,7 @@ module.exports = function normalizeComponent (
 
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -10103,7 +10036,7 @@ class Presenter {
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10633,14 +10566,14 @@ exports.Transporter = Transporter;
 exports.StorageAdapter = LocalStorageAdapter;
 exports.TestAdapter = TestAdapter;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(21);
-var bytesToUuid = __webpack_require__(22);
+var rng = __webpack_require__(22);
+var bytesToUuid = __webpack_require__(23);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -10671,11 +10604,11 @@ module.exports = v4;
 
 
 /***/ }),
-/* 11 */
+/* 10 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(2);
 
 
 /**
@@ -10716,7 +10649,7 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a"
 
 
 /***/ }),
-/* 12 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var apply = Function.prototype.apply;
@@ -10769,13 +10702,283 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(36);
+__webpack_require__(37);
 exports.setImmediate = setImmediate;
 exports.clearImmediate = clearImmediate;
 
 
 /***/ }),
+/* 12 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__setting_vue__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_interactjs__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_interactjs__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+  name: 'Panel',
+  components: {
+    setting: __WEBPACK_IMPORTED_MODULE_0__setting_vue__["a" /* default */]
+  },
+  props: {
+    data: {
+      type: Object,
+      required: true
+    }
+  },
+
+  computed: {
+    panelClasses: function () {
+      if (this.data.settings.panelPosition.currentValue === 'right') {
+        return 'alpheios-panel-right';
+      } else {
+        return 'alpheios-panel-left';
+      }
+    },
+
+    attachToLeftVisible: function () {
+      return this.data.settings.panelPosition.currentValue === 'right';
+    },
+
+    attachToRightVisible: function () {
+      return this.data.settings.panelPosition.currentValue === 'left';
+    }
+  },
+  methods: {
+    updateZIndex: function (zIndexMax) {
+      if (zIndexMax >= this.zIndex) {
+        this.zIndex = zIndexMax;
+        if (this.zIndex < Number.POSITIVE_INFINITY) {
+          this.zIndex++;
+        } // To be one level higher that the highest element on a page
+        this.self.element.style.zIndex = this.zIndex;
+      }
+    },
+
+    close() {
+      this.$emit('close');
+    },
+
+    setPosition(position) {
+      this.$emit('setposition', position);
+    },
+
+    changeTab(name) {
+      this.$emit('changetab', name);
+    },
+
+    clearContent: function () {
+      for (let contentArea in this.contentAreas) {
+        if (this.contentAreas.hasOwnProperty(contentArea)) {
+          this.contentAreas[contentArea].clearContent();
+        }
+      }
+      return this;
+    },
+
+    showMessage: function (messageHTML) {
+      this.contentAreas.messages.setContent(messageHTML);
+      this.tabGroups.contentTabs.activate('statusTab');
+    },
+
+    appendMessage: function (messageHTML) {
+      this.contentAreas.messages.appendContent(messageHTML);
+    },
+
+    clearMessages: function () {
+      this.contentAreas.messages.setContent('');
+    },
+
+    settingChanged: function (name, value) {
+      this.$emit('settingchange', name, value); // Re-emit for a Vue instance
+    }
+  },
+  mounted: function () {
+    // Initialize Interact.js: make panel resizable
+    __WEBPACK_IMPORTED_MODULE_1_interactjs___default()(this.$el).resizable({
+      // resize from all edges and corners
+      edges: { left: true, right: true, bottom: false, top: false },
+
+      // keep the edges inside the parent
+      restrictEdges: {
+        outer: document.body,
+        endOnly: true
+      },
+
+      // minimum size
+      restrictSize: {
+        min: { width: 400 }
+      },
+
+      inertia: true
+    }).on('resizemove', event => {
+      let target = event.target;
+      // update the element's style
+      target.style.width = `${event.rect.width}px`;
+    });
+  }
+});
+
+/***/ }),
 /* 13 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__ = __webpack_require__(14);
+/* unused harmony namespace reexport */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__ = __webpack_require__(46);
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(44)
+}
+var normalizeComponent = __webpack_require__(6)
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__["a" /* default */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "vue-components\\setting.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-7b21cdbf", Component.options)
+  } else {
+    hotAPI.reload("data-v-7b21cdbf", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
+
+
+/***/ }),
+/* 14 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+  name: 'Setting',
+  props: {
+    data: {
+      type: Object,
+      required: true
+    }
+  },
+  computed: {
+    selected: {
+      get: function () {
+        return this.data.currentTextValue();
+      },
+      set: function (newValue) {
+        this.$emit('change', this.data.name, newValue);
+      }
+    }
+  }
+});
+
+/***/ }),
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var require;var require;/**
@@ -17930,53 +18133,11 @@ win.init = init;
 
 
 /***/ }),
-/* 14 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-  name: 'Setting',
-  props: {
-    selected: {
-      type: String,
-      required: true
-    },
-    items: {
-      type: Array,
-      required: true
-    },
-    labeltext: {
-      type: String,
-      required: true
-    }
-  },
-  computed: {
-    selectedItem: {
-      get: function () {
-        return this.selected;
-      },
-      set: function (newValue) {
-        this.$emit('change', newValue);
-      }
-    }
-  }
-});
-
-/***/ }),
-/* 15 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs__ = __webpack_require__(15);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_interactjs__);
 //
 //
@@ -18105,7 +18266,7 @@ win.init = init;
 });
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -18240,13 +18401,13 @@ win.init = init;
 });
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
 
 
@@ -18266,24 +18427,24 @@ contentProcess.initialize()
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(8);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(20);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_alpheios_experience__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__ = __webpack_require__(23);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__content_options__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__ = __webpack_require__(28);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lexical_query__ = __webpack_require__(33);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__content_ui_controller__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__content_options__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lexical_query__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__content_ui_controller__ = __webpack_require__(35);
 /* global browser */
 
 
@@ -18408,7 +18569,7 @@ class ContentProcess {
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -18923,7 +19084,7 @@ class TuftsAdapter extends BaseAdapter {
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -20895,7 +21056,7 @@ class Lexicons {
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -20932,10 +21093,10 @@ if (!rng) {
 
 module.exports = rng;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports) {
 
 /**
@@ -20964,12 +21125,12 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(25);
 /* global browser */
 
 
@@ -21113,7 +21274,7 @@ class Service {
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21135,12 +21296,12 @@ class StoredRequest {
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__content_tab_script__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__content_tab_script__ = __webpack_require__(3);
 
 
 
@@ -21155,13 +21316,13 @@ class StateMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(11);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(3);
 
 
 
@@ -21183,7 +21344,7 @@ class StateResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a" 
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21198,6 +21359,7 @@ class ContentOptions {
     return {
       locale: {
         defaultValue: 'en-US',
+        labelText: 'UI Locale:',
         values: [
           {value: 'en-US', text: 'English (US)'},
           {value: 'en-GB', text: 'English (GB)'}
@@ -21205,6 +21367,7 @@ class ContentOptions {
       },
       panelPosition: {
         defaultValue: 'left',
+        labelText: 'Panel position:',
         values: [
           {value: 'left', text: 'Left'},
           {value: 'right', text: 'Right'}
@@ -21212,6 +21375,7 @@ class ContentOptions {
       },
       uiType: {
         defaultValue: 'panel',
+        labelText: 'UI type:',
         values: [
           {value: 'popup', text: 'Pop-up'},
           {value: 'panel', text: 'Panel'}
@@ -21219,6 +21383,7 @@ class ContentOptions {
       },
       preferredLanguage: {
         defaultValue: 'lat',
+        labelText: 'Page language:',
         values: [
           {value: 'lat', text: 'Latin'},
           {value: 'grc', text: 'Greek'},
@@ -21306,15 +21471,15 @@ class ContentOptions {
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(30);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(33);
  // To polyfill Element.closest() if required
 
 
@@ -21502,7 +21667,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports) {
 
 // element-closest | CC0-1.0 | github.com/jonathantneal/closest
@@ -21541,11 +21706,11 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(32);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
 
 
@@ -21628,7 +21793,7 @@ class TextSelector {
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21642,7 +21807,7 @@ class TextQuoteSelector {
 
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21695,11 +21860,11 @@ class MediaSelector {
 
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
 
 
@@ -21843,24 +22008,24 @@ class LexicalQuery {
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__ = __webpack_require__(36);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_panel_component__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_setting_vue__ = __webpack_require__(45);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__ = __webpack_require__(50);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__ = __webpack_require__(54);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit__ = __webpack_require__(58);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__vue_components_panel_vue__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_setting_vue__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__ = __webpack_require__(49);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__ = __webpack_require__(53);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit__ = __webpack_require__(57);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(59);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(58);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons__);
 /* global Node */
  // Required for Presenter
@@ -21881,9 +22046,7 @@ class ContentUIController {
     this.options = options
     this.settings = ContentUIController.settingValues
 
-    // Finds a max z-index of element on the page.
-    // Need to run this before our UI elements are loaded to avoid scanning them too.
-    let zIndexMax = this.getZIndexMax()
+    this.zIndex = this.getZIndexMax()
 
     // Inject HTML code of a plugin. Should go in reverse order.
     document.body.classList.add('alpheios')
@@ -21892,29 +22055,134 @@ class ContentUIController {
     container.outerHTML = __WEBPACK_IMPORTED_MODULE_3__template_htmlf___default.a
 
     // Initialize components
-    this.panel = new __WEBPACK_IMPORTED_MODULE_4__components_panel_component__["a" /* default */]({
-      contentAreas: {
-        shortDefinitions: {
-          dataFunction: this.formatShortDefinitions.bind(this)
+    this.panel = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
+      el: '#alpheios-panel',
+      components: {
+        panel: __WEBPACK_IMPORTED_MODULE_5__vue_components_panel_vue__["a" /* default */],
+        setting: __WEBPACK_IMPORTED_MODULE_6__vue_components_setting_vue__["a" /* default */]
+      },
+      data: {
+        panelData: {
+          isOpen: false,
+          tabs: {
+            definitions: true,
+            inflections: false,
+            status: false,
+            options: false,
+            info: false
+          },
+          shortDefinitions: '',
+          fullDefinitions: '',
+          inflections: {
+            localeSwitcher: undefined,
+            viewSelector: undefined,
+            tableBody: undefined
+          },
+          messages: '',
+          settings: this.options.items,
+          styles: {
+            zIndex: this.zIndex
+          }
         },
-        fullDefinitions: {
-          dataFunction: this.formatFullDefinitions.bind(this)
-        }
+        state: this.state,
+        options: this.options,
+        uiController: this
       },
       methods: {
-        onClose: this.closePanel.bind(this)
+        isOpen: function () {
+          return this.state.isPanelOpen()
+        },
+
+        open: function () {
+          if (!this.state.isPanelOpen()) {
+            this.panelData.isOpen = true
+            this.state.setItem('panelStatus', __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN)
+          }
+          return this
+        },
+
+        close: function () {
+          if (!this.state.isPanelClosed()) {
+            this.panelData.isOpen = false
+            this.state.setItem('panelStatus', __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED)
+          }
+          return this
+        },
+
+        setPositionTo: function (position) {
+          this.options.items.panelPosition.setValue(position)
+        },
+
+        attachToLeft: function () {
+          this.setPositionTo('left')
+        },
+
+        attachToRight: function () {
+          this.setPositionTo('right')
+        },
+
+        changeTab (name) {
+          for (let key of Object.keys(this.panelData.tabs)) {
+            if (this.panelData.tabs[key]) { this.panelData.tabs[key] = false }
+          }
+          this.panelData.tabs[name] = true
+        },
+
+        clearContent: function () {
+          this.panelData.shortDefinitions = ''
+          this.panelData.fullDefinitions = ''
+          this.panelData.messages = ''
+          return this
+        },
+
+        showMessage: function (messageHTML) {
+          this.panelData.messages = messageHTML
+          this.changeTab('status')
+        },
+
+        appendMessage: function (messageHTML) {
+          this.panelData.messages += messageHTML
+        },
+
+        clearMessages: function () {
+          this.panelData.messages = ''
+        },
+
+        toggle: function () {
+          if (this.state.isPanelOpen()) {
+            this.close()
+          } else {
+            this.open()
+          }
+          return this
+        },
+
+        settingChange: function (name, value) {
+          console.log('Change inside instance', name, value)
+          this.options.items[name].setTextValue(value)
+          switch (name) {
+            case 'preferredLanguage':
+              this.uiController.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
+              break
+            case 'locale':
+              if (this.uiController.presenter) {
+                this.uiController.presenter.setLocale(this.options.items.locale.currentValue)
+              }
+              break
+          }
+        }
+      },
+      mounted: function () {
+        this.panelData.inflections.localeSwitcher = document.querySelector('#alpheios-panel-content-infl-table-locale-switcher')
+        this.panelData.inflections.viewSelector = document.querySelector('#alpheios-panel-content-infl-table-view-selector')
+        this.panelData.inflections.tableBody = document.querySelector('#alpheios-panel-content-infl-table-body')
       }
-    }, this.state)
-    // Set panel controls event handlers
-    this.panel.innerElements.attachToLeftButton.element.addEventListener('click', this.attachPanelToLeft.bind(this))
-    this.panel.innerElements.attachToRightButton.element.addEventListener('click', this.attachPanelToRight.bind(this))
-    this.panel.innerElements.closeButton.element.addEventListener('click', this.closePanel.bind(this))
-    this.panel.updateZIndex(zIndexMax)
+    })
 
     // Should be loaded after Panel because options are inserted into a panel
-    this.optionsUI = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
+    /* this.optionsUI = new Vue({
       el: '#alpheios-options',
-      components: { setting: __WEBPACK_IMPORTED_MODULE_6__vue_components_setting_vue__["a" /* default */] },
+      components: { setting: Setting },
       data: {
         preferredLanguageValues: this.options.items.preferredLanguage.textValues(),
         localeValues: this.options.items.locale.textValues(),
@@ -21970,20 +22238,19 @@ class ContentUIController {
     this.optionsUI.options = this.options
     this.optionsUI.uiController = this
 
+    */
     this.options.load(() => {
-      this.state.status = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
-      this.setPanelPositionTo(this.options.items.panelPosition.currentValue)
+      this.state.status = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
       this.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
-      console.log('Content script is set to active')
-      this.optionsUI.update(this.options)
+      console.log('Content script is activated')
     })
 
-    __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a.component('morph',__WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */])
+    __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a.component('morph', __WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */])
 
     // Create a Vue instance for a popup
     this.popup = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
       el: '#alpheios-popup',
-      components: { morph:__WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */], popup: __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__["a" /* default */] },
+      components: { morph: __WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */], popup: __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__["a" /* default */] },
       data: {
         messages: '',
         content: '',
@@ -22031,14 +22298,14 @@ class ContentUIController {
 
         showDefinitionsPanelTab: function () {
           this.visible = false
-          this.panel.tabGroups.contentTabs.activate('definitionsTab')
+          this.panel.changeTab('definitions')
           this.panel.open()
           return this
         },
 
         showInflectionsPanelTab: function () {
           this.visible = false
-          this.panel.tabGroups.contentTabs.activate('inflectionsTab')
+          this.panel.changeTab('inflections')
           this.panel.open()
           return this
         }
@@ -22048,14 +22315,6 @@ class ContentUIController {
 
     // Initialize UIKit
     __WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons___default.a)
-  }
-
-  /**
-   * A temporary solution
-   * @return {*|OptionsComponent}
-   */
-  getOptions () {
-    return this.options
   }
 
   static get settingValues () {
@@ -22069,11 +22328,18 @@ class ContentUIController {
    * Finds a maximal z-index value of elements on a page.
    * @return {Number}
    */
-  getZIndexMax () {
+  getZIndexMax (zIndexDefualt = 2000) {
     let startTime = new Date().getTime()
     let zIndex = this.zIndexRecursion(document.querySelector('body'), Number.NEGATIVE_INFINITY)
     let timeDiff = new Date().getTime() - startTime
     console.log(`Z-index max value is ${zIndex}, calculation time is ${timeDiff} ms`)
+
+    if (zIndex >= zIndexDefualt) {
+      if (zIndex < Number.POSITIVE_INFINITY) { zIndex++ } // To be one level higher that the highest element on a page
+    } else {
+      zIndex = zIndexDefualt
+    }
+
     return zIndex
   }
 
@@ -22132,23 +22398,23 @@ class ContentUIController {
   }
 
   updateMorphology (homonym) {
-    homonym.lexemes.sort(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["n" /* Lexeme */].getSortByTwoLemmaFeatures(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["d" /* Feature */].types.frequency,__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["d" /* Feature */].types.part))
+    homonym.lexemes.sort(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["n" /* Lexeme */].getSortByTwoLemmaFeatures(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["d" /* Feature */].types.frequency, __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["d" /* Feature */].types.part))
     this.popup.lexemes = homonym.lexemes
     this.popup.morphDataReady = true
   }
 
   updateDefinitions (homonym) {
-    this.panel.contentAreas.shortDefinitions.clearContent()
-    this.panel.contentAreas.fullDefinitions.clearContent()
+    this.panel.panelData.shortDefinitions = ''
+    this.panel.panelData.fullDefinitions = ''
     let shortDefsText = ''
     for (let lexeme of homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
-        this.panel.contentAreas.shortDefinitions.appendContent(lexeme)
+        this.panel.panelData.shortDefinitions += this.formatShortDefinitions(lexeme)
         shortDefsText += this.formatShortDefinitions(lexeme)
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {
-        this.panel.contentAreas.fullDefinitions.appendContent(lexeme)
+        this.panel.panelData.fullDefinitions += this.formatFullDefinitions(lexeme)
       }
     }
 
@@ -22159,9 +22425,9 @@ class ContentUIController {
 
   updateInflections (lexicalData) {
     this.presenter = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["d" /* Presenter */](
-      this.panel.contentAreas.inflectionsTable.element,
-      this.panel.contentAreas.inflectionsViewSelector.element,
-      this.panel.contentAreas.inflectionsLocaleSwitcher.element,
+      this.panel.panelData.inflections.tableBody,
+      this.panel.panelData.inflections.viewSelector,
+      this.panel.panelData.inflections.localeSwitcher,
       lexicalData,
       this.options.items.locale.currentValue
     ).render()
@@ -22178,7 +22444,7 @@ class ContentUIController {
     if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
       this.panel.open()
     } else {
-      if (this.panel.isOpened) { this.panel.close() }
+      if (this.panel.isOpen) { this.panel.close() }
       this.popup.open()
     }
     return this
@@ -22195,33 +22461,13 @@ class ContentUIController {
   setPreferredLanguageTo (language) {
     this.preferredLangauge = language
   }
-
-  setPanelPositionTo (position) {
-    if (position === 'right') {
-      this.attachPanelToRight()
-    } else {
-      this.attachPanelToLeft()
-    }
-  }
-
-  attachPanelToLeft () {
-    this.options.items.panelPosition.setValue('left')
-    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
-    this.panel.attachToLeft()
-  }
-
-  attachPanelToRight () {
-    this.options.items.panelPosition.setValue('right')
-    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
-    this.panel.attachToRight()
-  }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = ContentUIController;
 
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
@@ -33023,10 +33269,10 @@ return Vue$3;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(12).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(11).setImmediate))
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -33216,10 +33462,10 @@ return Vue$3;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(37)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(38)))
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -33409,390 +33655,25 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :content=\"content\" :visible=\"visible\" :lexemes=\"lexemes\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div data-component=\"alpheios-panel\"></div>\r\n";
-
-/***/ }),
-/* 39 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(40);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(43);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_interactjs__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_content_tab_script__ = __webpack_require__(1);
-
-
- // Interact.js (for resizability)
-
-
-/**
- * This is a singleton component.
- */
-class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default */] {
-  constructor (options, state) {
-    super(Panel.defaults, options)
-    this.state = state
-
-    this.panelOpenedClassName = 'opened'
-    this.zIndex = Panel.defaults.zIndex
-    this.self.element.style.zIndex = this.zIndex
-    this.opened = false
-
-    // Initialize Interact.js: make panel resizable
-    __WEBPACK_IMPORTED_MODULE_2_interactjs___default()(this.self.element)
-      .resizable({
-        // resize from all edges and corners
-        edges: { left: true, right: true, bottom: false, top: false },
-
-        // keep the edges inside the parent
-        restrictEdges: {
-          outer: document.body,
-          endOnly: true
-        },
-
-        // minimum size
-        restrictSize: {
-          min: { width: 400 }
-        },
-
-        inertia: true
-      })
-      .on('resizemove', event => {
-        let target = event.target
-        // update the element's style
-        target.style.width = `${event.rect.width}px`
-      })
-  }
-
-  static get defaults () {
-    return {
-      template: __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default.a,
-      selfSelector: '[data-component="alpheios-panel"]',
-      innerElements: {
-        attachToLeftButton: { selector: '[data-element="attachToLeftBtn"]' },
-        attachToRightButton: { selector: '[data-element="attachToRightBtn"]' },
-        closeButton: { selector: '[data-element="closeBtn"]' }
-      },
-      outerElements: {
-        page: { selector: 'body' }
-      },
-      contentAreas: {
-        messages: {},
-        shortDefinitions: {},
-        fullDefinitions: {},
-        inflectionsLocaleSwitcher: {},
-        inflectionsViewSelector: {},
-        inflectionsTable: {}
-      },
-      position: Panel.positions.default,
-      zIndex: 2000
-    }
-  }
-
-  static get positions () {
-    return {
-      default: 'alpheios-panel-left',
-      left: 'alpheios-panel-left',
-      right: 'alpheios-panel-right'
-    }
-  }
-
-  /**
-   * Sets a z-index of a panel to be higher than a z-index of any page element.
-   * @param {Number} zIndexMax - A maximum z-index of elements on a page.
-   */
-  updateZIndex (zIndexMax) {
-    if (zIndexMax >= this.zIndex) {
-      this.zIndex = zIndexMax
-      if (this.zIndex < Number.POSITIVE_INFINITY) { this.zIndex++ } // To be one level higher that the highest element on a page
-      this.self.element.style.zIndex = this.zIndex
-    }
-  }
-
-  setPositionTo (position = Panel.positions.default) {
-    if (this.bodyPositionClassName !== position) {
-      this.bodyPositionClassName = position
-      if (position === Panel.positions.right) {
-        // Panel is at the right
-        this.outerElements.page.element.classList.remove(Panel.positions.left)
-        this.outerElements.page.element.classList.add(Panel.positions.right)
-        this.innerElements.attachToRightButton.hide()
-        this.innerElements.attachToLeftButton.show()
-      } else {
-        // Default: Panel is at the left
-        this.outerElements.page.element.classList.remove(Panel.positions.right)
-        this.outerElements.page.element.classList.add(Panel.positions.left)
-        this.innerElements.attachToLeftButton.hide()
-        this.innerElements.attachToRightButton.show()
-      }
-    }
-  }
-
-  open () {
-    if (!this.state.isPanelOpen()) {
-      this.self.element.classList.add(this.panelOpenedClassName)
-      this.state.setItem('panelStatus', __WEBPACK_IMPORTED_MODULE_3__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN)
-    }
-    return this
-  }
-
-  close () {
-    if (!this.state.isPanelClosed()) {
-      this.self.element.classList.remove(this.panelOpenedClassName)
-      this.state.setItem('panelStatus', __WEBPACK_IMPORTED_MODULE_3__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED)
-    }
-    return this
-  }
-
-  attachToLeft () {
-    this.setPositionTo(Panel.positions.left)
-    console.log('attach to left')
-  }
-
-  attachToRight () {
-    this.setPositionTo(Panel.positions.right)
-    console.log('attach to right')
-  }
-
-  toggle () {
-    if (this.state.isPanelOpen()) {
-      this.close()
-    } else {
-      this.open()
-    }
-    return this
-  }
-
-  clearContent () {
-    for (let contentArea in this.contentAreas) {
-      if (this.contentAreas.hasOwnProperty(contentArea)) {
-        this.contentAreas[contentArea].clearContent()
-      }
-    }
-    return this
-  }
-
-  showMessage (messageHTML) {
-    this.contentAreas.messages.setContent(messageHTML)
-    this.tabGroups.contentTabs.activate('statusTab')
-  }
-
-  appendMessage (messageHTML) {
-    this.contentAreas.messages.appendContent(messageHTML)
-  }
-
-  clearMessages () {
-    this.contentAreas.messages.setContent('')
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Panel;
-
-
+module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :content=\"content\" :visible=\"visible\" :lexemes=\"lexemes\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div id=\"alpheios-panel\">\r\n    <panel :data=\"panelData\" @close=\"close\" @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\r\n           @changetab=\"changeTab\"></panel>\r\n</div>\r\n<!--<div data-component=\"alpheios-panel\"></div>-->\r\n";
 
 /***/ }),
 /* 40 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(41);
-
-
-
-class Component {
-  constructor (componentOptions = {}, userOptions = {}) {
-    this.options = {}
-    this.options = Object.assign(this.options, componentOptions)
-    this.options = Object.assign(this.options, userOptions)
-    if (componentOptions.innerElements && userOptions.innerElements) {
-      this.options.innerElements = Object.assign(componentOptions.innerElements, userOptions.innerElements)
-    }
-    if (componentOptions.outerElements && userOptions.outerElements) {
-      this.options.outerElements = Object.assign(componentOptions.outerElements, userOptions.outerElements)
-    }
-    if (componentOptions.contentAreas && userOptions.contentAreas) {
-      this.options.contentAreas = Object.assign(componentOptions.contentAreas, userOptions.contentAreas)
-    }
-    this.self = {
-      selector: this.options.selfSelector
-    }
-    this.options.elements = {}
-    this.innerElements = {}
-    this.outerElements = {}
-    this.tabGroups = {}
-    this.contentAreas = {}
-
-    this.self.element = document.querySelector(this.self.selector)
-    if (!this.self.element) {
-      throw new Error(`Element's placeholder "${this.self.selector}" does not exist. Cannot create a component`)
-    }
-    this.self.element.outerHTML = this.options.template
-    this.self.element = document.querySelector(this.self.selector)
-
-    if (this.options && this.options.innerElements) {
-      for (const [name, elementData] of Object.entries(this.options.innerElements)) {
-        this.innerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, this.self.element, elementData)
-      }
-    }
-
-    if (this.options && this.options.outerElements) {
-      for (const [name, elementData] of Object.entries(this.options.outerElements)) {
-        this.outerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, document, elementData)
-      }
-    }
-
-    // Scan for tab groups
-    let tabGroups = new Set()
-    let tabs = this.self.element.querySelectorAll('[data-tab-group]')
-    for (let tab of tabs) {
-      let groupName = tab.dataset.tabGroup
-      if (!tabGroups.has(groupName)) { tabGroups.add(groupName) }
-    }
-    for (let groupNames of tabGroups.entries()) {
-      let groupName = groupNames[0] // entries() returns [groupName, groupName]
-      this.tabGroups[groupName] = new __WEBPACK_IMPORTED_MODULE_1__tab_group__["a" /* default */](groupName, this.self.element)
-    }
-
-    if (this.options && this.options.methods) {
-      for (const [key, value] of Object.entries(this.options.methods)) {
-        this[key] = value
-      }
-    }
-
-    if (this.options && this.options.contentAreas) {
-      for (const [areaName, areaData] of Object.entries(this.options.contentAreas)) {
-        areaData.selector = `[data-content-area="${areaName}"]`
-        this.contentAreas[areaName] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](areaName, this.self.element, areaData)
-      }
-    }
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Component;
-
-
-
-/***/ }),
-/* 41 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(42);
-
-
-
-class TabGroup {
-  constructor (groupName, scope) {
-    this._index = []
-
-    let tabs = scope.querySelectorAll(`[data-tab-group="${groupName}"]`)
-    if (!tabs || tabs.length === 0) { throw new Error(`Tab group "${groupName}" has no tabs in it`) }
-    for (let tab of tabs) {
-      let name = tab.dataset.element
-      let tabElement = new __WEBPACK_IMPORTED_MODULE_1__tab_element__["a" /* default */](name, scope)
-      this[name] = tabElement
-      this._index.push(tabElement)
-    }
-
-    // Try to set active tabe based on presence of an `active` class
-    for (let tab of this._index) {
-      if (tab.element.classList.contains(__WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */].defaults.classNames.active)) {
-        this.activeTab = tab
-      }
-    }
-    // If not found, let's set it to a default value
-    if (!this.activeTab) {
-      this.activeTab = this._index[0] // Set to a first tab if `active` class is not assigned to any tab element
-    }
-
-    for (let tab of this._index) {
-      tab.deactivate() // Reset all panels and tabs to match object configuration
-      tab.element.addEventListener('click', this.onClick.bind(this))
-    }
-    this.activeTab.activate()
-  }
-
-  activate (tabName) {
-    // Deactivate a currently active tab
-    this.activeTab.deactivate()
-    this.activeTab = this[tabName]
-    this.activeTab.activate()
-  }
-
-  onClick (event) {
-    let tabName = event.currentTarget.dataset.element
-    if (!tabName) {
-      throw new Error(`Tab currently being selected has no name`)
-    }
-    this.activate(tabName)
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = TabGroup;
-
-
-
-/***/ }),
-/* 42 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(4);
-
-
-class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */] {
-  constructor (name, scope, elementData = {}) {
-    super(name, scope, elementData)
-    this.isActive = false
-    this.panel = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](this.element.dataset.targetName, scope)
-  }
-
-  deactivate () {
-    this.element.classList.remove(__WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */].defaults.classNames.active)
-    this.panel.hide()
-    this.isActive = false
-  }
-
-  activate () {
-    this.element.classList.add(__WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */].defaults.classNames.active)
-    this.panel.show()
-    this.isActive = true
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = TabElement;
-
-
-
-/***/ }),
-/* 43 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\r\n    <div class=\"alpheios-panel__header\">\r\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(44) + "\"></div>\r\n        <span data-element=\"attachToLeftBtn\" id=\"alpheios-panel-attach-to-left\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: chevron-left; ratio: 2\"></span>\r\n        <span data-element=\"attachToRightBtn\" id=\"alpheios-panel-attach-to-right\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: chevron-right; ratio: 2\"></span>\r\n        <span data-element=\"closeBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\"\r\n              uk-icon=\"icon: close; ratio: 2\"></span>\r\n    </div>\r\n\r\n    <div class=\"alpheios-panel__body\">\r\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\r\n            <div data-element=\"definitionsPanel\">\r\n                <h2>Short Definitions</h2>\r\n                <div data-content-area=\"shortDefinitions\"></div>\r\n                <h2>Full Definitions</h2>\r\n                <div data-content-area=\"fullDefinitions\"></div>\r\n            </div>\r\n            <div data-element=\"inflectionsPanel\">\r\n                <div data-content-area=\"inflectionsLocaleSwitcher\"\r\n                     id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\"\r\n                     class=\"alpheios-ui-form-group\"></div>\r\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\r\n            </div>\r\n            <div data-element=\"statusPanel\">\r\n                <div data-content-area=\"messages\"></div>\r\n            </div>\r\n            <div data-element=\"optionsPanel\">\r\n                <div id=\"alpheios-options\">\r\n                    <setting :items=\"preferredLanguageValues\" :selected=\"preferredLanguage\" :labeltext=\"preferredLanguageLabel\" @change=\"changePreferredLanguage\"></setting>\r\n                    <setting :items=\"localeValues\" :selected=\"locale\" :labeltext=\"localeLabel\" @change=\"changeLocale\"></setting>\r\n                    <setting :items=\"uiTypeValues\" :selected=\"uiType\" :labeltext=\"uiTypeLabel\" @change=\"changeUiType\"></setting>\r\n                    <setting :items=\"panelPositionValues\" :selected=\"panelPosition\" :labeltext=\"panelPositionLabel\" @change=\"changePanelPosition\"></setting>\r\n                </div>\r\n            </div>\r\n            <div data-element=\"infoPanel\">\r\n                <h2>Information</h2>\r\n            </div>\r\n        </div>\r\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\r\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\r\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\r\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\r\n\r\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: info; ratio: 2\" data-element=\"infoTab\"\r\n                  data-tab-group=\"contentTabs\" data-target-name=\"infoPanel\"></span>\r\n        </div>\r\n    </div>\r\n</div>\r\n";
-
-/***/ }),
-/* 44 */
-/***/ (function(module, exports) {
-
-module.exports = "data:image/png;base64,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"
-
-/***/ }),
-/* 45 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_panel_vue__ = __webpack_require__(12);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__ = __webpack_require__(49);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5359cd9a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_panel_vue__ = __webpack_require__(47);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(46)
+  __webpack_require__(41)
 }
-var normalizeComponent = __webpack_require__(7)
+var normalizeComponent = __webpack_require__(6)
 /* script */
 
 
@@ -33807,14 +33688,14 @@ var __vue_scopeId__ = null
 /* moduleIdentifier (server only) */
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
-  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_panel_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5359cd9a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_panel_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "vue-components\\setting.vue"
+Component.options.__file = "vue-components\\panel.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -33823,9 +33704,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-7b21cdbf", Component.options)
+    hotAPI.createRecord("data-v-5359cd9a", Component.options)
   } else {
-    hotAPI.reload("data-v-7b21cdbf", Component.options)
+    hotAPI.reload("data-v-5359cd9a", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -33836,23 +33717,23 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 46 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(47);
+var content = __webpack_require__(42);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(6)("efa9aa7a", content, false);
+var update = __webpack_require__(5)("9e1e6022", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-7b21cdbf\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-7b21cdbf\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-5359cd9a\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/sass-loader/lib/loader.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./panel.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-5359cd9a\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/sass-loader/lib/loader.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./panel.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -33862,21 +33743,21 @@ if(false) {
 }
 
 /***/ }),
-/* 47 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(5)(true);
+exports = module.exports = __webpack_require__(4)(undefined);
 // imports
 
 
 // module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", "", {"version":3,"sources":[],"names":[],"mappings":"","file":"setting.vue","sourceRoot":""}]);
+exports.push([module.i, "\n.alpheios-panel {\n  display: block;\n  width: 400px;\n  height: 100vh;\n  top: 0;\n  z-index: 2000;\n  position: fixed;\n  background: #FFF;\n  resize: both;\n  opacity: 0.95;\n}\n.alpheios-panel.alpheios-panel-left {\n  left: 0;\n}\n.alpheios-panel.alpheios-panel-right {\n  display: block;\n  right: 0;\n}\n.alpheios-panel.full-width {\n  display: block;\n  width: 100%;\n  left: 0;\n}\n.alpheios-panel__header {\n  position: relative;\n  display: flex;\n  flex-wrap: nowrap;\n  height: 60px;\n  padding: 10px;\n  box-sizing: border-box;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: ltr;\n  padding: 10px 0 10px 20px;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: rtl;\n  padding: 10px 20px 10px 0;\n}\n.alpheios-panel__header-title {\n  flex-grow: 1;\n}\n.alpheios-panel__header-logo {\n  margin-top: -1px;\n}\n.auk .uk-icon.alpheios-panel__header-action-btn {\n  display: block;\n  width: 40px;\n  height: 40px;\n  margin: 0 10px;\n  cursor: pointer;\n}\n.alpheios-panel__header-action-btn:hover {\n  fill: #FFF;\n}\n.alpheios-panel__body {\n  display: flex;\n  height: calc(100vh - 60px);\n}\n.alpheios-panel-left .alpheios-panel__body {\n  flex-direction: row;\n}\n.alpheios-panel-right .alpheios-panel__body {\n  flex-direction: row-reverse;\n}\n.alpheios-panel__content {\n  flex-grow: 1;\n  direction: ltr;\n  overflow: auto;\n  padding: 10px 20px 100px;\n}\n.alpheios-panel__nav {\n  width: 60px;\n}\n.auk .uk-icon.alpheios-panel__nav-btn {\n  cursor: pointer;\n  margin: 20px 10px;\n}\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 48 */
+/* 43 */
 /***/ (function(module, exports) {
 
 /**
@@ -33909,7 +33790,47 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 49 */
+/* 44 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(45);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(5)("efa9aa7a", content, false);
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-7b21cdbf\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-7b21cdbf\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(4)(true);
+// imports
+
+
+// module
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", "", {"version":3,"sources":[],"names":[],"mappings":"","file":"setting.vue","sourceRoot":""}]);
+
+// exports
+
+
+/***/ }),
+/* 46 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -33919,7 +33840,7 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "auk-margin" }, [
     _c("label", { staticClass: "uk-form-label" }, [
-      _vm._v(_vm._s(_vm.labeltext))
+      _vm._v(_vm._s(_vm.data.labelText))
     ]),
     _vm._v(" "),
     _c(
@@ -33929,8 +33850,8 @@ var render = function() {
           {
             name: "model",
             rawName: "v-model",
-            value: _vm.selectedItem,
-            expression: "selectedItem"
+            value: _vm.selected,
+            expression: "selected"
           }
         ],
         staticClass: "uk-select",
@@ -33944,13 +33865,13 @@ var render = function() {
                 var val = "_value" in o ? o._value : o.value
                 return val
               })
-            _vm.selectedItem = $event.target.multiple
+            _vm.selected = $event.target.multiple
               ? $$selectedVal
               : $$selectedVal[0]
           }
         }
       },
-      _vm._l(_vm.items, function(item) {
+      _vm._l(_vm.data.textValues(), function(item) {
         return _c("option", [_vm._v(_vm._s(item))])
       })
     )
@@ -33968,19 +33889,344 @@ if (false) {
 }
 
 /***/ }),
-/* 50 */
+/* 47 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(15);
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(
+    "div",
+    {
+      directives: [
+        {
+          name: "show",
+          rawName: "v-show",
+          value: _vm.data.isOpen,
+          expression: "data.isOpen"
+        }
+      ],
+      staticClass: "alpheios-panel auk",
+      class: _vm.panelClasses,
+      style: this.data.styles,
+      attrs: { "data-component": "alpheios-panel", "data-resizable": "true" }
+    },
+    [
+      _c("div", { staticClass: "alpheios-panel__header" }, [
+        _vm._m(0),
+        _vm._v(" "),
+        _c("span", {
+          directives: [
+            {
+              name: "show",
+              rawName: "v-show",
+              value: _vm.attachToLeftVisible,
+              expression: "attachToLeftVisible"
+            }
+          ],
+          staticClass: "alpheios-panel__header-action-btn",
+          attrs: { "uk-icon": "icon: chevron-left; ratio: 2" },
+          on: {
+            click: function($event) {
+              _vm.setPosition("left")
+            }
+          }
+        }),
+        _vm._v(" "),
+        _c("span", {
+          directives: [
+            {
+              name: "show",
+              rawName: "v-show",
+              value: _vm.attachToRightVisible,
+              expression: "attachToRightVisible"
+            }
+          ],
+          staticClass: "alpheios-panel__header-action-btn",
+          attrs: { "uk-icon": "icon: chevron-right; ratio: 2" },
+          on: {
+            click: function($event) {
+              _vm.setPosition("right")
+            }
+          }
+        }),
+        _vm._v(" "),
+        _c("span", {
+          staticClass: "alpheios-panel__header-action-btn",
+          attrs: { "uk-icon": "icon: close; ratio: 2" },
+          on: { click: _vm.close }
+        })
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "alpheios-panel__body" }, [
+        _c("div", { staticClass: "alpheios-panel__content" }, [
+          _c(
+            "div",
+            {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: _vm.data.tabs.definitions,
+                  expression: "data.tabs.definitions"
+                }
+              ],
+              attrs: { "data-element": "definitionsPanel" }
+            },
+            [
+              _c("h2", [_vm._v("Short Definitions")]),
+              _vm._v(" "),
+              _c("div", {
+                domProps: { innerHTML: _vm._s(_vm.data.shortDefinitions) }
+              }),
+              _vm._v(" "),
+              _c("h2", [_vm._v("Full Definitions")]),
+              _vm._v(" "),
+              _c("div", {
+                domProps: { innerHTML: _vm._s(_vm.data.fullDefinitions) }
+              })
+            ]
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: _vm.data.tabs.inflections,
+                  expression: "data.tabs.inflections"
+                }
+              ],
+              attrs: { "data-element": "inflectionsPanel" }
+            },
+            [
+              _c("div", {
+                staticClass: "alpheios-ui-form-group",
+                attrs: {
+                  id: "alpheios-panel-content-infl-table-locale-switcher"
+                }
+              }),
+              _vm._v(" "),
+              _c("div", {
+                staticClass: "alpheios-ui-form-group",
+                attrs: { id: "alpheios-panel-content-infl-table-view-selector" }
+              }),
+              _vm._v(" "),
+              _c("div", {
+                attrs: { id: "alpheios-panel-content-infl-table-body" }
+              })
+            ]
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: _vm.data.tabs.status,
+                  expression: "data.tabs.status"
+                }
+              ],
+              attrs: { "data-element": "statusPanel" }
+            },
+            [_c("div", { domProps: { innerHTML: _vm._s(_vm.data.messages) } })]
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: _vm.data.tabs.options,
+                  expression: "data.tabs.options"
+                }
+              ],
+              attrs: { "data-element": "optionsPanel" }
+            },
+            [
+              _c("setting", {
+                attrs: { data: _vm.data.settings.preferredLanguage },
+                on: { change: _vm.settingChanged }
+              }),
+              _vm._v(" "),
+              _c("setting", {
+                attrs: { data: _vm.data.settings.locale },
+                on: { change: _vm.settingChanged }
+              }),
+              _vm._v(" "),
+              _c("setting", {
+                attrs: { data: _vm.data.settings.panelPosition },
+                on: { change: _vm.settingChanged }
+              }),
+              _vm._v(" "),
+              _c("setting", {
+                attrs: { data: _vm.data.settings.uiType },
+                on: { change: _vm.settingChanged }
+              })
+            ],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: _vm.data.tabs.info,
+                  expression: "data.tabs.info"
+                }
+              ],
+              attrs: { "data-element": "infoPanel" }
+            },
+            [_c("h2", [_vm._v("Information")])]
+          )
+        ]),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            staticClass: "alpheios-panel__nav",
+            attrs: { id: "alpheios-panel__nav" }
+          },
+          [
+            _c("span", {
+              staticClass: "alpheios-panel__nav-btn uk-icon",
+              class: { active: _vm.data.tabs.definitions },
+              attrs: {
+                "data-element": "definitionsTab",
+                "data-tab-group": "contentTabs",
+                "data-target-name": "definitionsPanel",
+                "uk-icon": "icon: comment; ratio: 2"
+              },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("definitions")
+                }
+              }
+            }),
+            _vm._v(" "),
+            _c("span", {
+              staticClass: "alpheios-panel__nav-btn uk-icon",
+              class: { active: _vm.data.tabs.inflections },
+              attrs: {
+                "data-element": "inflectionsTab",
+                "data-tab-group": "contentTabs",
+                "data-target-name": "inflectionsPanel",
+                "uk-icon": "icon: table; ratio: 2"
+              },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("inflections")
+                }
+              }
+            }),
+            _vm._v(" "),
+            _c("span", {
+              staticClass: "alpheios-panel__nav-btn uk-icon",
+              class: { active: _vm.data.tabs.status },
+              attrs: {
+                "uk-icon": "icon: clock; ratio: 2",
+                "data-element": "statusTab",
+                "data-tab-group": "contentTabs",
+                "data-target-name": "statusPanel"
+              },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("status")
+                }
+              }
+            }),
+            _vm._v(" "),
+            _c("span", {
+              staticClass: "alpheios-panel__nav-btn uk-icon",
+              class: { active: _vm.data.tabs.options },
+              attrs: {
+                "uk-icon": "icon: cog; ratio: 2",
+                "data-element": "optionsTab",
+                "data-tab-group": "contentTabs",
+                "data-target-name": "optionsPanel"
+              },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("options")
+                }
+              }
+            }),
+            _vm._v(" "),
+            _c("span", {
+              staticClass: "alpheios-panel__nav-btn uk-icon",
+              class: { active: _vm.data.tabs.info },
+              attrs: {
+                "uk-icon": "icon: info; ratio: 2",
+                "data-element": "infoTab",
+                "data-tab-group": "contentTabs",
+                "data-target-name": "infoPanel"
+              },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("info")
+                }
+              }
+            })
+          ]
+        )
+      ])
+    ]
+  )
+}
+var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "alpheios-panel__header-title" }, [
+      _c("img", {
+        staticClass: "alpheios-panel__header-logo",
+        attrs: { src: __webpack_require__(48) }
+      })
+    ])
+  }
+]
+render._withStripped = true
+var esExports = { render: render, staticRenderFns: staticRenderFns }
+/* harmony default export */ __webpack_exports__["a"] = (esExports);
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-5359cd9a", esExports)
+  }
+}
+
+/***/ }),
+/* 48 */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/png;base64,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"
+
+/***/ }),
+/* 49 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(16);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(53);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(52);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(51)
+  __webpack_require__(50)
 }
-var normalizeComponent = __webpack_require__(7)
+var normalizeComponent = __webpack_require__(6)
 /* script */
 
 
@@ -34024,17 +34270,17 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 51 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(52);
+var content = __webpack_require__(51);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(6)("449bb36b", content, false);
+var update = __webpack_require__(5)("449bb36b", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -34050,10 +34296,10 @@ if(false) {
 }
 
 /***/ }),
-/* 52 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(5)(true);
+exports = module.exports = __webpack_require__(4)(true);
 // imports
 
 
@@ -34064,7 +34310,7 @@ exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border:
 
 
 /***/ }),
-/* 53 */
+/* 52 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -34164,19 +34410,19 @@ if (false) {
 }
 
 /***/ }),
-/* 54 */
+/* 53 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__ = __webpack_require__(17);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_a407c392_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__ = __webpack_require__(57);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_a407c392_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__ = __webpack_require__(56);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(55)
+  __webpack_require__(54)
 }
-var normalizeComponent = __webpack_require__(7)
+var normalizeComponent = __webpack_require__(6)
 /* script */
 
 
@@ -34220,17 +34466,17 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 55 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(56);
+var content = __webpack_require__(55);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(6)("44fc9442", content, false);
+var update = __webpack_require__(5)("44fc9442", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
@@ -34246,10 +34492,10 @@ if(false) {
 }
 
 /***/ }),
-/* 56 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(5)(true);
+exports = module.exports = __webpack_require__(4)(true);
 // imports
 
 
@@ -34260,7 +34506,7 @@ exports.push([module.i, "\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  cl
 
 
 /***/ }),
-/* 57 */
+/* 56 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -34811,7 +35057,7 @@ if (false) {
 }
 
 /***/ }),
-/* 58 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(setImmediate) {/*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -45306,10 +45552,10 @@ return UIkit$2;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11).setImmediate))
 
 /***/ }),
-/* 59 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
