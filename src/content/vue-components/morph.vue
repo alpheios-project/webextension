@@ -207,4 +207,8 @@
      display: none;
    }
 
+   #alpheios-morph__lexemes .alpheios-definition__lemma {
+       display: none;
+   }
+
 </style>
