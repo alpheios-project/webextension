@@ -76,7 +76,7 @@ export default class ContentProcess {
       }
     }
     if (diff.hasOwnProperty('panelStatus')) {
-      if (diff.panelStatus === TabScript.statuses.panel.OPEN) { this.ui.openPanel() } else { this.ui.closePanel() }
+      if (diff.panelStatus === TabScript.statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
     }
     this.messagingService.sendResponseToBg(new StateResponse(request, this.state)).catch(
       (error) => {

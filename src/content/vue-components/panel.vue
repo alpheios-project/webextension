@@ -21,9 +21,9 @@
                     <div v-html="data.fullDefinitions"></div>
                 </div>
                 <div v-show="data.tabs.inflections" data-element="inflectionsPanel">
-                    <div id="alpheios-panel-content-infl-table-locale-switcher" class="alpheios-ui-form-group"></div>
-                    <div id="alpheios-panel-content-infl-table-view-selector" class="alpheios-ui-form-group"></div>
-                    <div id="alpheios-panel-content-infl-table-body"></div>
+                    <div :id="data.inflectionIDs.localeSwitcher" class="alpheios-ui-form-group"></div>
+                    <div :id="data.inflectionIDs.viewSelector" class="alpheios-ui-form-group"></div>
+                    <div :id="data.inflectionIDs.tableBody"></div>
                 </div>
                 <div v-show="data.tabs.status" data-element="statusPanel">
                     <div v-html="data.messages"></div>

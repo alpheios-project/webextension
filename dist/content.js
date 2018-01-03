@@ -18503,7 +18503,7 @@ class ContentProcess {
       }
     }
     if (diff.hasOwnProperty('panelStatus')) {
-      if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN) { this.ui.openPanel() } else { this.ui.closePanel() }
+      if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
     }
     this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__["a" /* default */](request, this.state)).catch(
       (error) => {
@@ -22051,6 +22051,11 @@ class ContentUIController {
             viewSelector: undefined,
             tableBody: undefined
           },
+          inflectionIDs: {
+            localeSwitcher: 'alpheios-panel-content-infl-table-locale-switcher',
+            viewSelector: 'alpheios-panel-content-infl-table-view-selector',
+            tableBody: 'alpheios-panel-content-infl-table-body'
+          },
           messages: '',
           settings: this.options.items,
           styles: {
@@ -22134,9 +22139,6 @@ class ContentUIController {
           console.log('Change inside instance', name, value)
           this.options.items[name].setTextValue(value)
           switch (name) {
-            case 'preferredLanguage':
-              this.uiController.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
-              break
             case 'locale':
               if (this.uiController.presenter) {
                 this.uiController.presenter.setLocale(this.options.items.locale.currentValue)
@@ -22146,15 +22148,14 @@ class ContentUIController {
         }
       },
       mounted: function () {
-        this.panelData.inflections.localeSwitcher = document.querySelector('#alpheios-panel-content-infl-table-locale-switcher')
-        this.panelData.inflections.viewSelector = document.querySelector('#alpheios-panel-content-infl-table-view-selector')
-        this.panelData.inflections.tableBody = document.querySelector('#alpheios-panel-content-infl-table-body')
+        this.panelData.inflections.localeSwitcher = document.querySelector(`#${this.panelData.inflectionIDs.localeSwitcher}`)
+        this.panelData.inflections.viewSelector = document.querySelector(`#${this.panelData.inflectionIDs.viewSelector}`)
+        this.panelData.inflections.tableBody = document.querySelector(`#${this.panelData.inflectionIDs.tableBody}`)
       }
     })
 
     this.options.load(() => {
       this.state.status = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
-      this.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
       console.log('Content script is activated')
     })
 
@@ -22357,38 +22358,6 @@ class ContentUIController {
       this.popup.open()
     }
     return this
-  }
-
-  openPanel () {
-    this.panel.open()
-  }
-
-  closePanel () {
-    this.panel.close()
-  }
-
-  setPreferredLanguageTo (language) {
-    this.preferredLangauge = language
-  }
-
-  setPanelPositionTo (position) {
-    if (position === 'right') {
-      this.attachPanelToRight()
-    } else {
-      this.attachPanelToLeft()
-    }
-  }
-
-  attachPanelToLeft () {
-    this.options.items.panelPosition.setValue('left')
-    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
-    this.panel.attachToLeft()
-  }
-
-  attachPanelToRight () {
-    this.options.items.panelPosition.setValue('right')
-    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
-    this.panel.attachToRight()
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = ContentUIController;
@@ -33991,19 +33960,15 @@ var render = function() {
             [
               _c("div", {
                 staticClass: "alpheios-ui-form-group",
-                attrs: {
-                  id: "alpheios-panel-content-infl-table-locale-switcher"
-                }
+                attrs: { id: _vm.data.inflectionIDs.localeSwitcher }
               }),
               _vm._v(" "),
               _c("div", {
                 staticClass: "alpheios-ui-form-group",
-                attrs: { id: "alpheios-panel-content-infl-table-view-selector" }
+                attrs: { id: _vm.data.inflectionIDs.viewSelector }
               }),
               _vm._v(" "),
-              _c("div", {
-                attrs: { id: "alpheios-panel-content-infl-table-body" }
-              })
+              _c("div", { attrs: { id: _vm.data.inflectionIDs.tableBody } })
             ]
           ),
           _vm._v(" "),

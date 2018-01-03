@@ -44,6 +44,11 @@ export default class ContentUIController {
             viewSelector: undefined,
             tableBody: undefined
           },
+          inflectionIDs: {
+            localeSwitcher: 'alpheios-panel-content-infl-table-locale-switcher',
+            viewSelector: 'alpheios-panel-content-infl-table-view-selector',
+            tableBody: 'alpheios-panel-content-infl-table-body'
+          },
           messages: '',
           settings: this.options.items,
           styles: {
@@ -127,9 +132,6 @@ export default class ContentUIController {
           console.log('Change inside instance', name, value)
           this.options.items[name].setTextValue(value)
           switch (name) {
-            case 'preferredLanguage':
-              this.uiController.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
-              break
             case 'locale':
               if (this.uiController.presenter) {
                 this.uiController.presenter.setLocale(this.options.items.locale.currentValue)
@@ -139,15 +141,14 @@ export default class ContentUIController {
         }
       },
       mounted: function () {
-        this.panelData.inflections.localeSwitcher = document.querySelector('#alpheios-panel-content-infl-table-locale-switcher')
-        this.panelData.inflections.viewSelector = document.querySelector('#alpheios-panel-content-infl-table-view-selector')
-        this.panelData.inflections.tableBody = document.querySelector('#alpheios-panel-content-infl-table-body')
+        this.panelData.inflections.localeSwitcher = document.querySelector(`#${this.panelData.inflectionIDs.localeSwitcher}`)
+        this.panelData.inflections.viewSelector = document.querySelector(`#${this.panelData.inflectionIDs.viewSelector}`)
+        this.panelData.inflections.tableBody = document.querySelector(`#${this.panelData.inflectionIDs.tableBody}`)
       }
     })
 
     this.options.load(() => {
       this.state.status = TabScript.statuses.script.ACTIVE
-      this.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
       console.log('Content script is activated')
     })
 
@@ -350,37 +351,5 @@ export default class ContentUIController {
       this.popup.open()
     }
     return this
-  }
-
-  openPanel () {
-    this.panel.open()
-  }
-
-  closePanel () {
-    this.panel.close()
-  }
-
-  setPreferredLanguageTo (language) {
-    this.preferredLangauge = language
-  }
-
-  setPanelPositionTo (position) {
-    if (position === 'right') {
-      this.attachPanelToRight()
-    } else {
-      this.attachPanelToLeft()
-    }
-  }
-
-  attachPanelToLeft () {
-    this.options.items.panelPosition.setValue('left')
-    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
-    this.panel.attachToLeft()
-  }
-
-  attachPanelToRight () {
-    this.options.items.panelPosition.setValue('right')
-    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
-    this.panel.attachToRight()
   }
 }
