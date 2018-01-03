@@ -644,7 +644,6 @@ class FeatureType {
 
     this.type = type;
     this.language = language;
-    this.unrestrictedValue = values.length === 1 && values[0] === '*';
 
         /*
          This is a sort order index for a grammatical feature values. It is determined by the order of values in
@@ -666,6 +665,14 @@ class FeatureType {
       }
     }
   };
+
+  /**
+   * test to see if this FeatureType allows unrestricted values
+   * @returns {boolean} true if unrestricted false if not
+   */
+  hasUnrestrictedValue () {
+    return this.orderedValues.length === 1 && this.orderedValues[0] === FeatureType.UNRESTRICTED_VALUE
+  }
 
     /**
      * Return a Feature with an arbitrary value. This value would not be necessarily present among FeatureType values.
@@ -818,6 +825,7 @@ class FeatureType {
     }
   }
 }
+FeatureType.UNRESTRICTED_VALUE = Symbol('unrestricted');
 
 class InflectionGroupingKey {
   /**
@@ -929,21 +937,21 @@ class LanguageModel {
       [ORD_1ST, ORD_2ND, ORD_3RD], code);
     // some general, non-language specific grammatical features
     features[Feature.types.age] = new FeatureType(Feature.types.age,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.area] = new FeatureType(Feature.types.area,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.source] = new FeatureType(Feature.types.source,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.frequency] = new FeatureType(Feature.types.frequency,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.geo] = new FeatureType(Feature.types.geo,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.source] = new FeatureType(Feature.types.source,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.pronunciation] = new FeatureType(Feature.types.pronunciation,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.kind] = new FeatureType(Feature.types.kind,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     return features
   }
 
@@ -1708,7 +1716,7 @@ const i18n = {
     },
     masculine: {
       full: 'masculine',
-      abbr: 'n'
+      abbr: 'm'
     },
     neuter: {
       full: 'neuter',
@@ -1961,6 +1969,14 @@ class Lemma {
 
       this.features[type].push(element);
     }
+  }
+
+  /**
+   * Get a string which can be used as a unique key to identify this lemma
+   * @return {string} the key
+   */
+  get key () {
+    return [this.word, this.languageCode, ...this.features[Feature.types.part]].join('-')
   }
 }
 
@@ -2271,92 +2287,6 @@ class ResourceProvider {
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
-
-
-class Message {
-  constructor (body) {
-    /** @member {Symbol} requestType - */
-    this.role = undefined
-    this.type = Message.types.GENERIC_MESSAGE
-    this.ID = __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()
-    this.body = body
-  }
-
-  static get types () {
-    return {
-      GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
-      STATE_MESSAGE: Symbol.for('Alpheios_StateMessage'),
-      STATE_REQUEST: Symbol.for('Alpheios_StateRequest'),
-      STATE_RESPONSE: Symbol.for('Alpheios_StateResponse'),
-      ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
-      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
-      OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
-      PANEL_STATUS_CHANGE_REQUEST: Symbol.for('Alpheios_PanelStatusChangeRequest')
-    }
-  }
-
-  static get roles () {
-    return {
-      REQUEST: Symbol.for('Alpheios_Request'),
-      RESPONSE: Symbol.for('Alpheios_Response')
-    }
-  }
-
-  static get statuses () {
-    return {
-      DATA_FOUND: Symbol.for('Alpheios_DataFound'), // Requested word's data has been found
-      NO_DATA_FOUND: Symbol.for('Alpheios_NoDataFound'), // Requested word's data has not been found,
-      ACTIVE: Symbol.for('Alpheios_Active'), // Content script is loaded and active
-      DEACTIVATED: Symbol.for('Alpheios_Deactivated') // Content script has been loaded, but is deactivated
-    }
-  }
-
-  static statusSym (message) {
-    return Symbol.for(message.status)
-  }
-
-  static statusSymIs (message, status) {
-    return Message.statusSym(message) === status
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Message;
-
-
-
-/***/ }),
-/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2605,6 +2535,92 @@ class TabScript {
 
 
 /***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
+
+
+class Message {
+  constructor (body) {
+    /** @member {Symbol} requestType - */
+    this.role = undefined
+    this.type = Message.types.GENERIC_MESSAGE
+    this.ID = __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default()()
+    this.body = body
+  }
+
+  static get types () {
+    return {
+      GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
+      STATE_MESSAGE: Symbol.for('Alpheios_StateMessage'),
+      STATE_REQUEST: Symbol.for('Alpheios_StateRequest'),
+      STATE_RESPONSE: Symbol.for('Alpheios_StateResponse'),
+      ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
+      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
+      OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
+      PANEL_STATUS_CHANGE_REQUEST: Symbol.for('Alpheios_PanelStatusChangeRequest')
+    }
+  }
+
+  static get roles () {
+    return {
+      REQUEST: Symbol.for('Alpheios_Request'),
+      RESPONSE: Symbol.for('Alpheios_Response')
+    }
+  }
+
+  static get statuses () {
+    return {
+      DATA_FOUND: Symbol.for('Alpheios_DataFound'), // Requested word's data has been found
+      NO_DATA_FOUND: Symbol.for('Alpheios_NoDataFound'), // Requested word's data has not been found,
+      ACTIVE: Symbol.for('Alpheios_Active'), // Content script is loaded and active
+      DEACTIVATED: Symbol.for('Alpheios_Deactivated') // Content script has been loaded, but is deactivated
+    }
+  }
+
+  static statusSym (message) {
+    return Symbol.for(message.status)
+  }
+
+  static statusSymIs (message, status) {
+    return Message.statusSym(message) === status
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Message;
+
+
+
+/***/ }),
 /* 4 */
 /***/ (function(module, exports) {
 
@@ -2706,7 +2722,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(43)
+var listToStyles = __webpack_require__(49)
 
 /*
 type StyleObject = {
@@ -3021,6 +3037,73 @@ module.exports = function normalizeComponent (
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+class Element {
+  constructor (name, scope, elementData = {}) {
+    this.options = Element.defaults
+
+    this.name = name
+    let defaultSelector = `[data-element="${this.name}"]`
+    this.selector = elementData.selector || defaultSelector
+    let elements = scope.querySelectorAll(this.selector)
+    if (elements.length === 0) { throw new Error(`Element "${name}" does not exist`) }
+    this.elements = (elements.length > 0) ? Array.from(elements) : [elements]
+    this.dataFunction = elementData.dataFunction
+  }
+
+  static get defaults () {
+    return {
+      classNames: {
+        hidden: 'hidden',
+        active: 'active'
+      }
+    }
+  }
+
+  get element () {
+    return this.elements[0]
+  }
+
+  setContent (...values) {
+    let contentHTML = this.dataFunction ? this.dataFunction(...values) : values[0]
+    for (let element of this.elements) {
+      element.innerHTML = contentHTML
+    }
+  }
+
+  appendContent (...values) {
+    let contentHTML = this.dataFunction ? this.dataFunction(...values) : values[0]
+    for (let element of this.elements) {
+      element.innerHTML += contentHTML
+    }
+  }
+
+  clearContent () {
+    for (let element of this.elements) {
+      element.innerHTML = ''
+    }
+  }
+
+  show () {
+    for (let element of this.elements) {
+      element.classList.remove(this.options.classNames.hidden)
+    }
+  }
+
+  hide () {
+    for (let element of this.elements) {
+      element.classList.add(this.options.classNames.hidden)
+    }
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Element;
+
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* unused harmony export InflectionData */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return LanguageData; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return dataSet; });
@@ -3175,15 +3258,15 @@ class Suffix {
   /**
    * Checks if suffix has a feature that is a match to the one provided.
    * @param {string} featureType - Sets a type of a feature we need to match with the ones stored inside the suffix
-   * @param {Feature[]} features - A list of features we need to match with the ones stored inside the suffix
-   * @returns {string | undefined} - If provided feature is a match, returns a value of a first feature that matched.
+   * @param {string[]} featureValues - A list of feature values we need to match with the ones stored inside the suffix
+   * @returns {string | undefined} - If provided feature is a match, returns a first feature that matched.
    * If no match found, return undefined.
    */
-  featureMatch (featureType, features) {
+  featureMatch (featureType, featureValues) {
     if (this.features.hasOwnProperty(featureType)) {
-      for (let feature of features) {
-        if (feature.value === this.features[featureType]) {
-          return feature.value
+      for (let value of featureValues) {
+        if (value === this.features[featureType]) {
+          return value
         }
       }
     }
@@ -3577,15 +3660,8 @@ class LanguageDataset {
         // Group inflections by a part of speech
         let partOfSpeech = inflection[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part];
         if (!partOfSpeech) {
-          throw new Error('Part of speech data is missing in an inflection')
+          throw new Error('Part of speech data is missing in an inflection.')
         }
-        if (!Array.isArray(partOfSpeech)) {
-          throw new Error('Part of speech data should be in an array format')
-        }
-        if (partOfSpeech.length === 0 && partOfSpeech.length > 1) {
-          throw new Error('Part of speech data should be an array with exactly one element')
-        }
-        partOfSpeech = partOfSpeech[0].value;
 
         if (!inflections.hasOwnProperty(partOfSpeech)) {
           inflections[partOfSpeech] = [];
@@ -10036,7 +10112,7 @@ class Presenter {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -10566,10 +10642,10 @@ exports.Transporter = Transporter;
 exports.StorageAdapter = LocalStorageAdapter;
 exports.TestAdapter = TestAdapter;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var rng = __webpack_require__(22);
@@ -10604,11 +10680,11 @@ module.exports = v4;
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(3);
 
 
 /**
@@ -10649,7 +10725,7 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a"
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var apply = Function.prototype.apply;
@@ -10708,277 +10784,7 @@ exports.clearImmediate = clearImmediate;
 
 
 /***/ }),
-/* 12 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__setting_vue__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_interactjs__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_interactjs__);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-
-
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-  name: 'Panel',
-  components: {
-    setting: __WEBPACK_IMPORTED_MODULE_0__setting_vue__["a" /* default */]
-  },
-  props: {
-    data: {
-      type: Object,
-      required: true
-    }
-  },
-
-  computed: {
-    panelClasses: function () {
-      if (this.data.settings.panelPosition.currentValue === 'right') {
-        return 'alpheios-panel-right';
-      } else {
-        return 'alpheios-panel-left';
-      }
-    },
-
-    attachToLeftVisible: function () {
-      return this.data.settings.panelPosition.currentValue === 'right';
-    },
-
-    attachToRightVisible: function () {
-      return this.data.settings.panelPosition.currentValue === 'left';
-    }
-  },
-  methods: {
-    updateZIndex: function (zIndexMax) {
-      if (zIndexMax >= this.zIndex) {
-        this.zIndex = zIndexMax;
-        if (this.zIndex < Number.POSITIVE_INFINITY) {
-          this.zIndex++;
-        } // To be one level higher that the highest element on a page
-        this.self.element.style.zIndex = this.zIndex;
-      }
-    },
-
-    close() {
-      this.$emit('close');
-    },
-
-    setPosition(position) {
-      this.$emit('setposition', position);
-    },
-
-    changeTab(name) {
-      this.$emit('changetab', name);
-    },
-
-    clearContent: function () {
-      for (let contentArea in this.contentAreas) {
-        if (this.contentAreas.hasOwnProperty(contentArea)) {
-          this.contentAreas[contentArea].clearContent();
-        }
-      }
-      return this;
-    },
-
-    showMessage: function (messageHTML) {
-      this.contentAreas.messages.setContent(messageHTML);
-      this.tabGroups.contentTabs.activate('statusTab');
-    },
-
-    appendMessage: function (messageHTML) {
-      this.contentAreas.messages.appendContent(messageHTML);
-    },
-
-    clearMessages: function () {
-      this.contentAreas.messages.setContent('');
-    },
-
-    settingChanged: function (name, value) {
-      this.$emit('settingchange', name, value); // Re-emit for a Vue instance
-    }
-  },
-  mounted: function () {
-    // Initialize Interact.js: make panel resizable
-    __WEBPACK_IMPORTED_MODULE_1_interactjs___default()(this.$el).resizable({
-      // resize from all edges and corners
-      edges: { left: true, right: true, bottom: false, top: false },
-
-      // keep the edges inside the parent
-      restrictEdges: {
-        outer: document.body,
-        endOnly: true
-      },
-
-      // minimum size
-      restrictSize: {
-        min: { width: 400 }
-      },
-
-      inertia: true
-    }).on('resizemove', event => {
-      let target = event.target;
-      // update the element's style
-      target.style.width = `${event.rect.width}px`;
-    });
-  }
-});
-
-/***/ }),
 /* 13 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__ = __webpack_require__(14);
-/* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__ = __webpack_require__(46);
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(44)
-}
-var normalizeComponent = __webpack_require__(6)
-/* script */
-
-
-/* template */
-
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__["a" /* default */],
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "vue-components\\setting.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-7b21cdbf", Component.options)
-  } else {
-    hotAPI.reload("data-v-7b21cdbf", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
-
-
-/***/ }),
-/* 14 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-//
-//
-//
-//
-//
-//
-//
-//
-
-/* harmony default export */ __webpack_exports__["a"] = ({
-  name: 'Setting',
-  props: {
-    data: {
-      type: Object,
-      required: true
-    }
-  },
-  computed: {
-    selected: {
-      get: function () {
-        return this.data.currentTextValue();
-      },
-      set: function (newValue) {
-        this.$emit('change', this.data.name, newValue);
-      }
-    }
-  }
-});
-
-/***/ }),
-/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var require;var require;/**
@@ -18133,12 +17939,62 @@ win.init = init;
 
 
 /***/ }),
-/* 16 */
+/* 14 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs__ = __webpack_require__(15);
+//
+//
+//
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+  name: 'Setting',
+  props: {
+    selected: {
+      type: String,
+      required: true
+    },
+    items: {
+      type: Array,
+      required: true
+    },
+    labeltext: {
+      type: String,
+      required: true
+    }
+  },
+  computed: {
+    selectedItem: {
+      get: function () {
+        return this.selected;
+      },
+      set: function (newValue) {
+        this.$emit('change', newValue);
+      }
+    }
+  }
+});
+
+/***/ }),
+/* 15 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs__ = __webpack_require__(13);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_interactjs__);
+//
+//
+//
+//
+//
+//
+//
+//
 //
 //
 //
@@ -18162,15 +18018,15 @@ win.init = init;
   },
   props: {
     messages: {
-      type: String,
-      required: true
-    },
-    content: {
-      type: String,
+      type: Array,
       required: true
     },
     lexemes: {
       type: Array,
+      required: true
+    },
+    definitions: {
+      type: Object,
       required: true
     },
     visible: {
@@ -18191,6 +18047,12 @@ win.init = init;
     }
   },
   methods: {
+    clearMessages() {
+      while (this.messages.length > 0) {
+        this.messages.pop();
+      }
+    },
+
     closePopup() {
       this.$emit('close');
     },
@@ -18238,6 +18100,7 @@ win.init = init;
         target.setAttribute('data-y', y);
       }
     }
+
   },
   mounted() {
     console.log('mounted');
@@ -18266,10 +18129,13 @@ win.init = init;
 });
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+//
+//
+//
 //
 //
 //
@@ -18373,7 +18239,7 @@ win.init = init;
 
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: 'Morph',
-  props: ['lexemes'],
+  props: ['lexemes', 'definitions'],
   methods: {
     featureMatch(a, b) {
       let matches = false;
@@ -18388,15 +18254,26 @@ win.init = init;
   },
   mounted() {
     console.log('Morph is mounted');
-    // for each infl without dial
-    //   group by stem, pref, suff, pofs, comp
-    //   sort by pofs
-    // for each infl without dial and without either stem or pofs
-    // for each infl with dial
-    // inflection-set:
-    //  ignores conjunction, preposition, interjection, particle
-    //  take pofs and decl from infl if it differs from dict
-    //  add dialect
+  }
+});
+
+/***/ }),
+/* 17 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+//
+//
+//
+//
+//
+
+/* harmony default export */ __webpack_exports__["a"] = ({
+  name: 'ShortDef',
+  props: ['definition'],
+  methods: {},
+  mounted() {
+    console.log('ShortDef is mounted');
   }
 });
 
@@ -18407,7 +18284,7 @@ win.init = init;
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
 
 
@@ -18431,16 +18308,16 @@ contentProcess.initialize()
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_alpheios_experience__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__ = __webpack_require__(26);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__ = __webpack_require__(1);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__content_options__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__ = __webpack_require__(29);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lexical_query__ = __webpack_require__(34);
@@ -18692,7 +18569,7 @@ class ImportData {
         // if the providerValue matches the model value or the model value
         // is unrestricted, return a feature with the providerValue and order
         if (language.features[featureName][providerValue] ||
-            language.features[featureName].unrestrictedValue) {
+            language.features[featureName].hasUnrestrictedValue()) {
           mappedValue = language.features[featureName].get(providerValue, sortOrder);
         } else {
           throw new Error("Skipping an unknown value '" +
@@ -18913,7 +18790,7 @@ class TuftsAdapter extends BaseAdapter {
       let lemma = mappingData.parseLemma(lexeme.rest.entry.dict.hdwd.$, language);
       if (lexeme.rest.entry.dict.pofs) {
         lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(
-          lexeme.rest.entry.dict.pofs.$.trim(), lexeme.rest.entry.dict.pofs.order);
+          lexeme.rest.entry.dict.pofs.$, lexeme.rest.entry.dict.pofs.order);
       }
       if (lexeme.rest.entry.dict.case) {
         lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase].get(
@@ -21093,7 +20970,7 @@ if (!rng) {
 
 module.exports = rng;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
 
 /***/ }),
 /* 23 */
@@ -21129,7 +21006,7 @@ module.exports = bytesToUuid;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(11);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(25);
 /* global browser */
 
@@ -21300,8 +21177,8 @@ class StoredRequest {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__content_tab_script__ = __webpack_require__(1);
 
 
 
@@ -21320,9 +21197,9 @@ class StateMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(11);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(1);
 
 
 
@@ -21359,7 +21236,6 @@ class ContentOptions {
     return {
       locale: {
         defaultValue: 'en-US',
-        labelText: 'UI Locale:',
         values: [
           {value: 'en-US', text: 'English (US)'},
           {value: 'en-GB', text: 'English (GB)'}
@@ -21367,7 +21243,6 @@ class ContentOptions {
       },
       panelPosition: {
         defaultValue: 'left',
-        labelText: 'Panel position:',
         values: [
           {value: 'left', text: 'Left'},
           {value: 'right', text: 'Right'}
@@ -21375,7 +21250,6 @@ class ContentOptions {
       },
       uiType: {
         defaultValue: 'panel',
-        labelText: 'UI type:',
         values: [
           {value: 'popup', text: 'Pop-up'},
           {value: 'panel', text: 'Panel'}
@@ -21383,7 +21257,6 @@ class ContentOptions {
       },
       preferredLanguage: {
         defaultValue: 'lat',
-        labelText: 'Page language:',
         values: [
           {value: 'lat', text: 'Latin'},
           {value: 'grc', text: 'Greek'},
@@ -21864,7 +21737,7 @@ class MediaSelector {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(9);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
 
 
@@ -21900,7 +21773,7 @@ class LexicalQuery {
   }
 
   async getData () {
-    this.ui.clear().open().message(`Please wait while data is retrieved ...<br>`)
+    this.ui.clear().open().message(`Please wait while data is retrieved ...`)
     let iterator = this.iterations()
 
     let result = iterator.next()
@@ -21929,12 +21802,12 @@ class LexicalQuery {
   * iterations () {
     this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
 
-    this.ui.addMessage(`Morphological analyzer data is ready<br>`)
+    this.ui.addMessage(`Morphological analyzer data is ready`)
     this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)
-    this.ui.addMessage(`Inflection data is ready<br>`)
+    this.ui.addMessage(`Inflection data is ready`)
     this.ui.updateInflections(this.lexicalData)
 
     let definitionRequests = []
@@ -21971,11 +21844,11 @@ class LexicalQuery {
           definitionRequest.lexeme.meaning[definitionRequest.appendFunction](definition)
           definitionRequest.complete = true
           if (this.active) {
-            this.ui.addMessage(`${definitionRequest.type} request is completed successfully. Lemma: "${definitionRequest.lexeme.lemma.word}"<br>`)
+            this.ui.addMessage(`${definitionRequest.type} request is completed successfully. Lemma: "${definitionRequest.lexeme.lemma.word}"`)
             this.ui.updateDefinitions(this.homonym)
           }
           if (definitionRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`<strong>All lexical data is available now</strong><br>`) }
+            if (this.active) { this.ui.addMessage(`All lexical data is available now`) }
             this.finalize()
           }
         },
@@ -21983,10 +21856,10 @@ class LexicalQuery {
           console.error(`${definitionRequest.type}(s) request failed: ${error}`)
           definitionRequest.complete = true
           if (this.active) {
-            this.ui.addMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"<br>`)
+            this.ui.addMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"`)
           }
           if (definitionRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`<strong>All lexical data is available now</strong><br>`) }
+            if (this.active) { this.ui.addMessage(`All lexical data is available now`) }
             this.finalize()
           }
         }
@@ -22012,25 +21885,27 @@ class LexicalQuery {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__ = __webpack_require__(36);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__vue_components_panel_vue__ = __webpack_require__(40);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_setting_vue__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__ = __webpack_require__(49);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__ = __webpack_require__(53);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit__ = __webpack_require__(57);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(58);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__components_panel_component__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_setting_vue__ = __webpack_require__(46);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__ = __webpack_require__(51);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__ = __webpack_require__(55);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__vue_components_shortdef_vue__ = __webpack_require__(59);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit__ = __webpack_require__(63);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(64);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11__node_modules_uikit_dist_js_uikit_icons__);
 /* global Node */
  // Required for Presenter
 
  // Vue in a runtime + compiler configuration
+
 
 
 
@@ -22046,7 +21921,9 @@ class ContentUIController {
     this.options = options
     this.settings = ContentUIController.settingValues
 
-    this.zIndex = this.getZIndexMax()
+    // Finds a max z-index of element on the page.
+    // Need to run this before our UI elements are loaded to avoid scanning them too.
+    let zIndexMax = this.getZIndexMax()
 
     // Inject HTML code of a plugin. Should go in reverse order.
     document.body.classList.add('alpheios')
@@ -22055,134 +21932,29 @@ class ContentUIController {
     container.outerHTML = __WEBPACK_IMPORTED_MODULE_3__template_htmlf___default.a
 
     // Initialize components
-    this.panel = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
-      el: '#alpheios-panel',
-      components: {
-        panel: __WEBPACK_IMPORTED_MODULE_5__vue_components_panel_vue__["a" /* default */],
-        setting: __WEBPACK_IMPORTED_MODULE_6__vue_components_setting_vue__["a" /* default */]
-      },
-      data: {
-        panelData: {
-          isOpen: false,
-          tabs: {
-            definitions: true,
-            inflections: false,
-            status: false,
-            options: false,
-            info: false
-          },
-          shortDefinitions: '',
-          fullDefinitions: '',
-          inflections: {
-            localeSwitcher: undefined,
-            viewSelector: undefined,
-            tableBody: undefined
-          },
-          messages: '',
-          settings: this.options.items,
-          styles: {
-            zIndex: this.zIndex
-          }
+    this.panel = new __WEBPACK_IMPORTED_MODULE_4__components_panel_component__["a" /* default */]({
+      contentAreas: {
+        shortDefinitions: {
+          dataFunction: this.formatShortDefinitions.bind(this)
         },
-        state: this.state,
-        options: this.options,
-        uiController: this
-      },
-      methods: {
-        isOpen: function () {
-          return this.state.isPanelOpen()
-        },
-
-        open: function () {
-          if (!this.state.isPanelOpen()) {
-            this.panelData.isOpen = true
-            this.state.setItem('panelStatus', __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN)
-          }
-          return this
-        },
-
-        close: function () {
-          if (!this.state.isPanelClosed()) {
-            this.panelData.isOpen = false
-            this.state.setItem('panelStatus', __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED)
-          }
-          return this
-        },
-
-        setPositionTo: function (position) {
-          this.options.items.panelPosition.setValue(position)
-        },
-
-        attachToLeft: function () {
-          this.setPositionTo('left')
-        },
-
-        attachToRight: function () {
-          this.setPositionTo('right')
-        },
-
-        changeTab (name) {
-          for (let key of Object.keys(this.panelData.tabs)) {
-            if (this.panelData.tabs[key]) { this.panelData.tabs[key] = false }
-          }
-          this.panelData.tabs[name] = true
-        },
-
-        clearContent: function () {
-          this.panelData.shortDefinitions = ''
-          this.panelData.fullDefinitions = ''
-          this.panelData.messages = ''
-          return this
-        },
-
-        showMessage: function (messageHTML) {
-          this.panelData.messages = messageHTML
-          this.changeTab('status')
-        },
-
-        appendMessage: function (messageHTML) {
-          this.panelData.messages += messageHTML
-        },
-
-        clearMessages: function () {
-          this.panelData.messages = ''
-        },
-
-        toggle: function () {
-          if (this.state.isPanelOpen()) {
-            this.close()
-          } else {
-            this.open()
-          }
-          return this
-        },
-
-        settingChange: function (name, value) {
-          console.log('Change inside instance', name, value)
-          this.options.items[name].setTextValue(value)
-          switch (name) {
-            case 'preferredLanguage':
-              this.uiController.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
-              break
-            case 'locale':
-              if (this.uiController.presenter) {
-                this.uiController.presenter.setLocale(this.options.items.locale.currentValue)
-              }
-              break
-          }
+        fullDefinitions: {
+          dataFunction: this.formatFullDefinitions.bind(this)
         }
       },
-      mounted: function () {
-        this.panelData.inflections.localeSwitcher = document.querySelector('#alpheios-panel-content-infl-table-locale-switcher')
-        this.panelData.inflections.viewSelector = document.querySelector('#alpheios-panel-content-infl-table-view-selector')
-        this.panelData.inflections.tableBody = document.querySelector('#alpheios-panel-content-infl-table-body')
+      methods: {
+        onClose: this.closePanel.bind(this)
       }
-    })
+    }, this.state)
+    // Set panel controls event handlers
+    this.panel.innerElements.attachToLeftButton.element.addEventListener('click', this.attachPanelToLeft.bind(this))
+    this.panel.innerElements.attachToRightButton.element.addEventListener('click', this.attachPanelToRight.bind(this))
+    this.panel.innerElements.closeButton.element.addEventListener('click', this.closePanel.bind(this))
+    this.panel.updateZIndex(zIndexMax)
 
     // Should be loaded after Panel because options are inserted into a panel
-    /* this.optionsUI = new Vue({
+    this.optionsUI = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
       el: '#alpheios-options',
-      components: { setting: Setting },
+      components: { setting: __WEBPACK_IMPORTED_MODULE_6__vue_components_setting_vue__["a" /* default */] },
       data: {
         preferredLanguageValues: this.options.items.preferredLanguage.textValues(),
         localeValues: this.options.items.locale.textValues(),
@@ -22238,23 +22010,25 @@ class ContentUIController {
     this.optionsUI.options = this.options
     this.optionsUI.uiController = this
 
-    */
     this.options.load(() => {
-      this.state.status = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+      this.state.status = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+      this.setPanelPositionTo(this.options.items.panelPosition.currentValue)
       this.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
-      console.log('Content script is activated')
+      console.log('Content script is set to active')
+      this.optionsUI.update(this.options)
     })
 
-    __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a.component('morph', __WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */])
+    __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a.component('morph',__WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */])
+    __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a.component('shortdef',__WEBPACK_IMPORTED_MODULE_9__vue_components_shortdef_vue__["a" /* default */])
 
     // Create a Vue instance for a popup
     this.popup = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
       el: '#alpheios-popup',
-      components: { morph: __WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */], popup: __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__["a" /* default */] },
+      components: { morph:__WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */], popup: __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__["a" /* default */], shortdef:__WEBPACK_IMPORTED_MODULE_9__vue_components_shortdef_vue__["a" /* default */] },
       data: {
-        messages: '',
-        content: '',
+        messages: [],
         lexemes: [],
+        definitions: {},
         visible: false,
         defDataReady: false,
         inflDataReady: false,
@@ -22262,27 +22036,25 @@ class ContentUIController {
       },
       methods: {
         showMessage: function (message) {
-          this.messages = message
+          this.messages = [message]
           return this
         },
 
         appendMessage: function (message) {
-          this.messages += message
+          this.messages.push(message)
           return this
         },
 
         clearMessages: function () {
-          this.messages = ''
-          return this
-        },
-
-        setContent: function (content) {
-          this.content = content
+          while (this.messages.length > 0) {
+            this.messages.pop()
+          }
           return this
         },
 
         clearContent: function () {
-          this.content = ''
+          this.definitions = {}
+          this.lexemes = []
           return this
         },
 
@@ -22298,14 +22070,14 @@ class ContentUIController {
 
         showDefinitionsPanelTab: function () {
           this.visible = false
-          this.panel.changeTab('definitions')
+          this.panel.tabGroups.contentTabs.activate('definitionsTab')
           this.panel.open()
           return this
         },
 
         showInflectionsPanelTab: function () {
           this.visible = false
-          this.panel.changeTab('inflections')
+          this.panel.tabGroups.contentTabs.activate('inflectionsTab')
           this.panel.open()
           return this
         }
@@ -22314,7 +22086,15 @@ class ContentUIController {
     this.popup.panel = this.panel
 
     // Initialize UIKit
-    __WEBPACK_IMPORTED_MODULE_9__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit_icons___default.a)
+    __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_11__node_modules_uikit_dist_js_uikit_icons___default.a)
+  }
+
+  /**
+   * A temporary solution
+   * @return {*|OptionsComponent}
+   */
+  getOptions () {
+    return this.options
   }
 
   static get settingValues () {
@@ -22328,18 +22108,11 @@ class ContentUIController {
    * Finds a maximal z-index value of elements on a page.
    * @return {Number}
    */
-  getZIndexMax (zIndexDefualt = 2000) {
+  getZIndexMax () {
     let startTime = new Date().getTime()
     let zIndex = this.zIndexRecursion(document.querySelector('body'), Number.NEGATIVE_INFINITY)
     let timeDiff = new Date().getTime() - startTime
     console.log(`Z-index max value is ${zIndex}, calculation time is ${timeDiff} ms`)
-
-    if (zIndex >= zIndexDefualt) {
-      if (zIndex < Number.POSITIVE_INFINITY) { zIndex++ } // To be one level higher that the highest element on a page
-    } else {
-      zIndex = zIndexDefualt
-    }
-
     return zIndex
   }
 
@@ -22398,36 +22171,36 @@ class ContentUIController {
   }
 
   updateMorphology (homonym) {
-    homonym.lexemes.sort(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["n" /* Lexeme */].getSortByTwoLemmaFeatures(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["d" /* Feature */].types.frequency, __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["d" /* Feature */].types.part))
+    homonym.lexemes.sort(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["n" /* Lexeme */].getSortByTwoLemmaFeatures(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["d" /* Feature */].types.frequency,__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["d" /* Feature */].types.part))
     this.popup.lexemes = homonym.lexemes
     this.popup.morphDataReady = true
   }
 
   updateDefinitions (homonym) {
-    this.panel.panelData.shortDefinitions = ''
-    this.panel.panelData.fullDefinitions = ''
-    let shortDefsText = ''
+    this.panel.contentAreas.shortDefinitions.clearContent()
+    this.panel.contentAreas.fullDefinitions.clearContent()
+    let definitions = {}
     for (let lexeme of homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
-        this.panel.panelData.shortDefinitions += this.formatShortDefinitions(lexeme)
-        shortDefsText += this.formatShortDefinitions(lexeme)
+        this.panel.contentAreas.shortDefinitions.appendContent(lexeme)
+        definitions[lexeme.lemma.key] = lexeme.meaning.shortDefs
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {
-        this.panel.panelData.fullDefinitions += this.formatFullDefinitions(lexeme)
+        this.panel.contentAreas.fullDefinitions.appendContent(lexeme)
       }
     }
 
     // Populate a popup
-    this.popup.setContent(shortDefsText)
+    this.popup.definitions = definitions
     this.popup.defDataReady = true
   }
 
   updateInflections (lexicalData) {
     this.presenter = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["d" /* Presenter */](
-      this.panel.panelData.inflections.tableBody,
-      this.panel.panelData.inflections.viewSelector,
-      this.panel.panelData.inflections.localeSwitcher,
+      this.panel.contentAreas.inflectionsTable.element,
+      this.panel.contentAreas.inflectionsViewSelector.element,
+      this.panel.contentAreas.inflectionsLocaleSwitcher.element,
       lexicalData,
       this.options.items.locale.currentValue
     ).render()
@@ -22444,7 +22217,7 @@ class ContentUIController {
     if (this.options.items.uiType.currentValue === this.settings.uiTypePanel) {
       this.panel.open()
     } else {
-      if (this.panel.isOpen) { this.panel.close() }
+      if (this.panel.isOpened) { this.panel.close() }
       this.popup.open()
     }
     return this
@@ -22460,6 +22233,26 @@ class ContentUIController {
 
   setPreferredLanguageTo (language) {
     this.preferredLangauge = language
+  }
+
+  setPanelPositionTo (position) {
+    if (position === 'right') {
+      this.attachPanelToRight()
+    } else {
+      this.attachPanelToLeft()
+    }
+  }
+
+  attachPanelToLeft () {
+    this.options.items.panelPosition.setValue('left')
+    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
+    this.panel.attachToLeft()
+  }
+
+  attachPanelToRight () {
+    this.options.items.panelPosition.setValue('right')
+    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
+    this.panel.attachToRight()
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = ContentUIController;
@@ -33269,7 +33062,7 @@ return Vue$3;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(11).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(12).setImmediate))
 
 /***/ }),
 /* 37 */
@@ -33462,7 +33255,7 @@ return Vue$3;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1), __webpack_require__(38)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(38)))
 
 /***/ }),
 /* 38 */
@@ -33658,20 +33451,385 @@ process.umask = function() { return 0; };
 /* 39 */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :content=\"content\" :visible=\"visible\" :lexemes=\"lexemes\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div id=\"alpheios-panel\">\r\n    <panel :data=\"panelData\" @close=\"close\" @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\r\n           @changetab=\"changeTab\"></panel>\r\n</div>\r\n<!--<div data-component=\"alpheios-panel\"></div>-->\r\n";
+module.exports = "<div id=\"alpheios-popup\" >\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\"\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\n    </popup>\n</div>\n<div data-component=\"alpheios-panel\"></div>\n";
 
 /***/ }),
 /* 40 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_panel_vue__ = __webpack_require__(12);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_component__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf__ = __webpack_require__(44);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__template_htmlf__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_interactjs__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_content_tab_script__ = __webpack_require__(1);
+
+
+ // Interact.js (for resizability)
+
+
+/**
+ * This is a singleton component.
+ */
+class Panel extends __WEBPACK_IMPORTED_MODULE_0__lib_component__["a" /* default */] {
+  constructor (options, state) {
+    super(Panel.defaults, options)
+    this.state = state
+
+    this.panelOpenedClassName = 'opened'
+    this.zIndex = Panel.defaults.zIndex
+    this.self.element.style.zIndex = this.zIndex
+    this.opened = false
+
+    // Initialize Interact.js: make panel resizable
+    __WEBPACK_IMPORTED_MODULE_2_interactjs___default()(this.self.element)
+      .resizable({
+        // resize from all edges and corners
+        edges: { left: true, right: true, bottom: false, top: false },
+
+        // keep the edges inside the parent
+        restrictEdges: {
+          outer: document.body,
+          endOnly: true
+        },
+
+        // minimum size
+        restrictSize: {
+          min: { width: 400 }
+        },
+
+        inertia: true
+      })
+      .on('resizemove', event => {
+        let target = event.target
+        // update the element's style
+        target.style.width = `${event.rect.width}px`
+      })
+  }
+
+  static get defaults () {
+    return {
+      template: __WEBPACK_IMPORTED_MODULE_1__template_htmlf___default.a,
+      selfSelector: '[data-component="alpheios-panel"]',
+      innerElements: {
+        attachToLeftButton: { selector: '[data-element="attachToLeftBtn"]' },
+        attachToRightButton: { selector: '[data-element="attachToRightBtn"]' },
+        closeButton: { selector: '[data-element="closeBtn"]' }
+      },
+      outerElements: {
+        page: { selector: 'body' }
+      },
+      contentAreas: {
+        messages: {},
+        shortDefinitions: {},
+        fullDefinitions: {},
+        inflectionsLocaleSwitcher: {},
+        inflectionsViewSelector: {},
+        inflectionsTable: {}
+      },
+      position: Panel.positions.default,
+      zIndex: 2000
+    }
+  }
+
+  static get positions () {
+    return {
+      default: 'alpheios-panel-left',
+      left: 'alpheios-panel-left',
+      right: 'alpheios-panel-right'
+    }
+  }
+
+  /**
+   * Sets a z-index of a panel to be higher than a z-index of any page element.
+   * @param {Number} zIndexMax - A maximum z-index of elements on a page.
+   */
+  updateZIndex (zIndexMax) {
+    if (zIndexMax >= this.zIndex) {
+      this.zIndex = zIndexMax
+      if (this.zIndex < Number.POSITIVE_INFINITY) { this.zIndex++ } // To be one level higher that the highest element on a page
+      this.self.element.style.zIndex = this.zIndex
+    }
+  }
+
+  setPositionTo (position = Panel.positions.default) {
+    if (this.bodyPositionClassName !== position) {
+      this.bodyPositionClassName = position
+      if (position === Panel.positions.right) {
+        // Panel is at the right
+        this.outerElements.page.element.classList.remove(Panel.positions.left)
+        this.outerElements.page.element.classList.add(Panel.positions.right)
+        this.innerElements.attachToRightButton.hide()
+        this.innerElements.attachToLeftButton.show()
+      } else {
+        // Default: Panel is at the left
+        this.outerElements.page.element.classList.remove(Panel.positions.right)
+        this.outerElements.page.element.classList.add(Panel.positions.left)
+        this.innerElements.attachToLeftButton.hide()
+        this.innerElements.attachToRightButton.show()
+      }
+    }
+  }
+
+  open () {
+    if (!this.state.isPanelOpen()) {
+      this.self.element.classList.add(this.panelOpenedClassName)
+      this.state.setItem('panelStatus', __WEBPACK_IMPORTED_MODULE_3__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN)
+    }
+    return this
+  }
+
+  close () {
+    if (!this.state.isPanelClosed()) {
+      this.self.element.classList.remove(this.panelOpenedClassName)
+      this.state.setItem('panelStatus', __WEBPACK_IMPORTED_MODULE_3__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED)
+    }
+    return this
+  }
+
+  attachToLeft () {
+    this.setPositionTo(Panel.positions.left)
+    console.log('attach to left')
+  }
+
+  attachToRight () {
+    this.setPositionTo(Panel.positions.right)
+    console.log('attach to right')
+  }
+
+  toggle () {
+    if (this.state.isPanelOpen()) {
+      this.close()
+    } else {
+      this.open()
+    }
+    return this
+  }
+
+  clearContent () {
+    for (let contentArea in this.contentAreas) {
+      if (this.contentAreas.hasOwnProperty(contentArea)) {
+        this.contentAreas[contentArea].clearContent()
+      }
+    }
+    return this
+  }
+
+  showMessage (message) {
+    this.contentAreas.messages.setContent(`${message}<br>`)
+    this.tabGroups.contentTabs.activate('statusTab')
+  }
+
+  appendMessage (message) {
+    this.contentAreas.messages.appendContent(`${message}<br>`)
+  }
+
+  clearMessages () {
+    this.contentAreas.messages.setContent('')
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Panel;
+
+
+
+/***/ }),
+/* 41 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_group__ = __webpack_require__(42);
+
+
+
+class Component {
+  constructor (componentOptions = {}, userOptions = {}) {
+    this.options = {}
+    this.options = Object.assign(this.options, componentOptions)
+    this.options = Object.assign(this.options, userOptions)
+    if (componentOptions.innerElements && userOptions.innerElements) {
+      this.options.innerElements = Object.assign(componentOptions.innerElements, userOptions.innerElements)
+    }
+    if (componentOptions.outerElements && userOptions.outerElements) {
+      this.options.outerElements = Object.assign(componentOptions.outerElements, userOptions.outerElements)
+    }
+    if (componentOptions.contentAreas && userOptions.contentAreas) {
+      this.options.contentAreas = Object.assign(componentOptions.contentAreas, userOptions.contentAreas)
+    }
+    this.self = {
+      selector: this.options.selfSelector
+    }
+    this.options.elements = {}
+    this.innerElements = {}
+    this.outerElements = {}
+    this.tabGroups = {}
+    this.contentAreas = {}
+
+    this.self.element = document.querySelector(this.self.selector)
+    if (!this.self.element) {
+      throw new Error(`Element's placeholder "${this.self.selector}" does not exist. Cannot create a component`)
+    }
+    this.self.element.outerHTML = this.options.template
+    this.self.element = document.querySelector(this.self.selector)
+
+    if (this.options && this.options.innerElements) {
+      for (const [name, elementData] of Object.entries(this.options.innerElements)) {
+        this.innerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, this.self.element, elementData)
+      }
+    }
+
+    if (this.options && this.options.outerElements) {
+      for (const [name, elementData] of Object.entries(this.options.outerElements)) {
+        this.outerElements[name] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](name, document, elementData)
+      }
+    }
+
+    // Scan for tab groups
+    let tabGroups = new Set()
+    let tabs = this.self.element.querySelectorAll('[data-tab-group]')
+    for (let tab of tabs) {
+      let groupName = tab.dataset.tabGroup
+      if (!tabGroups.has(groupName)) { tabGroups.add(groupName) }
+    }
+    for (let groupNames of tabGroups.entries()) {
+      let groupName = groupNames[0] // entries() returns [groupName, groupName]
+      this.tabGroups[groupName] = new __WEBPACK_IMPORTED_MODULE_1__tab_group__["a" /* default */](groupName, this.self.element)
+    }
+
+    if (this.options && this.options.methods) {
+      for (const [key, value] of Object.entries(this.options.methods)) {
+        this[key] = value
+      }
+    }
+
+    if (this.options && this.options.contentAreas) {
+      for (const [areaName, areaData] of Object.entries(this.options.contentAreas)) {
+        areaData.selector = `[data-content-area="${areaName}"]`
+        this.contentAreas[areaName] = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](areaName, this.self.element, areaData)
+      }
+    }
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Component;
+
+
+
+/***/ }),
+/* 42 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__tab_element__ = __webpack_require__(43);
+
+
+
+class TabGroup {
+  constructor (groupName, scope) {
+    this._index = []
+
+    let tabs = scope.querySelectorAll(`[data-tab-group="${groupName}"]`)
+    if (!tabs || tabs.length === 0) { throw new Error(`Tab group "${groupName}" has no tabs in it`) }
+    for (let tab of tabs) {
+      let name = tab.dataset.element
+      let tabElement = new __WEBPACK_IMPORTED_MODULE_1__tab_element__["a" /* default */](name, scope)
+      this[name] = tabElement
+      this._index.push(tabElement)
+    }
+
+    // Try to set active tabe based on presence of an `active` class
+    for (let tab of this._index) {
+      if (tab.element.classList.contains(__WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */].defaults.classNames.active)) {
+        this.activeTab = tab
+      }
+    }
+    // If not found, let's set it to a default value
+    if (!this.activeTab) {
+      this.activeTab = this._index[0] // Set to a first tab if `active` class is not assigned to any tab element
+    }
+
+    for (let tab of this._index) {
+      tab.deactivate() // Reset all panels and tabs to match object configuration
+      tab.element.addEventListener('click', this.onClick.bind(this))
+    }
+    this.activeTab.activate()
+  }
+
+  activate (tabName) {
+    // Deactivate a currently active tab
+    this.activeTab.deactivate()
+    this.activeTab = this[tabName]
+    this.activeTab.activate()
+  }
+
+  onClick (event) {
+    let tabName = event.currentTarget.dataset.element
+    if (!tabName) {
+      throw new Error(`Tab currently being selected has no name`)
+    }
+    this.activate(tabName)
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = TabGroup;
+
+
+
+/***/ }),
+/* 43 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__element__ = __webpack_require__(7);
+
+
+class TabElement extends __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */] {
+  constructor (name, scope, elementData = {}) {
+    super(name, scope, elementData)
+    this.isActive = false
+    this.panel = new __WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */](this.element.dataset.targetName, scope)
+  }
+
+  deactivate () {
+    this.element.classList.remove(__WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */].defaults.classNames.active)
+    this.panel.hide()
+    this.isActive = false
+  }
+
+  activate () {
+    this.element.classList.add(__WEBPACK_IMPORTED_MODULE_0__element__["a" /* default */].defaults.classNames.active)
+    this.panel.show()
+    this.isActive = true
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = TabElement;
+
+
+
+/***/ }),
+/* 44 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = "<div class=\"alpheios-panel auk\" data-component=\"alpheios-panel\" data-resizable=\"true\">\n    <div class=\"alpheios-panel__header\">\n        <div class=\"alpheios-panel__header-title\"><img class=\"alpheios-panel__header-logo\" src=\"" + __webpack_require__(45) + "\"></div>\n        <span data-element=\"attachToLeftBtn\" id=\"alpheios-panel-attach-to-left\" class=\"alpheios-panel__header-action-btn\"\n              uk-icon=\"icon: chevron-left; ratio: 2\"></span>\n        <span data-element=\"attachToRightBtn\" id=\"alpheios-panel-attach-to-right\" class=\"alpheios-panel__header-action-btn\"\n              uk-icon=\"icon: chevron-right; ratio: 2\"></span>\n        <span data-element=\"closeBtn\" id=\"alpheios-panel-hide\" class=\"alpheios-panel__header-action-btn\"\n              uk-icon=\"icon: close; ratio: 2\"></span>\n    </div>\n\n    <div class=\"alpheios-panel__body\">\n        <div id=\"alpheios-panel-content\" class=\"alpheios-panel__content\">\n            <div data-element=\"definitionsPanel\">\n                <h2>Short Definitions</h2>\n                <div data-content-area=\"shortDefinitions\"></div>\n                <h2>Full Definitions</h2>\n                <div data-content-area=\"fullDefinitions\"></div>\n            </div>\n            <div data-element=\"inflectionsPanel\">\n                <div data-content-area=\"inflectionsLocaleSwitcher\"\n                     id=\"alpheios-panel-content-infl-table-locale-switcher\" class=\"alpheios-ui-form-group\"></div>\n                <div data-content-area=\"inflectionsViewSelector\" id=\"alpheios-panel-content-infl-table-view-selector\"\n                     class=\"alpheios-ui-form-group\"></div>\n                <div data-content-area=\"inflectionsTable\" id=\"alpheios-panel-content-infl-table-body\"></div>\n            </div>\n            <div data-element=\"statusPanel\">\n                <div data-content-area=\"messages\"></div>\n            </div>\n            <div data-element=\"optionsPanel\">\n                <div id=\"alpheios-options\">\n                    <setting :items=\"preferredLanguageValues\" :selected=\"preferredLanguage\" :labeltext=\"preferredLanguageLabel\" @change=\"changePreferredLanguage\"></setting>\n                    <setting :items=\"localeValues\" :selected=\"locale\" :labeltext=\"localeLabel\" @change=\"changeLocale\"></setting>\n                    <setting :items=\"uiTypeValues\" :selected=\"uiType\" :labeltext=\"uiTypeLabel\" @change=\"changeUiType\"></setting>\n                    <setting :items=\"panelPositionValues\" :selected=\"panelPosition\" :labeltext=\"panelPositionLabel\" @change=\"changePanelPosition\"></setting>\n                </div>\n            </div>\n            <div data-element=\"infoPanel\">\n                <h2>Information</h2>\n            </div>\n        </div>\n        <div id=\"alpheios-panel__nav\" class=\"alpheios-panel__nav\">\n            <span class=\"alpheios-panel__nav-btn active\" data-element=\"definitionsTab\" data-tab-group=\"contentTabs\"\n                  data-target-name=\"definitionsPanel\" uk-icon=\"icon: comment; ratio: 2\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" data-element=\"inflectionsTab\" data-tab-group=\"contentTabs\"\n                  data-target-name=\"inflectionsPanel\" uk-icon=\"icon: table; ratio: 2\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: clock; ratio: 2\"\n                  data-element=\"statusTab\" data-tab-group=\"contentTabs\" data-target-name=\"statusPanel\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: cog; ratio: 2\" data-element=\"optionsTab\"\n                  data-tab-group=\"contentTabs\" data-target-name=\"optionsPanel\"></span>\n\n            <span class=\"alpheios-panel__nav-btn\" uk-icon=\"icon: info; ratio: 2\" data-element=\"infoTab\"\n                  data-tab-group=\"contentTabs\" data-target-name=\"infoPanel\"></span>\n        </div>\n    </div>\n</div>\n";
+
+/***/ }),
+/* 45 */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAzMYbbAAAAolBMVEUAAAD///8GITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITWPtMG85fAGITW85fAGITVPb4C85fAGITWbwc685fAGITW85fAGITU+XW+85fAGITU6WWq85fAGITW85fAGITURLUEdOkwoRlg0UmQ/Xm9Ka3tWd4dhg5Nsj554nKqDqLaPtMGawM2lzdmx2eS85fBSA/ZbAAAAJXRSTlMAABAQICAwMEBAUFBgYHBwgICAj4+fn5+vr6+/v8/Pz9/f3+/vxRX+wgAABfhJREFUaN7dWn9XqzgQpTykkYeVFVnZh+zjicOPUoqU9vt/tZ1JQggt1dZ/lJ1zPIcmBHIzd+5MgsbCmLLlLZkxXzuBdfvw/HKQ9vrr/ub/AGv59Ho4sufbucO6ez5M2fNyzrCW06DI7ucL6/Hwjj19g5lan4D14/fh8L1xmQm7Gtby9fCBfTUPzQhSdiWsE1Rt29R13bS7oemLdcMDgNi6CtaIgbu6zEBZtm5k++8vdpcD4ZUk/KUwdZucsJQb9FTbbus1/iyky+6+GJdnXgfrpwJVIaZ10+l03K0hE7heLgiAbyTwP/paqckgb/Yc31tNtuV4mh7XR9FlhiOxcj2G5niqjXm9ubZskWYZlrziHcxhg42GutrjwwSjLXS1pbSCBNLIYybBupeoKsi23D/VEFv5GzZsoeA3PL6Pyk5xgPZe26OGZKXi3GKxenDE5+9FdJ34zGA+3QwhH295yRDdYqhDQ9N+OTDS1B3pSp9AHGEHI1jSWW/CKV1JOlG3ZFskZYVta6jHomGZk6iC1QiX4eNbHf0ehg0BLjS+PxVoaXbiyhV9vT4g2ggtBnto8UdPjhzmhKCNwmcRRCf1ENZSoNpnsBNELJohsrqCcHVZxrkpuebGEE1kS2pEXPZYlNkxLG8EIer9ofqOfgRsottVvGCpepTdP2qF8BeyaGq4X1oAQcRNWWRl1R72BXmqFu6iWt4OKIE4J7B8seoRJObHsAxa7Mtg2ROwLO2a2sVLmMKKK7uQBe6aOyuHRhIR4wqIgl0G3aGDjMMiR0HqT2RFXKpQrqN3GSz/EljO6VDyIF7T4pmm/MFfbXJCykVdSLrlGY8vctmOiEisa3L00hZKkhPUju5f9HjkTupFIFcKFzK9jISWgsVIuk5hRZ7nD6Gpd6fS174vuZeqgIPUG8GiySPZSPlKDk4GXIce3CHedYMuTIMz5QutlN3HrfMRLAoIuTpRL2hxfAxLGDuFZUkKe6JFyaUphDa2T2G16BR+2Ufchkfdju4v/jZVgkjH+FzFpUjTs0lYCaobqAQXgW6n3nInvMUELFocqn4HHpu+kHx7ClYr9EG6K6M/CrNyd/ipQOnCIP2fKjYm78LC2a4GtZRzwrQbXBxbPe3MhM8i1nhvi0SowSp4bG3IW/mg8BVUBVVUGyLmLZf3iAh8lLjGi/6xZBzDOq+EZ2KLM12UIL1kSN6Izh5WCeQcrngYW3uRtZoq55K4RtiI9cb2iL6xe5KNiVeivIk0KBos5n8aljmphLGeuflLXEf99pTAb7haVERA1PSsRBM7ExSNDAhrzRti3+5rI212Kg+NPDRcWyIWPwHLiify1pCDqQyQr3YCNZeVSsdC2zteQe25k6DAGgrzGf2VBeds4Fqas61LYPElZHFwPQmFf2PvTJUBIb3fRp7Epgy5PiunpiqeDqJA2vblem8bnpZRMaD8S2N6NKr+LFBCEWj1bjCEmzNR2En2gqn6lIau4FjhR91Y93HmkKhC1IcEhjxjrkgeqtSthABidbuRG659K3iXV6QnWd5vTLhqRIOayYI7wsV0OZLUp7l4Q70upIrxkh4CrQzhpWqCexfZ5/MVcaJj/emHqqU0RQMOHlY3EE08eSyMB1nVQtbJXRfkFFqZgESBlQNVV5x09irkqqHn4l4WTMMWxLQsUZkdnYjZo9vFCP5MS/XZ0xuEUXcv5u6wcdN2dHa/jZTnM7XcVu23ElG5oY0yFYsVBtgWPMcL+RbKt+dw/CnddShU0aTbFuq2grUQDUjD1ffHJI9o5METbkKKsV7gsVqZq/hAd1nGTGyhHRPuUSFKsTF+qzcSECaxeovJ+CaE2YCSx593qrTN9SKorOp2j9ykZPyEouvO7dPC8F2ha/ihE/psr8rCFrMXw+QUzg2W8XT+9H2LO+Y3OvxIYH4fgs5/B2qxrP+HPOXa84Nl3J39aALlk5Ems/0aee4TV4HkC2GusDAvTzvsD+mFPV9Yxs2EcrzcusCMudnR/2XcPLyMQdHnn/mhOv13E2N5/0tCe36c4b8ucPsPj8KYSwhZmDoAAAAASUVORK5CYII="
+
+/***/ }),
+/* 46 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__ = __webpack_require__(14);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5359cd9a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_panel_vue__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_20e7bc0c_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__ = __webpack_require__(50);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(41)
+  __webpack_require__(47)
 }
 var normalizeComponent = __webpack_require__(6)
 /* script */
@@ -33688,14 +33846,14 @@ var __vue_scopeId__ = null
 /* moduleIdentifier (server only) */
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
-  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_panel_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5359cd9a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_panel_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_20e7bc0c_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "vue-components\\panel.vue"
+Component.options.__file = "vue-components/setting.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -33704,9 +33862,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-5359cd9a", Component.options)
+    hotAPI.createRecord("data-v-20e7bc0c", Component.options)
   } else {
-    hotAPI.reload("data-v-5359cd9a", Component.options)
+    hotAPI.reload("data-v-20e7bc0c", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -33717,23 +33875,23 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 41 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(42);
+var content = __webpack_require__(48);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(5)("9e1e6022", content, false);
+var update = __webpack_require__(5)("f2ebd290", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-5359cd9a\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/sass-loader/lib/loader.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./panel.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-5359cd9a\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/sass-loader/lib/loader.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./panel.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-20e7bc0c\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-20e7bc0c\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -33743,21 +33901,21 @@ if(false) {
 }
 
 /***/ }),
-/* 42 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(4)(undefined);
+exports = module.exports = __webpack_require__(4)(true);
 // imports
 
 
 // module
-exports.push([module.i, "\n.alpheios-panel {\n  display: block;\n  width: 400px;\n  height: 100vh;\n  top: 0;\n  z-index: 2000;\n  position: fixed;\n  background: #FFF;\n  resize: both;\n  opacity: 0.95;\n}\n.alpheios-panel.alpheios-panel-left {\n  left: 0;\n}\n.alpheios-panel.alpheios-panel-right {\n  display: block;\n  right: 0;\n}\n.alpheios-panel.full-width {\n  display: block;\n  width: 100%;\n  left: 0;\n}\n.alpheios-panel__header {\n  position: relative;\n  display: flex;\n  flex-wrap: nowrap;\n  height: 60px;\n  padding: 10px;\n  box-sizing: border-box;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: ltr;\n  padding: 10px 0 10px 20px;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: rtl;\n  padding: 10px 20px 10px 0;\n}\n.alpheios-panel__header-title {\n  flex-grow: 1;\n}\n.alpheios-panel__header-logo {\n  margin-top: -1px;\n}\n.auk .uk-icon.alpheios-panel__header-action-btn {\n  display: block;\n  width: 40px;\n  height: 40px;\n  margin: 0 10px;\n  cursor: pointer;\n}\n.alpheios-panel__header-action-btn:hover {\n  fill: #FFF;\n}\n.alpheios-panel__body {\n  display: flex;\n  height: calc(100vh - 60px);\n}\n.alpheios-panel-left .alpheios-panel__body {\n  flex-direction: row;\n}\n.alpheios-panel-right .alpheios-panel__body {\n  flex-direction: row-reverse;\n}\n.alpheios-panel__content {\n  flex-grow: 1;\n  direction: ltr;\n  overflow: auto;\n  padding: 10px 20px 100px;\n}\n.alpheios-panel__nav {\n  width: 60px;\n}\n.auk .uk-icon.alpheios-panel__nav-btn {\n  cursor: pointer;\n  margin: 20px 10px;\n}\n", ""]);
+exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", "", {"version":3,"sources":[],"names":[],"mappings":"","file":"setting.vue","sourceRoot":""}]);
 
 // exports
 
 
 /***/ }),
-/* 43 */
+/* 49 */
 /***/ (function(module, exports) {
 
 /**
@@ -33790,47 +33948,7 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 44 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(45);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(5)("efa9aa7a", content, false);
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-7b21cdbf\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-7b21cdbf\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 45 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(4)(true);
-// imports
-
-
-// module
-exports.push([module.i, "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n", "", {"version":3,"sources":[],"names":[],"mappings":"","file":"setting.vue","sourceRoot":""}]);
-
-// exports
-
-
-/***/ }),
-/* 46 */
+/* 50 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -33840,7 +33958,7 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "auk-margin" }, [
     _c("label", { staticClass: "uk-form-label" }, [
-      _vm._v(_vm._s(_vm.data.labelText))
+      _vm._v(_vm._s(_vm.labeltext))
     ]),
     _vm._v(" "),
     _c(
@@ -33850,8 +33968,8 @@ var render = function() {
           {
             name: "model",
             rawName: "v-model",
-            value: _vm.selected,
-            expression: "selected"
+            value: _vm.selectedItem,
+            expression: "selectedItem"
           }
         ],
         staticClass: "uk-select",
@@ -33865,13 +33983,13 @@ var render = function() {
                 var val = "_value" in o ? o._value : o.value
                 return val
               })
-            _vm.selected = $event.target.multiple
+            _vm.selectedItem = $event.target.multiple
               ? $$selectedVal
               : $$selectedVal[0]
           }
         }
       },
-      _vm._l(_vm.data.textValues(), function(item) {
+      _vm._l(_vm.items, function(item) {
         return _c("option", [_vm._v(_vm._s(item))])
       })
     )
@@ -33884,347 +34002,22 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-7b21cdbf", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-20e7bc0c", esExports)
   }
 }
 
 /***/ }),
-/* 47 */
+/* 51 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    {
-      directives: [
-        {
-          name: "show",
-          rawName: "v-show",
-          value: _vm.data.isOpen,
-          expression: "data.isOpen"
-        }
-      ],
-      staticClass: "alpheios-panel auk",
-      class: _vm.panelClasses,
-      style: this.data.styles,
-      attrs: { "data-component": "alpheios-panel", "data-resizable": "true" }
-    },
-    [
-      _c("div", { staticClass: "alpheios-panel__header" }, [
-        _vm._m(0),
-        _vm._v(" "),
-        _c("span", {
-          directives: [
-            {
-              name: "show",
-              rawName: "v-show",
-              value: _vm.attachToLeftVisible,
-              expression: "attachToLeftVisible"
-            }
-          ],
-          staticClass: "alpheios-panel__header-action-btn",
-          attrs: { "uk-icon": "icon: chevron-left; ratio: 2" },
-          on: {
-            click: function($event) {
-              _vm.setPosition("left")
-            }
-          }
-        }),
-        _vm._v(" "),
-        _c("span", {
-          directives: [
-            {
-              name: "show",
-              rawName: "v-show",
-              value: _vm.attachToRightVisible,
-              expression: "attachToRightVisible"
-            }
-          ],
-          staticClass: "alpheios-panel__header-action-btn",
-          attrs: { "uk-icon": "icon: chevron-right; ratio: 2" },
-          on: {
-            click: function($event) {
-              _vm.setPosition("right")
-            }
-          }
-        }),
-        _vm._v(" "),
-        _c("span", {
-          staticClass: "alpheios-panel__header-action-btn",
-          attrs: { "uk-icon": "icon: close; ratio: 2" },
-          on: { click: _vm.close }
-        })
-      ]),
-      _vm._v(" "),
-      _c("div", { staticClass: "alpheios-panel__body" }, [
-        _c("div", { staticClass: "alpheios-panel__content" }, [
-          _c(
-            "div",
-            {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.definitions,
-                  expression: "data.tabs.definitions"
-                }
-              ],
-              attrs: { "data-element": "definitionsPanel" }
-            },
-            [
-              _c("h2", [_vm._v("Short Definitions")]),
-              _vm._v(" "),
-              _c("div", {
-                domProps: { innerHTML: _vm._s(_vm.data.shortDefinitions) }
-              }),
-              _vm._v(" "),
-              _c("h2", [_vm._v("Full Definitions")]),
-              _vm._v(" "),
-              _c("div", {
-                domProps: { innerHTML: _vm._s(_vm.data.fullDefinitions) }
-              })
-            ]
-          ),
-          _vm._v(" "),
-          _c(
-            "div",
-            {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.inflections,
-                  expression: "data.tabs.inflections"
-                }
-              ],
-              attrs: { "data-element": "inflectionsPanel" }
-            },
-            [
-              _c("div", {
-                staticClass: "alpheios-ui-form-group",
-                attrs: {
-                  id: "alpheios-panel-content-infl-table-locale-switcher"
-                }
-              }),
-              _vm._v(" "),
-              _c("div", {
-                staticClass: "alpheios-ui-form-group",
-                attrs: { id: "alpheios-panel-content-infl-table-view-selector" }
-              }),
-              _vm._v(" "),
-              _c("div", {
-                attrs: { id: "alpheios-panel-content-infl-table-body" }
-              })
-            ]
-          ),
-          _vm._v(" "),
-          _c(
-            "div",
-            {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.status,
-                  expression: "data.tabs.status"
-                }
-              ],
-              attrs: { "data-element": "statusPanel" }
-            },
-            [_c("div", { domProps: { innerHTML: _vm._s(_vm.data.messages) } })]
-          ),
-          _vm._v(" "),
-          _c(
-            "div",
-            {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.options,
-                  expression: "data.tabs.options"
-                }
-              ],
-              attrs: { "data-element": "optionsPanel" }
-            },
-            [
-              _c("setting", {
-                attrs: { data: _vm.data.settings.preferredLanguage },
-                on: { change: _vm.settingChanged }
-              }),
-              _vm._v(" "),
-              _c("setting", {
-                attrs: { data: _vm.data.settings.locale },
-                on: { change: _vm.settingChanged }
-              }),
-              _vm._v(" "),
-              _c("setting", {
-                attrs: { data: _vm.data.settings.panelPosition },
-                on: { change: _vm.settingChanged }
-              }),
-              _vm._v(" "),
-              _c("setting", {
-                attrs: { data: _vm.data.settings.uiType },
-                on: { change: _vm.settingChanged }
-              })
-            ],
-            1
-          ),
-          _vm._v(" "),
-          _c(
-            "div",
-            {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.info,
-                  expression: "data.tabs.info"
-                }
-              ],
-              attrs: { "data-element": "infoPanel" }
-            },
-            [_c("h2", [_vm._v("Information")])]
-          )
-        ]),
-        _vm._v(" "),
-        _c(
-          "div",
-          {
-            staticClass: "alpheios-panel__nav",
-            attrs: { id: "alpheios-panel__nav" }
-          },
-          [
-            _c("span", {
-              staticClass: "alpheios-panel__nav-btn uk-icon",
-              class: { active: _vm.data.tabs.definitions },
-              attrs: {
-                "data-element": "definitionsTab",
-                "data-tab-group": "contentTabs",
-                "data-target-name": "definitionsPanel",
-                "uk-icon": "icon: comment; ratio: 2"
-              },
-              on: {
-                click: function($event) {
-                  _vm.changeTab("definitions")
-                }
-              }
-            }),
-            _vm._v(" "),
-            _c("span", {
-              staticClass: "alpheios-panel__nav-btn uk-icon",
-              class: { active: _vm.data.tabs.inflections },
-              attrs: {
-                "data-element": "inflectionsTab",
-                "data-tab-group": "contentTabs",
-                "data-target-name": "inflectionsPanel",
-                "uk-icon": "icon: table; ratio: 2"
-              },
-              on: {
-                click: function($event) {
-                  _vm.changeTab("inflections")
-                }
-              }
-            }),
-            _vm._v(" "),
-            _c("span", {
-              staticClass: "alpheios-panel__nav-btn uk-icon",
-              class: { active: _vm.data.tabs.status },
-              attrs: {
-                "uk-icon": "icon: clock; ratio: 2",
-                "data-element": "statusTab",
-                "data-tab-group": "contentTabs",
-                "data-target-name": "statusPanel"
-              },
-              on: {
-                click: function($event) {
-                  _vm.changeTab("status")
-                }
-              }
-            }),
-            _vm._v(" "),
-            _c("span", {
-              staticClass: "alpheios-panel__nav-btn uk-icon",
-              class: { active: _vm.data.tabs.options },
-              attrs: {
-                "uk-icon": "icon: cog; ratio: 2",
-                "data-element": "optionsTab",
-                "data-tab-group": "contentTabs",
-                "data-target-name": "optionsPanel"
-              },
-              on: {
-                click: function($event) {
-                  _vm.changeTab("options")
-                }
-              }
-            }),
-            _vm._v(" "),
-            _c("span", {
-              staticClass: "alpheios-panel__nav-btn uk-icon",
-              class: { active: _vm.data.tabs.info },
-              attrs: {
-                "uk-icon": "icon: info; ratio: 2",
-                "data-element": "infoTab",
-                "data-tab-group": "contentTabs",
-                "data-target-name": "infoPanel"
-              },
-              on: {
-                click: function($event) {
-                  _vm.changeTab("info")
-                }
-              }
-            })
-          ]
-        )
-      ])
-    ]
-  )
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "alpheios-panel__header-title" }, [
-      _c("img", {
-        staticClass: "alpheios-panel__header-logo",
-        attrs: { src: __webpack_require__(48) }
-      })
-    ])
-  }
-]
-render._withStripped = true
-var esExports = { render: render, staticRenderFns: staticRenderFns }
-/* harmony default export */ __webpack_exports__["a"] = (esExports);
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-5359cd9a", esExports)
-  }
-}
-
-/***/ }),
-/* 48 */
-/***/ (function(module, exports) {
-
-module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAzMYbbAAAAolBMVEUAAAD///8GITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITWPtMG85fAGITW85fAGITVPb4C85fAGITWbwc685fAGITW85fAGITU+XW+85fAGITU6WWq85fAGITW85fAGITURLUEdOkwoRlg0UmQ/Xm9Ka3tWd4dhg5Nsj554nKqDqLaPtMGawM2lzdmx2eS85fBSA/ZbAAAAJXRSTlMAABAQICAwMEBAUFBgYHBwgICAj4+fn5+vr6+/v8/Pz9/f3+/vxRX+wgAABfhJREFUaN7dWn9XqzgQpTykkYeVFVnZh+zjicOPUoqU9vt/tZ1JQggt1dZ/lJ1zPIcmBHIzd+5MgsbCmLLlLZkxXzuBdfvw/HKQ9vrr/ub/AGv59Ho4sufbucO6ez5M2fNyzrCW06DI7ucL6/Hwjj19g5lan4D14/fh8L1xmQm7Gtby9fCBfTUPzQhSdiWsE1Rt29R13bS7oemLdcMDgNi6CtaIgbu6zEBZtm5k++8vdpcD4ZUk/KUwdZucsJQb9FTbbus1/iyky+6+GJdnXgfrpwJVIaZ10+l03K0hE7heLgiAbyTwP/paqckgb/Yc31tNtuV4mh7XR9FlhiOxcj2G5niqjXm9ubZskWYZlrziHcxhg42GutrjwwSjLXS1pbSCBNLIYybBupeoKsi23D/VEFv5GzZsoeA3PL6Pyk5xgPZe26OGZKXi3GKxenDE5+9FdJ34zGA+3QwhH295yRDdYqhDQ9N+OTDS1B3pSp9AHGEHI1jSWW/CKV1JOlG3ZFskZYVta6jHomGZk6iC1QiX4eNbHf0ehg0BLjS+PxVoaXbiyhV9vT4g2ggtBnto8UdPjhzmhKCNwmcRRCf1ENZSoNpnsBNELJohsrqCcHVZxrkpuebGEE1kS2pEXPZYlNkxLG8EIer9ofqOfgRsottVvGCpepTdP2qF8BeyaGq4X1oAQcRNWWRl1R72BXmqFu6iWt4OKIE4J7B8seoRJObHsAxa7Mtg2ROwLO2a2sVLmMKKK7uQBe6aOyuHRhIR4wqIgl0G3aGDjMMiR0HqT2RFXKpQrqN3GSz/EljO6VDyIF7T4pmm/MFfbXJCykVdSLrlGY8vctmOiEisa3L00hZKkhPUju5f9HjkTupFIFcKFzK9jISWgsVIuk5hRZ7nD6Gpd6fS174vuZeqgIPUG8GiySPZSPlKDk4GXIce3CHedYMuTIMz5QutlN3HrfMRLAoIuTpRL2hxfAxLGDuFZUkKe6JFyaUphDa2T2G16BR+2Ufchkfdju4v/jZVgkjH+FzFpUjTs0lYCaobqAQXgW6n3nInvMUELFocqn4HHpu+kHx7ClYr9EG6K6M/CrNyd/ipQOnCIP2fKjYm78LC2a4GtZRzwrQbXBxbPe3MhM8i1nhvi0SowSp4bG3IW/mg8BVUBVVUGyLmLZf3iAh8lLjGi/6xZBzDOq+EZ2KLM12UIL1kSN6Izh5WCeQcrngYW3uRtZoq55K4RtiI9cb2iL6xe5KNiVeivIk0KBos5n8aljmphLGeuflLXEf99pTAb7haVERA1PSsRBM7ExSNDAhrzRti3+5rI212Kg+NPDRcWyIWPwHLiify1pCDqQyQr3YCNZeVSsdC2zteQe25k6DAGgrzGf2VBeds4Fqas61LYPElZHFwPQmFf2PvTJUBIb3fRp7Epgy5PiunpiqeDqJA2vblem8bnpZRMaD8S2N6NKr+LFBCEWj1bjCEmzNR2En2gqn6lIau4FjhR91Y93HmkKhC1IcEhjxjrkgeqtSthABidbuRG659K3iXV6QnWd5vTLhqRIOayYI7wsV0OZLUp7l4Q70upIrxkh4CrQzhpWqCexfZ5/MVcaJj/emHqqU0RQMOHlY3EE08eSyMB1nVQtbJXRfkFFqZgESBlQNVV5x09irkqqHn4l4WTMMWxLQsUZkdnYjZo9vFCP5MS/XZ0xuEUXcv5u6wcdN2dHa/jZTnM7XcVu23ElG5oY0yFYsVBtgWPMcL+RbKt+dw/CnddShU0aTbFuq2grUQDUjD1ffHJI9o5METbkKKsV7gsVqZq/hAd1nGTGyhHRPuUSFKsTF+qzcSECaxeovJ+CaE2YCSx593qrTN9SKorOp2j9ykZPyEouvO7dPC8F2ha/ihE/psr8rCFrMXw+QUzg2W8XT+9H2LO+Y3OvxIYH4fgs5/B2qxrP+HPOXa84Nl3J39aALlk5Ems/0aee4TV4HkC2GusDAvTzvsD+mFPV9Yxs2EcrzcusCMudnR/2XcPLyMQdHnn/mhOv13E2N5/0tCe36c4b8ucPsPj8KYSwhZmDoAAAAASUVORK5CYII="
-
-/***/ }),
-/* 49 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(15);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(52);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_190d0968_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(54);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(50)
+  __webpack_require__(52)
 }
 var normalizeComponent = __webpack_require__(6)
 /* script */
@@ -34242,13 +34035,13 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_190d0968_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "vue-components\\popup.vue"
+Component.options.__file = "vue-components/popup.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -34257,9 +34050,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-09f5ebdb", Component.options)
+    hotAPI.createRecord("data-v-190d0968", Component.options)
   } else {
-    hotAPI.reload("data-v-09f5ebdb", Component.options)
+    hotAPI.reload("data-v-190d0968", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -34270,23 +34063,23 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 50 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(51);
+var content = __webpack_require__(53);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(5)("449bb36b", content, false);
+var update = __webpack_require__(5)("1d2b91c2", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-09f5ebdb\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-09f5ebdb\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-190d0968\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-190d0968\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -34296,7 +34089,7 @@ if(false) {
 }
 
 /***/ }),
-/* 51 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(4)(true);
@@ -34304,13 +34097,13 @@ exports = module.exports = __webpack_require__(4)(true);
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border: 1px solid lightgray;\n    width: 400px;\n    height: 500px;\n    z-index: 1000;\n    position: fixed;\n    left: 200px;\n    top: 100px;\n    padding: 50px 20px 20px;\n    box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n    overflow: auto;\n}\n.alpheios-popup__close-btn {\n    color: gray;\n    display: block;\n    width: 40px;\n    height: 40px;\n    top: 0;\n    right: 0;\n    margin: 10px;\n    cursor: pointer;\n    position: absolute;\n}\n.alpheios-popup__message-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__content-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__more-btn {\n    float: right;\n    margin-bottom: 10px;\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?03f8e370"],"names":[],"mappings":";AAkIA;IACA,iBAAA;IACA,4BAAA;IACA,aAAA;IACA,cAAA;IACA,cAAA;IACA,gBAAA;IACA,YAAA;IACA,WAAA;IACA,wBAAA;IACA,uBAAA,EAAA,oFAAA;IACA,eAAA;CACA;AAEA;IACA,YAAA;IACA,eAAA;IACA,YAAA;IACA,aAAA;IACA,OAAA;IACA,SAAA;IACA,aAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,aAAA;IACA,oBAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <div ref=\"popup\" class=\"alpheios-popup\" v-show=\"visible\">\r\n        <span class=\"alpheios-popup__close-btn\" @click=\"closePopup\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n        <div class=\"alpheios-popup__message-area\" v-html=\"messages\"></div>\r\n        <div class=\"alpheios-popup__content-area\" v-html=\"content\"></div>\r\n        <morph v-show=\"morphdataready\" :lexemes=\"lexemes\"></morph>\r\n        <button @click=\"showInflectionsPanelTab\" v-show=\"defdataready\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Inflections</button>\r\n        <button @click=\"showDefinitionsPanelTab\" v-show=\"infldataready\" class=\"uk-button uk-button-default alpheios-popup__more-btn\">Go to Full Definitions</button>\r\n    </div>\r\n</template>\r\n<script>\r\n  import interact from 'interactjs'\r\n\r\n  export default {\r\n    name: 'Popup',\r\n    data: function () {\r\n      return {\r\n        resizable: true,\r\n        draggable: true,\r\n      }\r\n    },\r\n    props: {\r\n      messages: {\r\n        type: String,\r\n        required: true\r\n      },\r\n      content: {\r\n        type: String,\r\n        required: true\r\n      },\r\n      lexemes: {\r\n        type: Array,\r\n        required: true\r\n      },\r\n      visible: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      defdataready: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      infldataready: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      morphdataready: {\r\n        type: Boolean,\r\n        required: true\r\n      }\r\n    },\r\n    methods: {\r\n      closePopup () {\r\n        this.$emit('close')\r\n      },\r\n\r\n      showDefinitionsPanelTab () {\r\n        this.$emit('showdefspaneltab')\r\n      },\r\n\r\n      showInflectionsPanelTab () {\r\n        this.$emit('showinflpaneltab')\r\n      },\r\n\r\n      resizeListener(event) {\r\n        console.log('Resize listener')\r\n        if (this.resizable) {\r\n          const target = event.target\r\n          let x = (parseFloat(target.getAttribute('data-x')) || 0)\r\n          let y = (parseFloat(target.getAttribute('data-y')) || 0)\r\n\r\n          // update the element's style\r\n          target.style.width  = event.rect.width + 'px'\r\n          target.style.height = event.rect.height + 'px'\r\n\r\n          // translate when resizing from top or left edges\r\n          x += event.deltaRect.left\r\n          y += event.deltaRect.top\r\n\r\n          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)'\r\n\r\n          target.setAttribute('data-x', x)\r\n          target.setAttribute('data-y', y)\r\n        }\r\n      },\r\n\r\n      dragMoveListener(event) {\r\n        if (this.draggable) {\r\n          const target = event.target;\r\n          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;\r\n          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;\r\n\r\n          target.style.webkitTransform = `translate(${x}px, ${y}px)`;\r\n          target.style.transform = `translate(${x}px, ${y}px)`;\r\n\r\n          target.setAttribute('data-x', x);\r\n          target.setAttribute('data-y', y);\r\n        }\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('mounted')\r\n      const resizableSettings = {\r\n        preserveAspectRatio: false,\r\n        edges: { left: true, right: true, bottom: true, top: true },\r\n        restrictSize: {\r\n          min: { width: 100, height: 300 }\r\n        },\r\n        restrictEdges: {\r\n          outer: document.body,\r\n          endOnly: true,\r\n        }\r\n      };\r\n      const draggableSettings = {\r\n        inertia: true,\r\n        autoScroll: false,\r\n        restrict: {\r\n          restriction: document.body,\r\n          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }\r\n        },\r\n        onmove: this.dragMoveListener\r\n      };\r\n      interact(this.$el)\r\n        .resizable(resizableSettings)\r\n        .draggable(draggableSettings)\r\n        .on('resizemove', this.resizeListener);\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .alpheios-popup {\r\n        background: #FFF;\r\n        border: 1px solid lightgray;\r\n        width: 400px;\r\n        height: 500px;\r\n        z-index: 1000;\r\n        position: fixed;\r\n        left: 200px;\r\n        top: 100px;\r\n        padding: 50px 20px 20px;\r\n        box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\r\n        overflow: auto;\r\n    }\r\n\r\n    .alpheios-popup__close-btn {\r\n        color: gray;\r\n        display: block;\r\n        width: 40px;\r\n        height: 40px;\r\n        top: 0;\r\n        right: 0;\r\n        margin: 10px;\r\n        cursor: pointer;\r\n        position: absolute;\r\n    }\r\n\r\n    .alpheios-popup__message-area {\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .alpheios-popup__content-area {\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .alpheios-popup__more-btn {\r\n        float: right;\r\n        margin-bottom: 10px;\r\n    }\r\n</style>\r\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border: 1px solid lightgray;\n    width: 400px;\n    height: 500px;\n    z-index: 1000;\n    position: fixed;\n    left: 200px;\n    top: 100px;\n    padding: 50px 20px 20px;\n    box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n    overflow: auto;\n    /* TODO use sass variables */\n    font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n    font-size: 12px;\n    color: #666666;\n}\n.alpheios-popup li {\n    list-style-type: none;\n    font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n    font-size: 12px;\n    color: #666666;\n    padding: 0;\n}\n.alpheios-popup__close-btn {\n    color: gray;\n    display: block;\n    width: 40px;\n    height: 40px;\n    top: 0;\n    right: 0;\n    margin: 10px;\n    cursor: pointer;\n    position: absolute;\n}\n.alpheios-popup__message-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__content-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__more-btn {\n    float: right;\n    margin-bottom: 10px;\n    /*TODO alpheios variables */\n}\nli.alpheios-popup__message {\n    display:none;\n}\nli.alpheios-popup__message:last-child {\n    display:block;\n}\n\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/popup.vue?0bc46985"],"names":[],"mappings":";AAiJA;IACA,iBAAA;IACA,4BAAA;IACA,aAAA;IACA,cAAA;IACA,cAAA;IACA,gBAAA;IACA,YAAA;IACA,WAAA;IACA,wBAAA;IACA,uBAAA,EAAA,oFAAA;IACA,eAAA;IACA,6BAAA;IACA,4DAAA;IACA,gBAAA;IACA,eAAA;CACA;AAEA;IACA,sBAAA;IACA,4DAAA;IACA,gBAAA;IACA,eAAA;IACA,WAAA;CACA;AAEA;IACA,YAAA;IACA,eAAA;IACA,YAAA;IACA,aAAA;IACA,OAAA;IACA,SAAA;IACA,aAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,aAAA;IACA,oBAAA;IACA,4BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,cAAA;CACA","file":"popup.vue","sourcesContent":["<template>\n    <div ref=\"popup\" class=\"alpheios-popup\" v-show=\"visible\">\n        <span class=\"alpheios-popup__close-btn\" @click=\"closePopup\" uk-icon=\"icon: close; ratio: 2\"></span>\n        <div class=\"alpheios-popup__message-area\">\n          <ul>\n            <li @beforehide=\"clearMessages\" v-for=\"message in messages\" class=\"alpheios-popup__message uk-alert-primary\" uk-alert>\n              <a class=\"uk-alert-close\" uk-close></a>\n              {{ message }}\n            </li>\n          </ul>\n        </div>\n        <morph v-show=\"morphdataready\" :lexemes=\"lexemes\" :definitions=\"definitions\"></morph>\n        <div class=\"uk-button-group\">\n          <button @click=\"showInflectionsPanelTab\" v-show=\"defdataready\" class=\"uk-button uk-button-primary uk-button-small alpheios-popup__more-btn\">Inflect</button>\n          <button @click=\"showDefinitionsPanelTab\" v-show=\"infldataready\" class=\"uk-button uk-button-primary uk-button-small alpheios-popup__more-btn\">Define</button>\n        </div>\n    </div>\n</template>\n<script>\n  import interact from 'interactjs'\n\n  export default {\n    name: 'Popup',\n    data: function () {\n      return {\n        resizable: true,\n        draggable: true,\n      }\n    },\n    props: {\n      messages: {\n        type: Array,\n        required: true\n      },\n      lexemes: {\n        type: Array,\n        required: true\n      },\n      definitions: {\n        type: Object,\n        required: true\n      },\n      visible: {\n        type: Boolean,\n        required: true\n      },\n      defdataready: {\n        type: Boolean,\n        required: true\n      },\n      infldataready: {\n        type: Boolean,\n        required: true\n      },\n      morphdataready: {\n        type: Boolean,\n        required: true\n      }\n    },\n    methods: {\n      clearMessages() {\n        while (this.messages.length >0) {\n          this.messages.pop()\n        }\n      },\n\n      closePopup () {\n        this.$emit('close')\n      },\n\n      showDefinitionsPanelTab () {\n        this.$emit('showdefspaneltab')\n      },\n\n      showInflectionsPanelTab () {\n        this.$emit('showinflpaneltab')\n      },\n\n      resizeListener(event) {\n        console.log('Resize listener')\n        if (this.resizable) {\n          const target = event.target\n          let x = (parseFloat(target.getAttribute('data-x')) || 0)\n          let y = (parseFloat(target.getAttribute('data-y')) || 0)\n\n          // update the element's style\n          target.style.width  = event.rect.width + 'px'\n          target.style.height = event.rect.height + 'px'\n\n          // translate when resizing from top or left edges\n          x += event.deltaRect.left\n          y += event.deltaRect.top\n\n          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)'\n\n          target.setAttribute('data-x', x)\n          target.setAttribute('data-y', y)\n        }\n      },\n\n      dragMoveListener(event) {\n        if (this.draggable) {\n          const target = event.target;\n          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;\n          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;\n\n          target.style.webkitTransform = `translate(${x}px, ${y}px)`;\n          target.style.transform = `translate(${x}px, ${y}px)`;\n\n          target.setAttribute('data-x', x);\n          target.setAttribute('data-y', y);\n        }\n      }\n\n    },\n    mounted () {\n      console.log('mounted')\n      const resizableSettings = {\n        preserveAspectRatio: false,\n        edges: { left: true, right: true, bottom: true, top: true },\n        restrictSize: {\n          min: { width: 100, height: 300 }\n        },\n        restrictEdges: {\n          outer: document.body,\n          endOnly: true,\n        }\n      };\n      const draggableSettings = {\n        inertia: true,\n        autoScroll: false,\n        restrict: {\n          restriction: document.body,\n          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }\n        },\n        onmove: this.dragMoveListener\n      };\n      interact(this.$el)\n        .resizable(resizableSettings)\n        .draggable(draggableSettings)\n        .on('resizemove', this.resizeListener);\n    }\n  }\n</script>\n<style>\n    .alpheios-popup {\n        background: #FFF;\n        border: 1px solid lightgray;\n        width: 400px;\n        height: 500px;\n        z-index: 1000;\n        position: fixed;\n        left: 200px;\n        top: 100px;\n        padding: 50px 20px 20px;\n        box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n        overflow: auto;\n        /* TODO use sass variables */\n        font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n        font-size: 12px;\n        color: #666666;\n    }\n\n    .alpheios-popup li {\n        list-style-type: none;\n        font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n        font-size: 12px;\n        color: #666666;\n        padding: 0;\n    }\n\n    .alpheios-popup__close-btn {\n        color: gray;\n        display: block;\n        width: 40px;\n        height: 40px;\n        top: 0;\n        right: 0;\n        margin: 10px;\n        cursor: pointer;\n        position: absolute;\n    }\n\n    .alpheios-popup__message-area {\n        margin-bottom: 20px;\n    }\n\n    .alpheios-popup__content-area {\n        margin-bottom: 20px;\n    }\n\n    .alpheios-popup__more-btn {\n        float: right;\n        margin-bottom: 10px;\n        /*TODO alpheios variables */\n    }\n\n    li.alpheios-popup__message {\n        display:none;\n    }\n\n    li.alpheios-popup__message:last-child {\n        display:block;\n    }\n\n</style>\n"],"sourceRoot":""}]);
 
 // exports
 
 
 /***/ }),
-/* 52 */
+/* 54 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -34339,15 +34132,28 @@ var render = function() {
         on: { click: _vm.closePopup }
       }),
       _vm._v(" "),
-      _c("div", {
-        staticClass: "alpheios-popup__message-area",
-        domProps: { innerHTML: _vm._s(_vm.messages) }
-      }),
-      _vm._v(" "),
-      _c("div", {
-        staticClass: "alpheios-popup__content-area",
-        domProps: { innerHTML: _vm._s(_vm.content) }
-      }),
+      _c("div", { staticClass: "alpheios-popup__message-area" }, [
+        _c(
+          "ul",
+          _vm._l(_vm.messages, function(message) {
+            return _c(
+              "li",
+              {
+                staticClass: "alpheios-popup__message uk-alert-primary",
+                attrs: { "uk-alert": "" },
+                on: { beforehide: _vm.clearMessages }
+              },
+              [
+                _c("a", {
+                  staticClass: "uk-alert-close",
+                  attrs: { "uk-close": "" }
+                }),
+                _vm._v("\n          " + _vm._s(message) + "\n        ")
+              ]
+            )
+          })
+        )
+      ]),
       _vm._v(" "),
       _c("morph", {
         directives: [
@@ -34358,42 +34164,46 @@ var render = function() {
             expression: "morphdataready"
           }
         ],
-        attrs: { lexemes: _vm.lexemes }
+        attrs: { lexemes: _vm.lexemes, definitions: _vm.definitions }
       }),
       _vm._v(" "),
-      _c(
-        "button",
-        {
-          directives: [
-            {
-              name: "show",
-              rawName: "v-show",
-              value: _vm.defdataready,
-              expression: "defdataready"
-            }
-          ],
-          staticClass: "uk-button uk-button-default alpheios-popup__more-btn",
-          on: { click: _vm.showInflectionsPanelTab }
-        },
-        [_vm._v("Go to Inflections")]
-      ),
-      _vm._v(" "),
-      _c(
-        "button",
-        {
-          directives: [
-            {
-              name: "show",
-              rawName: "v-show",
-              value: _vm.infldataready,
-              expression: "infldataready"
-            }
-          ],
-          staticClass: "uk-button uk-button-default alpheios-popup__more-btn",
-          on: { click: _vm.showDefinitionsPanelTab }
-        },
-        [_vm._v("Go to Full Definitions")]
-      )
+      _c("div", { staticClass: "uk-button-group" }, [
+        _c(
+          "button",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.defdataready,
+                expression: "defdataready"
+              }
+            ],
+            staticClass:
+              "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
+            on: { click: _vm.showInflectionsPanelTab }
+          },
+          [_vm._v("Inflect")]
+        ),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.infldataready,
+                expression: "infldataready"
+              }
+            ],
+            staticClass:
+              "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
+            on: { click: _vm.showDefinitionsPanelTab }
+          },
+          [_vm._v("Define")]
+        )
+      ])
     ],
     1
   )
@@ -34405,22 +34215,22 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-09f5ebdb", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-190d0968", esExports)
   }
 }
 
 /***/ }),
-/* 53 */
+/* 55 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__ = __webpack_require__(16);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_a407c392_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__ = __webpack_require__(56);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_85d98878_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__ = __webpack_require__(58);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(54)
+  __webpack_require__(56)
 }
 var normalizeComponent = __webpack_require__(6)
 /* script */
@@ -34438,13 +34248,13 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_a407c392_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_85d98878_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "vue-components\\morph.vue"
+Component.options.__file = "vue-components/morph.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -34453,9 +34263,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-a407c392", Component.options)
+    hotAPI.createRecord("data-v-85d98878", Component.options)
   } else {
-    hotAPI.reload("data-v-a407c392", Component.options)
+    hotAPI.reload("data-v-85d98878", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -34466,23 +34276,23 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 54 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(55);
+var content = __webpack_require__(57);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(5)("44fc9442", content, false);
+var update = __webpack_require__(5)("51a66b4f", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-a407c392\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./morph.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-a407c392\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./morph.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-85d98878\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./morph.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-85d98878\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./morph.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -34492,7 +34302,7 @@ if(false) {
 }
 
 /***/ }),
-/* 55 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(4)(true);
@@ -34500,13 +34310,13 @@ exports = module.exports = __webpack_require__(4)(true);
 
 
 // module
-exports.push([module.i, "\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: small;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n}\n.alpheios-morph__dial {\n    font-size: smaller;\n}\n.alpheios-morph__attr {\n    font-weight: normal;\n    color: #0E2233; /** TODO use alpheios variable **/\n}\n.alpheios-morph__linked-attr {\n\tcolor:#3E8D9C; /** TODO use alpheios variable **/\n\tfont-weight: bold;\n\tcursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n    color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n    content: \";\";\n}\n.alpheios-morph__provider {\n  font-size: small;\n  font-weight: normal;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n  padding-left: .5em;\n}\n.alpheios-morph__listitem:after {\n    content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n    content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n    content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n    content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n   display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n   display: none;\n}\n.alpheios-popup__content .alpheios-shortdef__lemma {\n   display: none;\n}\n.alpheios-popup .alpheios-fulldef__lemma {\n   display: none;\n}\n\n\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/morph.vue?f47c155e"],"names":[],"mappings":";AAoIA;EACA,oBAAA;EACA,YAAA;CACA;AAEA;EACA,kBAAA;CACA;AAEA;EACA,iBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;CACA;AAEA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;IACA,eAAA,CAAA,kCAAA;CACA;AAEA;CACA,cAAA,CAAA,kCAAA;CACA,kBAAA;CACA,gBAAA;CACA;AAEA;IACA,0BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;EACA,iBAAA;EACA,oBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;EACA,mBAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,YAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;GACA,eAAA;CACA;AAEA;GACA,cAAA;CACA;AAEA;GACA,cAAA;CACA;AAEA;GACA,cAAA;CACA","file":"morph.vue","sourcesContent":["<template>\r\n  <div id=\"alpheios-morph__lexemes\">\r\n    <div class=\"alpheios-morph__dict\" v-for=\"lex in lexemes\">\r\n      <span class=\"alpheios-morph__lemma\" v-if=\"! lex.lemma.principalParts.includes(lex.lemma.word)\" :lang=\"lex.lemma.language\">{{ lex.lemma.word }}</span>\r\n      <span class=\"alpheios-morph__pparts\">\r\n        <span class=\"alpheios-morph__listitem\" v-for=\"part in lex.lemma.principalParts\" :lang=\"lex.lemma.language\">{{ part }}</span>\r\n      </span>\r\n      <span class=\"alpheios-morph__pronunciation\" v-for=\"pron in lex.lemma.features.pronunciation\" v-if=\"lex.lemma.features.pronunciation\">\r\n        [{{pron}}]\r\n      </span>\r\n      <div class=\"alpheios-morph__morph\">\r\n        <span class=\"alpheios-morph__pofs\">\r\n          <span class=\"alpheios-morph__attr\" v-for=\"kase in lex.lemma.features['case']\" v-if=\"lex.lemma.features['case']\">{{kase.value}}</span>\r\n          <span class=\"alpheios-morph__attr\" v-for=\"gender in lex.lemma.features.gender\" v-if=\"lex.lemma.features.gender\">{{gender.value}}</span>\r\n          {{ lex.lemma.features['part of speech'].toString() }}\r\n        </span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"kind in lex.lemma.features.kind\" v-if=\"lex.lemma.features.kind\">{{kind.value}}</span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"decl in lex.lemma.features.declension\" v-if=\"lex.lemma.features.declension\">{{decl.value}} declension</span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"conj in lex.lemma.features.conjugation\" v-if=\"lex.lemma.features.conjugation\">{{conj.value}}</span>\r\n        <span class=\"alpheios-morph__parenthesized\" v-if=\"lex.lemma.features.age || lex.lemma.features.area || lex.lemma.features.geo || lex.lemma.features.frequency\">\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"age in lex.lemma.features.age\" v-if=\"lex.lemma.features.age\">( {{age.value}} )</span>\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"area in lex.lemma.features.area\" v-if=\"lex.lemma.features.area\">{{area.value}} </span>\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"geo in lex.lemma.features.geo\" v-if=\"lex.lemma.features.geo\">{{geo.value}}</span>\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"freq in lex.lemma.features.frequency\" v-if=\"lex.lemma.features.frequency\">{{freq.value}}</span>\r\n        </span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"source in lex.lemma.features.source\" v-if=\"lex.lemma.features.source\">[{{source.value}}]</span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"note in lex.lemma.features.note\" v-if=\"lex.lemma.features.note\">[{{source.note}}]</span>\r\n      </div>\r\n      <div class=\"alpheios-morph__inflections\">\r\n        <div class=\"alpheios-morph__inflset\" v-for=\"inflset in lex.getGroupedInflections()\">\r\n\r\n          <span class=\"alpheios-morph__prefix\" v-if=\"inflset.groupingKey.prefix\">{{inflset.groupingKey.prefix}} </span>\r\n          <span class=\"alpheios-morph__stem\">{{inflset.groupingKey.stem}}</span>\r\n          <span class=\"alpheios-morph__suffix\" v-if=\"inflset.groupingKey.suffix\"> -{{inflset.groupingKey.suffix}}</span>\r\n          <span class=\"alpheios-morph__pofs alpheios-morph__parenthesized\"\r\n            v-if=\"! featureMatch(lex.lemma.features['part of speech'],inflset.groupingKey['part of speech'])\">{{inflset.groupingKey[\"part of speech\"].toString()}}</span>\r\n          <span class=\"alpheios-morph__declension alpheios-morph__parenthesized\"\r\n            v-if=\"inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension\">{{inflset.groupingKey.declension.toString()}}</span>\r\n\r\n          <div class=\"alpheios-morph__inflgroup\" v-for=\"group in inflset.inflections\">\r\n            <span class=\"alpheios-morph__number\" v-if=\"group.groupingKey.number && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.number.toString() }}</span>\r\n            <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.tense && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.tense.toString() }}</span>\r\n            <span v-for=\"nextGroup in group.inflections\">\r\n              <span v-if=\"group.groupingKey.isCaseInflectionSet\">\r\n                <span class=\"alpheios-morph__voice\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.voice\">{{ nextGroup.groupingKey.voice.toString() }}</span>\r\n                <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.tense\">{{ nextGroup.groupingKey.tense.toString() }}</span>\r\n                :\r\n              </span>\r\n              <span>\r\n                <span v-for=\"infl in nextGroup.inflections\">\r\n\r\n                  <span class=\"alpheios-morph__case\" v-if=\"infl.groupingKey.case\">\r\n                    {{ infl.groupingKey.case.toString() }}\r\n                    <span class=\"alpheios-morph__gender alpheios-morph__parenthesized\"\r\n                      v-if=\"infl.groupingKey.gender && ! featureMatch(infl.groupingKey.gender,lex.lemma.features.gender) \">\r\n                      {{ infl.groupingKey.gender.map((g) => g.toLocaleStringAbbr()).toString()}}\r\n                    </span>\r\n\r\n                    <span class=\"alpheios-morph__comparative\" v-if=\"infl.groupingKey.comparative && infl.groupingKey.filter((f)=> f.toString() !== 'positive')\">\r\n                      {{ infl.groupingKey.comparative.toString() }}\r\n                    </span>\r\n\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__person\" v-if=\"infl.groupingKey.person\">\r\n                    {{ infl.groupingKey.person.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__number\" v-if=\"infl.groupingKey.number && ! group.groupingKey.isCaseInflectionSet\">\r\n                    {{ infl.groupingKey.number.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__tense\" v-if=\"infl.groupingKey.tense && ! group.groupingKey.isCaseInflectionSet && ! nextGroup.groupingKey.tense\">\r\n                    {{ infl.groupingKey.tense.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__mood\" v-if=\"infl.groupingKey.mood && !group.groupingKey.isCaseInflectionSet\">\r\n                    {{ infl.groupingKey.mood.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__voice\" v-if=\"infl.groupingKey.voice && !group.groupingKey.isCaseInflectionSet\">\r\n                    {{ infl.groupingKey.voice.toString() }}\r\n                  </span>\r\n\r\n                  <span v-for=\"item in infl.inflections\">\r\n                    <span class=\"alpheios-morph__example\" v-if=\"item.example\">{{ item.example.toString() }}</span>\r\n                  </span>\r\n\r\n                </span><!-- end span infl -->\r\n              </span>\r\n            </span><!-- end span groupinflections -->\r\n          </div>\r\n        </div>\r\n      </div>\r\n      <div class=\"alpheios-morph__provider\">\r\n        {{ lex.provider.toString() }}\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'Morph',\r\n    props: ['lexemes'],\r\n    methods: {\r\n      featureMatch(a,b) {\r\n        let matches = false\r\n        for (let f of a) {\r\n          if (b && b.filter((x) => x.isEqual(f)).length > 0) {\r\n            matches = true\r\n            break\r\n          }\r\n        }\r\n        return matches\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Morph is mounted')\r\n        // for each infl without dial\r\n        //   group by stem, pref, suff, pofs, comp\r\n        //   sort by pofs\r\n        // for each infl without dial and without either stem or pofs\r\n        // for each infl with dial\r\n        // inflection-set:\r\n        //  ignores conjunction, preposition, interjection, particle\r\n        //  take pofs and decl from infl if it differs from dict\r\n        //  add dialect\r\n    },\r\n  }\r\n</script>\r\n<style>\r\n\r\n  .alpheios-morph__dict {\r\n    margin-bottom: .5em;\r\n    clear: both;\r\n  }\r\n\r\n  .alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\r\n    font-weight: bold;\r\n  }\r\n\r\n  .alpheios-morph__source {\r\n    font-size: small;\r\n    color: #4E6476; /** TODO use alpheios variable **/\r\n    font-style: italic;\r\n  }\r\n\r\n  .alpheios-morph__dial {\r\n      font-size: smaller;\r\n  }\r\n\r\n  .alpheios-morph__attr {\r\n      font-weight: normal;\r\n      color: #0E2233; /** TODO use alpheios variable **/\r\n  }\r\n\r\n  .alpheios-morph__linked-attr {\r\n  \tcolor:#3E8D9C; /** TODO use alpheios variable **/\r\n  \tfont-weight: bold;\r\n  \tcursor: pointer;\r\n  }\r\n\r\n  .alpheios-morph__linked-attr:hover {\r\n      color: #5BC8DC !important;\r\n  }\r\n\r\n  .alpheios-morph__pofs:after {\r\n      content: \";\";\r\n  }\r\n\r\n  .alpheios-morph__provider {\r\n    font-size: small;\r\n    font-weight: normal;\r\n    color: #4E6476; /** TODO use alpheios variable **/\r\n    font-style: italic;\r\n    padding-left: .5em;\r\n  }\r\n\r\n  .alpheios-morph__listitem:after {\r\n      content: \", \";\r\n   }\r\n\r\n  .alpheios-morph__listitem:last-child:after {\r\n      content: \"\";\r\n   }\r\n\r\n  .alpheios-morph__parenthesized:before {\r\n      content: \"(\";\r\n   }\r\n\r\n  .alpheios-morph__parenthesized:after {\r\n      content: \")\";\r\n   }\r\n\r\n   .alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\r\n     display: block;\r\n   }\r\n\r\n   .alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\r\n     display: none;\r\n   }\r\n\r\n   .alpheios-popup__content .alpheios-shortdef__lemma {\r\n     display: none;\r\n   }\r\n\r\n   .alpheios-popup .alpheios-fulldef__lemma {\r\n     display: none;\r\n   }\r\n\r\n\r\n</style>\r\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n#alpheios-morph__lexemes {\n    color: #0E2233; /** TODO use alpheios variable **/\n}\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n}\n.alpheios-morph__dial {\n    font-size: smaller;\n}\n.alpheios-morph__attr {\n    font-weight: normal;\n}\n.alpheios-morph__linked-attr {\n\tfont-weight: bold;\n\tcursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n    color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n    content: \";\";\n}\n.alpheios-morph__inflset .alpheios-morph__heading {\n    display: none;\n}\n.alpheios-morph__inflset:first-child .alpheios-morph__heading {\n    color: #4E6476; /** TODO use alpheios variable **/\n    display: block;\n}\n.alpheios-morph__provider {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n  padding-left: .5em;\n}\n.alpheios-morph__listitem:after {\n    content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n    content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n    content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n    content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n   display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n   display: none;\n}\n\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/morph.vue?33e4c207"],"names":[],"mappings":";AA8HA;IACA,eAAA,CAAA,kCAAA;CACA;AACA;EACA,oBAAA;EACA,YAAA;CACA;AAEA;EACA,kBAAA;CACA;AAEA;EACA,mBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;CACA;AAEA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;CACA,kBAAA;CACA,gBAAA;CACA;AAEA;IACA,0BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,eAAA,CAAA,kCAAA;IACA,eAAA;CACA;AAEA;EACA,mBAAA;EACA,oBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;EACA,mBAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,YAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;GACA,eAAA;CACA;AAEA;GACA,cAAA;CACA","file":"morph.vue","sourcesContent":["<template>\n  <div id=\"alpheios-morph__lexemes\">\n    <div class=\"alpheios-morph__dict\" v-for=\"lex in lexemes\">\n      <span class=\"alpheios-morph__lemma\" v-if=\"! lex.lemma.principalParts.includes(lex.lemma.word)\" :lang=\"lex.lemma.language\">{{ lex.lemma.word }}</span>\n      <span class=\"alpheios-morph__pparts\">\n        <span class=\"alpheios-morph__listitem\" v-for=\"part in lex.lemma.principalParts\" :lang=\"lex.lemma.language\">{{ part }}</span>\n      </span>\n      <span class=\"alpheios-morph__pronunciation\" v-for=\"pron in lex.lemma.features.pronunciation\" v-if=\"lex.lemma.features.pronunciation\">\n        [{{pron}}]\n      </span>\n      <div class=\"alpheios-morph__morph\">\n        <span class=\"alpheios-morph__pofs\">\n          <span class=\"alpheios-morph__attr\" v-for=\"kase in lex.lemma.features['case']\" v-if=\"lex.lemma.features['case']\">{{kase.value}}</span>\n          <span class=\"alpheios-morph__attr\" v-for=\"gender in lex.lemma.features.gender\" v-if=\"lex.lemma.features.gender\">{{gender.value}}</span>\n          {{ lex.lemma.features['part of speech'].toString() }}\n        </span>\n        <span class=\"alpheios-morph__attr\" v-for=\"kind in lex.lemma.features.kind\" v-if=\"lex.lemma.features.kind\">{{kind.value}}</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"decl in lex.lemma.features.declension\" v-if=\"lex.lemma.features.declension\">{{decl.value}} declension</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"conj in lex.lemma.features.conjugation\" v-if=\"lex.lemma.features.conjugation\">{{conj.value}}</span>\n        <span class=\"alpheios-morph__parenthesized\" v-if=\"lex.lemma.features.age || lex.lemma.features.area || lex.lemma.features.geo || lex.lemma.features.frequency\">\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"age in lex.lemma.features.age\" v-if=\"lex.lemma.features.age\">( {{age.value}} )</span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"area in lex.lemma.features.area\" v-if=\"lex.lemma.features.area\">{{area.value}} </span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"geo in lex.lemma.features.geo\" v-if=\"lex.lemma.features.geo\">{{geo.value}}</span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"freq in lex.lemma.features.frequency\" v-if=\"lex.lemma.features.frequency\">{{freq.value}}</span>\n        </span>\n        <span class=\"alpheios-morph__attr\" v-for=\"source in lex.lemma.features.source\" v-if=\"lex.lemma.features.source\">[{{source.value}}]</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"note in lex.lemma.features.note\" v-if=\"lex.lemma.features.note\">[{{source.note}}]</span>\n      </div>\n      <div v-for=\"definition in definitions[lex.lemma.key]\">\n        <shortdef :definition=\"definition\"></shortdef>\n      </div>\n      <div class=\"alpheios-morph__inflections\">\n        <div class=\"alpheios-morph__inflset\" v-for=\"inflset in lex.getGroupedInflections()\">\n          <div class=\"alpheios-morph__heading\">Form(s):</div>\n          <span class=\"alpheios-morph__prefix\" v-if=\"inflset.groupingKey.prefix\">{{inflset.groupingKey.prefix}} </span>\n          <span class=\"alpheios-morph__stem\">{{inflset.groupingKey.stem}}</span>\n          <span class=\"alpheios-morph__suffix\" v-if=\"inflset.groupingKey.suffix\"> -{{inflset.groupingKey.suffix}}</span>\n          <span class=\"alpheios-morph__pofs alpheios-morph__parenthesized\"\n            v-if=\"! featureMatch(lex.lemma.features['part of speech'],inflset.groupingKey['part of speech'])\">{{inflset.groupingKey[\"part of speech\"].toString()}}</span>\n          <span class=\"alpheios-morph__declension alpheios-morph__parenthesized\"\n            v-if=\"inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension\">{{inflset.groupingKey.declension.toString()}}</span>\n\n          <div class=\"alpheios-morph__inflgroup\" v-for=\"group in inflset.inflections\">\n            <span class=\"alpheios-morph__number\" v-if=\"group.groupingKey.number && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.number.toString() }}</span>\n            <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.tense && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.tense.toString() }}</span>\n            <span v-for=\"nextGroup in group.inflections\">\n              <span v-if=\"group.groupingKey.isCaseInflectionSet\">\n                <span class=\"alpheios-morph__voice\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.voice\">{{ nextGroup.groupingKey.voice.toString() }}</span>\n                <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.tense\">{{ nextGroup.groupingKey.tense.toString() }}</span>\n                :\n              </span>\n              <span>\n                <span v-for=\"infl in nextGroup.inflections\">\n\n                  <span class=\"alpheios-morph__case\" v-if=\"infl.groupingKey.case\">\n                    {{ infl.groupingKey.case.toString() }}\n                    <span class=\"alpheios-morph__gender alpheios-morph__parenthesized\"\n                      v-if=\"infl.groupingKey.gender && ! featureMatch(infl.groupingKey.gender,lex.lemma.features.gender) \">\n                      {{ infl.groupingKey.gender.map((g) => g.toLocaleStringAbbr()).toString()}}\n                    </span>\n\n                    <span class=\"alpheios-morph__comparative\" v-if=\"infl.groupingKey.comparative && infl.groupingKey.filter((f)=> f.toString() !== 'positive')\">\n                      {{ infl.groupingKey.comparative.toString() }}\n                    </span>\n\n                  </span>\n\n                  <span class=\"alpheios-morph__person\" v-if=\"infl.groupingKey.person\">\n                    {{ infl.groupingKey.person.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__number\" v-if=\"infl.groupingKey.number && ! group.groupingKey.isCaseInflectionSet\">\n                    {{ infl.groupingKey.number.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__tense\" v-if=\"infl.groupingKey.tense && ! group.groupingKey.isCaseInflectionSet && ! nextGroup.groupingKey.tense\">\n                    {{ infl.groupingKey.tense.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__mood\" v-if=\"infl.groupingKey.mood && !group.groupingKey.isCaseInflectionSet\">\n                    {{ infl.groupingKey.mood.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__voice\" v-if=\"infl.groupingKey.voice && !group.groupingKey.isCaseInflectionSet\">\n                    {{ infl.groupingKey.voice.toString() }}\n                  </span>\n\n                  <span v-for=\"item in infl.inflections\">\n                    <span class=\"alpheios-morph__example\" v-if=\"item.example\">{{ item.example.toString() }}</span>\n                  </span>\n\n                </span><!-- end span infl -->\n              </span>\n            </span><!-- end span groupinflections -->\n          </div>\n        </div>\n      </div>\n      <div class=\"alpheios-morph__provider\">\n        {{ lex.provider.toString() }}\n      </div>\n    </div>\n  </div>\n</template>\n<script>\n  export default {\n    name: 'Morph',\n    props: ['lexemes','definitions'],\n    methods: {\n      featureMatch(a,b) {\n        let matches = false\n        for (let f of a) {\n          if (b && b.filter((x) => x.isEqual(f)).length > 0) {\n            matches = true\n            break\n          }\n        }\n        return matches\n      }\n    },\n    mounted () {\n      console.log('Morph is mounted')\n    },\n  }\n</script>\n<style>\n\n  #alpheios-morph__lexemes {\n      color: #0E2233; /** TODO use alpheios variable **/\n  }\n  .alpheios-morph__dict {\n    margin-bottom: .5em;\n    clear: both;\n  }\n\n  .alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n    font-weight: bold;\n  }\n\n  .alpheios-morph__source {\n    font-size: smaller;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n  }\n\n  .alpheios-morph__dial {\n      font-size: smaller;\n  }\n\n  .alpheios-morph__attr {\n      font-weight: normal;\n  }\n\n  .alpheios-morph__linked-attr {\n  \tfont-weight: bold;\n  \tcursor: pointer;\n  }\n\n  .alpheios-morph__linked-attr:hover {\n      color: #5BC8DC !important;\n  }\n\n  .alpheios-morph__pofs:after {\n      content: \";\";\n  }\n\n  .alpheios-morph__inflset .alpheios-morph__heading {\n      display: none;\n  }\n\n  .alpheios-morph__inflset:first-child .alpheios-morph__heading {\n      color: #4E6476; /** TODO use alpheios variable **/\n      display: block;\n  }\n\n  .alpheios-morph__provider {\n    font-size: smaller;\n    font-weight: normal;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n    padding-left: .5em;\n  }\n\n  .alpheios-morph__listitem:after {\n      content: \", \";\n   }\n\n  .alpheios-morph__listitem:last-child:after {\n      content: \"\";\n   }\n\n  .alpheios-morph__parenthesized:before {\n      content: \"(\";\n   }\n\n  .alpheios-morph__parenthesized:after {\n      content: \")\";\n   }\n\n   .alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n     display: block;\n   }\n\n   .alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n     display: none;\n   }\n\n</style>\n"],"sourceRoot":""}]);
 
 // exports
 
 
 /***/ }),
-/* 56 */
+/* 58 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -34695,6 +34505,14 @@ var render = function() {
             2
           ),
           _vm._v(" "),
+          _vm._l(_vm.definitions[lex.lemma.key], function(definition) {
+            return _c(
+              "div",
+              [_c("shortdef", { attrs: { definition: definition } })],
+              1
+            )
+          }),
+          _vm._v(" "),
           _c(
             "div",
             { staticClass: "alpheios-morph__inflections" },
@@ -34703,6 +34521,10 @@ var render = function() {
                 "div",
                 { staticClass: "alpheios-morph__inflset" },
                 [
+                  _c("div", { staticClass: "alpheios-morph__heading" }, [
+                    _vm._v("Form(s):")
+                  ]),
+                  _vm._v(" "),
                   inflset.groupingKey.prefix
                     ? _c("span", { staticClass: "alpheios-morph__prefix" }, [
                         _vm._v(_vm._s(inflset.groupingKey.prefix) + " ")
@@ -35052,12 +34874,134 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-a407c392", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-85d98878", esExports)
   }
 }
 
 /***/ }),
-/* 57 */
+/* 59 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_shortdef_vue__ = __webpack_require__(17);
+/* unused harmony namespace reexport */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_31ff257d_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_shortdef_vue__ = __webpack_require__(62);
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(60)
+}
+var normalizeComponent = __webpack_require__(6)
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_shortdef_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_31ff257d_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_shortdef_vue__["a" /* default */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "vue-components/shortdef.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-31ff257d", Component.options)
+  } else {
+    hotAPI.reload("data-v-31ff257d", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
+
+
+/***/ }),
+/* 60 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(61);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(5)("9c183c4e", content, false);
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-31ff257d\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./shortdef.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-31ff257d\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./shortdef.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 61 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(4)(true);
+// imports
+
+
+// module
+exports.push([module.i, "\n.alpheios-definition__text {\n   color: #0E2233;  /* TODO use variables */\n   font-weight: bold;\n}\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/shortdef.vue?260d17ae"],"names":[],"mappings":";AAgBA;GACA,eAAA,EAAA,wBAAA;GACA,kBAAA;CACA","file":"shortdef.vue","sourcesContent":["<template>\n  <div class=\"alpheios-definition__short\">\n      <span class=\"alpheios-definition__text\">{{ definition.text }}</span>\n  </div>\n</template>\n<script>\n  export default {\n    name: 'ShortDef',\n    props: ['definition'],\n    methods: {},\n    mounted () {\n      console.log('ShortDef is mounted')\n    }\n  }\n</script>\n<style>\n  .alpheios-definition__text {\n     color: #0E2233;  /* TODO use variables */\n     font-weight: bold;\n  }\n</style>\n"],"sourceRoot":""}]);
+
+// exports
+
+
+/***/ }),
+/* 62 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "alpheios-definition__short" }, [
+    _c("span", { staticClass: "alpheios-definition__text" }, [
+      _vm._v(_vm._s(_vm.definition.text))
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+var esExports = { render: render, staticRenderFns: staticRenderFns }
+/* harmony default export */ __webpack_exports__["a"] = (esExports);
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-31ff257d", esExports)
+  }
+}
+
+/***/ }),
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(setImmediate) {/*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -45552,10 +45496,10 @@ return UIkit$2;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(12).setImmediate))
 
 /***/ }),
-/* 58 */
+/* 64 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */

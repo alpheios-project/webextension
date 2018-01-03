@@ -1,11 +1,19 @@
 <template>
     <div ref="popup" class="alpheios-popup" v-show="visible">
         <span class="alpheios-popup__close-btn" @click="closePopup" uk-icon="icon: close; ratio: 2"></span>
-        <div class="alpheios-popup__message-area" v-html="messages"></div>
-        <div class="alpheios-popup__content-area" v-html="content"></div>
-        <morph v-show="morphdataready" :lexemes="lexemes"></morph>
-        <button @click="showInflectionsPanelTab" v-show="defdataready" class="uk-button uk-button-default alpheios-popup__more-btn">Go to Inflections</button>
-        <button @click="showDefinitionsPanelTab" v-show="infldataready" class="uk-button uk-button-default alpheios-popup__more-btn">Go to Full Definitions</button>
+        <div class="alpheios-popup__message-area">
+          <ul>
+            <li @beforehide="clearMessages" v-for="message in messages" class="alpheios-popup__message uk-alert-primary" uk-alert>
+              <a class="uk-alert-close" uk-close></a>
+              {{ message }}
+            </li>
+          </ul>
+        </div>
+        <morph v-show="morphdataready" :lexemes="lexemes" :definitions="definitions"></morph>
+        <div class="uk-button-group">
+          <button @click="showInflectionsPanelTab" v-show="defdataready" class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Inflect</button>
+          <button @click="showDefinitionsPanelTab" v-show="infldataready" class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Define</button>
+        </div>
     </div>
 </template>
 <script>
@@ -21,15 +29,15 @@
     },
     props: {
       messages: {
-        type: String,
-        required: true
-      },
-      content: {
-        type: String,
+        type: Array,
         required: true
       },
       lexemes: {
         type: Array,
+        required: true
+      },
+      definitions: {
+        type: Object,
         required: true
       },
       visible: {
@@ -50,6 +58,12 @@
       }
     },
     methods: {
+      clearMessages() {
+        while (this.messages.length >0) {
+          this.messages.pop()
+        }
+      },
+
       closePopup () {
         this.$emit('close')
       },
@@ -97,6 +111,7 @@
           target.setAttribute('data-y', y);
         }
       }
+
     },
     mounted () {
       console.log('mounted')
@@ -140,6 +155,18 @@
         padding: 50px 20px 20px;
         box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */
         overflow: auto;
+        /* TODO use sass variables */
+        font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+        font-size: 12px;
+        color: #666666;
+    }
+
+    .alpheios-popup li {
+        list-style-type: none;
+        font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+        font-size: 12px;
+        color: #666666;
+        padding: 0;
     }
 
     .alpheios-popup__close-btn {
@@ -165,5 +192,15 @@
     .alpheios-popup__more-btn {
         float: right;
         margin-bottom: 10px;
+        /*TODO alpheios variables */
     }
+
+    li.alpheios-popup__message {
+        display:none;
+    }
+
+    li.alpheios-popup__message:last-child {
+        display:block;
+    }
+
 </style>

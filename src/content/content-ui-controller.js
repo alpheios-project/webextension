@@ -8,6 +8,7 @@ import Panel from './vue-components/panel.vue'
 import Setting from './vue-components/setting.vue'
 import Popup from './vue-components/popup.vue'
 import Morph from './vue-components/morph.vue'
+import ShortDef from './vue-components/shortdef.vue'
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
 import UIkitIconts from '../../node_modules/uikit/dist/js/uikit-icons'
 
@@ -216,16 +217,17 @@ export default class ContentUIController {
       console.log('Content script is activated')
     })
 
-    Vue.component('morph', Morph)
+    Vue.component('morph',Morph)
+    Vue.component('shortdef',ShortDef)
 
     // Create a Vue instance for a popup
     this.popup = new Vue({
       el: '#alpheios-popup',
-      components: { morph: Morph, popup: Popup },
+      components: { morph:Morph, popup: Popup, shortdef:ShortDef },
       data: {
-        messages: '',
-        content: '',
+        messages: [],
         lexemes: [],
+        definitions: {},
         visible: false,
         defDataReady: false,
         inflDataReady: false,
@@ -233,27 +235,25 @@ export default class ContentUIController {
       },
       methods: {
         showMessage: function (message) {
-          this.messages = message
+          this.messages = [message]
           return this
         },
 
         appendMessage: function (message) {
-          this.messages += message
+          this.messages.push(message)
           return this
         },
 
         clearMessages: function () {
-          this.messages = ''
-          return this
-        },
-
-        setContent: function (content) {
-          this.content = content
+          while (this.messages.length > 0) {
+            this.messages.pop()
+          }
           return this
         },
 
         clearContent: function () {
-          this.content = ''
+          this.definitions = {}
+          this.lexemes = []
           return this
         },
 
@@ -286,6 +286,14 @@ export default class ContentUIController {
 
     // Initialize UIKit
     UIkit.use(UIkitIconts)
+  }
+
+  /**
+   * A temporary solution
+   * @return {*|OptionsComponent}
+   */
+  getOptions () {
+    return this.options
   }
 
   static get settingValues () {
@@ -377,11 +385,11 @@ export default class ContentUIController {
   updateDefinitions (homonym) {
     this.panel.panelData.shortDefinitions = ''
     this.panel.panelData.fullDefinitions = ''
-    let shortDefsText = ''
+    let definitions = {}
     for (let lexeme of homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
         this.panel.panelData.shortDefinitions += this.formatShortDefinitions(lexeme)
-        shortDefsText += this.formatShortDefinitions(lexeme)
+        definitions[lexeme.lemma.key] = lexeme.meaning.shortDefs
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {
@@ -390,7 +398,7 @@ export default class ContentUIController {
     }
 
     // Populate a popup
-    this.popup.setContent(shortDefsText)
+    this.popup.definitions = definitions
     this.popup.defDataReady = true
   }
 
@@ -431,5 +439,25 @@ export default class ContentUIController {
 
   setPreferredLanguageTo (language) {
     this.preferredLangauge = language
+  }
+
+  setPanelPositionTo (position) {
+    if (position === 'right') {
+      this.attachPanelToRight()
+    } else {
+      this.attachPanelToLeft()
+    }
+  }
+
+  attachPanelToLeft () {
+    this.options.items.panelPosition.setValue('left')
+    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
+    this.panel.attachToLeft()
+  }
+
+  attachPanelToRight () {
+    this.options.items.panelPosition.setValue('right')
+    this.optionsUI.panelPosition = this.options.items.panelPosition.currentTextValue()
+    this.panel.attachToRight()
   }
 }
