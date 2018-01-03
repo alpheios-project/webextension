@@ -8,4 +8,3 @@
     <panel :data="panelData" @close="close" @setposition="setPositionTo" @settingchange="settingChange"
            @changetab="changeTab"></panel>
 </div>
-<!--<div data-component="alpheios-panel"></div>-->

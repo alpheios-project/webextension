@@ -5,10 +5,7 @@ import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import Template from './template.htmlf'
 import TabScript from '../lib/content/tab-script'
 import Panel from './vue-components/panel.vue'
-import Setting from './vue-components/setting.vue'
 import Popup from './vue-components/popup.vue'
-import Morph from './vue-components/morph.vue'
-import ShortDef from './vue-components/shortdef.vue'
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
 import UIkitIconts from '../../node_modules/uikit/dist/js/uikit-icons'
 
@@ -29,10 +26,7 @@ export default class ContentUIController {
     // Initialize components
     this.panel = new Vue({
       el: '#alpheios-panel',
-      components: {
-        panel: Panel,
-        setting: Setting
-      },
+      components: { panel: Panel },
       data: {
         panelData: {
           isOpen: false,
@@ -151,79 +145,16 @@ export default class ContentUIController {
       }
     })
 
-    // Should be loaded after Panel because options are inserted into a panel
-    /* this.optionsUI = new Vue({
-      el: '#alpheios-options',
-      components: { setting: Setting },
-      data: {
-        preferredLanguageValues: this.options.items.preferredLanguage.textValues(),
-        localeValues: this.options.items.locale.textValues(),
-        panelPositionValues: this.options.items.panelPosition.textValues(),
-        uiTypeValues: this.options.items.uiType.textValues(),
-
-        preferredLanguage: this.options.items.preferredLanguage.currentTextValue(),
-        locale: this.options.items.locale.currentTextValue(),
-        panelPosition: this.options.items.panelPosition.currentTextValue(),
-        uiType: this.options.items.uiType.currentTextValue(),
-
-        preferredLanguageLabel: 'Page language:',
-        localeLabel: 'UI Locale:',
-        panelPositionLabel: 'Panel position:',
-        uiTypeLabel: 'UI type:'
-      },
-      methods: {
-        update (options) {
-          this.preferredLanguageValues = options.items.preferredLanguage.textValues()
-          this.locale = options.items.locale.textValues()
-          this.panelPositionValues = options.items.panelPosition.textValues()
-          this.uiTypeValues = options.items.uiType.textValues()
-
-          this.preferredLanguage = options.items.preferredLanguage.currentTextValue()
-          this.locale = options.items.locale.currentTextValue()
-          this.panelPosition = options.items.panelPosition.currentTextValue()
-          this.uiType = options.items.uiType.currentTextValue()
-        },
-        changePreferredLanguage: function (value) {
-          this.preferredLanguage = value
-          this.options.items.preferredLanguage.setTextValue(value)
-          this.uiController.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
-        },
-        changeLocale: function (value) {
-          this.locale = value
-          this.options.items.locale.setTextValue(value)
-          // If presenter is loaded
-          if (this.uiController.presenter) { this.uiController.presenter.setLocale(this.options.items.locale.currentValue) }
-        },
-        changePanelPosition: function (value) {
-          this.options.items.panelPosition.setTextValue(value)
-          this.uiController.setPanelPositionTo(this.options.items.panelPosition.currentValue)
-        },
-        changeUiType: function (value) {
-          this.uiType = value
-          this.options.items.uiType.setTextValue(value)
-        }
-      },
-      mounted () {
-
-      }
-    })
-    this.optionsUI.options = this.options
-    this.optionsUI.uiController = this
-
-    */
     this.options.load(() => {
       this.state.status = TabScript.statuses.script.ACTIVE
       this.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
       console.log('Content script is activated')
     })
 
-    Vue.component('morph',Morph)
-    Vue.component('shortdef',ShortDef)
-
     // Create a Vue instance for a popup
     this.popup = new Vue({
       el: '#alpheios-popup',
-      components: { morph:Morph, popup: Popup, shortdef:ShortDef },
+      components: { popup: Popup },
       data: {
         messages: [],
         lexemes: [],
@@ -286,14 +217,6 @@ export default class ContentUIController {
 
     // Initialize UIKit
     UIkit.use(UIkitIconts)
-  }
-
-  /**
-   * A temporary solution
-   * @return {*|OptionsComponent}
-   */
-  getOptions () {
-    return this.options
   }
 
   static get settingValues () {

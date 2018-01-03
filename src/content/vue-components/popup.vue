@@ -17,10 +17,12 @@
     </div>
 </template>
 <script>
+  import Morph from './morph.vue'
   import interact from 'interactjs'
 
   export default {
     name: 'Popup',
+    components: { morph: Morph },
     data: function () {
       return {
         resizable: true,

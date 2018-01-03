@@ -102,8 +102,11 @@
   </div>
 </template>
 <script>
+  import ShortDef from './shortdef.vue'
+
   export default {
     name: 'Morph',
+    components: { shortdef: ShortDef },
     props: ['lexemes','definitions'],
     methods: {
       featureMatch(a,b) {

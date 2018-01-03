@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 19);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -2371,7 +2371,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(44)
+var listToStyles = __webpack_require__(43)
 
 /*
 type StyleObject = {
@@ -10572,8 +10572,8 @@ exports.TestAdapter = TestAdapter;
 /* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(23);
-var bytesToUuid = __webpack_require__(24);
+var rng = __webpack_require__(22);
+var bytesToUuid = __webpack_require__(23);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -10702,7 +10702,7 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(38);
+__webpack_require__(37);
 exports.setImmediate = setImmediate;
 exports.clearImmediate = clearImmediate;
 
@@ -10712,8 +10712,8 @@ exports.clearImmediate = clearImmediate;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__setting_vue__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_interactjs__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__setting_vue__ = __webpack_require__(44);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_interactjs__ = __webpack_require__(14);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_interactjs__);
 //
 //
@@ -10892,62 +10892,6 @@ exports.clearImmediate = clearImmediate;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__ = __webpack_require__(14);
-/* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__ = __webpack_require__(47);
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(45)
-}
-var normalizeComponent = __webpack_require__(3)
-/* script */
-
-
-/* template */
-
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__["a" /* default */],
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "vue-components\\setting.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-7b21cdbf", Component.options)
-  } else {
-    hotAPI.reload("data-v-7b21cdbf", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
-
-
-/***/ }),
-/* 14 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
 //
 //
 //
@@ -10978,7 +10922,7 @@ if (false) {(function () {
 });
 
 /***/ }),
-/* 15 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var require;var require;/**
@@ -18133,12 +18077,13 @@ win.init = init;
 
 
 /***/ }),
-/* 16 */
+/* 15 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_interactjs__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__morph_vue__ = __webpack_require__(53);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_interactjs__ = __webpack_require__(14);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_interactjs__);
 //
 //
 //
@@ -18157,11 +18102,13 @@ win.init = init;
 //
 //
 //
+
 
 
 
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: 'Popup',
+  components: { morph: __WEBPACK_IMPORTED_MODULE_0__morph_vue__["a" /* default */] },
   data: function () {
     return {
       resizable: true,
@@ -18276,15 +18223,16 @@ win.init = init;
       },
       onmove: this.dragMoveListener
     };
-    __WEBPACK_IMPORTED_MODULE_0_interactjs___default()(this.$el).resizable(resizableSettings).draggable(draggableSettings).on('resizemove', this.resizeListener);
+    __WEBPACK_IMPORTED_MODULE_1_interactjs___default()(this.$el).resizable(resizableSettings).draggable(draggableSettings).on('resizemove', this.resizeListener);
   }
 });
 
 /***/ }),
-/* 17 */
+/* 16 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__shortdef_vue__ = __webpack_require__(56);
 //
 //
 //
@@ -18389,8 +18337,11 @@ win.init = init;
 //
 //
 
+
+
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: 'Morph',
+  components: { shortdef: __WEBPACK_IMPORTED_MODULE_0__shortdef_vue__["a" /* default */] },
   props: ['lexemes', 'definitions'],
   methods: {
     featureMatch(a, b) {
@@ -18410,7 +18361,7 @@ win.init = init;
 });
 
 /***/ }),
-/* 18 */
+/* 17 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -18430,12 +18381,12 @@ win.init = init;
 });
 
 /***/ }),
-/* 19 */
+/* 18 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
 
@@ -18456,24 +18407,24 @@ contentProcess.initialize()
 
 
 /***/ }),
-/* 20 */
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(21);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__ = __webpack_require__(21);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_alpheios_experience__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_messaging_message_message__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__ = __webpack_require__(27);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__ = __webpack_require__(27);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__content_options__ = __webpack_require__(29);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lexical_query__ = __webpack_require__(35);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__content_ui_controller__ = __webpack_require__(36);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__content_options__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lexical_query__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__content_ui_controller__ = __webpack_require__(35);
 /* global browser */
 
 
@@ -18598,7 +18549,7 @@ class ContentProcess {
 
 
 /***/ }),
-/* 21 */
+/* 20 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -19113,7 +19064,7 @@ class TuftsAdapter extends BaseAdapter {
 
 
 /***/ }),
-/* 22 */
+/* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21085,7 +21036,7 @@ class Lexicons {
 
 
 /***/ }),
-/* 23 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {// Unique ID creation requires a high quality random # generator.  In the
@@ -21125,7 +21076,7 @@ module.exports = rng;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ }),
-/* 24 */
+/* 23 */
 /***/ (function(module, exports) {
 
 /**
@@ -21154,12 +21105,12 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 25 */
+/* 24 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(25);
 /* global browser */
 
 
@@ -21303,7 +21254,7 @@ class Service {
 
 
 /***/ }),
-/* 26 */
+/* 25 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21325,7 +21276,7 @@ class StoredRequest {
 
 
 /***/ }),
-/* 27 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21345,7 +21296,7 @@ class StateMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default
 
 
 /***/ }),
-/* 28 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21373,7 +21324,7 @@ class StateResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a" 
 
 
 /***/ }),
-/* 29 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21500,15 +21451,15 @@ class ContentOptions {
 
 
 /***/ }),
-/* 30 */
+/* 29 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(30);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(32);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(33);
  // To polyfill Element.closest() if required
 
 
@@ -21696,7 +21647,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 31 */
+/* 30 */
 /***/ (function(module, exports) {
 
 // element-closest | CC0-1.0 | github.com/jonathantneal/closest
@@ -21735,11 +21686,11 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 32 */
+/* 31 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(32);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
 
 
@@ -21822,7 +21773,7 @@ class TextSelector {
 
 
 /***/ }),
-/* 33 */
+/* 32 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21836,7 +21787,7 @@ class TextQuoteSelector {
 
 
 /***/ }),
-/* 34 */
+/* 33 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21889,7 +21840,7 @@ class MediaSelector {
 
 
 /***/ }),
-/* 35 */
+/* 34 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22037,33 +21988,27 @@ class LexicalQuery {
 
 
 /***/ }),
-/* 36 */
+/* 35 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__ = __webpack_require__(36);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf__ = __webpack_require__(39);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3__template_htmlf__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__vue_components_panel_vue__ = __webpack_require__(41);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_setting_vue__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__ = __webpack_require__(50);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__ = __webpack_require__(54);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__vue_components_shortdef_vue__ = __webpack_require__(58);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit__ = __webpack_require__(62);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(63);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11__node_modules_uikit_dist_js_uikit_icons__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__vue_components_panel_vue__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_popup_vue__ = __webpack_require__(50);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__ = __webpack_require__(62);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons__ = __webpack_require__(63);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons__);
 /* global Node */
  // Required for Presenter
 
  // Vue in a runtime + compiler configuration
-
-
-
 
 
 
@@ -22088,10 +22033,7 @@ class ContentUIController {
     // Initialize components
     this.panel = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
       el: '#alpheios-panel',
-      components: {
-        panel: __WEBPACK_IMPORTED_MODULE_5__vue_components_panel_vue__["a" /* default */],
-        setting: __WEBPACK_IMPORTED_MODULE_6__vue_components_setting_vue__["a" /* default */]
-      },
+      components: { panel: __WEBPACK_IMPORTED_MODULE_5__vue_components_panel_vue__["a" /* default */] },
       data: {
         panelData: {
           isOpen: false,
@@ -22210,79 +22152,16 @@ class ContentUIController {
       }
     })
 
-    // Should be loaded after Panel because options are inserted into a panel
-    /* this.optionsUI = new Vue({
-      el: '#alpheios-options',
-      components: { setting: Setting },
-      data: {
-        preferredLanguageValues: this.options.items.preferredLanguage.textValues(),
-        localeValues: this.options.items.locale.textValues(),
-        panelPositionValues: this.options.items.panelPosition.textValues(),
-        uiTypeValues: this.options.items.uiType.textValues(),
-
-        preferredLanguage: this.options.items.preferredLanguage.currentTextValue(),
-        locale: this.options.items.locale.currentTextValue(),
-        panelPosition: this.options.items.panelPosition.currentTextValue(),
-        uiType: this.options.items.uiType.currentTextValue(),
-
-        preferredLanguageLabel: 'Page language:',
-        localeLabel: 'UI Locale:',
-        panelPositionLabel: 'Panel position:',
-        uiTypeLabel: 'UI type:'
-      },
-      methods: {
-        update (options) {
-          this.preferredLanguageValues = options.items.preferredLanguage.textValues()
-          this.locale = options.items.locale.textValues()
-          this.panelPositionValues = options.items.panelPosition.textValues()
-          this.uiTypeValues = options.items.uiType.textValues()
-
-          this.preferredLanguage = options.items.preferredLanguage.currentTextValue()
-          this.locale = options.items.locale.currentTextValue()
-          this.panelPosition = options.items.panelPosition.currentTextValue()
-          this.uiType = options.items.uiType.currentTextValue()
-        },
-        changePreferredLanguage: function (value) {
-          this.preferredLanguage = value
-          this.options.items.preferredLanguage.setTextValue(value)
-          this.uiController.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
-        },
-        changeLocale: function (value) {
-          this.locale = value
-          this.options.items.locale.setTextValue(value)
-          // If presenter is loaded
-          if (this.uiController.presenter) { this.uiController.presenter.setLocale(this.options.items.locale.currentValue) }
-        },
-        changePanelPosition: function (value) {
-          this.options.items.panelPosition.setTextValue(value)
-          this.uiController.setPanelPositionTo(this.options.items.panelPosition.currentValue)
-        },
-        changeUiType: function (value) {
-          this.uiType = value
-          this.options.items.uiType.setTextValue(value)
-        }
-      },
-      mounted () {
-
-      }
-    })
-    this.optionsUI.options = this.options
-    this.optionsUI.uiController = this
-
-    */
     this.options.load(() => {
       this.state.status = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
       this.setPreferredLanguageTo(this.options.items.preferredLanguage.currentValue)
       console.log('Content script is activated')
     })
 
-    __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a.component('morph',__WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */])
-    __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a.component('shortdef',__WEBPACK_IMPORTED_MODULE_9__vue_components_shortdef_vue__["a" /* default */])
-
     // Create a Vue instance for a popup
     this.popup = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
       el: '#alpheios-popup',
-      components: { morph:__WEBPACK_IMPORTED_MODULE_8__vue_components_morph_vue__["a" /* default */], popup: __WEBPACK_IMPORTED_MODULE_7__vue_components_popup_vue__["a" /* default */], shortdef:__WEBPACK_IMPORTED_MODULE_9__vue_components_shortdef_vue__["a" /* default */] },
+      components: { popup: __WEBPACK_IMPORTED_MODULE_6__vue_components_popup_vue__["a" /* default */] },
       data: {
         messages: [],
         lexemes: [],
@@ -22344,15 +22223,7 @@ class ContentUIController {
     this.popup.panel = this.panel
 
     // Initialize UIKit
-    __WEBPACK_IMPORTED_MODULE_10__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_11__node_modules_uikit_dist_js_uikit_icons___default.a)
-  }
-
-  /**
-   * A temporary solution
-   * @return {*|OptionsComponent}
-   */
-  getOptions () {
-    return this.options
+    __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit___default.a.use(__WEBPACK_IMPORTED_MODULE_8__node_modules_uikit_dist_js_uikit_icons___default.a)
   }
 
   static get settingValues () {
@@ -22525,7 +22396,7 @@ class ContentUIController {
 
 
 /***/ }),
-/* 37 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
@@ -33330,7 +33201,7 @@ return Vue$3;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(11).setImmediate))
 
 /***/ }),
-/* 38 */
+/* 37 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -33520,10 +33391,10 @@ return Vue$3;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(39)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(38)))
 
 /***/ }),
-/* 39 */
+/* 38 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -33713,13 +33584,13 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 40 */
+/* 39 */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div id=\"alpheios-panel\">\r\n    <panel :data=\"panelData\" @close=\"close\" @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\r\n           @changetab=\"changeTab\"></panel>\r\n</div>\r\n<!--<div data-component=\"alpheios-panel\"></div>-->\r\n";
+module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div id=\"alpheios-panel\">\r\n    <panel :data=\"panelData\" @close=\"close\" @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\r\n           @changetab=\"changeTab\"></panel>\r\n</div>\r\n";
 
 /***/ }),
-/* 41 */
+/* 40 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -33729,7 +33600,7 @@ module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messag
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(42)
+  __webpack_require__(41)
 }
 var normalizeComponent = __webpack_require__(3)
 /* script */
@@ -33775,13 +33646,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 42 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(43);
+var content = __webpack_require__(42);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -33801,7 +33672,7 @@ if(false) {
 }
 
 /***/ }),
-/* 43 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(undefined);
@@ -33815,7 +33686,7 @@ exports.push([module.i, "\n.alpheios-panel {\n  display: block;\n  width: 400px;
 
 
 /***/ }),
-/* 44 */
+/* 43 */
 /***/ (function(module, exports) {
 
 /**
@@ -33845,6 +33716,62 @@ module.exports = function listToStyles (parentId, list) {
   }
   return styles
 }
+
+
+/***/ }),
+/* 44 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__ = __webpack_require__(13);
+/* unused harmony namespace reexport */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__ = __webpack_require__(47);
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(45)
+}
+var normalizeComponent = __webpack_require__(3)
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__["a" /* default */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "vue-components\\setting.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-7b21cdbf", Component.options)
+  } else {
+    hotAPI.reload("data-v-7b21cdbf", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
 
 
 /***/ }),
@@ -34276,9 +34203,9 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAz
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(15);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(53);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(61);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
@@ -34362,7 +34289,7 @@ exports = module.exports = __webpack_require__(1)(true);
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border: 1px solid lightgray;\n    width: 400px;\n    height: 500px;\n    z-index: 1000;\n    position: fixed;\n    left: 200px;\n    top: 100px;\n    padding: 50px 20px 20px;\n    box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n    overflow: auto;\n    /* TODO use sass variables */\n    font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n    font-size: 12px;\n    color: #666666;\n}\n.alpheios-popup li {\n    list-style-type: none;\n    font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n    font-size: 12px;\n    color: #666666;\n    padding: 0;\n}\n.alpheios-popup__close-btn {\n    color: gray;\n    display: block;\n    width: 40px;\n    height: 40px;\n    top: 0;\n    right: 0;\n    margin: 10px;\n    cursor: pointer;\n    position: absolute;\n}\n.alpheios-popup__message-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__content-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__more-btn {\n    float: right;\n    margin-bottom: 10px;\n    /*TODO alpheios variables */\n}\nli.alpheios-popup__message {\n    display:none;\n}\nli.alpheios-popup__message:last-child {\n    display:block;\n}\n\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?ba88d25a"],"names":[],"mappings":";AAiJA;IACA,iBAAA;IACA,4BAAA;IACA,aAAA;IACA,cAAA;IACA,cAAA;IACA,gBAAA;IACA,YAAA;IACA,WAAA;IACA,wBAAA;IACA,uBAAA,EAAA,oFAAA;IACA,eAAA;IACA,6BAAA;IACA,4DAAA;IACA,gBAAA;IACA,eAAA;CACA;AAEA;IACA,sBAAA;IACA,4DAAA;IACA,gBAAA;IACA,eAAA;IACA,WAAA;CACA;AAEA;IACA,YAAA;IACA,eAAA;IACA,YAAA;IACA,aAAA;IACA,OAAA;IACA,SAAA;IACA,aAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,aAAA;IACA,oBAAA;IACA,4BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,cAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <div ref=\"popup\" class=\"alpheios-popup\" v-show=\"visible\">\r\n        <span class=\"alpheios-popup__close-btn\" @click=\"closePopup\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n        <div class=\"alpheios-popup__message-area\">\r\n          <ul>\r\n            <li @beforehide=\"clearMessages\" v-for=\"message in messages\" class=\"alpheios-popup__message uk-alert-primary\" uk-alert>\r\n              <a class=\"uk-alert-close\" uk-close></a>\r\n              {{ message }}\r\n            </li>\r\n          </ul>\r\n        </div>\r\n        <morph v-show=\"morphdataready\" :lexemes=\"lexemes\" :definitions=\"definitions\"></morph>\r\n        <div class=\"uk-button-group\">\r\n          <button @click=\"showInflectionsPanelTab\" v-show=\"defdataready\" class=\"uk-button uk-button-primary uk-button-small alpheios-popup__more-btn\">Inflect</button>\r\n          <button @click=\"showDefinitionsPanelTab\" v-show=\"infldataready\" class=\"uk-button uk-button-primary uk-button-small alpheios-popup__more-btn\">Define</button>\r\n        </div>\r\n    </div>\r\n</template>\r\n<script>\r\n  import interact from 'interactjs'\r\n\r\n  export default {\r\n    name: 'Popup',\r\n    data: function () {\r\n      return {\r\n        resizable: true,\r\n        draggable: true,\r\n      }\r\n    },\r\n    props: {\r\n      messages: {\r\n        type: Array,\r\n        required: true\r\n      },\r\n      lexemes: {\r\n        type: Array,\r\n        required: true\r\n      },\r\n      definitions: {\r\n        type: Object,\r\n        required: true\r\n      },\r\n      visible: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      defdataready: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      infldataready: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      morphdataready: {\r\n        type: Boolean,\r\n        required: true\r\n      }\r\n    },\r\n    methods: {\r\n      clearMessages() {\r\n        while (this.messages.length >0) {\r\n          this.messages.pop()\r\n        }\r\n      },\r\n\r\n      closePopup () {\r\n        this.$emit('close')\r\n      },\r\n\r\n      showDefinitionsPanelTab () {\r\n        this.$emit('showdefspaneltab')\r\n      },\r\n\r\n      showInflectionsPanelTab () {\r\n        this.$emit('showinflpaneltab')\r\n      },\r\n\r\n      resizeListener(event) {\r\n        console.log('Resize listener')\r\n        if (this.resizable) {\r\n          const target = event.target\r\n          let x = (parseFloat(target.getAttribute('data-x')) || 0)\r\n          let y = (parseFloat(target.getAttribute('data-y')) || 0)\r\n\r\n          // update the element's style\r\n          target.style.width  = event.rect.width + 'px'\r\n          target.style.height = event.rect.height + 'px'\r\n\r\n          // translate when resizing from top or left edges\r\n          x += event.deltaRect.left\r\n          y += event.deltaRect.top\r\n\r\n          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)'\r\n\r\n          target.setAttribute('data-x', x)\r\n          target.setAttribute('data-y', y)\r\n        }\r\n      },\r\n\r\n      dragMoveListener(event) {\r\n        if (this.draggable) {\r\n          const target = event.target;\r\n          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;\r\n          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;\r\n\r\n          target.style.webkitTransform = `translate(${x}px, ${y}px)`;\r\n          target.style.transform = `translate(${x}px, ${y}px)`;\r\n\r\n          target.setAttribute('data-x', x);\r\n          target.setAttribute('data-y', y);\r\n        }\r\n      }\r\n\r\n    },\r\n    mounted () {\r\n      console.log('mounted')\r\n      const resizableSettings = {\r\n        preserveAspectRatio: false,\r\n        edges: { left: true, right: true, bottom: true, top: true },\r\n        restrictSize: {\r\n          min: { width: 100, height: 300 }\r\n        },\r\n        restrictEdges: {\r\n          outer: document.body,\r\n          endOnly: true,\r\n        }\r\n      };\r\n      const draggableSettings = {\r\n        inertia: true,\r\n        autoScroll: false,\r\n        restrict: {\r\n          restriction: document.body,\r\n          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }\r\n        },\r\n        onmove: this.dragMoveListener\r\n      };\r\n      interact(this.$el)\r\n        .resizable(resizableSettings)\r\n        .draggable(draggableSettings)\r\n        .on('resizemove', this.resizeListener);\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .alpheios-popup {\r\n        background: #FFF;\r\n        border: 1px solid lightgray;\r\n        width: 400px;\r\n        height: 500px;\r\n        z-index: 1000;\r\n        position: fixed;\r\n        left: 200px;\r\n        top: 100px;\r\n        padding: 50px 20px 20px;\r\n        box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\r\n        overflow: auto;\r\n        /* TODO use sass variables */\r\n        font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\r\n        font-size: 12px;\r\n        color: #666666;\r\n    }\r\n\r\n    .alpheios-popup li {\r\n        list-style-type: none;\r\n        font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\r\n        font-size: 12px;\r\n        color: #666666;\r\n        padding: 0;\r\n    }\r\n\r\n    .alpheios-popup__close-btn {\r\n        color: gray;\r\n        display: block;\r\n        width: 40px;\r\n        height: 40px;\r\n        top: 0;\r\n        right: 0;\r\n        margin: 10px;\r\n        cursor: pointer;\r\n        position: absolute;\r\n    }\r\n\r\n    .alpheios-popup__message-area {\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .alpheios-popup__content-area {\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .alpheios-popup__more-btn {\r\n        float: right;\r\n        margin-bottom: 10px;\r\n        /*TODO alpheios variables */\r\n    }\r\n\r\n    li.alpheios-popup__message {\r\n        display:none;\r\n    }\r\n\r\n    li.alpheios-popup__message:last-child {\r\n        display:block;\r\n    }\r\n\r\n</style>\r\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border: 1px solid lightgray;\n    width: 400px;\n    height: 500px;\n    z-index: 1000;\n    position: fixed;\n    left: 200px;\n    top: 100px;\n    padding: 50px 20px 20px;\n    box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n    overflow: auto;\n    /* TODO use sass variables */\n    font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n    font-size: 12px;\n    color: #666666;\n}\n.alpheios-popup li {\n    list-style-type: none;\n    font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n    font-size: 12px;\n    color: #666666;\n    padding: 0;\n}\n.alpheios-popup__close-btn {\n    color: gray;\n    display: block;\n    width: 40px;\n    height: 40px;\n    top: 0;\n    right: 0;\n    margin: 10px;\n    cursor: pointer;\n    position: absolute;\n}\n.alpheios-popup__message-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__content-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__more-btn {\n    float: right;\n    margin-bottom: 10px;\n    /*TODO alpheios variables */\n}\nli.alpheios-popup__message {\n    display:none;\n}\nli.alpheios-popup__message:last-child {\n    display:block;\n}\n\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?4308c57f"],"names":[],"mappings":";AAmJA;IACA,iBAAA;IACA,4BAAA;IACA,aAAA;IACA,cAAA;IACA,cAAA;IACA,gBAAA;IACA,YAAA;IACA,WAAA;IACA,wBAAA;IACA,uBAAA,EAAA,oFAAA;IACA,eAAA;IACA,6BAAA;IACA,4DAAA;IACA,gBAAA;IACA,eAAA;CACA;AAEA;IACA,sBAAA;IACA,4DAAA;IACA,gBAAA;IACA,eAAA;IACA,WAAA;CACA;AAEA;IACA,YAAA;IACA,eAAA;IACA,YAAA;IACA,aAAA;IACA,OAAA;IACA,SAAA;IACA,aAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,aAAA;IACA,oBAAA;IACA,4BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,cAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <div ref=\"popup\" class=\"alpheios-popup\" v-show=\"visible\">\r\n        <span class=\"alpheios-popup__close-btn\" @click=\"closePopup\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n        <div class=\"alpheios-popup__message-area\">\r\n          <ul>\r\n            <li @beforehide=\"clearMessages\" v-for=\"message in messages\" class=\"alpheios-popup__message uk-alert-primary\" uk-alert>\r\n              <a class=\"uk-alert-close\" uk-close></a>\r\n              {{ message }}\r\n            </li>\r\n          </ul>\r\n        </div>\r\n        <morph v-show=\"morphdataready\" :lexemes=\"lexemes\" :definitions=\"definitions\"></morph>\r\n        <div class=\"uk-button-group\">\r\n          <button @click=\"showInflectionsPanelTab\" v-show=\"defdataready\" class=\"uk-button uk-button-primary uk-button-small alpheios-popup__more-btn\">Inflect</button>\r\n          <button @click=\"showDefinitionsPanelTab\" v-show=\"infldataready\" class=\"uk-button uk-button-primary uk-button-small alpheios-popup__more-btn\">Define</button>\r\n        </div>\r\n    </div>\r\n</template>\r\n<script>\r\n  import Morph from './morph.vue'\r\n  import interact from 'interactjs'\r\n\r\n  export default {\r\n    name: 'Popup',\r\n    components: { morph: Morph },\r\n    data: function () {\r\n      return {\r\n        resizable: true,\r\n        draggable: true,\r\n      }\r\n    },\r\n    props: {\r\n      messages: {\r\n        type: Array,\r\n        required: true\r\n      },\r\n      lexemes: {\r\n        type: Array,\r\n        required: true\r\n      },\r\n      definitions: {\r\n        type: Object,\r\n        required: true\r\n      },\r\n      visible: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      defdataready: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      infldataready: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      morphdataready: {\r\n        type: Boolean,\r\n        required: true\r\n      }\r\n    },\r\n    methods: {\r\n      clearMessages() {\r\n        while (this.messages.length >0) {\r\n          this.messages.pop()\r\n        }\r\n      },\r\n\r\n      closePopup () {\r\n        this.$emit('close')\r\n      },\r\n\r\n      showDefinitionsPanelTab () {\r\n        this.$emit('showdefspaneltab')\r\n      },\r\n\r\n      showInflectionsPanelTab () {\r\n        this.$emit('showinflpaneltab')\r\n      },\r\n\r\n      resizeListener(event) {\r\n        console.log('Resize listener')\r\n        if (this.resizable) {\r\n          const target = event.target\r\n          let x = (parseFloat(target.getAttribute('data-x')) || 0)\r\n          let y = (parseFloat(target.getAttribute('data-y')) || 0)\r\n\r\n          // update the element's style\r\n          target.style.width  = event.rect.width + 'px'\r\n          target.style.height = event.rect.height + 'px'\r\n\r\n          // translate when resizing from top or left edges\r\n          x += event.deltaRect.left\r\n          y += event.deltaRect.top\r\n\r\n          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)'\r\n\r\n          target.setAttribute('data-x', x)\r\n          target.setAttribute('data-y', y)\r\n        }\r\n      },\r\n\r\n      dragMoveListener(event) {\r\n        if (this.draggable) {\r\n          const target = event.target;\r\n          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;\r\n          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;\r\n\r\n          target.style.webkitTransform = `translate(${x}px, ${y}px)`;\r\n          target.style.transform = `translate(${x}px, ${y}px)`;\r\n\r\n          target.setAttribute('data-x', x);\r\n          target.setAttribute('data-y', y);\r\n        }\r\n      }\r\n\r\n    },\r\n    mounted () {\r\n      console.log('mounted')\r\n      const resizableSettings = {\r\n        preserveAspectRatio: false,\r\n        edges: { left: true, right: true, bottom: true, top: true },\r\n        restrictSize: {\r\n          min: { width: 100, height: 300 }\r\n        },\r\n        restrictEdges: {\r\n          outer: document.body,\r\n          endOnly: true,\r\n        }\r\n      };\r\n      const draggableSettings = {\r\n        inertia: true,\r\n        autoScroll: false,\r\n        restrict: {\r\n          restriction: document.body,\r\n          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }\r\n        },\r\n        onmove: this.dragMoveListener\r\n      };\r\n      interact(this.$el)\r\n        .resizable(resizableSettings)\r\n        .draggable(draggableSettings)\r\n        .on('resizemove', this.resizeListener);\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .alpheios-popup {\r\n        background: #FFF;\r\n        border: 1px solid lightgray;\r\n        width: 400px;\r\n        height: 500px;\r\n        z-index: 1000;\r\n        position: fixed;\r\n        left: 200px;\r\n        top: 100px;\r\n        padding: 50px 20px 20px;\r\n        box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\r\n        overflow: auto;\r\n        /* TODO use sass variables */\r\n        font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\r\n        font-size: 12px;\r\n        color: #666666;\r\n    }\r\n\r\n    .alpheios-popup li {\r\n        list-style-type: none;\r\n        font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\r\n        font-size: 12px;\r\n        color: #666666;\r\n        padding: 0;\r\n    }\r\n\r\n    .alpheios-popup__close-btn {\r\n        color: gray;\r\n        display: block;\r\n        width: 40px;\r\n        height: 40px;\r\n        top: 0;\r\n        right: 0;\r\n        margin: 10px;\r\n        cursor: pointer;\r\n        position: absolute;\r\n    }\r\n\r\n    .alpheios-popup__message-area {\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .alpheios-popup__content-area {\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .alpheios-popup__more-btn {\r\n        float: right;\r\n        margin-bottom: 10px;\r\n        /*TODO alpheios variables */\r\n    }\r\n\r\n    li.alpheios-popup__message {\r\n        display:none;\r\n    }\r\n\r\n    li.alpheios-popup__message:last-child {\r\n        display:block;\r\n    }\r\n\r\n</style>\r\n"],"sourceRoot":""}]);
 
 // exports
 
@@ -34372,130 +34299,13 @@ exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-var render = function() {
-  var _vm = this
-  var _h = _vm.$createElement
-  var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    {
-      directives: [
-        {
-          name: "show",
-          rawName: "v-show",
-          value: _vm.visible,
-          expression: "visible"
-        }
-      ],
-      ref: "popup",
-      staticClass: "alpheios-popup"
-    },
-    [
-      _c("span", {
-        staticClass: "alpheios-popup__close-btn",
-        attrs: { "uk-icon": "icon: close; ratio: 2" },
-        on: { click: _vm.closePopup }
-      }),
-      _vm._v(" "),
-      _c("div", { staticClass: "alpheios-popup__message-area" }, [
-        _c(
-          "ul",
-          _vm._l(_vm.messages, function(message) {
-            return _c(
-              "li",
-              {
-                staticClass: "alpheios-popup__message uk-alert-primary",
-                attrs: { "uk-alert": "" },
-                on: { beforehide: _vm.clearMessages }
-              },
-              [
-                _c("a", {
-                  staticClass: "uk-alert-close",
-                  attrs: { "uk-close": "" }
-                }),
-                _vm._v("\n          " + _vm._s(message) + "\n        ")
-              ]
-            )
-          })
-        )
-      ]),
-      _vm._v(" "),
-      _c("morph", {
-        directives: [
-          {
-            name: "show",
-            rawName: "v-show",
-            value: _vm.morphdataready,
-            expression: "morphdataready"
-          }
-        ],
-        attrs: { lexemes: _vm.lexemes, definitions: _vm.definitions }
-      }),
-      _vm._v(" "),
-      _c("div", { staticClass: "uk-button-group" }, [
-        _c(
-          "button",
-          {
-            directives: [
-              {
-                name: "show",
-                rawName: "v-show",
-                value: _vm.defdataready,
-                expression: "defdataready"
-              }
-            ],
-            staticClass:
-              "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
-            on: { click: _vm.showInflectionsPanelTab }
-          },
-          [_vm._v("Inflect")]
-        ),
-        _vm._v(" "),
-        _c(
-          "button",
-          {
-            directives: [
-              {
-                name: "show",
-                rawName: "v-show",
-                value: _vm.infldataready,
-                expression: "infldataready"
-              }
-            ],
-            staticClass:
-              "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
-            on: { click: _vm.showDefinitionsPanelTab }
-          },
-          [_vm._v("Define")]
-        )
-      ])
-    ],
-    1
-  )
-}
-var staticRenderFns = []
-render._withStripped = true
-var esExports = { render: render, staticRenderFns: staticRenderFns }
-/* harmony default export */ __webpack_exports__["a"] = (esExports);
-if (false) {
-  module.hot.accept()
-  if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-09f5ebdb", esExports)
-  }
-}
-
-/***/ }),
-/* 54 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__ = __webpack_require__(16);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_a407c392_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__ = __webpack_require__(57);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_a407c392_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__ = __webpack_require__(60);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(55)
+  __webpack_require__(54)
 }
 var normalizeComponent = __webpack_require__(3)
 /* script */
@@ -34541,13 +34351,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 55 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(56);
+var content = __webpack_require__(55);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -34567,7 +34377,7 @@ if(false) {
 }
 
 /***/ }),
-/* 56 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(true);
@@ -34575,13 +34385,135 @@ exports = module.exports = __webpack_require__(1)(true);
 
 
 // module
-exports.push([module.i, "\n#alpheios-morph__lexemes {\n    color: #0E2233; /** TODO use alpheios variable **/\n}\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n}\n.alpheios-morph__dial {\n    font-size: smaller;\n}\n.alpheios-morph__attr {\n    font-weight: normal;\n}\n.alpheios-morph__linked-attr {\n\tfont-weight: bold;\n\tcursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n    color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n    content: \";\";\n}\n.alpheios-morph__inflset .alpheios-morph__heading {\n    display: none;\n}\n.alpheios-morph__inflset:first-child .alpheios-morph__heading {\n    color: #4E6476; /** TODO use alpheios variable **/\n    display: block;\n}\n.alpheios-morph__provider {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n  padding-left: .5em;\n}\n.alpheios-morph__listitem:after {\n    content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n    content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n    content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n    content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n   display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n   display: none;\n}\n\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/morph.vue?6fafe88c"],"names":[],"mappings":";AA8HA;IACA,eAAA,CAAA,kCAAA;CACA;AACA;EACA,oBAAA;EACA,YAAA;CACA;AAEA;EACA,kBAAA;CACA;AAEA;EACA,mBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;CACA;AAEA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;CACA,kBAAA;CACA,gBAAA;CACA;AAEA;IACA,0BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,eAAA,CAAA,kCAAA;IACA,eAAA;CACA;AAEA;EACA,mBAAA;EACA,oBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;EACA,mBAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,YAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;GACA,eAAA;CACA;AAEA;GACA,cAAA;CACA","file":"morph.vue","sourcesContent":["<template>\r\n  <div id=\"alpheios-morph__lexemes\">\r\n    <div class=\"alpheios-morph__dict\" v-for=\"lex in lexemes\">\r\n      <span class=\"alpheios-morph__lemma\" v-if=\"! lex.lemma.principalParts.includes(lex.lemma.word)\" :lang=\"lex.lemma.language\">{{ lex.lemma.word }}</span>\r\n      <span class=\"alpheios-morph__pparts\">\r\n        <span class=\"alpheios-morph__listitem\" v-for=\"part in lex.lemma.principalParts\" :lang=\"lex.lemma.language\">{{ part }}</span>\r\n      </span>\r\n      <span class=\"alpheios-morph__pronunciation\" v-for=\"pron in lex.lemma.features.pronunciation\" v-if=\"lex.lemma.features.pronunciation\">\r\n        [{{pron}}]\r\n      </span>\r\n      <div class=\"alpheios-morph__morph\">\r\n        <span class=\"alpheios-morph__pofs\">\r\n          <span class=\"alpheios-morph__attr\" v-for=\"kase in lex.lemma.features['case']\" v-if=\"lex.lemma.features['case']\">{{kase.value}}</span>\r\n          <span class=\"alpheios-morph__attr\" v-for=\"gender in lex.lemma.features.gender\" v-if=\"lex.lemma.features.gender\">{{gender.value}}</span>\r\n          {{ lex.lemma.features['part of speech'].toString() }}\r\n        </span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"kind in lex.lemma.features.kind\" v-if=\"lex.lemma.features.kind\">{{kind.value}}</span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"decl in lex.lemma.features.declension\" v-if=\"lex.lemma.features.declension\">{{decl.value}} declension</span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"conj in lex.lemma.features.conjugation\" v-if=\"lex.lemma.features.conjugation\">{{conj.value}}</span>\r\n        <span class=\"alpheios-morph__parenthesized\" v-if=\"lex.lemma.features.age || lex.lemma.features.area || lex.lemma.features.geo || lex.lemma.features.frequency\">\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"age in lex.lemma.features.age\" v-if=\"lex.lemma.features.age\">( {{age.value}} )</span>\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"area in lex.lemma.features.area\" v-if=\"lex.lemma.features.area\">{{area.value}} </span>\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"geo in lex.lemma.features.geo\" v-if=\"lex.lemma.features.geo\">{{geo.value}}</span>\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"freq in lex.lemma.features.frequency\" v-if=\"lex.lemma.features.frequency\">{{freq.value}}</span>\r\n        </span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"source in lex.lemma.features.source\" v-if=\"lex.lemma.features.source\">[{{source.value}}]</span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"note in lex.lemma.features.note\" v-if=\"lex.lemma.features.note\">[{{source.note}}]</span>\r\n      </div>\r\n      <div v-for=\"definition in definitions[lex.lemma.key]\">\r\n        <shortdef :definition=\"definition\"></shortdef>\r\n      </div>\r\n      <div class=\"alpheios-morph__inflections\">\r\n        <div class=\"alpheios-morph__inflset\" v-for=\"inflset in lex.getGroupedInflections()\">\r\n          <div class=\"alpheios-morph__heading\">Form(s):</div>\r\n          <span class=\"alpheios-morph__prefix\" v-if=\"inflset.groupingKey.prefix\">{{inflset.groupingKey.prefix}} </span>\r\n          <span class=\"alpheios-morph__stem\">{{inflset.groupingKey.stem}}</span>\r\n          <span class=\"alpheios-morph__suffix\" v-if=\"inflset.groupingKey.suffix\"> -{{inflset.groupingKey.suffix}}</span>\r\n          <span class=\"alpheios-morph__pofs alpheios-morph__parenthesized\"\r\n            v-if=\"! featureMatch(lex.lemma.features['part of speech'],inflset.groupingKey['part of speech'])\">{{inflset.groupingKey[\"part of speech\"].toString()}}</span>\r\n          <span class=\"alpheios-morph__declension alpheios-morph__parenthesized\"\r\n            v-if=\"inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension\">{{inflset.groupingKey.declension.toString()}}</span>\r\n\r\n          <div class=\"alpheios-morph__inflgroup\" v-for=\"group in inflset.inflections\">\r\n            <span class=\"alpheios-morph__number\" v-if=\"group.groupingKey.number && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.number.toString() }}</span>\r\n            <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.tense && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.tense.toString() }}</span>\r\n            <span v-for=\"nextGroup in group.inflections\">\r\n              <span v-if=\"group.groupingKey.isCaseInflectionSet\">\r\n                <span class=\"alpheios-morph__voice\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.voice\">{{ nextGroup.groupingKey.voice.toString() }}</span>\r\n                <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.tense\">{{ nextGroup.groupingKey.tense.toString() }}</span>\r\n                :\r\n              </span>\r\n              <span>\r\n                <span v-for=\"infl in nextGroup.inflections\">\r\n\r\n                  <span class=\"alpheios-morph__case\" v-if=\"infl.groupingKey.case\">\r\n                    {{ infl.groupingKey.case.toString() }}\r\n                    <span class=\"alpheios-morph__gender alpheios-morph__parenthesized\"\r\n                      v-if=\"infl.groupingKey.gender && ! featureMatch(infl.groupingKey.gender,lex.lemma.features.gender) \">\r\n                      {{ infl.groupingKey.gender.map((g) => g.toLocaleStringAbbr()).toString()}}\r\n                    </span>\r\n\r\n                    <span class=\"alpheios-morph__comparative\" v-if=\"infl.groupingKey.comparative && infl.groupingKey.filter((f)=> f.toString() !== 'positive')\">\r\n                      {{ infl.groupingKey.comparative.toString() }}\r\n                    </span>\r\n\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__person\" v-if=\"infl.groupingKey.person\">\r\n                    {{ infl.groupingKey.person.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__number\" v-if=\"infl.groupingKey.number && ! group.groupingKey.isCaseInflectionSet\">\r\n                    {{ infl.groupingKey.number.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__tense\" v-if=\"infl.groupingKey.tense && ! group.groupingKey.isCaseInflectionSet && ! nextGroup.groupingKey.tense\">\r\n                    {{ infl.groupingKey.tense.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__mood\" v-if=\"infl.groupingKey.mood && !group.groupingKey.isCaseInflectionSet\">\r\n                    {{ infl.groupingKey.mood.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__voice\" v-if=\"infl.groupingKey.voice && !group.groupingKey.isCaseInflectionSet\">\r\n                    {{ infl.groupingKey.voice.toString() }}\r\n                  </span>\r\n\r\n                  <span v-for=\"item in infl.inflections\">\r\n                    <span class=\"alpheios-morph__example\" v-if=\"item.example\">{{ item.example.toString() }}</span>\r\n                  </span>\r\n\r\n                </span><!-- end span infl -->\r\n              </span>\r\n            </span><!-- end span groupinflections -->\r\n          </div>\r\n        </div>\r\n      </div>\r\n      <div class=\"alpheios-morph__provider\">\r\n        {{ lex.provider.toString() }}\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'Morph',\r\n    props: ['lexemes','definitions'],\r\n    methods: {\r\n      featureMatch(a,b) {\r\n        let matches = false\r\n        for (let f of a) {\r\n          if (b && b.filter((x) => x.isEqual(f)).length > 0) {\r\n            matches = true\r\n            break\r\n          }\r\n        }\r\n        return matches\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Morph is mounted')\r\n    },\r\n  }\r\n</script>\r\n<style>\r\n\r\n  #alpheios-morph__lexemes {\r\n      color: #0E2233; /** TODO use alpheios variable **/\r\n  }\r\n  .alpheios-morph__dict {\r\n    margin-bottom: .5em;\r\n    clear: both;\r\n  }\r\n\r\n  .alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\r\n    font-weight: bold;\r\n  }\r\n\r\n  .alpheios-morph__source {\r\n    font-size: smaller;\r\n    color: #4E6476; /** TODO use alpheios variable **/\r\n    font-style: italic;\r\n  }\r\n\r\n  .alpheios-morph__dial {\r\n      font-size: smaller;\r\n  }\r\n\r\n  .alpheios-morph__attr {\r\n      font-weight: normal;\r\n  }\r\n\r\n  .alpheios-morph__linked-attr {\r\n  \tfont-weight: bold;\r\n  \tcursor: pointer;\r\n  }\r\n\r\n  .alpheios-morph__linked-attr:hover {\r\n      color: #5BC8DC !important;\r\n  }\r\n\r\n  .alpheios-morph__pofs:after {\r\n      content: \";\";\r\n  }\r\n\r\n  .alpheios-morph__inflset .alpheios-morph__heading {\r\n      display: none;\r\n  }\r\n\r\n  .alpheios-morph__inflset:first-child .alpheios-morph__heading {\r\n      color: #4E6476; /** TODO use alpheios variable **/\r\n      display: block;\r\n  }\r\n\r\n  .alpheios-morph__provider {\r\n    font-size: smaller;\r\n    font-weight: normal;\r\n    color: #4E6476; /** TODO use alpheios variable **/\r\n    font-style: italic;\r\n    padding-left: .5em;\r\n  }\r\n\r\n  .alpheios-morph__listitem:after {\r\n      content: \", \";\r\n   }\r\n\r\n  .alpheios-morph__listitem:last-child:after {\r\n      content: \"\";\r\n   }\r\n\r\n  .alpheios-morph__parenthesized:before {\r\n      content: \"(\";\r\n   }\r\n\r\n  .alpheios-morph__parenthesized:after {\r\n      content: \")\";\r\n   }\r\n\r\n   .alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\r\n     display: block;\r\n   }\r\n\r\n   .alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\r\n     display: none;\r\n   }\r\n\r\n</style>\r\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n#alpheios-morph__lexemes {\n    color: #0E2233; /** TODO use alpheios variable **/\n}\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n}\n.alpheios-morph__dial {\n    font-size: smaller;\n}\n.alpheios-morph__attr {\n    font-weight: normal;\n}\n.alpheios-morph__linked-attr {\n\tfont-weight: bold;\n\tcursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n    color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n    content: \";\";\n}\n.alpheios-morph__inflset .alpheios-morph__heading {\n    display: none;\n}\n.alpheios-morph__inflset:first-child .alpheios-morph__heading {\n    color: #4E6476; /** TODO use alpheios variable **/\n    display: block;\n}\n.alpheios-morph__provider {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n  padding-left: .5em;\n}\n.alpheios-morph__listitem:after {\n    content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n    content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n    content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n    content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n   display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n   display: none;\n}\n\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/morph.vue?4453282b"],"names":[],"mappings":";AAiIA;IACA,eAAA,CAAA,kCAAA;CACA;AACA;EACA,oBAAA;EACA,YAAA;CACA;AAEA;EACA,kBAAA;CACA;AAEA;EACA,mBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;CACA;AAEA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;CACA,kBAAA;CACA,gBAAA;CACA;AAEA;IACA,0BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,eAAA,CAAA,kCAAA;IACA,eAAA;CACA;AAEA;EACA,mBAAA;EACA,oBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;EACA,mBAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,YAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;GACA,eAAA;CACA;AAEA;GACA,cAAA;CACA","file":"morph.vue","sourcesContent":["<template>\r\n  <div id=\"alpheios-morph__lexemes\">\r\n    <div class=\"alpheios-morph__dict\" v-for=\"lex in lexemes\">\r\n      <span class=\"alpheios-morph__lemma\" v-if=\"! lex.lemma.principalParts.includes(lex.lemma.word)\" :lang=\"lex.lemma.language\">{{ lex.lemma.word }}</span>\r\n      <span class=\"alpheios-morph__pparts\">\r\n        <span class=\"alpheios-morph__listitem\" v-for=\"part in lex.lemma.principalParts\" :lang=\"lex.lemma.language\">{{ part }}</span>\r\n      </span>\r\n      <span class=\"alpheios-morph__pronunciation\" v-for=\"pron in lex.lemma.features.pronunciation\" v-if=\"lex.lemma.features.pronunciation\">\r\n        [{{pron}}]\r\n      </span>\r\n      <div class=\"alpheios-morph__morph\">\r\n        <span class=\"alpheios-morph__pofs\">\r\n          <span class=\"alpheios-morph__attr\" v-for=\"kase in lex.lemma.features['case']\" v-if=\"lex.lemma.features['case']\">{{kase.value}}</span>\r\n          <span class=\"alpheios-morph__attr\" v-for=\"gender in lex.lemma.features.gender\" v-if=\"lex.lemma.features.gender\">{{gender.value}}</span>\r\n          {{ lex.lemma.features['part of speech'].toString() }}\r\n        </span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"kind in lex.lemma.features.kind\" v-if=\"lex.lemma.features.kind\">{{kind.value}}</span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"decl in lex.lemma.features.declension\" v-if=\"lex.lemma.features.declension\">{{decl.value}} declension</span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"conj in lex.lemma.features.conjugation\" v-if=\"lex.lemma.features.conjugation\">{{conj.value}}</span>\r\n        <span class=\"alpheios-morph__parenthesized\" v-if=\"lex.lemma.features.age || lex.lemma.features.area || lex.lemma.features.geo || lex.lemma.features.frequency\">\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"age in lex.lemma.features.age\" v-if=\"lex.lemma.features.age\">( {{age.value}} )</span>\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"area in lex.lemma.features.area\" v-if=\"lex.lemma.features.area\">{{area.value}} </span>\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"geo in lex.lemma.features.geo\" v-if=\"lex.lemma.features.geo\">{{geo.value}}</span>\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"freq in lex.lemma.features.frequency\" v-if=\"lex.lemma.features.frequency\">{{freq.value}}</span>\r\n        </span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"source in lex.lemma.features.source\" v-if=\"lex.lemma.features.source\">[{{source.value}}]</span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"note in lex.lemma.features.note\" v-if=\"lex.lemma.features.note\">[{{source.note}}]</span>\r\n      </div>\r\n      <div v-for=\"definition in definitions[lex.lemma.key]\">\r\n        <shortdef :definition=\"definition\"></shortdef>\r\n      </div>\r\n      <div class=\"alpheios-morph__inflections\">\r\n        <div class=\"alpheios-morph__inflset\" v-for=\"inflset in lex.getGroupedInflections()\">\r\n          <div class=\"alpheios-morph__heading\">Form(s):</div>\r\n          <span class=\"alpheios-morph__prefix\" v-if=\"inflset.groupingKey.prefix\">{{inflset.groupingKey.prefix}} </span>\r\n          <span class=\"alpheios-morph__stem\">{{inflset.groupingKey.stem}}</span>\r\n          <span class=\"alpheios-morph__suffix\" v-if=\"inflset.groupingKey.suffix\"> -{{inflset.groupingKey.suffix}}</span>\r\n          <span class=\"alpheios-morph__pofs alpheios-morph__parenthesized\"\r\n            v-if=\"! featureMatch(lex.lemma.features['part of speech'],inflset.groupingKey['part of speech'])\">{{inflset.groupingKey[\"part of speech\"].toString()}}</span>\r\n          <span class=\"alpheios-morph__declension alpheios-morph__parenthesized\"\r\n            v-if=\"inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension\">{{inflset.groupingKey.declension.toString()}}</span>\r\n\r\n          <div class=\"alpheios-morph__inflgroup\" v-for=\"group in inflset.inflections\">\r\n            <span class=\"alpheios-morph__number\" v-if=\"group.groupingKey.number && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.number.toString() }}</span>\r\n            <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.tense && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.tense.toString() }}</span>\r\n            <span v-for=\"nextGroup in group.inflections\">\r\n              <span v-if=\"group.groupingKey.isCaseInflectionSet\">\r\n                <span class=\"alpheios-morph__voice\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.voice\">{{ nextGroup.groupingKey.voice.toString() }}</span>\r\n                <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.tense\">{{ nextGroup.groupingKey.tense.toString() }}</span>\r\n                :\r\n              </span>\r\n              <span>\r\n                <span v-for=\"infl in nextGroup.inflections\">\r\n\r\n                  <span class=\"alpheios-morph__case\" v-if=\"infl.groupingKey.case\">\r\n                    {{ infl.groupingKey.case.toString() }}\r\n                    <span class=\"alpheios-morph__gender alpheios-morph__parenthesized\"\r\n                      v-if=\"infl.groupingKey.gender && ! featureMatch(infl.groupingKey.gender,lex.lemma.features.gender) \">\r\n                      {{ infl.groupingKey.gender.map((g) => g.toLocaleStringAbbr()).toString()}}\r\n                    </span>\r\n\r\n                    <span class=\"alpheios-morph__comparative\" v-if=\"infl.groupingKey.comparative && infl.groupingKey.filter((f)=> f.toString() !== 'positive')\">\r\n                      {{ infl.groupingKey.comparative.toString() }}\r\n                    </span>\r\n\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__person\" v-if=\"infl.groupingKey.person\">\r\n                    {{ infl.groupingKey.person.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__number\" v-if=\"infl.groupingKey.number && ! group.groupingKey.isCaseInflectionSet\">\r\n                    {{ infl.groupingKey.number.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__tense\" v-if=\"infl.groupingKey.tense && ! group.groupingKey.isCaseInflectionSet && ! nextGroup.groupingKey.tense\">\r\n                    {{ infl.groupingKey.tense.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__mood\" v-if=\"infl.groupingKey.mood && !group.groupingKey.isCaseInflectionSet\">\r\n                    {{ infl.groupingKey.mood.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__voice\" v-if=\"infl.groupingKey.voice && !group.groupingKey.isCaseInflectionSet\">\r\n                    {{ infl.groupingKey.voice.toString() }}\r\n                  </span>\r\n\r\n                  <span v-for=\"item in infl.inflections\">\r\n                    <span class=\"alpheios-morph__example\" v-if=\"item.example\">{{ item.example.toString() }}</span>\r\n                  </span>\r\n\r\n                </span><!-- end span infl -->\r\n              </span>\r\n            </span><!-- end span groupinflections -->\r\n          </div>\r\n        </div>\r\n      </div>\r\n      <div class=\"alpheios-morph__provider\">\r\n        {{ lex.provider.toString() }}\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>\r\n<script>\r\n  import ShortDef from './shortdef.vue'\r\n\r\n  export default {\r\n    name: 'Morph',\r\n    components: { shortdef: ShortDef },\r\n    props: ['lexemes','definitions'],\r\n    methods: {\r\n      featureMatch(a,b) {\r\n        let matches = false\r\n        for (let f of a) {\r\n          if (b && b.filter((x) => x.isEqual(f)).length > 0) {\r\n            matches = true\r\n            break\r\n          }\r\n        }\r\n        return matches\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Morph is mounted')\r\n    },\r\n  }\r\n</script>\r\n<style>\r\n\r\n  #alpheios-morph__lexemes {\r\n      color: #0E2233; /** TODO use alpheios variable **/\r\n  }\r\n  .alpheios-morph__dict {\r\n    margin-bottom: .5em;\r\n    clear: both;\r\n  }\r\n\r\n  .alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\r\n    font-weight: bold;\r\n  }\r\n\r\n  .alpheios-morph__source {\r\n    font-size: smaller;\r\n    color: #4E6476; /** TODO use alpheios variable **/\r\n    font-style: italic;\r\n  }\r\n\r\n  .alpheios-morph__dial {\r\n      font-size: smaller;\r\n  }\r\n\r\n  .alpheios-morph__attr {\r\n      font-weight: normal;\r\n  }\r\n\r\n  .alpheios-morph__linked-attr {\r\n  \tfont-weight: bold;\r\n  \tcursor: pointer;\r\n  }\r\n\r\n  .alpheios-morph__linked-attr:hover {\r\n      color: #5BC8DC !important;\r\n  }\r\n\r\n  .alpheios-morph__pofs:after {\r\n      content: \";\";\r\n  }\r\n\r\n  .alpheios-morph__inflset .alpheios-morph__heading {\r\n      display: none;\r\n  }\r\n\r\n  .alpheios-morph__inflset:first-child .alpheios-morph__heading {\r\n      color: #4E6476; /** TODO use alpheios variable **/\r\n      display: block;\r\n  }\r\n\r\n  .alpheios-morph__provider {\r\n    font-size: smaller;\r\n    font-weight: normal;\r\n    color: #4E6476; /** TODO use alpheios variable **/\r\n    font-style: italic;\r\n    padding-left: .5em;\r\n  }\r\n\r\n  .alpheios-morph__listitem:after {\r\n      content: \", \";\r\n   }\r\n\r\n  .alpheios-morph__listitem:last-child:after {\r\n      content: \"\";\r\n   }\r\n\r\n  .alpheios-morph__parenthesized:before {\r\n      content: \"(\";\r\n   }\r\n\r\n  .alpheios-morph__parenthesized:after {\r\n      content: \")\";\r\n   }\r\n\r\n   .alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\r\n     display: block;\r\n   }\r\n\r\n   .alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\r\n     display: none;\r\n   }\r\n\r\n</style>\r\n"],"sourceRoot":""}]);
 
 // exports
 
 
 /***/ }),
+/* 56 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_shortdef_vue__ = __webpack_require__(17);
+/* unused harmony namespace reexport */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_1f074a2a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_shortdef_vue__ = __webpack_require__(59);
+var disposed = false
+function injectStyle (ssrContext) {
+  if (disposed) return
+  __webpack_require__(57)
+}
+var normalizeComponent = __webpack_require__(3)
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = injectStyle
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_shortdef_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_1f074a2a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_shortdef_vue__["a" /* default */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "vue-components\\shortdef.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-1f074a2a", Component.options)
+  } else {
+    hotAPI.reload("data-v-1f074a2a", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
+
+
+/***/ }),
 /* 57 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(58);
+if(typeof content === 'string') content = [[module.i, content, '']];
+if(content.locals) module.exports = content.locals;
+// add the styles to the DOM
+var update = __webpack_require__(2)("2ff0444f", content, false);
+// Hot Module Replacement
+if(false) {
+ // When the styles change, update the <style> tags
+ if(!content.locals) {
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-1f074a2a\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./shortdef.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-1f074a2a\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./shortdef.vue");
+     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+     update(newContent);
+   });
+ }
+ // When the module is disposed, remove the <style> tags
+ module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 58 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(1)(true);
+// imports
+
+
+// module
+exports.push([module.i, "\n.alpheios-definition__text {\n   color: #0E2233;  /* TODO use variables */\n   font-weight: bold;\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/shortdef.vue?b66cc9dc"],"names":[],"mappings":";AAgBA;GACA,eAAA,EAAA,wBAAA;GACA,kBAAA;CACA","file":"shortdef.vue","sourcesContent":["<template>\r\n  <div class=\"alpheios-definition__short\">\r\n      <span class=\"alpheios-definition__text\">{{ definition.text }}</span>\r\n  </div>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'ShortDef',\r\n    props: ['definition'],\r\n    methods: {},\r\n    mounted () {\r\n      console.log('ShortDef is mounted')\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n  .alpheios-definition__text {\r\n     color: #0E2233;  /* TODO use variables */\r\n     font-weight: bold;\r\n  }\r\n</style>\r\n"],"sourceRoot":""}]);
+
+// exports
+
+
+/***/ }),
+/* 59 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("div", { staticClass: "alpheios-definition__short" }, [
+    _c("span", { staticClass: "alpheios-definition__text" }, [
+      _vm._v(_vm._s(_vm.definition.text))
+    ])
+  ])
+}
+var staticRenderFns = []
+render._withStripped = true
+var esExports = { render: render, staticRenderFns: staticRenderFns }
+/* harmony default export */ __webpack_exports__["a"] = (esExports);
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-1f074a2a", esExports)
+  }
+}
+
+/***/ }),
+/* 60 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -35144,102 +35076,6 @@ if (false) {
 }
 
 /***/ }),
-/* 58 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_shortdef_vue__ = __webpack_require__(18);
-/* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_1f074a2a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_shortdef_vue__ = __webpack_require__(61);
-var disposed = false
-function injectStyle (ssrContext) {
-  if (disposed) return
-  __webpack_require__(59)
-}
-var normalizeComponent = __webpack_require__(3)
-/* script */
-
-
-/* template */
-
-/* template functional */
-var __vue_template_functional__ = false
-/* styles */
-var __vue_styles__ = injectStyle
-/* scopeId */
-var __vue_scopeId__ = null
-/* moduleIdentifier (server only) */
-var __vue_module_identifier__ = null
-var Component = normalizeComponent(
-  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_shortdef_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_1f074a2a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_shortdef_vue__["a" /* default */],
-  __vue_template_functional__,
-  __vue_styles__,
-  __vue_scopeId__,
-  __vue_module_identifier__
-)
-Component.options.__file = "vue-components\\shortdef.vue"
-
-/* hot reload */
-if (false) {(function () {
-  var hotAPI = require("vue-hot-reload-api")
-  hotAPI.install(require("vue"), false)
-  if (!hotAPI.compatible) return
-  module.hot.accept()
-  if (!module.hot.data) {
-    hotAPI.createRecord("data-v-1f074a2a", Component.options)
-  } else {
-    hotAPI.reload("data-v-1f074a2a", Component.options)
-  }
-  module.hot.dispose(function (data) {
-    disposed = true
-  })
-})()}
-
-/* harmony default export */ __webpack_exports__["a"] = (Component.exports);
-
-
-/***/ }),
-/* 59 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(60);
-if(typeof content === 'string') content = [[module.i, content, '']];
-if(content.locals) module.exports = content.locals;
-// add the styles to the DOM
-var update = __webpack_require__(2)("2ff0444f", content, false);
-// Hot Module Replacement
-if(false) {
- // When the styles change, update the <style> tags
- if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-1f074a2a\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./shortdef.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-1f074a2a\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./shortdef.vue");
-     if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-     update(newContent);
-   });
- }
- // When the module is disposed, remove the <style> tags
- module.hot.dispose(function() { update(); });
-}
-
-/***/ }),
-/* 60 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(1)(true);
-// imports
-
-
-// module
-exports.push([module.i, "\n.alpheios-definition__text {\n   color: #0E2233;  /* TODO use variables */\n   font-weight: bold;\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/shortdef.vue?b66cc9dc"],"names":[],"mappings":";AAgBA;GACA,eAAA,EAAA,wBAAA;GACA,kBAAA;CACA","file":"shortdef.vue","sourcesContent":["<template>\r\n  <div class=\"alpheios-definition__short\">\r\n      <span class=\"alpheios-definition__text\">{{ definition.text }}</span>\r\n  </div>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'ShortDef',\r\n    props: ['definition'],\r\n    methods: {},\r\n    mounted () {\r\n      console.log('ShortDef is mounted')\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n  .alpheios-definition__text {\r\n     color: #0E2233;  /* TODO use variables */\r\n     font-weight: bold;\r\n  }\r\n</style>\r\n"],"sourceRoot":""}]);
-
-// exports
-
-
-/***/ }),
 /* 61 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -35248,11 +35084,102 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "alpheios-definition__short" }, [
-    _c("span", { staticClass: "alpheios-definition__text" }, [
-      _vm._v(_vm._s(_vm.definition.text))
-    ])
-  ])
+  return _c(
+    "div",
+    {
+      directives: [
+        {
+          name: "show",
+          rawName: "v-show",
+          value: _vm.visible,
+          expression: "visible"
+        }
+      ],
+      ref: "popup",
+      staticClass: "alpheios-popup"
+    },
+    [
+      _c("span", {
+        staticClass: "alpheios-popup__close-btn",
+        attrs: { "uk-icon": "icon: close; ratio: 2" },
+        on: { click: _vm.closePopup }
+      }),
+      _vm._v(" "),
+      _c("div", { staticClass: "alpheios-popup__message-area" }, [
+        _c(
+          "ul",
+          _vm._l(_vm.messages, function(message) {
+            return _c(
+              "li",
+              {
+                staticClass: "alpheios-popup__message uk-alert-primary",
+                attrs: { "uk-alert": "" },
+                on: { beforehide: _vm.clearMessages }
+              },
+              [
+                _c("a", {
+                  staticClass: "uk-alert-close",
+                  attrs: { "uk-close": "" }
+                }),
+                _vm._v("\n          " + _vm._s(message) + "\n        ")
+              ]
+            )
+          })
+        )
+      ]),
+      _vm._v(" "),
+      _c("morph", {
+        directives: [
+          {
+            name: "show",
+            rawName: "v-show",
+            value: _vm.morphdataready,
+            expression: "morphdataready"
+          }
+        ],
+        attrs: { lexemes: _vm.lexemes, definitions: _vm.definitions }
+      }),
+      _vm._v(" "),
+      _c("div", { staticClass: "uk-button-group" }, [
+        _c(
+          "button",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.defdataready,
+                expression: "defdataready"
+              }
+            ],
+            staticClass:
+              "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
+            on: { click: _vm.showInflectionsPanelTab }
+          },
+          [_vm._v("Inflect")]
+        ),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.infldataready,
+                expression: "infldataready"
+              }
+            ],
+            staticClass:
+              "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
+            on: { click: _vm.showDefinitionsPanelTab }
+          },
+          [_vm._v("Define")]
+        )
+      ])
+    ],
+    1
+  )
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -35261,7 +35188,7 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-1f074a2a", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-09f5ebdb", esExports)
   }
 }
 
