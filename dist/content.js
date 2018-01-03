@@ -644,7 +644,6 @@ class FeatureType {
 
     this.type = type;
     this.language = language;
-    this.unrestrictedValue = values.length === 1 && values[0] === '*';
 
         /*
          This is a sort order index for a grammatical feature values. It is determined by the order of values in
@@ -666,6 +665,14 @@ class FeatureType {
       }
     }
   };
+
+  /**
+   * test to see if this FeatureType allows unrestricted values
+   * @returns {boolean} true if unrestricted false if not
+   */
+  hasUnrestrictedValue () {
+    return this.orderedValues.length === 1 && this.orderedValues[0] === FeatureType.UNRESTRICTED_VALUE
+  }
 
     /**
      * Return a Feature with an arbitrary value. This value would not be necessarily present among FeatureType values.
@@ -818,6 +825,7 @@ class FeatureType {
     }
   }
 }
+FeatureType.UNRESTRICTED_VALUE = Symbol('unrestricted');
 
 class InflectionGroupingKey {
   /**
@@ -929,21 +937,23 @@ class LanguageModel {
       [ORD_1ST, ORD_2ND, ORD_3RD], code);
     // some general, non-language specific grammatical features
     features[Feature.types.age] = new FeatureType(Feature.types.age,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.area] = new FeatureType(Feature.types.area,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.source] = new FeatureType(Feature.types.source,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.frequency] = new FeatureType(Feature.types.frequency,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.geo] = new FeatureType(Feature.types.geo,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.source] = new FeatureType(Feature.types.source,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.pronunciation] = new FeatureType(Feature.types.pronunciation,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
     features[Feature.types.kind] = new FeatureType(Feature.types.kind,
-      ['*'], code);
+      [FeatureType.UNRESTRICTED_VALUE], code);
+    features[Feature.types.comparison] = new FeatureType(Feature.types.comparison,
+      [COMP_POSITIVE, COMP_SUPERLATIVE, COMP_COMPARITIVE], code);
     return features
   }
 
@@ -1708,7 +1718,7 @@ const i18n = {
     },
     masculine: {
       full: 'masculine',
-      abbr: 'n'
+      abbr: 'm'
     },
     neuter: {
       full: 'neuter',
@@ -1961,6 +1971,14 @@ class Lemma {
 
       this.features[type].push(element);
     }
+  }
+
+  /**
+   * Get a string which can be used as a unique key to identify this lemma
+   * @return {string} the key
+   */
+  get key () {
+    return [this.word, this.languageCode, ...this.features[Feature.types.part]].join('-')
   }
 }
 
@@ -18638,6 +18656,7 @@ class ImportData {
     /**
      * Creates an InmportData object for the language provided.
      * @param {Models.LanguageModel} language - A language of the import data.
+     * @param {string} engine - engine code
      */
   constructor (language, engine) {
     'use strict';
@@ -18650,6 +18669,19 @@ class ImportData {
     }
     // may be overridden by specific engine use via setLemmaParser
     this.parseLemma = function (lemma) { return new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["m" /* Lemma */](lemma, this.language.toCode()) };
+    // may be overridden by specific engine use via setPropertyParser - default just returns the property value
+    // as a list
+    this.parseProperty = function (propertyName, propertyValue) {
+      let propertyValues = [];
+      if (propertyName === 'decl') {
+        propertyValues = propertyValue.split('&').map((p) => p.trim());
+      } else if (propertyName === 'comp' && propertyValue === 'positive') {
+        propertyValues = [];
+      } else {
+        propertyValues = [propertyValue];
+      }
+      return propertyValues
+    };
   }
 
     /**
@@ -18666,17 +18698,22 @@ class ImportData {
       return this
     };
 
-    this[featureName].get = function get (providerValue, sortOrder) {
+    this[featureName].get = function get (providerValue, sortOrder = 1, allowUnknownValues = false) {
       let mappedValue = [];
       if (!this.importer.has(providerValue)) {
         // if the providerValue matches the model value or the model value
         // is unrestricted, return a feature with the providerValue and order
         if (language.features[featureName][providerValue] ||
-            language.features[featureName].unrestrictedValue) {
+            language.features[featureName].hasUnrestrictedValue()) {
           mappedValue = language.features[featureName].get(providerValue, sortOrder);
         } else {
-          throw new Error("Skipping an unknown value '" +
-                    providerValue + "' of a grammatical feature '" + featureName + "' of " + language + ' language.')
+          let message = `Unknown value "${providerValue}" of feature "${featureName}" for ${language} (allowed = ${allowUnknownValues})`;
+          if (allowUnknownValues) {
+            console.log(message);
+            mappedValue = language.features[featureName].get(providerValue, sortOrder);
+          } else {
+            throw new Error(message)
+          }
         }
       } else {
         let tempValue = this.importer.get(providerValue);
@@ -18702,6 +18739,41 @@ class ImportData {
    */
   setLemmaParser (callback) {
     this.parseLemma = callback;
+  }
+
+  /**
+   * Add an engine-specific property parser
+   */
+  setPropertyParser (callback) {
+    this.parseProperty = callback;
+  }
+
+  /**
+   * map property to one or more Features and add it to the supplied model object
+   * @param {object} model the model object to which the feature will be added
+   * @param {object} inputElem the input data element
+   * @param {object} inputName the  property name in the input data
+   * @param {string} featureName the name of the feature it will be mapped to
+   * @param {boolean} allowUnknownValues flag to indicate if unknown values are allowed
+   */
+  mapFeature (model, inputElem, inputName, featureName, allowUnknownValues) {
+    let mapped = [];
+    let values = [];
+    if (inputElem[inputName]) {
+      values = this.parseProperty(inputName, inputElem[inputName].$);
+    }
+    for (let value of values) {
+      let features = this[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types[featureName]].get(
+        value, inputElem[inputName].order, allowUnknownValues);
+      if (Array.isArray(features)) {
+        mapped.push(...features);
+      } else {
+        mapped.push(features);
+      }
+    }
+    if (mapped.length > 0) {
+      model.feature = mapped;
+    }
   }
 }
 
@@ -18814,26 +18886,22 @@ class WordTestData {
   }
 }
 
-var DefaultConfig = "{\n  \"engine\": {\n    \"lat\": [\"whitakerLat\"],\n    \"grc\": [\"morpheusgrc\"],\n    \"ara\": [\"aramorph\"],\n    \"per\": [\"hazm\"]\n  },\n  \"url\": \"http://morph.alpheios.net/api/v1/analysis/word?word=r_WORD&engine=r_ENGINE&lang=r_LANG\"\n}\n";
+var DefaultConfig = "{\n  \"engine\": {\n    \"lat\": [\"whitakerLat\"],\n    \"grc\": [\"morpheusgrc\"],\n    \"ara\": [\"aramorph\"],\n    \"per\": [\"hazm\"]\n  },\n  \"url\": \"http://morph.alpheios.net/api/v1/analysis/word?word=r_WORD&engine=r_ENGINE&lang=r_LANG\",\n  \"allowUnknownValues\": true\n}\n";
 
 class TuftsAdapter extends BaseAdapter {
   /**
    * A Morph Client Adapter for the Tufts Morphology Service
    * @constructor
-   * @param {object} engine an object which maps language code to desired engine code
-                            for that language. E.g. { lat : whitakerLat, grc: morpheusgrc }
+   * @param {object} config configuraiton object
    */
-  constructor (config = null) {
+  constructor (config = {}) {
     super();
-    if (config == null) {
-      try {
-        this.config = JSON.parse(DefaultConfig);
-      } catch (e) {
-        this.config = DefaultConfig;
-      }
-    } else {
-      this.config = config;
+    try {
+      this.config = JSON.parse(DefaultConfig);
+    } catch (e) {
+      this.config = Object.assign({}, DefaultConfig);
     }
+    Object.assign(this.config, config);
     this.engineMap = new Map(([ data, data$1, data$2, data$3 ]).map((e) => { return [ e.engine, e ] }));
   }
 
@@ -18885,82 +18953,104 @@ class TuftsAdapter extends BaseAdapter {
              */
       annotationBody = [annotationBody];
     }
-    let provider;
+    let providerUri = jsonObj.RDF.Annotation.creator.Agent.about;
+    let providerRights = '';
+    if (jsonObj.RDF.Annotation.rights) {
+      providerRights = jsonObj.RDF.Annotation.rights.$;
+    }
+    let provider = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["p" /* ResourceProvider */](providerUri, providerRights);
     for (let lexeme of annotationBody) {
-            // Get importer based on the language
-      let language = lexeme.rest.entry.dict.hdwd.lang;
-      let mappingData = this.getEngineLanguageMap(language);
-      let lemma = mappingData.parseLemma(lexeme.rest.entry.dict.hdwd.$, language);
-      if (lexeme.rest.entry.dict.pofs) {
-        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(
-          lexeme.rest.entry.dict.pofs.$.trim(), lexeme.rest.entry.dict.pofs.order);
-      }
-      if (lexeme.rest.entry.dict.case) {
-        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase].get(
-          lexeme.rest.entry.dict.case.$, lexeme.rest.entry.dict.case.order);
-      }
-      if (lexeme.rest.entry.dict.gend) {
-        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender].get(
-          lexeme.rest.entry.dict.gend.$, lexeme.rest.entry.dict.gend.order);
-      }
-      if (lexeme.rest.entry.dict.decl) {
-        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(
-          lexeme.rest.entry.dict.decl.$, lexeme.rest.entry.dict.decl.order);
-      }
-      if (lexeme.rest.entry.dict.conj) {
-        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(
-          lexeme.rest.entry.dict.conj.$, lexeme.rest.entry.dict.conj.order);
-      }
-      if (lexeme.rest.entry.dict.area) {
-        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.area].get(
-          lexeme.rest.entry.dict.area.$, lexeme.rest.entry.dict.area.order);
-      }
-      if (lexeme.rest.entry.dict.age) {
-        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.age].get(
-          lexeme.rest.entry.dict.age.$, lexeme.rest.entry.dict.age.order);
-      }
-      if (lexeme.rest.entry.dict.geo) {
-        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.geo].get(
-          lexeme.rest.entry.dict.geo.$, lexeme.rest.entry.dict.geo.order);
-      }
-      if (lexeme.rest.entry.dict.freq) {
-        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.frequency].get(
-          lexeme.rest.entry.dict.freq.$, lexeme.rest.entry.dict.freq.order);
-      }
-      if (lexeme.rest.entry.dict.note) {
-        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.note].get(
-          lexeme.rest.entry.dict.note.$, lexeme.rest.entry.dict.note.order);
-      }
-      if (lexeme.rest.entry.dict.pron) {
-        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.pronunciation].get(
-          lexeme.rest.entry.dict.pron.$, lexeme.rest.entry.dict.pron.order);
-      }
-      if (lexeme.rest.entry.dict.src) {
-        lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.source].get(
-          lexeme.rest.entry.dict.src.$, lexeme.rest.entry.dict.src.order);
-      }
-
-      if (!provider) {
-        let providerUri = jsonObj.RDF.Annotation.creator.Agent.about;
-        let providerRights = '';
-        if (jsonObj.RDF.Annotation.rights) {
-          providerRights = jsonObj.RDF.Annotation.rights.$;
-        }
-        provider = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["p" /* ResourceProvider */](providerUri, providerRights);
-      }
-      let meaning = lexeme.rest.entry.mean;
-      let shortdef;
-      if (meaning) {
-        // TODO: convert a source-specific language code to ISO 639-3 if don't match
-        let lang = meaning.lang ? meaning.lang : 'eng';
-        shortdef = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["c" /* Definition */](meaning.$, lang, 'text/plain');
-      }
-      let inflections = [];
       let inflectionsJSON = lexeme.rest.entry.infl;
-      if (!Array.isArray(inflectionsJSON)) {
-                // If only one inflection returned, it is a single object, not an array of objects. Convert it to an array for uniformity.
+      if (!inflectionsJSON) {
+        inflectionsJSON = [];
+      } else if (!Array.isArray(inflectionsJSON)) {
+        // If only one inflection returned, it is a single object, not an array of objects.
+        // Convert it to an array for uniformity.
         inflectionsJSON = [inflectionsJSON];
       }
+      let lemmaElements;
+      if ((lexeme.rest.entry.dict && lexeme.rest.entry.dict.hdwd) || (Array.isArray(lexeme.rest.entry.dict) && lexeme.rest.entry.dict[0].hdwd)) {
+        if (Array.isArray(lexeme.rest.entry.dict)) {
+          lemmaElements = lexeme.rest.entry.dict;
+        } else {
+          lemmaElements = [lexeme.rest.entry.dict];
+        }
+      } else if (inflectionsJSON.length > 0 && inflectionsJSON[0].term) {
+        lemmaElements = [inflectionsJSON[0].term];
+      }
+      // in rare cases (e.g. conditum in Whitakers) multiple dict entries
+      // exist - always use the lemma and language from the first
+      let language = lemmaElements[0].hdwd ? lemmaElements[0].hdwd.lang : lemmaElements[0].lang;
+      // Get importer based on the language
+      let mappingData = this.getEngineLanguageMap(language);
+      let features = [
+        ['pofs', 'part'],
+        ['case', 'grmCase'],
+        ['gend', 'gender'],
+        ['decl', 'declension'],
+        ['conj', 'conjugation'],
+        ['area', 'area'],
+        ['age', 'age'],
+        ['geo', 'geo'],
+        ['freq', 'frequency'],
+        ['note', 'note'],
+        ['pron', 'pronunciation'],
+        ['src', 'source']
+      ];
+      let lemmas = [];
+      let lexemeSet = [];
+      for (let entry of lemmaElements.entries()) {
+        let shortdefs = [];
+        let index = entry[0];
+        let elem = entry[1];
+        let lemmaText;
+        if (elem.hdwd) {
+          lemmaText = elem.hdwd.$;
+        } else {
+          // term
+          if (elem.stem) {
+            lemmaText = elem.stem.$;
+          }
+          if (elem.suff) {
+            lemmaText += elem.suff.$;
+          }
+        }
+        if (!lemmaText || !language) {
+          continue
+        }
+        let lemma = mappingData.parseLemma(lemmaText, language);
+        lemmas.push(lemma);
+        for (let feature of features) {
+          mappingData.mapFeature(lemma, elem, ...feature, this.config.allowUnknownValues);
+        }
+        let meanings = lexeme.rest.entry.mean;
+        if (!Array.isArray(meanings)) {
+          meanings = [meanings];
+        }
+        meanings = meanings.filter((m) => m);
+        // if we have multiple dictionary elements, take the meaning with the matching index
+        if (lemmaElements.length > 1) {
+          if (meanings && meanings[index]) {
+            let meaning = meanings[index];
+            // TODO: convert a source-specific language code to ISO 639-3 if don't match
+            let lang = meaning.lang ? meaning.lang : 'eng';
+            shortdefs.push(new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["c" /* Definition */](meaning.$, lang, 'text/plain'));
+          }
+        } else {
+          for (let meaning of meanings) {
+            let lang = meaning.lang ? meaning.lang : 'eng';
+            shortdefs.push(new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["c" /* Definition */](meaning.$, lang, 'text/plain'));
+          }
+        }
+        let lexmodel = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["n" /* Lexeme */](lemma, []);
+
+        lexmodel.meaning.appendShortDefs(shortdefs);
+        lexemeSet.push(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["p" /* ResourceProvider */].getProxy(provider, lexmodel));
+      }
+      if (lemmas.length === 0) {
+        continue
+      }
+      let inflections = [];
       for (let inflectionJSON of inflectionsJSON) {
         let inflection = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["j" /* Inflection */](inflectionJSON.term.stem.$, mappingData.language.toCode());
         if (inflectionJSON.term.suff) {
@@ -18971,79 +19061,48 @@ class TuftsAdapter extends BaseAdapter {
         if (inflectionJSON.xmpl) {
           inflection.example = inflectionJSON.xmpl.$;
         }
-                // Parse whatever grammatical features we're interested in
-        if (inflectionJSON.pofs) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(
-            inflectionJSON.pofs.$, inflectionJSON.pofs.order);
-          // inflection pofs can provide missing lemma pofs
-          if (!lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part]) {
-            lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].get(
-              inflectionJSON.pofs.$, inflectionJSON.pofs.order);
-          }
+        // Parse whatever grammatical features we're interested in
+        mappingData.mapFeature(inflection, inflectionJSON, 'pofs', 'part', this.config.allowUnknownValues);
+        mappingData.mapFeature(inflection, inflectionJSON, 'case', 'grmCase', this.config.allowUnknownValues);
+        mappingData.mapFeature(inflection, inflectionJSON, 'decl', 'declension', this.config.allowUnknownValues);
+        mappingData.mapFeature(inflection, inflectionJSON, 'num', 'number', this.config.allowUnknownValues);
+        mappingData.mapFeature(inflection, inflectionJSON, 'gend', 'gender', this.config.allowUnknownValues);
+        mappingData.mapFeature(inflection, inflectionJSON, 'conj', 'conjugation', this.config.allowUnknownValues);
+        mappingData.mapFeature(inflection, inflectionJSON, 'tense', 'tense', this.config.allowUnknownValues);
+        mappingData.mapFeature(inflection, inflectionJSON, 'voice', 'voice', this.config.allowUnknownValues);
+        mappingData.mapFeature(inflection, inflectionJSON, 'mood', 'mood', this.config.allowUnknownValues);
+        mappingData.mapFeature(inflection, inflectionJSON, 'pers', 'person', this.config.allowUnknownValues);
+        mappingData.mapFeature(inflection, inflectionJSON, 'comp', 'comparison', this.config.allowUnknownValues);
+        // we only use the inflection if it tells us something the dictionary details do not
+        if (inflection[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase] ||
+          inflection[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense] ||
+          inflection[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood] ||
+          inflection[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.voice] ||
+          inflection[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person] ||
+          inflection[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.comparison] ||
+          inflection[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.example]) {
+          inflections.push(inflection);
         }
-
-        if (inflectionJSON.case) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase].get(
-            inflectionJSON.case.$, inflectionJSON.case.order);
-        }
-
-        if (inflectionJSON.decl) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(
-            inflectionJSON.decl.$, inflectionJSON.decl.order);
-          // inflection decl can provide lemma decl
+        // inflection can provide lemma decl, pofs, conj
+        for (let lemma of lemmas) {
           if (!lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension]) {
-            lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension].get(
-              inflectionJSON.decl.$, inflectionJSON.decl.order);
+            mappingData.mapFeature(lemma, inflectionJSON, 'decl', 'declension', this.config.allowUnknownValues);
           }
-        }
-
-        if (inflectionJSON.num) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number].get(
-            inflectionJSON.num.$, inflectionJSON.num.order);
-        }
-
-        if (inflectionJSON.gend) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender].get(
-            inflectionJSON.gend.$, inflectionJSON.gend.order);
-        }
-
-        if (inflectionJSON.conj) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(
-            inflectionJSON.conj.$, inflectionJSON.conj.order);
-          // inflection conj can provide lemma conj
+          if (!lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part]) {
+            mappingData.mapFeature(lemma, inflectionJSON, 'pofs', 'part', this.config.allowUnknownValues);
+          }
           if (!lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation]) {
-            lemma.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.conjugation].get(
-              inflectionJSON.conj.$, inflectionJSON.conj.order);
+            mappingData.mapFeature(lemma, inflectionJSON, 'conj', 'conjugation', this.config.allowUnknownValues);
           }
         }
-
-        if (inflectionJSON.tense) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense].get(
-            inflectionJSON.tense.$, inflectionJSON.tense.order);
-        }
-
-        if (inflectionJSON.voice) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.voice].get(
-            inflectionJSON.voice.$, inflectionJSON.voice.order);
-        }
-
-        if (inflectionJSON.mood) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood].get(
-            inflectionJSON.mood.$, inflectionJSON.mood.order);
-        }
-
-        if (inflectionJSON.pers) {
-          inflection.feature = mappingData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person].get(
-            inflectionJSON.pers.$, inflectionJSON.pers.order);
-        }
-
-        inflections.push(inflection);
       }
-
-      let lexmodel = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["n" /* Lexeme */](lemma, inflections);
-      lexmodel.meaning.appendShortDefs(shortdef);
-      let providedLexeme = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["p" /* ResourceProvider */].getProxy(provider, lexmodel);
-      lexemes.push(providedLexeme);
+      for (let lex of lexemeSet) {
+        // we are going to skip lexemes if their lemma has no part of speech identified
+        if (lex.lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part]) {
+          lex.inflections = inflections;
+          lexemes.push(lex);
+        }
+      }
     }
     return new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["i" /* Homonym */](lexemes, targetWord)
   }
@@ -33556,7 +33615,7 @@ process.umask = function() { return 0; };
 /* 39 */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div id=\"alpheios-panel\">\r\n    <panel :data=\"panelData\" @close=\"close\" @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\r\n           @changetab=\"changeTab\"></panel>\r\n</div>\r\n";
+module.exports = "<div id=\"alpheios-popup\" >\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\"\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\n    </popup>\n</div>\n<div id=\"alpheios-panel\">\n    <panel :data=\"panelData\" @close=\"close\" @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\n           @changetab=\"changeTab\"></panel>\n</div>\n";
 
 /***/ }),
 /* 40 */
@@ -33565,7 +33624,7 @@ module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messag
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_panel_vue__ = __webpack_require__(12);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5359cd9a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_panel_vue__ = __webpack_require__(48);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_352b9280_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_panel_vue__ = __webpack_require__(48);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
@@ -33587,13 +33646,13 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_panel_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_5359cd9a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_panel_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_352b9280_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_panel_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "vue-components\\panel.vue"
+Component.options.__file = "vue-components/panel.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -33602,9 +33661,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-5359cd9a", Component.options)
+    hotAPI.createRecord("data-v-352b9280", Component.options)
   } else {
-    hotAPI.reload("data-v-5359cd9a", Component.options)
+    hotAPI.reload("data-v-352b9280", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -33625,13 +33684,13 @@ var content = __webpack_require__(42);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(2)("9e1e6022", content, false);
+var update = __webpack_require__(2)("381aace7", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-5359cd9a\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/sass-loader/lib/loader.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./panel.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-5359cd9a\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/sass-loader/lib/loader.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./panel.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-352b9280\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/sass-loader/lib/loader.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./panel.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-352b9280\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/sass-loader/lib/loader.js!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./panel.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -33694,7 +33753,7 @@ module.exports = function listToStyles (parentId, list) {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__ = __webpack_require__(13);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__ = __webpack_require__(47);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_20e7bc0c_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__ = __webpack_require__(47);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
@@ -33716,13 +33775,13 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_setting_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_7b21cdbf_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_20e7bc0c_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_setting_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "vue-components\\setting.vue"
+Component.options.__file = "vue-components/setting.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -33731,9 +33790,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-7b21cdbf", Component.options)
+    hotAPI.createRecord("data-v-20e7bc0c", Component.options)
   } else {
-    hotAPI.reload("data-v-7b21cdbf", Component.options)
+    hotAPI.reload("data-v-20e7bc0c", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -33754,13 +33813,13 @@ var content = __webpack_require__(46);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(2)("efa9aa7a", content, false);
+var update = __webpack_require__(2)("f2ebd290", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-7b21cdbf\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-7b21cdbf\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-20e7bc0c\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-20e7bc0c\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./setting.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -33838,7 +33897,7 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-7b21cdbf", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-20e7bc0c", esExports)
   }
 }
 
@@ -34153,7 +34212,7 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-5359cd9a", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-352b9280", esExports)
   }
 }
 
@@ -34170,7 +34229,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAz
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__ = __webpack_require__(15);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(61);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_190d0968_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__ = __webpack_require__(61);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
@@ -34192,13 +34251,13 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_popup_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_09f5ebdb_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_190d0968_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_popup_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "vue-components\\popup.vue"
+Component.options.__file = "vue-components/popup.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -34207,9 +34266,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-09f5ebdb", Component.options)
+    hotAPI.createRecord("data-v-190d0968", Component.options)
   } else {
-    hotAPI.reload("data-v-09f5ebdb", Component.options)
+    hotAPI.reload("data-v-190d0968", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -34230,13 +34289,13 @@ var content = __webpack_require__(52);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(2)("449bb36b", content, false);
+var update = __webpack_require__(2)("1d2b91c2", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-09f5ebdb\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-09f5ebdb\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-190d0968\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-190d0968\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./popup.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -34254,7 +34313,7 @@ exports = module.exports = __webpack_require__(1)(true);
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border: 1px solid lightgray;\n    width: 400px;\n    height: 500px;\n    z-index: 1000;\n    position: fixed;\n    left: 200px;\n    top: 100px;\n    padding: 50px 20px 20px;\n    box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n    overflow: auto;\n    /* TODO use sass variables */\n    font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n    font-size: 12px;\n    color: #666666;\n}\n.alpheios-popup li {\n    list-style-type: none;\n    font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n    font-size: 12px;\n    color: #666666;\n    padding: 0;\n}\n.alpheios-popup__close-btn {\n    color: gray;\n    display: block;\n    width: 40px;\n    height: 40px;\n    top: 0;\n    right: 0;\n    margin: 10px;\n    cursor: pointer;\n    position: absolute;\n}\n.alpheios-popup__message-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__content-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__more-btn {\n    float: right;\n    margin-bottom: 10px;\n    /*TODO alpheios variables */\n}\nli.alpheios-popup__message {\n    display:none;\n}\nli.alpheios-popup__message:last-child {\n    display:block;\n}\n\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/popup.vue?4308c57f"],"names":[],"mappings":";AAmJA;IACA,iBAAA;IACA,4BAAA;IACA,aAAA;IACA,cAAA;IACA,cAAA;IACA,gBAAA;IACA,YAAA;IACA,WAAA;IACA,wBAAA;IACA,uBAAA,EAAA,oFAAA;IACA,eAAA;IACA,6BAAA;IACA,4DAAA;IACA,gBAAA;IACA,eAAA;CACA;AAEA;IACA,sBAAA;IACA,4DAAA;IACA,gBAAA;IACA,eAAA;IACA,WAAA;CACA;AAEA;IACA,YAAA;IACA,eAAA;IACA,YAAA;IACA,aAAA;IACA,OAAA;IACA,SAAA;IACA,aAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,aAAA;IACA,oBAAA;IACA,4BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,cAAA;CACA","file":"popup.vue","sourcesContent":["<template>\r\n    <div ref=\"popup\" class=\"alpheios-popup\" v-show=\"visible\">\r\n        <span class=\"alpheios-popup__close-btn\" @click=\"closePopup\" uk-icon=\"icon: close; ratio: 2\"></span>\r\n        <div class=\"alpheios-popup__message-area\">\r\n          <ul>\r\n            <li @beforehide=\"clearMessages\" v-for=\"message in messages\" class=\"alpheios-popup__message uk-alert-primary\" uk-alert>\r\n              <a class=\"uk-alert-close\" uk-close></a>\r\n              {{ message }}\r\n            </li>\r\n          </ul>\r\n        </div>\r\n        <morph v-show=\"morphdataready\" :lexemes=\"lexemes\" :definitions=\"definitions\"></morph>\r\n        <div class=\"uk-button-group\">\r\n          <button @click=\"showInflectionsPanelTab\" v-show=\"defdataready\" class=\"uk-button uk-button-primary uk-button-small alpheios-popup__more-btn\">Inflect</button>\r\n          <button @click=\"showDefinitionsPanelTab\" v-show=\"infldataready\" class=\"uk-button uk-button-primary uk-button-small alpheios-popup__more-btn\">Define</button>\r\n        </div>\r\n    </div>\r\n</template>\r\n<script>\r\n  import Morph from './morph.vue'\r\n  import interact from 'interactjs'\r\n\r\n  export default {\r\n    name: 'Popup',\r\n    components: { morph: Morph },\r\n    data: function () {\r\n      return {\r\n        resizable: true,\r\n        draggable: true,\r\n      }\r\n    },\r\n    props: {\r\n      messages: {\r\n        type: Array,\r\n        required: true\r\n      },\r\n      lexemes: {\r\n        type: Array,\r\n        required: true\r\n      },\r\n      definitions: {\r\n        type: Object,\r\n        required: true\r\n      },\r\n      visible: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      defdataready: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      infldataready: {\r\n        type: Boolean,\r\n        required: true\r\n      },\r\n      morphdataready: {\r\n        type: Boolean,\r\n        required: true\r\n      }\r\n    },\r\n    methods: {\r\n      clearMessages() {\r\n        while (this.messages.length >0) {\r\n          this.messages.pop()\r\n        }\r\n      },\r\n\r\n      closePopup () {\r\n        this.$emit('close')\r\n      },\r\n\r\n      showDefinitionsPanelTab () {\r\n        this.$emit('showdefspaneltab')\r\n      },\r\n\r\n      showInflectionsPanelTab () {\r\n        this.$emit('showinflpaneltab')\r\n      },\r\n\r\n      resizeListener(event) {\r\n        console.log('Resize listener')\r\n        if (this.resizable) {\r\n          const target = event.target\r\n          let x = (parseFloat(target.getAttribute('data-x')) || 0)\r\n          let y = (parseFloat(target.getAttribute('data-y')) || 0)\r\n\r\n          // update the element's style\r\n          target.style.width  = event.rect.width + 'px'\r\n          target.style.height = event.rect.height + 'px'\r\n\r\n          // translate when resizing from top or left edges\r\n          x += event.deltaRect.left\r\n          y += event.deltaRect.top\r\n\r\n          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)'\r\n\r\n          target.setAttribute('data-x', x)\r\n          target.setAttribute('data-y', y)\r\n        }\r\n      },\r\n\r\n      dragMoveListener(event) {\r\n        if (this.draggable) {\r\n          const target = event.target;\r\n          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;\r\n          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;\r\n\r\n          target.style.webkitTransform = `translate(${x}px, ${y}px)`;\r\n          target.style.transform = `translate(${x}px, ${y}px)`;\r\n\r\n          target.setAttribute('data-x', x);\r\n          target.setAttribute('data-y', y);\r\n        }\r\n      }\r\n\r\n    },\r\n    mounted () {\r\n      console.log('mounted')\r\n      const resizableSettings = {\r\n        preserveAspectRatio: false,\r\n        edges: { left: true, right: true, bottom: true, top: true },\r\n        restrictSize: {\r\n          min: { width: 100, height: 300 }\r\n        },\r\n        restrictEdges: {\r\n          outer: document.body,\r\n          endOnly: true,\r\n        }\r\n      };\r\n      const draggableSettings = {\r\n        inertia: true,\r\n        autoScroll: false,\r\n        restrict: {\r\n          restriction: document.body,\r\n          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }\r\n        },\r\n        onmove: this.dragMoveListener\r\n      };\r\n      interact(this.$el)\r\n        .resizable(resizableSettings)\r\n        .draggable(draggableSettings)\r\n        .on('resizemove', this.resizeListener);\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n    .alpheios-popup {\r\n        background: #FFF;\r\n        border: 1px solid lightgray;\r\n        width: 400px;\r\n        height: 500px;\r\n        z-index: 1000;\r\n        position: fixed;\r\n        left: 200px;\r\n        top: 100px;\r\n        padding: 50px 20px 20px;\r\n        box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\r\n        overflow: auto;\r\n        /* TODO use sass variables */\r\n        font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\r\n        font-size: 12px;\r\n        color: #666666;\r\n    }\r\n\r\n    .alpheios-popup li {\r\n        list-style-type: none;\r\n        font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\r\n        font-size: 12px;\r\n        color: #666666;\r\n        padding: 0;\r\n    }\r\n\r\n    .alpheios-popup__close-btn {\r\n        color: gray;\r\n        display: block;\r\n        width: 40px;\r\n        height: 40px;\r\n        top: 0;\r\n        right: 0;\r\n        margin: 10px;\r\n        cursor: pointer;\r\n        position: absolute;\r\n    }\r\n\r\n    .alpheios-popup__message-area {\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .alpheios-popup__content-area {\r\n        margin-bottom: 20px;\r\n    }\r\n\r\n    .alpheios-popup__more-btn {\r\n        float: right;\r\n        margin-bottom: 10px;\r\n        /*TODO alpheios variables */\r\n    }\r\n\r\n    li.alpheios-popup__message {\r\n        display:none;\r\n    }\r\n\r\n    li.alpheios-popup__message:last-child {\r\n        display:block;\r\n    }\r\n\r\n</style>\r\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border: 1px solid lightgray;\n    width: 400px;\n    height: 500px;\n    z-index: 1000;\n    position: fixed;\n    left: 200px;\n    top: 100px;\n    padding: 50px 20px 20px;\n    box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n    overflow: auto;\n    /* TODO use sass variables */\n    font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n    font-size: 12px;\n    color: #666666;\n}\n.alpheios-popup li {\n    list-style-type: none;\n    font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n    font-size: 12px;\n    color: #666666;\n    padding: 0;\n}\n.alpheios-popup__close-btn {\n    color: gray;\n    display: block;\n    width: 40px;\n    height: 40px;\n    top: 0;\n    right: 0;\n    margin: 10px;\n    cursor: pointer;\n    position: absolute;\n}\n.alpheios-popup__message-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__content-area {\n    margin-bottom: 20px;\n}\n.alpheios-popup__more-btn {\n    float: right;\n    margin-bottom: 10px;\n    /*TODO alpheios variables */\n}\nli.alpheios-popup__message {\n    display:none;\n}\nli.alpheios-popup__message:last-child {\n    display:block;\n}\n\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/popup.vue?659b9c4d"],"names":[],"mappings":";AAmJA;IACA,iBAAA;IACA,4BAAA;IACA,aAAA;IACA,cAAA;IACA,cAAA;IACA,gBAAA;IACA,YAAA;IACA,WAAA;IACA,wBAAA;IACA,uBAAA,EAAA,oFAAA;IACA,eAAA;IACA,6BAAA;IACA,4DAAA;IACA,gBAAA;IACA,eAAA;CACA;AAEA;IACA,sBAAA;IACA,4DAAA;IACA,gBAAA;IACA,eAAA;IACA,WAAA;CACA;AAEA;IACA,YAAA;IACA,eAAA;IACA,YAAA;IACA,aAAA;IACA,OAAA;IACA,SAAA;IACA,aAAA;IACA,gBAAA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;IACA,aAAA;IACA,oBAAA;IACA,4BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,cAAA;CACA","file":"popup.vue","sourcesContent":["<template>\n    <div ref=\"popup\" class=\"alpheios-popup\" v-show=\"visible\">\n        <span class=\"alpheios-popup__close-btn\" @click=\"closePopup\" uk-icon=\"icon: close; ratio: 2\"></span>\n        <div class=\"alpheios-popup__message-area\">\n          <ul>\n            <li @beforehide=\"clearMessages\" v-for=\"message in messages\" class=\"alpheios-popup__message uk-alert-primary\" uk-alert>\n              <a class=\"uk-alert-close\" uk-close></a>\n              {{ message }}\n            </li>\n          </ul>\n        </div>\n        <morph v-show=\"morphdataready\" :lexemes=\"lexemes\" :definitions=\"definitions\"></morph>\n        <div class=\"uk-button-group\">\n          <button @click=\"showInflectionsPanelTab\" v-show=\"defdataready\" class=\"uk-button uk-button-primary uk-button-small alpheios-popup__more-btn\">Inflect</button>\n          <button @click=\"showDefinitionsPanelTab\" v-show=\"infldataready\" class=\"uk-button uk-button-primary uk-button-small alpheios-popup__more-btn\">Define</button>\n        </div>\n    </div>\n</template>\n<script>\n  import Morph from './morph.vue'\n  import interact from 'interactjs'\n\n  export default {\n    name: 'Popup',\n    components: { morph: Morph },\n    data: function () {\n      return {\n        resizable: true,\n        draggable: true,\n      }\n    },\n    props: {\n      messages: {\n        type: Array,\n        required: true\n      },\n      lexemes: {\n        type: Array,\n        required: true\n      },\n      definitions: {\n        type: Object,\n        required: true\n      },\n      visible: {\n        type: Boolean,\n        required: true\n      },\n      defdataready: {\n        type: Boolean,\n        required: true\n      },\n      infldataready: {\n        type: Boolean,\n        required: true\n      },\n      morphdataready: {\n        type: Boolean,\n        required: true\n      }\n    },\n    methods: {\n      clearMessages() {\n        while (this.messages.length >0) {\n          this.messages.pop()\n        }\n      },\n\n      closePopup () {\n        this.$emit('close')\n      },\n\n      showDefinitionsPanelTab () {\n        this.$emit('showdefspaneltab')\n      },\n\n      showInflectionsPanelTab () {\n        this.$emit('showinflpaneltab')\n      },\n\n      resizeListener(event) {\n        console.log('Resize listener')\n        if (this.resizable) {\n          const target = event.target\n          let x = (parseFloat(target.getAttribute('data-x')) || 0)\n          let y = (parseFloat(target.getAttribute('data-y')) || 0)\n\n          // update the element's style\n          target.style.width  = event.rect.width + 'px'\n          target.style.height = event.rect.height + 'px'\n\n          // translate when resizing from top or left edges\n          x += event.deltaRect.left\n          y += event.deltaRect.top\n\n          target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)'\n\n          target.setAttribute('data-x', x)\n          target.setAttribute('data-y', y)\n        }\n      },\n\n      dragMoveListener(event) {\n        if (this.draggable) {\n          const target = event.target;\n          const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;\n          const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;\n\n          target.style.webkitTransform = `translate(${x}px, ${y}px)`;\n          target.style.transform = `translate(${x}px, ${y}px)`;\n\n          target.setAttribute('data-x', x);\n          target.setAttribute('data-y', y);\n        }\n      }\n\n    },\n    mounted () {\n      console.log('mounted')\n      const resizableSettings = {\n        preserveAspectRatio: false,\n        edges: { left: true, right: true, bottom: true, top: true },\n        restrictSize: {\n          min: { width: 100, height: 300 }\n        },\n        restrictEdges: {\n          outer: document.body,\n          endOnly: true,\n        }\n      };\n      const draggableSettings = {\n        inertia: true,\n        autoScroll: false,\n        restrict: {\n          restriction: document.body,\n          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }\n        },\n        onmove: this.dragMoveListener\n      };\n      interact(this.$el)\n        .resizable(resizableSettings)\n        .draggable(draggableSettings)\n        .on('resizemove', this.resizeListener);\n    }\n  }\n</script>\n<style>\n    .alpheios-popup {\n        background: #FFF;\n        border: 1px solid lightgray;\n        width: 400px;\n        height: 500px;\n        z-index: 1000;\n        position: fixed;\n        left: 200px;\n        top: 100px;\n        padding: 50px 20px 20px;\n        box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */\n        overflow: auto;\n        /* TODO use sass variables */\n        font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n        font-size: 12px;\n        color: #666666;\n    }\n\n    .alpheios-popup li {\n        list-style-type: none;\n        font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n        font-size: 12px;\n        color: #666666;\n        padding: 0;\n    }\n\n    .alpheios-popup__close-btn {\n        color: gray;\n        display: block;\n        width: 40px;\n        height: 40px;\n        top: 0;\n        right: 0;\n        margin: 10px;\n        cursor: pointer;\n        position: absolute;\n    }\n\n    .alpheios-popup__message-area {\n        margin-bottom: 20px;\n    }\n\n    .alpheios-popup__content-area {\n        margin-bottom: 20px;\n    }\n\n    .alpheios-popup__more-btn {\n        float: right;\n        margin-bottom: 10px;\n        /*TODO alpheios variables */\n    }\n\n    li.alpheios-popup__message {\n        display:none;\n    }\n\n    li.alpheios-popup__message:last-child {\n        display:block;\n    }\n\n</style>\n"],"sourceRoot":""}]);
 
 // exports
 
@@ -34266,7 +34325,7 @@ exports.push([module.i, "\n.alpheios-popup {\n    background: #FFF;\n    border:
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__ = __webpack_require__(16);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_a407c392_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__ = __webpack_require__(60);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_85d98878_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__ = __webpack_require__(60);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
@@ -34288,13 +34347,13 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_morph_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_a407c392_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_85d98878_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_morph_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "vue-components\\morph.vue"
+Component.options.__file = "vue-components/morph.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -34303,9 +34362,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-a407c392", Component.options)
+    hotAPI.createRecord("data-v-85d98878", Component.options)
   } else {
-    hotAPI.reload("data-v-a407c392", Component.options)
+    hotAPI.reload("data-v-85d98878", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -34326,13 +34385,13 @@ var content = __webpack_require__(55);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(2)("44fc9442", content, false);
+var update = __webpack_require__(2)("51a66b4f", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-a407c392\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./morph.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-a407c392\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./morph.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-85d98878\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./morph.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-85d98878\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./morph.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -34350,7 +34409,7 @@ exports = module.exports = __webpack_require__(1)(true);
 
 
 // module
-exports.push([module.i, "\n#alpheios-morph__lexemes {\n    color: #0E2233; /** TODO use alpheios variable **/\n}\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n}\n.alpheios-morph__dial {\n    font-size: smaller;\n}\n.alpheios-morph__attr {\n    font-weight: normal;\n}\n.alpheios-morph__linked-attr {\n\tfont-weight: bold;\n\tcursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n    color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n    content: \";\";\n}\n.alpheios-morph__inflset .alpheios-morph__heading {\n    display: none;\n}\n.alpheios-morph__inflset:first-child .alpheios-morph__heading {\n    color: #4E6476; /** TODO use alpheios variable **/\n    display: block;\n}\n.alpheios-morph__provider {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n  padding-left: .5em;\n}\n.alpheios-morph__listitem:after {\n    content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n    content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n    content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n    content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n   display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n   display: none;\n}\n\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/morph.vue?4453282b"],"names":[],"mappings":";AAiIA;IACA,eAAA,CAAA,kCAAA;CACA;AACA;EACA,oBAAA;EACA,YAAA;CACA;AAEA;EACA,kBAAA;CACA;AAEA;EACA,mBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;CACA;AAEA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;CACA,kBAAA;CACA,gBAAA;CACA;AAEA;IACA,0BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,eAAA,CAAA,kCAAA;IACA,eAAA;CACA;AAEA;EACA,mBAAA;EACA,oBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;EACA,mBAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,YAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;GACA,eAAA;CACA;AAEA;GACA,cAAA;CACA","file":"morph.vue","sourcesContent":["<template>\r\n  <div id=\"alpheios-morph__lexemes\">\r\n    <div class=\"alpheios-morph__dict\" v-for=\"lex in lexemes\">\r\n      <span class=\"alpheios-morph__lemma\" v-if=\"! lex.lemma.principalParts.includes(lex.lemma.word)\" :lang=\"lex.lemma.language\">{{ lex.lemma.word }}</span>\r\n      <span class=\"alpheios-morph__pparts\">\r\n        <span class=\"alpheios-morph__listitem\" v-for=\"part in lex.lemma.principalParts\" :lang=\"lex.lemma.language\">{{ part }}</span>\r\n      </span>\r\n      <span class=\"alpheios-morph__pronunciation\" v-for=\"pron in lex.lemma.features.pronunciation\" v-if=\"lex.lemma.features.pronunciation\">\r\n        [{{pron}}]\r\n      </span>\r\n      <div class=\"alpheios-morph__morph\">\r\n        <span class=\"alpheios-morph__pofs\">\r\n          <span class=\"alpheios-morph__attr\" v-for=\"kase in lex.lemma.features['case']\" v-if=\"lex.lemma.features['case']\">{{kase.value}}</span>\r\n          <span class=\"alpheios-morph__attr\" v-for=\"gender in lex.lemma.features.gender\" v-if=\"lex.lemma.features.gender\">{{gender.value}}</span>\r\n          {{ lex.lemma.features['part of speech'].toString() }}\r\n        </span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"kind in lex.lemma.features.kind\" v-if=\"lex.lemma.features.kind\">{{kind.value}}</span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"decl in lex.lemma.features.declension\" v-if=\"lex.lemma.features.declension\">{{decl.value}} declension</span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"conj in lex.lemma.features.conjugation\" v-if=\"lex.lemma.features.conjugation\">{{conj.value}}</span>\r\n        <span class=\"alpheios-morph__parenthesized\" v-if=\"lex.lemma.features.age || lex.lemma.features.area || lex.lemma.features.geo || lex.lemma.features.frequency\">\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"age in lex.lemma.features.age\" v-if=\"lex.lemma.features.age\">( {{age.value}} )</span>\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"area in lex.lemma.features.area\" v-if=\"lex.lemma.features.area\">{{area.value}} </span>\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"geo in lex.lemma.features.geo\" v-if=\"lex.lemma.features.geo\">{{geo.value}}</span>\r\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"freq in lex.lemma.features.frequency\" v-if=\"lex.lemma.features.frequency\">{{freq.value}}</span>\r\n        </span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"source in lex.lemma.features.source\" v-if=\"lex.lemma.features.source\">[{{source.value}}]</span>\r\n        <span class=\"alpheios-morph__attr\" v-for=\"note in lex.lemma.features.note\" v-if=\"lex.lemma.features.note\">[{{source.note}}]</span>\r\n      </div>\r\n      <div v-for=\"definition in definitions[lex.lemma.key]\">\r\n        <shortdef :definition=\"definition\"></shortdef>\r\n      </div>\r\n      <div class=\"alpheios-morph__inflections\">\r\n        <div class=\"alpheios-morph__inflset\" v-for=\"inflset in lex.getGroupedInflections()\">\r\n          <div class=\"alpheios-morph__heading\">Form(s):</div>\r\n          <span class=\"alpheios-morph__prefix\" v-if=\"inflset.groupingKey.prefix\">{{inflset.groupingKey.prefix}} </span>\r\n          <span class=\"alpheios-morph__stem\">{{inflset.groupingKey.stem}}</span>\r\n          <span class=\"alpheios-morph__suffix\" v-if=\"inflset.groupingKey.suffix\"> -{{inflset.groupingKey.suffix}}</span>\r\n          <span class=\"alpheios-morph__pofs alpheios-morph__parenthesized\"\r\n            v-if=\"! featureMatch(lex.lemma.features['part of speech'],inflset.groupingKey['part of speech'])\">{{inflset.groupingKey[\"part of speech\"].toString()}}</span>\r\n          <span class=\"alpheios-morph__declension alpheios-morph__parenthesized\"\r\n            v-if=\"inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension\">{{inflset.groupingKey.declension.toString()}}</span>\r\n\r\n          <div class=\"alpheios-morph__inflgroup\" v-for=\"group in inflset.inflections\">\r\n            <span class=\"alpheios-morph__number\" v-if=\"group.groupingKey.number && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.number.toString() }}</span>\r\n            <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.tense && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.tense.toString() }}</span>\r\n            <span v-for=\"nextGroup in group.inflections\">\r\n              <span v-if=\"group.groupingKey.isCaseInflectionSet\">\r\n                <span class=\"alpheios-morph__voice\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.voice\">{{ nextGroup.groupingKey.voice.toString() }}</span>\r\n                <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.tense\">{{ nextGroup.groupingKey.tense.toString() }}</span>\r\n                :\r\n              </span>\r\n              <span>\r\n                <span v-for=\"infl in nextGroup.inflections\">\r\n\r\n                  <span class=\"alpheios-morph__case\" v-if=\"infl.groupingKey.case\">\r\n                    {{ infl.groupingKey.case.toString() }}\r\n                    <span class=\"alpheios-morph__gender alpheios-morph__parenthesized\"\r\n                      v-if=\"infl.groupingKey.gender && ! featureMatch(infl.groupingKey.gender,lex.lemma.features.gender) \">\r\n                      {{ infl.groupingKey.gender.map((g) => g.toLocaleStringAbbr()).toString()}}\r\n                    </span>\r\n\r\n                    <span class=\"alpheios-morph__comparative\" v-if=\"infl.groupingKey.comparative && infl.groupingKey.filter((f)=> f.toString() !== 'positive')\">\r\n                      {{ infl.groupingKey.comparative.toString() }}\r\n                    </span>\r\n\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__person\" v-if=\"infl.groupingKey.person\">\r\n                    {{ infl.groupingKey.person.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__number\" v-if=\"infl.groupingKey.number && ! group.groupingKey.isCaseInflectionSet\">\r\n                    {{ infl.groupingKey.number.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__tense\" v-if=\"infl.groupingKey.tense && ! group.groupingKey.isCaseInflectionSet && ! nextGroup.groupingKey.tense\">\r\n                    {{ infl.groupingKey.tense.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__mood\" v-if=\"infl.groupingKey.mood && !group.groupingKey.isCaseInflectionSet\">\r\n                    {{ infl.groupingKey.mood.toString() }}\r\n                  </span>\r\n\r\n                  <span class=\"alpheios-morph__voice\" v-if=\"infl.groupingKey.voice && !group.groupingKey.isCaseInflectionSet\">\r\n                    {{ infl.groupingKey.voice.toString() }}\r\n                  </span>\r\n\r\n                  <span v-for=\"item in infl.inflections\">\r\n                    <span class=\"alpheios-morph__example\" v-if=\"item.example\">{{ item.example.toString() }}</span>\r\n                  </span>\r\n\r\n                </span><!-- end span infl -->\r\n              </span>\r\n            </span><!-- end span groupinflections -->\r\n          </div>\r\n        </div>\r\n      </div>\r\n      <div class=\"alpheios-morph__provider\">\r\n        {{ lex.provider.toString() }}\r\n      </div>\r\n    </div>\r\n  </div>\r\n</template>\r\n<script>\r\n  import ShortDef from './shortdef.vue'\r\n\r\n  export default {\r\n    name: 'Morph',\r\n    components: { shortdef: ShortDef },\r\n    props: ['lexemes','definitions'],\r\n    methods: {\r\n      featureMatch(a,b) {\r\n        let matches = false\r\n        for (let f of a) {\r\n          if (b && b.filter((x) => x.isEqual(f)).length > 0) {\r\n            matches = true\r\n            break\r\n          }\r\n        }\r\n        return matches\r\n      }\r\n    },\r\n    mounted () {\r\n      console.log('Morph is mounted')\r\n    },\r\n  }\r\n</script>\r\n<style>\r\n\r\n  #alpheios-morph__lexemes {\r\n      color: #0E2233; /** TODO use alpheios variable **/\r\n  }\r\n  .alpheios-morph__dict {\r\n    margin-bottom: .5em;\r\n    clear: both;\r\n  }\r\n\r\n  .alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\r\n    font-weight: bold;\r\n  }\r\n\r\n  .alpheios-morph__source {\r\n    font-size: smaller;\r\n    color: #4E6476; /** TODO use alpheios variable **/\r\n    font-style: italic;\r\n  }\r\n\r\n  .alpheios-morph__dial {\r\n      font-size: smaller;\r\n  }\r\n\r\n  .alpheios-morph__attr {\r\n      font-weight: normal;\r\n  }\r\n\r\n  .alpheios-morph__linked-attr {\r\n  \tfont-weight: bold;\r\n  \tcursor: pointer;\r\n  }\r\n\r\n  .alpheios-morph__linked-attr:hover {\r\n      color: #5BC8DC !important;\r\n  }\r\n\r\n  .alpheios-morph__pofs:after {\r\n      content: \";\";\r\n  }\r\n\r\n  .alpheios-morph__inflset .alpheios-morph__heading {\r\n      display: none;\r\n  }\r\n\r\n  .alpheios-morph__inflset:first-child .alpheios-morph__heading {\r\n      color: #4E6476; /** TODO use alpheios variable **/\r\n      display: block;\r\n  }\r\n\r\n  .alpheios-morph__provider {\r\n    font-size: smaller;\r\n    font-weight: normal;\r\n    color: #4E6476; /** TODO use alpheios variable **/\r\n    font-style: italic;\r\n    padding-left: .5em;\r\n  }\r\n\r\n  .alpheios-morph__listitem:after {\r\n      content: \", \";\r\n   }\r\n\r\n  .alpheios-morph__listitem:last-child:after {\r\n      content: \"\";\r\n   }\r\n\r\n  .alpheios-morph__parenthesized:before {\r\n      content: \"(\";\r\n   }\r\n\r\n  .alpheios-morph__parenthesized:after {\r\n      content: \")\";\r\n   }\r\n\r\n   .alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\r\n     display: block;\r\n   }\r\n\r\n   .alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\r\n     display: none;\r\n   }\r\n\r\n</style>\r\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n#alpheios-morph__lexemes {\n    color: #0E2233; /** TODO use alpheios variable **/\n}\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n}\n.alpheios-morph__dial {\n    font-size: smaller;\n}\n.alpheios-morph__attr {\n    font-weight: normal;\n}\n.alpheios-morph__linked-attr {\n\tfont-weight: bold;\n\tcursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n    color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n    content: \";\";\n}\n.alpheios-morph__inflset .alpheios-morph__heading {\n    display: none;\n}\n.alpheios-morph__inflset:first-child .alpheios-morph__heading {\n    color: #4E6476; /** TODO use alpheios variable **/\n    display: block;\n}\n.alpheios-morph__provider {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476; /** TODO use alpheios variable **/\n  font-style: italic;\n  padding-left: .5em;\n}\n.alpheios-morph__listitem:after {\n    content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n    content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n    content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n    content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n   display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n   display: none;\n}\n\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/morph.vue?c71edf96"],"names":[],"mappings":";AAiIA;IACA,eAAA,CAAA,kCAAA;CACA;AACA;EACA,oBAAA;EACA,YAAA;CACA;AAEA;EACA,kBAAA;CACA;AAEA;EACA,mBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;CACA;AAEA;IACA,mBAAA;CACA;AAEA;IACA,oBAAA;CACA;AAEA;CACA,kBAAA;CACA,gBAAA;CACA;AAEA;IACA,0BAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,eAAA,CAAA,kCAAA;IACA,eAAA;CACA;AAEA;EACA,mBAAA;EACA,oBAAA;EACA,eAAA,CAAA,kCAAA;EACA,mBAAA;EACA,mBAAA;CACA;AAEA;IACA,cAAA;CACA;AAEA;IACA,YAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;IACA,aAAA;CACA;AAEA;GACA,eAAA;CACA;AAEA;GACA,cAAA;CACA","file":"morph.vue","sourcesContent":["<template>\n  <div id=\"alpheios-morph__lexemes\">\n    <div class=\"alpheios-morph__dict\" v-for=\"lex in lexemes\">\n      <span class=\"alpheios-morph__lemma\" v-if=\"! lex.lemma.principalParts.includes(lex.lemma.word)\" :lang=\"lex.lemma.language\">{{ lex.lemma.word }}</span>\n      <span class=\"alpheios-morph__pparts\">\n        <span class=\"alpheios-morph__listitem\" v-for=\"part in lex.lemma.principalParts\" :lang=\"lex.lemma.language\">{{ part }}</span>\n      </span>\n      <span class=\"alpheios-morph__pronunciation\" v-for=\"pron in lex.lemma.features.pronunciation\" v-if=\"lex.lemma.features.pronunciation\">\n        [{{pron}}]\n      </span>\n      <div class=\"alpheios-morph__morph\">\n        <span class=\"alpheios-morph__pofs\">\n          <span class=\"alpheios-morph__attr\" v-for=\"kase in lex.lemma.features['case']\" v-if=\"lex.lemma.features['case']\">{{kase.value}}</span>\n          <span class=\"alpheios-morph__attr\" v-for=\"gender in lex.lemma.features.gender\" v-if=\"lex.lemma.features.gender\">{{gender.value}}</span>\n          {{ lex.lemma.features['part of speech'].toString() }}\n        </span>\n        <span class=\"alpheios-morph__attr\" v-for=\"kind in lex.lemma.features.kind\" v-if=\"lex.lemma.features.kind\">{{kind.value}}</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"decl in lex.lemma.features.declension\" v-if=\"lex.lemma.features.declension\">{{decl.value}} declension</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"conj in lex.lemma.features.conjugation\" v-if=\"lex.lemma.features.conjugation\">{{conj.value}}</span>\n        <span class=\"alpheios-morph__parenthesized\" v-if=\"lex.lemma.features.age || lex.lemma.features.area || lex.lemma.features.geo || lex.lemma.features.frequency\">\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"age in lex.lemma.features.age\" v-if=\"lex.lemma.features.age\">( {{age.value}} )</span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"area in lex.lemma.features.area\" v-if=\"lex.lemma.features.area\">{{area.value}} </span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"geo in lex.lemma.features.geo\" v-if=\"lex.lemma.features.geo\">{{geo.value}}</span>\n          <span class=\"alpheios-morph__attr alpheios-morph__listitem\" v-for=\"freq in lex.lemma.features.frequency\" v-if=\"lex.lemma.features.frequency\">{{freq.value}}</span>\n        </span>\n        <span class=\"alpheios-morph__attr\" v-for=\"source in lex.lemma.features.source\" v-if=\"lex.lemma.features.source\">[{{source.value}}]</span>\n        <span class=\"alpheios-morph__attr\" v-for=\"note in lex.lemma.features.note\" v-if=\"lex.lemma.features.note\">[{{source.note}}]</span>\n      </div>\n      <div v-for=\"definition in definitions[lex.lemma.key]\">\n        <shortdef :definition=\"definition\"></shortdef>\n      </div>\n      <div class=\"alpheios-morph__inflections\">\n        <div class=\"alpheios-morph__inflset\" v-for=\"inflset in lex.getGroupedInflections()\">\n          <div class=\"alpheios-morph__heading\">Form(s):</div>\n          <span class=\"alpheios-morph__prefix\" v-if=\"inflset.groupingKey.prefix\">{{inflset.groupingKey.prefix}} </span>\n          <span class=\"alpheios-morph__stem\">{{inflset.groupingKey.stem}}</span>\n          <span class=\"alpheios-morph__suffix\" v-if=\"inflset.groupingKey.suffix\"> -{{inflset.groupingKey.suffix}}</span>\n          <span class=\"alpheios-morph__pofs alpheios-morph__parenthesized\"\n            v-if=\"! featureMatch(lex.lemma.features['part of speech'],inflset.groupingKey['part of speech'])\">{{inflset.groupingKey[\"part of speech\"].toString()}}</span>\n          <span class=\"alpheios-morph__declension alpheios-morph__parenthesized\"\n            v-if=\"inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension\">{{inflset.groupingKey.declension.toString()}}</span>\n\n          <div class=\"alpheios-morph__inflgroup\" v-for=\"group in inflset.inflections\">\n            <span class=\"alpheios-morph__number\" v-if=\"group.groupingKey.number && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.number.toString() }}</span>\n            <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.tense && group.groupingKey.isCaseInflectionSet\">{{ group.groupingKey.tense.toString() }}</span>\n            <span v-for=\"nextGroup in group.inflections\">\n              <span v-if=\"group.groupingKey.isCaseInflectionSet\">\n                <span class=\"alpheios-morph__voice\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.voice\">{{ nextGroup.groupingKey.voice.toString() }}</span>\n                <span class=\"alpheios-morph__tense\" v-if=\"group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.tense\">{{ nextGroup.groupingKey.tense.toString() }}</span>\n                :\n              </span>\n              <span>\n                <span v-for=\"infl in nextGroup.inflections\">\n\n                  <span class=\"alpheios-morph__case\" v-if=\"infl.groupingKey.case\">\n                    {{ infl.groupingKey.case.toString() }}\n                    <span class=\"alpheios-morph__gender alpheios-morph__parenthesized\"\n                      v-if=\"infl.groupingKey.gender && ! featureMatch(infl.groupingKey.gender,lex.lemma.features.gender) \">\n                      {{ infl.groupingKey.gender.map((g) => g.toLocaleStringAbbr()).toString()}}\n                    </span>\n\n                    <span class=\"alpheios-morph__comparative\" v-if=\"infl.groupingKey.comparative && infl.groupingKey.filter((f)=> f.toString() !== 'positive')\">\n                      {{ infl.groupingKey.comparative.toString() }}\n                    </span>\n\n                  </span>\n\n                  <span class=\"alpheios-morph__person\" v-if=\"infl.groupingKey.person\">\n                    {{ infl.groupingKey.person.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__number\" v-if=\"infl.groupingKey.number && ! group.groupingKey.isCaseInflectionSet\">\n                    {{ infl.groupingKey.number.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__tense\" v-if=\"infl.groupingKey.tense && ! group.groupingKey.isCaseInflectionSet && ! nextGroup.groupingKey.tense\">\n                    {{ infl.groupingKey.tense.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__mood\" v-if=\"infl.groupingKey.mood && !group.groupingKey.isCaseInflectionSet\">\n                    {{ infl.groupingKey.mood.toString() }}\n                  </span>\n\n                  <span class=\"alpheios-morph__voice\" v-if=\"infl.groupingKey.voice && !group.groupingKey.isCaseInflectionSet\">\n                    {{ infl.groupingKey.voice.toString() }}\n                  </span>\n\n                  <span v-for=\"item in infl.inflections\">\n                    <span class=\"alpheios-morph__example\" v-if=\"item.example\">{{ item.example.toString() }}</span>\n                  </span>\n\n                </span><!-- end span infl -->\n              </span>\n            </span><!-- end span groupinflections -->\n          </div>\n        </div>\n      </div>\n      <div class=\"alpheios-morph__provider\">\n        {{ lex.provider.toString() }}\n      </div>\n    </div>\n  </div>\n</template>\n<script>\n  import ShortDef from './shortdef.vue'\n\n  export default {\n    name: 'Morph',\n    components: { shortdef: ShortDef },\n    props: ['lexemes','definitions'],\n    methods: {\n      featureMatch(a,b) {\n        let matches = false\n        for (let f of a) {\n          if (b && b.filter((x) => x.isEqual(f)).length > 0) {\n            matches = true\n            break\n          }\n        }\n        return matches\n      }\n    },\n    mounted () {\n      console.log('Morph is mounted')\n    },\n  }\n</script>\n<style>\n\n  #alpheios-morph__lexemes {\n      color: #0E2233; /** TODO use alpheios variable **/\n  }\n  .alpheios-morph__dict {\n    margin-bottom: .5em;\n    clear: both;\n  }\n\n  .alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n    font-weight: bold;\n  }\n\n  .alpheios-morph__source {\n    font-size: smaller;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n  }\n\n  .alpheios-morph__dial {\n      font-size: smaller;\n  }\n\n  .alpheios-morph__attr {\n      font-weight: normal;\n  }\n\n  .alpheios-morph__linked-attr {\n  \tfont-weight: bold;\n  \tcursor: pointer;\n  }\n\n  .alpheios-morph__linked-attr:hover {\n      color: #5BC8DC !important;\n  }\n\n  .alpheios-morph__pofs:after {\n      content: \";\";\n  }\n\n  .alpheios-morph__inflset .alpheios-morph__heading {\n      display: none;\n  }\n\n  .alpheios-morph__inflset:first-child .alpheios-morph__heading {\n      color: #4E6476; /** TODO use alpheios variable **/\n      display: block;\n  }\n\n  .alpheios-morph__provider {\n    font-size: smaller;\n    font-weight: normal;\n    color: #4E6476; /** TODO use alpheios variable **/\n    font-style: italic;\n    padding-left: .5em;\n  }\n\n  .alpheios-morph__listitem:after {\n      content: \", \";\n   }\n\n  .alpheios-morph__listitem:last-child:after {\n      content: \"\";\n   }\n\n  .alpheios-morph__parenthesized:before {\n      content: \"(\";\n   }\n\n  .alpheios-morph__parenthesized:after {\n      content: \")\";\n   }\n\n   .alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n     display: block;\n   }\n\n   .alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n     display: none;\n   }\n\n</style>\n"],"sourceRoot":""}]);
 
 // exports
 
@@ -34362,7 +34421,7 @@ exports.push([module.i, "\n#alpheios-morph__lexemes {\n    color: #0E2233; /** T
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_shortdef_vue__ = __webpack_require__(17);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_1f074a2a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_shortdef_vue__ = __webpack_require__(59);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_31ff257d_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_shortdef_vue__ = __webpack_require__(59);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
@@ -34384,13 +34443,13 @@ var __vue_scopeId__ = null
 var __vue_module_identifier__ = null
 var Component = normalizeComponent(
   __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_bustCache_shortdef_vue__["a" /* default */],
-  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_1f074a2a_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_shortdef_vue__["a" /* default */],
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_31ff257d_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_bustCache_shortdef_vue__["a" /* default */],
   __vue_template_functional__,
   __vue_styles__,
   __vue_scopeId__,
   __vue_module_identifier__
 )
-Component.options.__file = "vue-components\\shortdef.vue"
+Component.options.__file = "vue-components/shortdef.vue"
 
 /* hot reload */
 if (false) {(function () {
@@ -34399,9 +34458,9 @@ if (false) {(function () {
   if (!hotAPI.compatible) return
   module.hot.accept()
   if (!module.hot.data) {
-    hotAPI.createRecord("data-v-1f074a2a", Component.options)
+    hotAPI.createRecord("data-v-31ff257d", Component.options)
   } else {
-    hotAPI.reload("data-v-1f074a2a", Component.options)
+    hotAPI.reload("data-v-31ff257d", Component.options)
   }
   module.hot.dispose(function (data) {
     disposed = true
@@ -34422,13 +34481,13 @@ var content = __webpack_require__(58);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
-var update = __webpack_require__(2)("2ff0444f", content, false);
+var update = __webpack_require__(2)("9c183c4e", content, false);
 // Hot Module Replacement
 if(false) {
  // When the styles change, update the <style> tags
  if(!content.locals) {
-   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-1f074a2a\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./shortdef.vue", function() {
-     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-1f074a2a\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./shortdef.vue");
+   module.hot.accept("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-31ff257d\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./shortdef.vue", function() {
+     var newContent = require("!!../../../node_modules/css-loader/index.js?sourceMap!../../../node_modules/vue-loader/lib/style-compiler/index.js?{\"vue\":true,\"id\":\"data-v-31ff257d\",\"scoped\":false,\"hasInlineConfig\":false}!../../../node_modules/vue-loader/lib/selector.js?type=styles&index=0&bustCache!./shortdef.vue");
      if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
      update(newContent);
    });
@@ -34446,7 +34505,7 @@ exports = module.exports = __webpack_require__(1)(true);
 
 
 // module
-exports.push([module.i, "\n.alpheios-definition__text {\n   color: #0E2233;  /* TODO use variables */\n   font-weight: bold;\n}\n", "", {"version":3,"sources":["C:/uds/projects/alpheios/webextension/src/content/vue-components/vue-components/shortdef.vue?b66cc9dc"],"names":[],"mappings":";AAgBA;GACA,eAAA,EAAA,wBAAA;GACA,kBAAA;CACA","file":"shortdef.vue","sourcesContent":["<template>\r\n  <div class=\"alpheios-definition__short\">\r\n      <span class=\"alpheios-definition__text\">{{ definition.text }}</span>\r\n  </div>\r\n</template>\r\n<script>\r\n  export default {\r\n    name: 'ShortDef',\r\n    props: ['definition'],\r\n    methods: {},\r\n    mounted () {\r\n      console.log('ShortDef is mounted')\r\n    }\r\n  }\r\n</script>\r\n<style>\r\n  .alpheios-definition__text {\r\n     color: #0E2233;  /* TODO use variables */\r\n     font-weight: bold;\r\n  }\r\n</style>\r\n"],"sourceRoot":""}]);
+exports.push([module.i, "\n.alpheios-definition__text {\n   color: #0E2233;  /* TODO use variables */\n   font-weight: bold;\n}\n", "", {"version":3,"sources":["/home/balmas/workspace/webextension/src/content/vue-components/vue-components/shortdef.vue?260d17ae"],"names":[],"mappings":";AAgBA;GACA,eAAA,EAAA,wBAAA;GACA,kBAAA;CACA","file":"shortdef.vue","sourcesContent":["<template>\n  <div class=\"alpheios-definition__short\">\n      <span class=\"alpheios-definition__text\">{{ definition.text }}</span>\n  </div>\n</template>\n<script>\n  export default {\n    name: 'ShortDef',\n    props: ['definition'],\n    methods: {},\n    mounted () {\n      console.log('ShortDef is mounted')\n    }\n  }\n</script>\n<style>\n  .alpheios-definition__text {\n     color: #0E2233;  /* TODO use variables */\n     font-weight: bold;\n  }\n</style>\n"],"sourceRoot":""}]);
 
 // exports
 
@@ -34473,7 +34532,7 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-1f074a2a", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-31ff257d", esExports)
   }
 }
 
@@ -35036,7 +35095,7 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-a407c392", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-85d98878", esExports)
   }
 }
 
@@ -35153,7 +35212,7 @@ var esExports = { render: render, staticRenderFns: staticRenderFns }
 if (false) {
   module.hot.accept()
   if (module.hot.data) {
-    require("vue-hot-reload-api")      .rerender("data-v-09f5ebdb", esExports)
+    require("vue-hot-reload-api")      .rerender("data-v-190d0968", esExports)
   }
 }
 
