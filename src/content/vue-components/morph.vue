@@ -59,14 +59,14 @@
                       {{ infl.groupingKey.gender.map((g) => g.toLocaleStringAbbr()).toString()}}
                     </span>
 
-                    <span class="alpheios-morph__comparative" v-if="infl.groupingKey.comparative && infl.groupingKey.filter((f)=> f.toString() !== 'positive')">
-                      {{ infl.groupingKey.comparative.toString() }}
+                    <span class="alpheios-morph__comparison" v-if="infl.groupingKey.comparison">
+                      {{ infl.groupingKey.comparison.toString() }}
                     </span>
 
                   </span>
 
                   <span class="alpheios-morph__person" v-if="infl.groupingKey.person">
-                    {{ infl.groupingKey.person.toString() }}
+                    {{ infl.groupingKey.person.toString() }} person
                   </span>
 
                   <span class="alpheios-morph__number" v-if="infl.groupingKey.number && ! group.groupingKey.isCaseInflectionSet">
