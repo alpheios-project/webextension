@@ -108,12 +108,12 @@ export default class ContentUIController {
         },
 
         showMessage: function (messageHTML) {
-          this.panelData.messages = messageHTML
+          this.panelData.messages = messageHTML + '<br>'
           this.changeTab('status')
         },
 
         appendMessage: function (messageHTML) {
-          this.panelData.messages += messageHTML
+          this.panelData.messages += messageHTML + '<br>'
         },
 
         clearMessages: function () {
