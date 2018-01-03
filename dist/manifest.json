@@ -2,9 +2,9 @@
   "manifest_version": 2,
   "name": "Alpheios WebExtension",
   "version": "0.0.1",
-  "description": "Adds Alpheios language tools to browser's pages.",
+  "description": "Alpheios Reading Tools for Classical Languages.",
   "icons": {
-    "48": "icons/ic_device_hub_black_24px.svg"
+    "32": "icons/alpheios_32.png"
   },
   "permissions": [
     "http://*/",
@@ -29,7 +29,7 @@
   ],
   "applications": {
     "gecko": {
-      "id": "alpheios@someserver.com"
+      "id": "alpheios@alpheios.net"
     }
   }
 }
