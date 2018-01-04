@@ -13,9 +13,11 @@
     }
   }
 </script>
-<style>
+<style lang="scss">
+  @import "../styles/alpheios";
+
   .alpheios-definition__text {
-     color: #0E2233;  /* TODO use variables */
+     color: $alpheios-tools-color;
      font-weight: bold;
   }
 </style>

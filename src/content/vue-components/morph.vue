@@ -125,10 +125,11 @@
     },
   }
 </script>
-<style>
+<style lang="scss">
+  @import "../styles/alpheios";
 
   #alpheios-morph__lexemes {
-      color: #0E2233; /** TODO use alpheios variable **/
+    color: $alpheios-tools-color;
   }
   .alpheios-morph__dict {
     margin-bottom: .5em;
@@ -141,7 +142,7 @@
 
   .alpheios-morph__source {
     font-size: smaller;
-    color: #4E6476; /** TODO use alpheios variable **/
+    color: $alpheios-toolbar-color;
     font-style: italic;
   }
 
@@ -159,7 +160,7 @@
   }
 
   .alpheios-morph__linked-attr:hover {
-      color: #5BC8DC !important;
+      color: $alpheios-link-hover-color !important;
   }
 
   .alpheios-morph__pofs:after {
@@ -171,14 +172,14 @@
   }
 
   .alpheios-morph__inflset:first-child .alpheios-morph__heading {
-      color: #4E6476; /** TODO use alpheios variable **/
+      color: $alpheios-toolbar-color;
       display: block;
   }
 
   .alpheios-morph__provider {
     font-size: smaller;
     font-weight: normal;
-    color: #4E6476; /** TODO use alpheios variable **/
+    color: $alpheios-toolbar-color;
     font-style: italic;
     padding-left: .5em;
   }

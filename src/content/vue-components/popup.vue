@@ -144,7 +144,9 @@
     }
   }
 </script>
-<style>
+<style lang="scss">
+    @import "../styles/alpheios";
+
     .alpheios-popup {
         background: #FFF;
         border: 1px solid lightgray;
@@ -157,22 +159,21 @@
         padding: 50px 20px 20px;
         box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */
         overflow: auto;
-        /* TODO use sass variables */
-        font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-        font-size: 12px;
-        color: #666666;
+        font-family: $alpheios-font-family;
+        font-size: $alpheios-base-font-size;
+        color: $alpheios-copy-color;
     }
 
     .alpheios-popup li {
         list-style-type: none;
         font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
         font-size: 12px;
-        color: #666666;
+        color: $alpheios-copy-color;
         padding: 0;
     }
 
     .alpheios-popup__close-btn {
-        color: gray;
+        color: $alpheios-copy-color;
         display: block;
         width: 40px;
         height: 40px;
@@ -194,7 +195,6 @@
     .alpheios-popup__more-btn {
         float: right;
         margin-bottom: 10px;
-        /*TODO alpheios variables */
     }
 
     li.alpheios-popup__message {
