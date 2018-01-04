@@ -1,11 +1,17 @@
 {
   "manifest_version": 2,
-  "name": "Alpheios WebExtension",
+  "name": "Alpheios Reading Tools",
   "version": "0.0.1",
-  "description": "Alpheios Reading Tools for Classical Languages.",
+  "default_locale": "en",
+  "description": "The Alpheios Reading Tools for Classical Languages add support to the browser for reading texts in Ancient Greek, Latin, Classical Arabic and Persian. This is a pre-alpha version of the Alpheios Reading Tools Browser Extension, an evolution of the Alpheios Firefox extensions.",
   "icons": {
-    "32": "icons/alpheios_32.png"
+    "16": "icons/alpheios_16.png",
+    "32": "icons/alpheios_32.png",
+    "128": "icons/alpheios_128.png"
   },
+  "author": "The Alpheios Project, Ltd.",
+  "homepage_url": "http://alpheios.net",
+  "short_name": "Alpheios",
   "permissions": [
     "http://*/",
     "https://*/",
