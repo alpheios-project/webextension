@@ -157,7 +157,7 @@
 
           // minimum size
           restrictSize: {
-            min: { width: 400 }
+            min: { width: this.data.minWidth }
           },
 
           inertia: true

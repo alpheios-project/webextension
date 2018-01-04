@@ -30,6 +30,10 @@
       }
     },
     props: {
+      data: {
+        type: Object,
+        required: true
+      },
       messages: {
         type: Array,
         required: true
@@ -79,7 +83,6 @@
       },
 
       resizeListener(event) {
-        console.log('Resize listener')
         if (this.resizable) {
           const target = event.target
           let x = (parseFloat(target.getAttribute('data-x')) || 0)
@@ -121,7 +124,7 @@
         preserveAspectRatio: false,
         edges: { left: true, right: true, bottom: true, top: true },
         restrictSize: {
-          min: { width: 100, height: 300 }
+          min: { width: this.data.minWidth, height: this.data.minHeight }
         },
         restrictEdges: {
           outer: document.body,

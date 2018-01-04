@@ -10896,7 +10896,7 @@ exports.clearImmediate = clearImmediate;
 
       // minimum size
       restrictSize: {
-        min: { width: 400 }
+        min: { width: this.data.minWidth }
       },
 
       inertia: true
@@ -18238,6 +18238,10 @@ win.init = init;
     };
   },
   props: {
+    data: {
+      type: Object,
+      required: true
+    },
     messages: {
       type: Array,
       required: true
@@ -18287,7 +18291,6 @@ win.init = init;
     },
 
     resizeListener(event) {
-      console.log('Resize listener');
       if (this.resizable) {
         const target = event.target;
         let x = parseFloat(target.getAttribute('data-x')) || 0;
@@ -18329,7 +18332,7 @@ win.init = init;
       preserveAspectRatio: false,
       edges: { left: true, right: true, bottom: true, top: true },
       restrictSize: {
-        min: { width: 100, height: 300 }
+        min: { width: this.data.minWidth, height: this.data.minHeight }
       },
       restrictEdges: {
         outer: document.body,
@@ -22205,7 +22208,8 @@ class ContentUIController {
           settings: this.options.items,
           styles: {
             zIndex: this.zIndex
-          }
+          },
+          minWidth: 400
         },
         state: this.state,
         options: this.options,
@@ -22315,7 +22319,11 @@ class ContentUIController {
         visible: false,
         defDataReady: false,
         inflDataReady: false,
-        morphDataReady: false
+        morphDataReady: false,
+        popupData: {
+          minWidth: 400,
+          minHeight: 400
+        }
       },
       methods: {
         showMessage: function (message) {
@@ -33701,7 +33709,7 @@ process.umask = function() { return 0; };
 /* 40 */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div id=\"alpheios-panel\">\r\n    <panel :data=\"panelData\" @close=\"close\" @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\r\n           @changetab=\"changeTab\"></panel>\r\n</div>\r\n";
+module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\r\n           :data=\"popupData\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div id=\"alpheios-panel\">\r\n    <panel :data=\"panelData\" @close=\"close\" @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\r\n           @changetab=\"changeTab\"></panel>\r\n</div>\r\n";
 
 /***/ }),
 /* 41 */

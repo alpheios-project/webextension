@@ -53,7 +53,8 @@ export default class ContentUIController {
           settings: this.options.items,
           styles: {
             zIndex: this.zIndex
-          }
+          },
+          minWidth: 400
         },
         state: this.state,
         options: this.options,
@@ -163,7 +164,11 @@ export default class ContentUIController {
         visible: false,
         defDataReady: false,
         inflDataReady: false,
-        morphDataReady: false
+        morphDataReady: false,
+        popupData: {
+          minWidth: 400,
+          minHeight: 400
+        }
       },
       methods: {
         showMessage: function (message) {
