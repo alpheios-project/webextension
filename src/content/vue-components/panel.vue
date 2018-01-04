@@ -15,10 +15,10 @@
         <div class="alpheios-panel__body">
             <div class="alpheios-panel__content">
                 <div v-show="data.tabs.definitions" data-element="definitionsPanel">
-                    <h2>Short Definitions</h2>
-                    <div v-html="data.shortDefinitions"></div>
-                    <h2>Full Definitions</h2>
-                    <div v-html="data.fullDefinitions"></div>
+                  <div class="alpheios-panel__contentitem" v-for="definition in data.shortDefinitions">
+                    <shortdef :definition="definition"></shortdef>
+                   </div>
+                   <div class="alpheios-panel__contentitem" v-html="data.fullDefinitions"></div>
                 </div>
                 <div v-show="data.tabs.inflections" data-element="inflectionsPanel">
                     <div :id="data.inflectionIDs.localeSwitcher" class="alpheios-ui-form-group"></div>
@@ -64,12 +64,14 @@
 </template>
 <script>
   import Setting from './setting.vue'
+  import ShortDef from './shortdef.vue'
   import interact from 'interactjs'
 
   export default {
     name: 'Panel',
     components: {
-      setting: Setting
+      setting: Setting,
+      shortdef: ShortDef
     },
     props: {
       data: {
@@ -256,6 +258,10 @@
         direction: ltr;
         overflow: auto;
         padding: 10px 20px 100px;
+    }
+
+    .alpheios-panel__contentitem {
+        margin-bottom: 1em;
     }
 
     .alpheios-panel__nav {

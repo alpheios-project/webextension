@@ -1,6 +1,6 @@
 /* global Node */
 import {Presenter} from 'alpheios-inflection-tables' // Required for Presenter
-import {Lexeme, Feature} from 'alpheios-data-models'
+import {Lexeme, Feature, Definition} from 'alpheios-data-models'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import Template from './template.htmlf'
 import TabScript from '../lib/content/tab-script'
@@ -37,7 +37,7 @@ export default class ContentUIController {
             options: false,
             info: false
           },
-          shortDefinitions: '',
+          shortDefinitions: [],
           fullDefinitions: '',
           inflections: {
             localeSwitcher: undefined,
@@ -100,7 +100,7 @@ export default class ContentUIController {
         },
 
         clearContent: function () {
-          this.panelData.shortDefinitions = ''
+          this.panelData.shortDefinitions = []
           this.panelData.fullDefinitions = ''
           this.panelData.messages = ''
           return this
@@ -274,16 +274,8 @@ export default class ContentUIController {
     return zIndexMax
   }
 
-  formatShortDefinitions (lexeme) {
-    let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
-    for (let shortDef of lexeme.meaning.shortDefs) {
-      content += `${shortDef.text}<br>\n`
-    }
-    return content
-  }
-
   formatFullDefinitions (lexeme) {
-    let content = `<h3>Lemma: ${lexeme.lemma.word}</h3>\n`
+    let content = `<h3>${lexeme.lemma.word}</h3>\n`
     for (let fullDef of lexeme.meaning.fullDefs) {
       content += `${fullDef.text}<br>\n`
     }
@@ -307,13 +299,21 @@ export default class ContentUIController {
   }
 
   updateDefinitions (homonym) {
-    this.panel.panelData.shortDefinitions = ''
     this.panel.panelData.fullDefinitions = ''
+    this.panel.panelData.shortDefinitions = []
     let definitions = {}
+    let defsList = []
     for (let lexeme of homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
-        this.panel.panelData.shortDefinitions += this.formatShortDefinitions(lexeme)
-        definitions[lexeme.lemma.key] = lexeme.meaning.shortDefs
+        definitions[lexeme.lemma.key] = []
+        for (let def of lexeme.meaning.shortDefs) {
+          if (def.provider.uri === lexeme.provider.uri) {
+            definitions[lexeme.lemma.key].push(new Definition(def.text,def.language,def.format,def.lemmaText))
+          } else {
+            definitions[lexeme.lemma.key].push(def)
+          }
+        }
+        this.panel.panelData.shortDefinitions.push(...lexeme.meaning.shortDefs)
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {
