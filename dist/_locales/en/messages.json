@@ -1,0 +1,11 @@
+{
+  "extensionName": {
+    "message": "Alpheios Reading Tools",
+    "description": "Name of the extension."
+  },
+
+  "extensionDescription": {
+    "message": "The Alpheios Reading Tools for Classical Languages add support to the browser for reading texts in Ancient Greek, Latin, Classical Arabic and Persian. This is a pre-alpha version of the Alpheios Reading Tools Browser Extension, an evolution of the Alpheios Firefox extensions.",
+    "description": "Description of the extension."
+  }
+}
