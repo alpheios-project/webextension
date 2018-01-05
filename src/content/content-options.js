@@ -24,7 +24,7 @@ export default class ContentOptions {
         ]
       },
       uiType: {
-        defaultValue: 'panel',
+        defaultValue: 'popup',
         labelText: 'UI type:',
         values: [
           {value: 'popup', text: 'Pop-up'},

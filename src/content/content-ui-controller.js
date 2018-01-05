@@ -30,11 +30,11 @@ export default class ContentUIController {
         panelData: {
           isOpen: false,
           tabs: {
-            definitions: true,
+            definitions: false,
             inflections: false,
             status: false,
             options: false,
-            info: false
+            info: true 
           },
           inflectionData: false, // If no inflection data present, it is set to false
           shortDefinitions: [],
