@@ -35,7 +35,7 @@
                     <setting :data="data.settings.uiType" @change="settingChanged"></setting>
                 </div>
                 <div v-show="data.tabs.info" data-element="infoPanel">
-                    <h2>Information</h2>
+                    <info></info>
                 </div>
             </div>
             <div id="alpheios-panel__nav" class="alpheios-panel__nav">
@@ -65,13 +65,15 @@
 <script>
   import Setting from './setting.vue'
   import ShortDef from './shortdef.vue'
+  import Info from './info.vue'
   import interact from 'interactjs'
 
   export default {
     name: 'Panel',
     components: {
       setting: Setting,
-      shortdef: ShortDef
+      shortdef: ShortDef,
+      info: Info
     },
     props: {
       data: {

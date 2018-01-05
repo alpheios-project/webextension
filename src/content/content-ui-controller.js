@@ -31,11 +31,11 @@ export default class ContentUIController {
         panelData: {
           isOpen: false,
           tabs: {
-            definitions: true,
+            definitions: false,
             inflections: false,
             status: false,
             options: false,
-            info: false
+            info: true 
           },
           shortDefinitions: [],
           fullDefinitions: '',
