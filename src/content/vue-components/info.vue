@@ -12,10 +12,11 @@
   export default {
     name: 'Info',
     props: {
-      data: {
+      // Temporary commented out to avoid warnings
+      /*data: {
         type: Object,
         required: true
-      }
+      }*/
     },
   }
 </script>
