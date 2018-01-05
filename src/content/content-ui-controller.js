@@ -1,5 +1,4 @@
 /* global Node */
-import {Presenter} from 'alpheios-inflection-tables' // Required for Presenter
 import {Lexeme, Feature, Definition} from 'alpheios-data-models'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import Template from './template.htmlf'
@@ -37,6 +36,7 @@ export default class ContentUIController {
             options: false,
             info: false
           },
+          inflectionData: false, // If no inflection data present, it is set to false
           shortDefinitions: [],
           fullDefinitions: '',
           inflections: {
@@ -127,6 +127,10 @@ export default class ContentUIController {
             this.open()
           }
           return this
+        },
+
+        updateInflections: function (inflectionData) {
+          this.panelData.inflectionData = inflectionData
         },
 
         settingChange: function (name, value) {
@@ -313,7 +317,7 @@ export default class ContentUIController {
         definitions[lexeme.lemma.key] = []
         for (let def of lexeme.meaning.shortDefs) {
           if (def.provider.uri === lexeme.provider.uri) {
-            definitions[lexeme.lemma.key].push(new Definition(def.text,def.language,def.format,def.lemmaText))
+            definitions[lexeme.lemma.key].push(new Definition(def.text, def.language, def.format, def.lemmaText))
           } else {
             definitions[lexeme.lemma.key].push(def)
           }
@@ -331,14 +335,8 @@ export default class ContentUIController {
     this.popup.defDataReady = true
   }
 
-  updateInflections (lexicalData) {
-    this.presenter = new Presenter(
-      this.panel.panelData.inflections.tableBody,
-      this.panel.panelData.inflections.viewSelector,
-      this.panel.panelData.inflections.localeSwitcher,
-      lexicalData,
-      this.options.items.locale.currentValue
-    ).render()
+  updateInflections (inflectionData, homonym) {
+    this.panel.updateInflections(inflectionData, homonym)
     this.popup.inflDataReady = true
   }
 

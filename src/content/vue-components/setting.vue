@@ -1,5 +1,5 @@
 <template>
-    <div class="auk-margin">
+    <div class="uk-margin">
         <label class="uk-form-label">{{data.labelText}}</label>
         <select v-model="selected" class="uk-select">
             <option v-for="item in data.textValues()">{{item}}</option>

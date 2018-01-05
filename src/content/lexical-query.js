@@ -67,7 +67,7 @@ export default class LexicalQuery {
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)
     this.ui.addMessage(`Inflection data is ready`)
-    this.ui.updateInflections(this.lexicalData)
+    this.ui.updateInflections(this.lexicalData, this.homonym)
 
     let definitionRequests = []
     for (let lexeme of this.homonym.lexemes) {

@@ -21,9 +21,7 @@
                    <div class="alpheios-panel__contentitem" v-html="data.fullDefinitions"></div>
                 </div>
                 <div v-show="data.tabs.inflections" data-element="inflectionsPanel">
-                    <div :id="data.inflectionIDs.localeSwitcher" class="alpheios-ui-form-group"></div>
-                    <div :id="data.inflectionIDs.viewSelector" class="alpheios-ui-form-group"></div>
-                    <div :id="data.inflectionIDs.tableBody"></div>
+                    <inflections :infldata="data.inflectionData" :locale="data.settings.locale.currentValue"></inflections>
                 </div>
                 <div v-show="data.tabs.status" data-element="statusPanel">
                     <div v-html="data.messages"></div>
@@ -63,6 +61,7 @@
     </div>
 </template>
 <script>
+  import Inflections from './inflections.vue'
   import Setting from './setting.vue'
   import ShortDef from './shortdef.vue'
   import interact from 'interactjs'
@@ -70,6 +69,7 @@
   export default {
     name: 'Panel',
     components: {
+      inflections: Inflections,
       setting: Setting,
       shortdef: ShortDef
     },

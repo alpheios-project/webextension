@@ -89,7 +89,6 @@ export default class ContentOptions {
             this.items[key].currentValue = values[key]
           }
         }
-        console.log('Content options are loaded successfully', this.items)
         callbackFunc(this)
       },
       error => {

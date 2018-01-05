@@ -1,5 +1,5 @@
 /* global browser */
-import {LanguageData, LatinDataSet, GreekDataSet} from 'alpheios-inflection-tables'
+import {LanguageDataList} from 'alpheios-inflection-tables'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import {Lexicons} from 'alpheios-lexicon-client'
 import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
@@ -24,7 +24,7 @@ export default class ContentProcess {
     this.messagingService = new MessagingService()
 
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
-    this.langData = new LanguageData([LatinDataSet, GreekDataSet]).loadData()
+    this.langData = new LanguageDataList().loadData()
     this.ui = new ContentUIController(this.state, this.options)
   }
 
