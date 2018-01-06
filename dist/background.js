@@ -1480,7 +1480,7 @@ class Service {
     browser.runtime.sendMessage(request).then(
       () => { console.log(`Successfully sent a request to a background`) },
       (error) => {
-        console.error(`Sending request to a background failed: ${error.message}`,error)
+        console.error(`Sending request to a background failed: ${error.message}`, error)
         this.rejectRequest(request.ID, error)
       }
     )
@@ -1667,6 +1667,7 @@ class ContentMenuItem {
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = ContentMenuItem;
+
 
 
 /***/ }),

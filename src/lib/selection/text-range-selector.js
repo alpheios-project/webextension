@@ -1,4 +1,4 @@
-import TextSelector from './text-selector'
+// import TextSelector from './text-selector'
 
 export default class TextRangeSelector {
   constructor () {

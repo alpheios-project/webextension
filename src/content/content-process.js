@@ -43,7 +43,7 @@ export default class ContentProcess {
 
   deactivate () {
     console.log('Content has been deactivated.')
-    this.ui.closePanel()
+    this.ui.panel.close()
     this.state.status = TabScript.statuses.script.DEACTIVATED
   }
 
@@ -71,7 +71,7 @@ export default class ContentProcess {
         this.state.activate()
       } else {
         this.state.deactivate()
-        this.ui.closePanel()
+        this.ui.panel.close()
         console.log('Content has been deactivated')
       }
     }

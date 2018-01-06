@@ -18629,7 +18629,7 @@ class ContentProcess {
 
   deactivate () {
     console.log('Content has been deactivated.')
-    this.ui.closePanel()
+    this.ui.panel.close()
     this.state.status = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.script.DEACTIVATED
   }
 
@@ -18657,7 +18657,7 @@ class ContentProcess {
         this.state.activate()
       } else {
         this.state.deactivate()
-        this.ui.closePanel()
+        this.ui.panel.close()
         console.log('Content has been deactivated')
       }
     }
@@ -21412,7 +21412,7 @@ class Service {
     browser.runtime.sendMessage(request).then(
       () => { console.log(`Successfully sent a request to a background`) },
       (error) => {
-        console.error(`Sending request to a background failed: ${error.message}`,error)
+        console.error(`Sending request to a background failed: ${error.message}`, error)
         this.rejectRequest(request.ID, error)
       }
     )
@@ -21736,7 +21736,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
     let anchorText = anchor.data
     let ro
     let invalidAnchor = false
-    if (! anchorText.match(this._escapeRegExp(focus.data))) {
+    if (!anchorText.match(this._escapeRegExp(focus.data))) {
       console.log(this.target)
       anchorText = this.target.textContent
       ro = 0
@@ -21843,9 +21843,9 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
     // TODO
   }
 
-  _escapeRegExp(string) {
+  _escapeRegExp (string) {
     // from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
   }
 }
 /* harmony export (immutable) */ __webpack_exports__["a"] = HTMLSelector;
@@ -22246,7 +22246,7 @@ class ContentUIController {
             inflections: false,
             status: false,
             options: false,
-            info: true 
+            info: true
           },
           inflectionData: false, // If no inflection data present, it is set to false
           shortDefinitions: [],

@@ -68,7 +68,7 @@ export default class HTMLSelector extends MediaSelector {
     let anchorText = anchor.data
     let ro
     let invalidAnchor = false
-    if (! anchorText.match(this._escapeRegExp(focus.data))) {
+    if (!anchorText.match(this._escapeRegExp(focus.data))) {
       console.log(this.target)
       anchorText = this.target.textContent
       ro = 0
@@ -175,8 +175,8 @@ export default class HTMLSelector extends MediaSelector {
     // TODO
   }
 
-  _escapeRegExp(string) {
+  _escapeRegExp (string) {
     // from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') // $& means the whole matched string
   }
 }

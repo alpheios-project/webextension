@@ -34,7 +34,7 @@ export default class ContentUIController {
             inflections: false,
             status: false,
             options: false,
-            info: true 
+            info: true
           },
           inflectionData: false, // If no inflection data present, it is set to false
           shortDefinitions: [],
