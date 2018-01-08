@@ -1,4 +1,4 @@
-// Transferred UIKit `html` rules
+// Transferred UIKit `html` rules. Should set rules to default values to override whatever page will set.
 .auk {
     font-family: $base-body-font-family;
     font-size: $base-body-font-size;
@@ -11,4 +11,6 @@
     @if(mixin-exists(hook-base-body)) {@include hook-base-body();}
 
     margin: 0;
+    direction: ltr;
+    text-align: left;
 }

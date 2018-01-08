@@ -1,15 +1,20 @@
 <template>
     <div class="alpheios-panel auk" v-bind:class="panelClasses" v-bind:style="this.data.styles"
          data-component="alpheios-panel" data-resizable="true" v-show="data.isOpen">
+
         <div class="alpheios-panel__header">
             <div class="alpheios-panel__header-title">
                 <img class="alpheios-panel__header-logo" src="../images/logo.png">
             </div>
-            <span @click="setPosition('left')" v-show="attachToLeftVisible" class="alpheios-panel__header-action-btn"
-                  uk-icon="icon: chevron-left; ratio: 2"></span>
-            <span @click="setPosition('right')" v-show="attachToRightVisible" class="alpheios-panel__header-action-btn"
-                  uk-icon="icon: chevron-right; ratio: 2"></span>
-            <span @click="close" class="alpheios-panel__header-action-btn" uk-icon="icon: close; ratio: 2"></span>
+            <span @click="setPosition('left')" v-show="attachToLeftVisible" class="alpheios-panel__header-action-btn">
+                <attach-left-icon></attach-left-icon>
+            </span>
+            <span @click="setPosition('right')" v-show="attachToRightVisible" class="alpheios-panel__header-action-btn">
+                <attach-right-icon></attach-right-icon>
+            </span>
+            <span @click="close" class="alpheios-panel__header-action-btn">
+                <close-icon></close-icon>
+            </span>
         </div>
 
         <div class="alpheios-panel__body">
@@ -37,25 +42,30 @@
                 </div>
             </div>
             <div id="alpheios-panel__nav" class="alpheios-panel__nav">
-            <span :class="{ active: data.tabs.definitions }" @click="changeTab('definitions')"
-                  class="alpheios-panel__nav-btn uk-icon" data-element="definitionsTab" data-tab-group="contentTabs"
-                  data-target-name="definitionsPanel" uk-icon="icon: comment; ratio: 2"></span>
+                <div :class="{ active: data.tabs.definitions }" @click="changeTab('definitions')"
+                  class="alpheios-panel__nav-btn">
+                    <definitions-icon class="icon"></definitions-icon>
+                </div>
 
-                <span v-bind:class="{ active: data.tabs.inflections }" @click="changeTab('inflections')"
-                      class="alpheios-panel__nav-btn uk-icon" data-element="inflectionsTab" data-tab-group="contentTabs"
-                      data-target-name="inflectionsPanel" uk-icon="icon: table; ratio: 2"></span>
+                <div v-bind:class="{ active: data.tabs.inflections }" @click="changeTab('inflections')"
+                     class="alpheios-panel__nav-btn">
+                    <inflections-icon class="icon"></inflections-icon>
+                </div>
 
-                <span v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
-                      class="alpheios-panel__nav-btn uk-icon" uk-icon="icon: clock; ratio: 2"
-                      data-element="statusTab" data-tab-group="contentTabs" data-target-name="statusPanel"></span>
+                <div v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
+                      class="alpheios-panel__nav-btn">
+                    <status-icon class="icon"></status-icon>
+                </div>
 
-                <span v-bind:class="{ active: data.tabs.options }" @click="changeTab('options')"
-                      class="alpheios-panel__nav-btn uk-icon" uk-icon="icon: cog; ratio: 2" data-element="optionsTab"
-                      data-tab-group="contentTabs" data-target-name="optionsPanel"></span>
+                <div v-bind:class="{ active: data.tabs.options }" @click="changeTab('options')"
+                      class="alpheios-panel__nav-btn">
+                    <options-icon class="icon"></options-icon>
+                </div>
 
-                <span v-bind:class="{ active: data.tabs.info }" @click="changeTab('info')"
-                      class="alpheios-panel__nav-btn uk-icon" uk-icon="icon: info; ratio: 2" data-element="infoTab"
-                      data-tab-group="contentTabs" data-target-name="infoPanel"></span>
+                <div v-bind:class="{ active: data.tabs.info }" @click="changeTab('info')"
+                      class="alpheios-panel__nav-btn">
+                    <info-icon class="icon"></info-icon>
+                </div>
             </div>
         </div>
     </div>
@@ -67,13 +77,31 @@
   import Info from './info.vue'
   import interact from 'interactjs'
 
+  // Embeddable SVG icons
+  import AttachLeftIcon from '../images/inline-icons/attach-left.svg';
+  import AttachRightIcon from '../images/inline-icons/attach-right.svg';
+  import CloseIcon from '../images/inline-icons/close.svg';
+  import DefinitionsIcon from '../images/inline-icons/definitions.svg';
+  import InflectionsIcon from '../images/inline-icons/inflections.svg';
+  import StatusIcon from '../images/inline-icons/status.svg';
+  import OptionsIcon from '../images/inline-icons/options.svg';
+  import InfoIcon from '../images/inline-icons/info.svg';
+
   export default {
     name: 'Panel',
     components: {
       inflections: Inflections,
       setting: Setting,
       shortdef: ShortDef,
-      info: Info
+      info: Info,
+      attachLeftIcon: AttachLeftIcon,
+      attachRightIcon: AttachRightIcon,
+      closeIcon: CloseIcon,
+      definitionsIcon: DefinitionsIcon,
+      inflectionsIcon: InflectionsIcon,
+      statusIcon: StatusIcon,
+      optionsIcon: OptionsIcon,
+      infoIcon: InfoIcon
     },
     props: {
       data: {
@@ -173,6 +201,7 @@
   }
 </script>
 <style lang="scss">
+    @import "../styles/alpheios";
     $alpheios-panel-header-height: 60px;
 
     .alpheios-panel {
@@ -185,6 +214,7 @@
         background: #FFF;
         resize: both;
         opacity: 0.95;
+        direction: ltr;
     }
 
     .alpheios-panel.alpheios-panel-left {
@@ -209,6 +239,7 @@
         height: $alpheios-panel-header-height;
         padding: 10px;
         box-sizing: border-box;
+        background-color: $alpheios-toolbar-color;
     }
 
     .alpheios-panel-right .alpheios-panel__header {
@@ -230,16 +261,23 @@
         margin-top: -1px;
     }
 
-    .auk .uk-icon.alpheios-panel__header-action-btn {
+    .alpheios-panel__header-action-btn,
+    .alpheios-panel__header-action-btn.active:hover,
+    .alpheios-panel__header-action-btn.active:focus {
         display: block;
         width: 40px;
         height: 40px;
         margin: 0 10px;
         cursor: pointer;
+        fill: $alpheios-link-color-dark-bg;
+        stroke: $alpheios-link-color-dark-bg;
     }
 
-    .alpheios-panel__header-action-btn:hover {
-        fill: #FFF;
+    .alpheios-panel__header-action-btn:hover,
+    .alpheios-panel__header-action-btn:focus,
+    .alpheios-panel__header-action-btn.active {
+        fill: $alpheios-link-hover-color;
+        stroke: $alpheios-link-hover-color;
     }
 
     .alpheios-panel__body {
@@ -268,10 +306,26 @@
 
     .alpheios-panel__nav {
         width: 60px;
+        background: $alpheios-toolbar-active-color;
     }
 
-    .auk .uk-icon.alpheios-panel__nav-btn {
+    .alpheios-panel__nav-btn,
+    .alpheios-panel__nav-btn.active:hover,
+    .alpheios-panel__nav-btn.active:focus {
         cursor: pointer;
         margin: 20px 10px;
+        width: 40px;
+        height: 40px;
+        background: transparent no-repeat center center;
+        background-size: contain;
+        fill: $alpheios-link-color-dark-bg;
+        stroke: $alpheios-link-color-dark-bg;
+    }
+
+    .alpheios-panel__nav-btn:hover,
+    .alpheios-panel__nav-btn:focus,
+    .alpheios-panel__nav-btn.active {
+        fill: $alpheios-link-hover-color;
+        stroke: $alpheios-link-hover-color;
     }
 </style>

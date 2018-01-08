@@ -1,5 +1,5 @@
 <template>
-    <div v-show="infldata">
+    <div v-show="visible">
         <h3>{{selectedView.title}}</h3>
         <div class="uk-margin">
             <label class="uk-form-label">View selector:</label>
@@ -42,6 +42,7 @@
 
     data: function () {
       return {
+        visible: false,
         views: [],
         selectedViewName: '',
         selectedView: {},
@@ -97,8 +98,9 @@
           if (this.views.length > 0) {
             this.selectedViewName = this.views[0].name
             this.selectedView = this.views[0]
+            this.renderInflections().displayInflections()
+            this.visible = true
           }
-          this.renderInflections().displayInflections()
         }
       },
       locale: function (locale) {

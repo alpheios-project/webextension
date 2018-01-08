@@ -6,7 +6,6 @@ import TabScript from '../lib/content/tab-script'
 import Panel from './vue-components/panel.vue'
 import Popup from './vue-components/popup.vue'
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
-import UIkitIconts from '../../node_modules/uikit/dist/js/uikit-icons'
 
 export default class ContentUIController {
   constructor (state, options) {
@@ -224,9 +223,6 @@ export default class ContentUIController {
       }
     })
     this.popup.panel = this.panel
-
-    // Initialize UIKit
-    UIkit.use(UIkitIconts)
   }
 
   static get settingValues () {

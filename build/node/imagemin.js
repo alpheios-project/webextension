@@ -7,7 +7,7 @@ const imageminSvgo = require('imagemin-svgo')
 const bytes = require('bytes')
 const chalk = require('chalk')
 
-let readDir = function (dir, extensions) {
+let readDir = function (dir, extensions, excludedDirs) {
   let files = []
   let dirItems = fs.readdirSync(dir)
   for (let dirItem of dirItems) {
@@ -16,8 +16,8 @@ let readDir = function (dir, extensions) {
     if (dirItemInfo.isFile()) {
       let extension = path.extname(dirItem).toLowerCase().replace(/\./, '')
       if (extensions.includes(extension)) { files.push(dirItem) }
-    } else if (dirItemInfo.isDirectory()) {
-      files = files.concat(readDir(dirItem, extensions))
+    } else if (dirItemInfo.isDirectory() && !excludedDirs.includes(path.basename(dirItem))) {
+      files = files.concat(readDir(dirItem, extensions, excludedDirs))
     }
   }
   return files
@@ -38,13 +38,14 @@ let optimize = function (config, pathToProjectRoot) {
   const targetPath = path.join(projectRoot, target)
   let extensions = config.extensions || ['jpg', 'png', 'svg']
   extensions = extensions.map(extension => extension.toLowerCase().replace(/\./, ''))
+  const excludedDirs = config.excludedDirs || []
   const plugins = [
     imageminJpegtran(),
     imageminOptipng(),
     imageminSvgo()
   ]
 
-  let files = readDir(sourcePath, extensions) || []
+  let files = readDir(sourcePath, extensions, excludedDirs) || []
 
   let fileList = new Map()
   let tasks = []
