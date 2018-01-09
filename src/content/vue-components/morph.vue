@@ -73,7 +73,7 @@
                     {{ infl.groupingKey.number.toString() }}
                   </span>
 
-                  <span class="alpheios-morph__tense" v-if="infl.groupingKey.tense && ! group.groupingKey.isCaseInflectionSet && ! nextGroup.groupingKey.tense">
+                  <span class="alpheios-morph__tense" v-if="infl.groupingKey.tense && ! group.groupingKey.isCaseInflectionSet" >
                     {{ infl.groupingKey.tense.toString() }}
                   </span>
 
