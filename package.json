@@ -45,7 +45,7 @@
     "coveralls": "^3.0.0",
     "css-loader": "^0.28.8",
     "element-closest": "^2.0.2",
-    "eslint": "^4.14.0",
+    "eslint": "^4.15.0",
     "eslint-plugin-import": "^2.8.0",
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^1.1.6",
@@ -86,7 +86,7 @@
     "vue-template-compiler": "^2.5.13",
     "webextension-polyfill": "^0.2.1",
     "webpack": "^3.10.0",
-    "webpack-bundle-analyzer": "^2.9.0",
+    "webpack-bundle-analyzer": "^2.9.2",
     "webpack-dev-server": "^2.10.0",
     "webpack-merge": "^4.1.0"
   },

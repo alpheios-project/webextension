@@ -43,14 +43,14 @@
           <div class="alpheios-morph__inflgroup" v-for="group in inflset.inflections">
             <span class="alpheios-morph__number" v-if="group.groupingKey.number && group.groupingKey.isCaseInflectionSet">{{ group.groupingKey.number.toString() }}</span>
             <span class="alpheios-morph__tense" v-if="group.groupingKey.tense && group.groupingKey.isCaseInflectionSet">{{ group.groupingKey.tense.toString() }}</span>
-            <span v-for="nextGroup in group.inflections">
+            <div v-for="nextGroup in group.inflections">
               <span v-if="group.groupingKey.isCaseInflectionSet">
                 <span class="alpheios-morph__voice" v-if="group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.voice">{{ nextGroup.groupingKey.voice.toString() }}</span>
                 <span class="alpheios-morph__tense" v-if="group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.tense">{{ nextGroup.groupingKey.tense.toString() }}</span>
                 :
               </span>
-              <span>
-                <span v-for="infl in nextGroup.inflections">
+              <div>
+                <div v-for="infl in nextGroup.inflections">
 
                   <span class="alpheios-morph__case" v-if="infl.groupingKey.case">
                     {{ infl.groupingKey.case.toString() }}
@@ -89,9 +89,9 @@
                     <span class="alpheios-morph__example" v-if="item.example">{{ item.example.toString() }}</span>
                   </span>
 
-                </span><!-- end span infl -->
-              </span>
-            </span><!-- end span groupinflections -->
+                </div><!-- end span infl -->
+              </div>
+            </div><!-- end span groupinflections -->
           </div>
         </div>
       </div>
