@@ -1,5 +1,5 @@
 <template>
-    <div class="alpheios-panel auk" v-bind:class="panelClasses" v-bind:style="this.data.styles"
+    <div class="alpheios-panel auk" v-bind:class="classes" v-bind:style="this.data.styles"
          data-component="alpheios-panel" data-resizable="true" v-show="data.isOpen">
 
         <div class="alpheios-panel__header">
@@ -111,9 +111,11 @@
     },
 
     computed: {
-      panelClasses: function () {
-        if (this.data.settings.panelPosition.currentValue === 'right') { return 'alpheios-panel-right' }
-        else { return 'alpheios-panel-left' }
+      classes: function () {
+        return Object.assign(this.data.classes, {
+          'alpheios-panel-left': this.data.settings.panelPosition.currentValue === 'left',
+          'alpheios-panel-right': this.data.settings.panelPosition.currentValue === 'right'
+        })
       },
 
       attachToLeftVisible: function () {

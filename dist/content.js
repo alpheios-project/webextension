@@ -7973,7 +7973,7 @@ class View {
 
     // Table is created during view construction
     this.table.messages = messages;
-    this.table.construct(selection.suffixes).constructViews();
+    this.table.construct(selection.suffixes).constructViews().addEventListeners();
     return this
   }
 
@@ -9449,6 +9449,7 @@ class Table {
    * Adds event listeners to each cell object.
    */
   addEventListeners () {
+    console.log('add event listeners called');
     for (let cell of this.cells) {
       cell.addEventListener('mouseenter', this.highlightRowAndColumn.bind(this));
       cell.addEventListener('mouseleave', this.clearRowAndColumnHighlighting.bind(this));
@@ -10706,12 +10707,11 @@ exports.clearImmediate = clearImmediate;
   },
 
   computed: {
-    panelClasses: function () {
-      if (this.data.settings.panelPosition.currentValue === 'right') {
-        return 'alpheios-panel-right';
-      } else {
-        return 'alpheios-panel-left';
-      }
+    classes: function () {
+      return Object.assign(this.data.classes, {
+        'alpheios-panel-left': this.data.settings.panelPosition.currentValue === 'left',
+        'alpheios-panel-right': this.data.settings.panelPosition.currentValue === 'right'
+      });
     },
 
     attachToLeftVisible: function () {
@@ -22269,6 +22269,8 @@ class ContentUIController {
     this.state = state
     this.options = options
     this.settings = ContentUIController.settingValues
+    this.irregularBaseFontSizeClassName = 'alpheios-irregular-base-font-size'
+    this.irregularBaseFontSize = !ContentUIController.hasRegularBaseFontSize()
 
     this.zIndex = this.getZIndexMax()
 
@@ -22307,6 +22309,9 @@ class ContentUIController {
           },
           messages: '',
           settings: this.options.items,
+          classes: {
+            [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
+          },
           styles: {
             zIndex: this.zIndex
           },
@@ -22428,7 +22433,8 @@ class ContentUIController {
         popupData: {
           minWidth: 400,
           minHeight: 400
-        }
+        },
+        panel: this.panel
       },
       methods: {
         showMessage: function (message) {
@@ -22479,7 +22485,6 @@ class ContentUIController {
         }
       }
     })
-    this.popup.panel = this.panel
   }
 
   static get settingValues () {
@@ -22534,6 +22539,11 @@ class ContentUIController {
       }
     }
     return zIndexMax
+  }
+
+  static hasRegularBaseFontSize () {
+    let htmlElement = document.querySelector('html')
+    return window.getComputedStyle(htmlElement, null).getPropertyValue('font-size') === '16px'
   }
 
   formatFullDefinitions (lexeme) {
@@ -34620,7 +34630,7 @@ var render = function() {
         }
       ],
       staticClass: "alpheios-panel auk",
-      class: _vm.panelClasses,
+      class: _vm.classes,
       style: this.data.styles,
       attrs: { "data-component": "alpheios-panel", "data-resizable": "true" }
     },

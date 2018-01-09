@@ -12,6 +12,8 @@ export default class ContentUIController {
     this.state = state
     this.options = options
     this.settings = ContentUIController.settingValues
+    this.irregularBaseFontSizeClassName = 'alpheios-irregular-base-font-size'
+    this.irregularBaseFontSize = !ContentUIController.hasRegularBaseFontSize()
 
     this.zIndex = this.getZIndexMax()
 
@@ -50,6 +52,9 @@ export default class ContentUIController {
           },
           messages: '',
           settings: this.options.items,
+          classes: {
+            [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
+          },
           styles: {
             zIndex: this.zIndex
           },
@@ -171,7 +176,8 @@ export default class ContentUIController {
         popupData: {
           minWidth: 400,
           minHeight: 400
-        }
+        },
+        panel: this.panel
       },
       methods: {
         showMessage: function (message) {
@@ -222,7 +228,6 @@ export default class ContentUIController {
         }
       }
     })
-    this.popup.panel = this.panel
   }
 
   static get settingValues () {
@@ -277,6 +282,11 @@ export default class ContentUIController {
       }
     }
     return zIndexMax
+  }
+
+  static hasRegularBaseFontSize () {
+    let htmlElement = document.querySelector('html')
+    return window.getComputedStyle(htmlElement, null).getPropertyValue('font-size') === '16px'
   }
 
   formatFullDefinitions (lexeme) {
