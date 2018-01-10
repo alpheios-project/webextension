@@ -43,14 +43,13 @@
           <div class="alpheios-morph__inflgroup" v-for="group in inflset.inflections">
             <span class="alpheios-morph__number" v-if="group.groupingKey.number && group.groupingKey.isCaseInflectionSet">{{ group.groupingKey.number.toString() }}</span>
             <span class="alpheios-morph__tense" v-if="group.groupingKey.tense && group.groupingKey.isCaseInflectionSet">{{ group.groupingKey.tense.toString() }}</span>
-            <div v-for="nextGroup in group.inflections">
-              <span v-if="group.groupingKey.isCaseInflectionSet">
+            <div v-for="nextGroup in group.inflections" v-bind:class="group.groupingKey.isCaseInflectionSet ? 'alpheios-morph__inline' : 'alpheios-morph__block'">
+              <span v-if="group.groupingKey.isCaseInflectionSet" classs="alpheios-morph__groupingkeys">
                 <span class="alpheios-morph__voice" v-if="group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.voice">{{ nextGroup.groupingKey.voice.toString() }}</span>
                 <span class="alpheios-morph__tense" v-if="group.groupingKey.isCaseInflectionSet && nextGroup.groupingKey.tense">{{ nextGroup.groupingKey.tense.toString() }}</span>
                 :
               </span>
-              <div>
-                <div v-for="infl in nextGroup.inflections">
+              <div v-for="infl in nextGroup.inflections" v-bind:class="group.groupingKey.isCaseInflectionSet ? 'alpheios-morph__inline' : 'alpheios-morph__block'">
 
                   <span class="alpheios-morph__case" v-if="infl.groupingKey.case">
                     {{ infl.groupingKey.case.toString() }}
@@ -89,8 +88,7 @@
                     <span class="alpheios-morph__example" v-if="item.example">{{ item.example.toString() }}</span>
                   </span>
 
-                </div><!-- end span infl -->
-              </div>
+              </div><!-- end span infl -->
             </div><!-- end span groupinflections -->
           </div>
         </div>
@@ -210,6 +208,14 @@
 
    #alpheios-morph__lexemes .alpheios-definition__lemma {
        display: none;
+   }
+
+   div.alpheios-morph__inline {
+       display: inline;
+   }
+
+   div.alpheios-morph__block {
+       display: block;
    }
 
 </style>
