@@ -14,3 +14,11 @@
     direction: ltr;
     text-align: left;
 }
+
+.#{$alpheios-uikit-namespace}.#{$alpheios-irregular-base-font-class} .uk-form-label {
+    font-size: 0.875*$alpheios-base-font-size;
+}
+
+.#{$alpheios-uikit-namespace}.#{$alpheios-irregular-base-font-class} .uk-text-small {
+    font-size: 0.875*$alpheios-base-font-size;
+}

@@ -175,7 +175,10 @@ export default class ContentUIController {
         morphDataReady: false,
         popupData: {
           minWidth: 400,
-          minHeight: 400
+          minHeight: 400,
+          classes: {
+            [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
+          }
         },
         panel: this.panel
       },
