@@ -363,22 +363,26 @@ class TabScript {
   }
 
   /**
-   * Creates a serializable copy of a source object.
+   * Creates a serializable copy of a source object. Firefox uses the structured clone algorithm
+   * (https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) to serialize objects.
+   * Requirements of this algorithm are that a serializable object to have no Function or Error properties,
+   * neither any DOM Nodes. That's why an empty serializable object is created and only
+   * selected properties are copied into it.
    * @param {TabScript} source - An object to be serialized.
-   * @return {TabScript} A serializable copy of a source.
+   * @return {Object} A serializable copy of a source.
    */
   static serializable (source) {
-    let serializable = TabScript.create(source)
+    let serializable = {}
     serializable.tabID = source.tabID
-    for (let key of Object.keys(serializable)) {
+    for (let key of Object.keys(source)) {
       if (TabScript.dataProps.includes(key)) {
         /*
         Only certain features will be stored within a serialized version of a TabScript. This is done
         to prevent context-specific features (such as local event handlers) to be passed over the network
         to a different context where they would make no sense.
          */
-        let value = serializable[key]
-        if (typeof value === 'symbol') { serializable[key] = Symbol.keyFor(value) }
+        let value = source[key]
+        serializable[key] = (typeof value === 'symbol') ? Symbol.keyFor(value) : value
       }
     }
     return serializable
