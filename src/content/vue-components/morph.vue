@@ -4,7 +4,7 @@
       <span class="alpheios-morph__lemma" v-if="! lex.lemma.principalParts.includes(lex.lemma.word)" :lang="lex.lemma.language">{{ lex.lemma.word }}</span>
       <span class="alpheios-morph__pparts">
         <span class="alpheios-morph__listitem" v-for="part in lex.lemma.principalParts" :lang="lex.lemma.language">{{ part }}</span>
-      </span>
+      </span> :
       <span class="alpheios-morph__pronunciation" v-for="pron in lex.lemma.features.pronunciation" v-if="lex.lemma.features.pronunciation">
         [{{pron}}]
       </span>
@@ -12,7 +12,7 @@
         <span class="alpheios-morph__pofs">
           <span @click="sendFeature(kase)" class="alpheios-morph__linked-attr" v-for="kase in lex.lemma.features['case']" v-if="lex.lemma.features['case']">{{kase.value}}</span>
           <span class="alpheios-morph__attr" v-for="gender in lex.lemma.features.gender" v-if="lex.lemma.features.gender">{{gender.value}}</span>
-          <span class="alphios-morph__linked-attr" @click="sendFeature(lex.lemma.features['part of speech'])">{{ lex.lemma.features['part of speech'].toString() }}</span>
+          <span class="alpheios-morph__linked-attr" @click="sendFeature(lex.lemma.features['part of speech'])">{{ lex.lemma.features['part of speech'].toString() }}</span>
         </span>
         <span class="alpheios-morph__attr" v-for="kind in lex.lemma.features.kind" v-if="lex.lemma.features.kind">{{kind.value}}</span>
         <span @click="sendFeature(decl)" class="alpheios-morph__linked-attr" v-for="decl in lex.lemma.features.declension" v-if="lex.lemma.features.declension">{{decl.value}} declension</span>
@@ -26,7 +26,7 @@
         <span class="alpheios-morph__attr" v-for="source in lex.lemma.features.source" v-if="lex.lemma.features.source">[{{source.value}}]</span>
         <span class="alpheios-morph__attr" v-for="note in lex.lemma.features.note" v-if="lex.lemma.features.note">[{{source.note}}]</span>
       </div>
-      <div v-for="definition in definitions[lex.lemma.key]">
+      <div v-for="definition in definitions[lex.lemma.key]" class="alpheios-morph__definition">
         <shortdef :definition="definition"></shortdef>
       </div>
       <div class="alpheios-morph__inflections">
@@ -176,6 +176,11 @@
       content: ";";
   }
 
+  .alpheios-morph__inflset {
+      margin-left: .5em;
+      margin-top: .5em;
+  }
+
   .alpheios-morph__inflset .alpheios-morph__heading {
       display: none;
   }
@@ -185,12 +190,21 @@
       display: block;
   }
 
+  .alpheios-morph__morph {
+    display: inline;
+  }
+
+  .alpheios-morph__inflections, .alpheios-morph__definition {
+    margin-left: .5em;
+  }
+
   .alpheios-morph__provider {
     font-size: smaller;
     font-weight: normal;
     color: $alpheios-toolbar-color;
     font-style: italic;
-    padding-left: .5em;
+    margin-left: .5em;
+    margin-top: .5em;
   }
 
   .alpheios-morph__listitem:after {

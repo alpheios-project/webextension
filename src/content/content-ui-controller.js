@@ -245,6 +245,7 @@ export default class ContentUIController {
           this.panel.requestGrammar(feature)
           this.panel.changeTab('grammar')
           this.panel.open()
+          return this
         }
 
       }
@@ -332,6 +333,8 @@ export default class ContentUIController {
   updateGrammar (urls) {
     if (urls.length > 0) {
       this.panel.panelData.grammarSrc = urls[0]
+    } else {
+      console.log("Requested Grammar Resource Not Found")
     }
     // todo show TOC or not found
   }

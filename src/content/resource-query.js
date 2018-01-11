@@ -16,12 +16,12 @@ export default class ResourceQuery {
     queries.clear() // Clean up all previous requests of that type
     let query = new ResourceQuery(feature, options)
     queries.set(query.ID, query)
-    console.log('Query had been created')
+    console.log('ResourceQuery has been created')
     return query
   }
 
   static destroy (query) {
-    console.log('Destroy query executed')
+    console.log('Destroy ResourceQuery executed')
     queries.delete(query.ID)
   }
 
@@ -57,19 +57,43 @@ export default class ResourceQuery {
   }
 
   * iterations () {
-    this.result = yield this.grammars.fetchResources(this.feature)
+    this.grammarResources = yield this.grammars.fetchResources(this.feature)
     yield 'Retrieval of grammar info complete'
-    this.ui.addMessage(`Grammar resource retrieved`)
-    for (let q of this.result) {
-      q.then(url => {
-        this.ui.updateGrammar(url)
-      })
+    let grammarRequests = []
+    grammarRequests = grammarRequests.concat(this.grammarResources.map(res => {
+        return {
+          res: res,
+          complete: false
+        }
+      }
+    ))
+    for (let q of grammarRequests) {
+      q.res.then(
+        url => {
+          q.complete = true
+          if (this.active) {
+            this.ui.addMessage(`Grammar resource retrieved`)
+            this.ui.updateGrammar(url)
+          }
+          if (grammarRequests.every(request => request.complete)) {
+            if (this.active) { this.ui.addMessage(`All grammar resource data retrieved`) }
+            this.finalize()
+          }
+        },
+        error => {
+          console.log("Error retrieving Grammar reourse",error)
+          if (grammarRequests.every(request => request.complete)) {
+            if (this.active) { this.ui.addMessage(`All resource data retrieved`) }
+            this.finalize()
+          }
+        }
+      )
     }
     yield 'Retrieval of resources complete'
   }
 
   finalize (result) {
-    console.log('Finalize query called')
+    console.log('Finalize ResourceQuery called')
     // Record experience in a wrapper
     ResourceQuery.destroy(this)
     return result

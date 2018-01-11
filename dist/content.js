@@ -18736,7 +18736,7 @@ class ContentProcess {
     }
     this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__["a" /* default */](request, this.state)).catch(
       (error) => {
-        console.error(`Unable to send a response to a state request: ${error}`)
+        console.error('Unable to send a response to a state request', error)
       }
     )
   }
@@ -18744,7 +18744,7 @@ class ContentProcess {
   sendStateToBackground () {
     this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
       (error) => {
-        console.error(`Unable to send a response to activation request: ${error}`)
+        console.error('Unable to send a response to activation request',error)
       }
     )
   }
@@ -22529,6 +22529,7 @@ class ContentUIController {
           this.panel.requestGrammar(feature)
           this.panel.changeTab('grammar')
           this.panel.open()
+          return this
         }
 
       }
@@ -22616,6 +22617,8 @@ class ContentUIController {
   updateGrammar (urls) {
     if (urls.length > 0) {
       this.panel.panelData.grammarSrc = urls[0]
+    } else {
+      console.log("Requested Grammar Resource Not Found")
     }
     // todo show TOC or not found
   }
@@ -35217,7 +35220,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n#alpheios-morph__lexemes {\n  color: #0E2233;\n}\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476;\n  font-style: italic;\n}\n.alpheios-morph__dial {\n  font-size: smaller;\n}\n.alpheios-morph__attr {\n  font-weight: normal;\n}\n.alpheios-morph__linked-attr {\n  color: #3E8D9C;\n  font-weight: bold;\n  cursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n  color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n  content: \";\";\n}\n.alpheios-morph__inflset .alpheios-morph__heading {\n  display: none;\n}\n.alpheios-morph__inflset:first-child .alpheios-morph__heading {\n  color: #4E6476;\n  display: block;\n}\n.alpheios-morph__provider {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  padding-left: .5em;\n}\n.alpheios-morph__listitem:after {\n  content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n  content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n  content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n  content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n  display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n  display: none;\n}\n#alpheios-morph__lexemes .alpheios-definition__lemma {\n  display: none;\n}\ndiv.alpheios-morph__inline {\n  display: inline;\n}\ndiv.alpheios-morph__block {\n  display: block;\n}\n", ""]);
+exports.push([module.i, "\n#alpheios-morph__lexemes {\n  color: #0E2233;\n}\n.alpheios-morph__dict {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__lemma, .alpheios-morph__pparts, .alpheios-morph__stem, .alpheios-morph__prefix, .alpheios-morph__suffix {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476;\n  font-style: italic;\n}\n.alpheios-morph__dial {\n  font-size: smaller;\n}\n.alpheios-morph__attr {\n  font-weight: normal;\n}\n.alpheios-morph__linked-attr {\n  color: #3E8D9C;\n  font-weight: bold;\n  cursor: pointer;\n}\n.alpheios-morph__linked-attr:hover {\n  color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n  content: \";\";\n}\n.alpheios-morph__inflset {\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-morph__inflset .alpheios-morph__heading {\n  display: none;\n}\n.alpheios-morph__inflset:first-child .alpheios-morph__heading {\n  color: #4E6476;\n  display: block;\n}\n.alpheios-morph__morph {\n  display: inline;\n}\n.alpheios-morph__inflections, .alpheios-morph__definition {\n  margin-left: .5em;\n}\n.alpheios-morph__provider {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-morph__listitem:after {\n  content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n  content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n  content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n  content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n  display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n  display: none;\n}\n#alpheios-morph__lexemes .alpheios-definition__lemma {\n  display: none;\n}\ndiv.alpheios-morph__inline {\n  display: inline;\n}\ndiv.alpheios-morph__block {\n  display: block;\n}\n", ""]);
 
 // exports
 
@@ -35264,7 +35267,7 @@ var render = function() {
               )
             })
           ),
-          _vm._v(" "),
+          _vm._v(" :\n    "),
           _vm._l(lex.lemma.features.pronunciation, function(pron) {
             return lex.lemma.features.pronunciation
               ? _c("span", { staticClass: "alpheios-morph__pronunciation" }, [
@@ -35309,7 +35312,7 @@ var render = function() {
                   _c(
                     "span",
                     {
-                      staticClass: "alphios-morph__linked-attr",
+                      staticClass: "alpheios-morph__linked-attr",
                       on: {
                         click: function($event) {
                           _vm.sendFeature(lex.lemma.features["part of speech"])
@@ -35454,6 +35457,7 @@ var render = function() {
           _vm._l(_vm.definitions[lex.lemma.key], function(definition) {
             return _c(
               "div",
+              { staticClass: "alpheios-morph__definition" },
               [_c("shortdef", { attrs: { definition: definition } })],
               1
             )
@@ -48100,7 +48104,7 @@ var papaparse = createCommonjsModule(function (module, exports) {
 }));
 });
 
-var DefaultConfig = "{\n  \"https://github.com/alpheios-project/grammar-bennett\": {\n    \"base_url\": \"http://localhost/Bennett_files/\",\n    \"index_url\": \"http://localhost/bennett_index/alph-index-bennett\",\n    \"description\": \"New Latin Grammar, by Charles E. Bennett\",\n    \"rights\": \"New Latin Grammar, by Charles E. Bennett. Copyright 1895; 1908; 1918.\",\n    \"langs\": {\n      \"source\": \"lat\",\n      \"target\": \"en\"\n    }\n  }\n}\n";
+var DefaultConfig = "{\n  \"https://github.com/alpheios-project/grammar-bennett\": {\n    \"base_url\": \"https://grammars.alpheios.net/bennett/\",\n    \"index_url\": \"https://grammars.alpheios.net/bennett/index/alph-index-bennett\",\n    \"description\": \"New Latin Grammar, by Charles E. Bennett\",\n    \"rights\": \"New Latin Grammar, by Charles E. Bennett. Copyright 1895; 1908; 1918.\",\n    \"langs\": {\n      \"source\": \"lat\",\n      \"target\": \"en\"\n    }\n  }\n}\n";
 
 class GrammarResAdapter extends BaseResourceAdapter {
   /**
@@ -48170,6 +48174,11 @@ class GrammarResAdapter extends BaseResourceAdapter {
     // legacy , look for key preceded by alph-
     if (!found) {
       key = `alph-${key}`;
+      found = data.get(key);
+    }
+    // final fallback try for an index
+    if (!found) {
+      key = `alph-general-index`;
       found = data.get(key);
     }
     if (found) {
@@ -48302,7 +48311,7 @@ class Grammars {
 
       return requests
     } catch (error) {
-      console.log(`Unable to fetch full definitions due to: ${error}`);
+      console.log(`Unable to fetch resources due to: ${error}`);
       return []
     }
   }
@@ -48352,12 +48361,12 @@ class ResourceQuery {
     queries.clear() // Clean up all previous requests of that type
     let query = new ResourceQuery(feature, options)
     queries.set(query.ID, query)
-    console.log('Query had been created')
+    console.log('ResourceQuery has been created')
     return query
   }
 
   static destroy (query) {
-    console.log('Destroy query executed')
+    console.log('Destroy ResourceQuery executed')
     queries.delete(query.ID)
   }
 
@@ -48393,19 +48402,43 @@ class ResourceQuery {
   }
 
   * iterations () {
-    this.result = yield this.grammars.fetchResources(this.feature)
+    this.grammarResources = yield this.grammars.fetchResources(this.feature)
     yield 'Retrieval of grammar info complete'
-    this.ui.addMessage(`Grammar resource retrieved`)
-    for (let q of this.result) {
-      q.then(url => {
-        this.ui.updateGrammar(url)
-      })
+    let grammarRequests = []
+    grammarRequests = grammarRequests.concat(this.grammarResources.map(res => {
+        return {
+          res: res,
+          complete: false
+        }
+      }
+    ))
+    for (let q of grammarRequests) {
+      q.res.then(
+        url => {
+          q.complete = true
+          if (this.active) {
+            this.ui.addMessage(`Grammar resource retrieved`)
+            this.ui.updateGrammar(url)
+          }
+          if (grammarRequests.every(request => request.complete)) {
+            if (this.active) { this.ui.addMessage(`All grammar resource data retrieved`) }
+            this.finalize()
+          }
+        },
+        error => {
+          console.log("Error retrieving Grammar reourse",error)
+          if (grammarRequests.every(request => request.complete)) {
+            if (this.active) { this.ui.addMessage(`All resource data retrieved`) }
+            this.finalize()
+          }
+        }
+      )
     }
     yield 'Retrieval of resources complete'
   }
 
   finalize (result) {
-    console.log('Finalize query called')
+    console.log('Finalize ResourceQuery called')
     // Record experience in a wrapper
     ResourceQuery.destroy(this)
     return result
