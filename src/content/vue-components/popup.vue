@@ -9,7 +9,7 @@
             </li>
           </ul>
         </div>
-        <morph v-show="morphdataready" :lexemes="lexemes" :definitions="definitions"></morph>
+        <morph v-show="morphdataready" :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures"></morph>
         <div class="uk-button-group">
           <button @click="showInflectionsPanelTab" v-show="defdataready" class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Inflect</button>
           <button @click="showDefinitionsPanelTab" v-show="infldataready" class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Define</button>
@@ -44,6 +44,10 @@
       },
       definitions: {
         type: Object,
+        required: true
+      },
+      linkedfeatures: {
+        type: Array,
         required: true
       },
       visible: {

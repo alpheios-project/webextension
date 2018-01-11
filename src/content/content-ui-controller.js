@@ -183,6 +183,7 @@ export default class ContentUIController {
         messages: [],
         lexemes: [],
         definitions: {},
+        linkedFeatures: [Feature.types.part,Feature.types.grmCase,Feature.types.mood,Feature.types.declension,Feature.types.tense],
         visible: false,
         defDataReady: false,
         inflDataReady: false,
