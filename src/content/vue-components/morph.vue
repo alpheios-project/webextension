@@ -258,12 +258,14 @@
 
   .alpheios-morph__attr {
       font-weight: normal;
+      padding-right: .25em;
   }
 
   .alpheios-morph__linkedattr {
     color: $alpheios-link-color;
   	font-weight: bold;
   	cursor: pointer;
+    padding-right: .25em;
   }
 
   .alpheios-morph__linkedattr:hover {
@@ -299,13 +301,21 @@
     margin-left: .5em;
   }
 
-  .alpheios-morph__provider {
+
+  .alpheios-morph__provider, #alpheios-morph__lexemes .alpheios-definition__provider {
     font-size: smaller;
     font-weight: normal;
     color: $alpheios-toolbar-color;
     font-style: italic;
     margin-left: .5em;
     margin-top: .5em;
+  }
+
+  .alpheios-morph__provider {
+    display:none;
+  }
+  .alpheios-morph__dictentry:last-child .alpheios-morph__provider {
+    display:block;
   }
 
   .alpheios-morph__listitem:after {
