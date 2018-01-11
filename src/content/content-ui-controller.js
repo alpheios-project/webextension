@@ -1,5 +1,5 @@
 /* global Node */
-import {Lexeme, Feature, Definition} from 'alpheios-data-models'
+import {Lexeme, Feature, Definition, LanguageModelFactory} from 'alpheios-data-models'
 import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import Template from './template.htmlf'
@@ -183,7 +183,7 @@ export default class ContentUIController {
         messages: [],
         lexemes: [],
         definitions: {},
-        linkedFeatures: [Feature.types.part,Feature.types.grmCase,Feature.types.mood,Feature.types.declension,Feature.types.tense],
+        linkedFeatures: [],
         visible: false,
         defDataReady: false,
         inflDataReady: false,
@@ -329,6 +329,10 @@ export default class ContentUIController {
   updateMorphology (homonym) {
     homonym.lexemes.sort(Lexeme.getSortByTwoLemmaFeatures(Feature.types.frequency, Feature.types.part))
     this.popup.lexemes = homonym.lexemes
+    if (homonym.lexemes.length > 0) {
+      // TODO we could really move this into the morph component and have it be calculated for each lemma in case languages are multiple
+      this.popup.linkedFeatures = LanguageModelFactory.getLanguageForCode(homonym.lexemes[0].lemma.language).grammarFeatures()
+    }
     this.popup.morphDataReady = true
   }
   updateGrammar (urls) {
