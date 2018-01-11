@@ -1,11 +1,14 @@
 /* global Node */
 import {Lexeme, Feature, Definition} from 'alpheios-data-models'
+import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import Template from './template.htmlf'
 import TabScript from '../lib/content/tab-script'
 import Panel from './vue-components/panel.vue'
 import Popup from './vue-components/popup.vue'
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
+import { Grammars } from 'alpheios-res-client'
+import ResourceQuery from './resource-query'
 
 export default class ContentUIController {
   constructor (state, options) {
@@ -35,6 +38,7 @@ export default class ContentUIController {
             options: false,
             info: true
           },
+          grammarSrc: "",
           inflectionData: false, // If no inflection data present, it is set to false
           shortDefinitions: [],
           fullDefinitions: '',
@@ -132,6 +136,21 @@ export default class ContentUIController {
           this.panelData.inflectionData = inflectionData
         },
 
+        requestGrammar: function (feature) {
+          ExpObjMon.track(
+            ResourceQuery.create(feature, {
+              uiController: this.uiController,
+              grammars: Grammars,
+              }),
+            {
+              experience: 'Get resource',
+              actions: [
+                { name: 'getData', action: ExpObjMon.actions.START, event: ExpObjMon.events.GET },
+                { name: 'finalize', action: ExpObjMon.actions.STOP, event: ExpObjMon.events.GET }
+              ]
+            }).getData()
+        },
+
         settingChange: function (name, value) {
           console.log('Change inside instance', name, value)
           this.options.items[name].setTextValue(value)
@@ -219,7 +238,15 @@ export default class ContentUIController {
           this.panel.changeTab('inflections')
           this.panel.open()
           return this
+        },
+
+        sendFeature: function(feature) {
+          this.visible = false
+          this.panel.requestGrammar(feature)
+          this.panel.changeTab('grammar')
+          this.panel.open()
         }
+
       }
     })
     this.popup.panel = this.panel
@@ -301,6 +328,12 @@ export default class ContentUIController {
     homonym.lexemes.sort(Lexeme.getSortByTwoLemmaFeatures(Feature.types.frequency, Feature.types.part))
     this.popup.lexemes = homonym.lexemes
     this.popup.morphDataReady = true
+  }
+  updateGrammar (urls) {
+    if (urls.length > 0) {
+      this.panel.panelData.grammarSrc = urls[0]
+    }
+    // todo show TOC or not found
   }
 
   updateDefinitions (homonym) {

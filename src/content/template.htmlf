@@ -2,7 +2,7 @@
     <popup class='auk' :messages="messages" :definitions="definitions" :visible="visible" :lexemes="lexemes"
            :defdataready="defDataReady" :infldataready="inflDataReady" :morphdataready="morphDataReady"
            :data="popupData"
-           @close="close" @showdefspaneltab="showDefinitionsPanelTab"  @showinflpaneltab="showInflectionsPanelTab">
+           @close="close" @showdefspaneltab="showDefinitionsPanelTab"  @showinflpaneltab="showInflectionsPanelTab" @sendfeature="sendFeature">
     </popup>
 </div>
 <div id="alpheios-panel">

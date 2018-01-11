@@ -10,13 +10,13 @@
       </span>
       <div class="alpheios-morph__morph">
         <span class="alpheios-morph__pofs">
-          <span class="alpheios-morph__attr" v-for="kase in lex.lemma.features['case']" v-if="lex.lemma.features['case']">{{kase.value}}</span>
+          <span @click="sendFeature(kase)" class="alpheios-morph__linked-attr" v-for="kase in lex.lemma.features['case']" v-if="lex.lemma.features['case']">{{kase.value}}</span>
           <span class="alpheios-morph__attr" v-for="gender in lex.lemma.features.gender" v-if="lex.lemma.features.gender">{{gender.value}}</span>
-          {{ lex.lemma.features['part of speech'].toString() }}
+          <span class="alphios-morph__linked-attr" @click="sendFeature(lex.lemma.features['part of speech'])">{{ lex.lemma.features['part of speech'].toString() }}</span>
         </span>
         <span class="alpheios-morph__attr" v-for="kind in lex.lemma.features.kind" v-if="lex.lemma.features.kind">{{kind.value}}</span>
-        <span class="alpheios-morph__attr" v-for="decl in lex.lemma.features.declension" v-if="lex.lemma.features.declension">{{decl.value}} declension</span>
-        <span class="alpheios-morph__attr" v-for="conj in lex.lemma.features.conjugation" v-if="lex.lemma.features.conjugation">{{conj.value}}</span>
+        <span @click="sendFeature(decl)" class="alpheios-morph__linked-attr" v-for="decl in lex.lemma.features.declension" v-if="lex.lemma.features.declension">{{decl.value}} declension</span>
+        <span @click="sendFeature(conj)" class="alpheios-morph__linked-attr" v-for="conj in lex.lemma.features.conjugation" v-if="lex.lemma.features.conjugation">{{conj.value}}</span>
         <span class="alpheios-morph__parenthesized" v-if="lex.lemma.features.age || lex.lemma.features.area || lex.lemma.features.geo || lex.lemma.features.frequency">
           <span class="alpheios-morph__attr alpheios-morph__listitem" v-for="age in lex.lemma.features.age" v-if="lex.lemma.features.age">( {{age.value}} )</span>
           <span class="alpheios-morph__attr alpheios-morph__listitem" v-for="area in lex.lemma.features.area" v-if="lex.lemma.features.area">{{area.value}} </span>
@@ -35,9 +35,9 @@
           <span class="alpheios-morph__prefix" v-if="inflset.groupingKey.prefix">{{inflset.groupingKey.prefix}} </span>
           <span class="alpheios-morph__stem">{{inflset.groupingKey.stem}}</span>
           <span class="alpheios-morph__suffix" v-if="inflset.groupingKey.suffix"> -{{inflset.groupingKey.suffix}}</span>
-          <span class="alpheios-morph__pofs alpheios-morph__parenthesized"
+          <span @click="sendFeature(inflset.groupingKey['part of speech'])" class="alpheios-morph__pofs alpheios-morph__parenthesized alpheios-morph__linked-attr"
             v-if="! featureMatch(lex.lemma.features['part of speech'],inflset.groupingKey['part of speech'])">{{inflset.groupingKey["part of speech"].toString()}}</span>
-          <span class="alpheios-morph__declension alpheios-morph__parenthesized"
+          <span @click="sendFeature(infset.groupingKey.declension)"" class="alpheios-morph__declension alpheios-morph__parenthesized alpheios-morph__linked-attr"
             v-if="inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension">{{inflset.groupingKey.declension.toString()}}</span>
 
           <div class="alpheios-morph__inflgroup" v-for="group in inflset.inflections">
@@ -51,9 +51,9 @@
               </span>
               <div v-for="infl in nextGroup.inflections" v-bind:class="group.groupingKey.isCaseInflectionSet ? 'alpheios-morph__inline' : 'alpheios-morph__block'">
 
-                  <span class="alpheios-morph__case" v-if="infl.groupingKey.case">
+                  <span class="alpheios-morph__case alpheios-morph__linked-attr" @click="sendFeature(infl.groupingKey.case)" v-if="infl.groupingKey.case">
                     {{ infl.groupingKey.case.toString() }}
-                    <span class="alpheios-morph__gender alpheios-morph__parenthesized"
+                    <span class="alpheios-morph__gender alpheios-morph__parenthesized alpheios-morph__attr"
                       v-if="infl.groupingKey.gender && ! featureMatch(infl.groupingKey.gender,lex.lemma.features.gender) ">
                       {{ infl.groupingKey.gender.map((g) => g.toLocaleStringAbbr()).toString()}}
                     </span>
@@ -76,7 +76,7 @@
                     {{ infl.groupingKey.tense.toString() }}
                   </span>
 
-                  <span class="alpheios-morph__mood" v-if="infl.groupingKey.mood && !group.groupingKey.isCaseInflectionSet">
+                  <span @click="sendFeature(infl.groupingKey.mood)" class="alpheios-morph__mood alpheios-morph__linked-attr" v-if="infl.groupingKey.mood && !group.groupingKey.isCaseInflectionSet">
                     {{ infl.groupingKey.mood.toString() }}
                   </span>
 
@@ -116,7 +116,17 @@
           }
         }
         return matches
+      },
+      sendFeature(features) {
+        let tosend = features
+        if (Array.isArray(features)) {
+          // TODO eventually we should support multiple features but
+          // for the moment just send the first
+          tosend = features[0]
+        }
+        this.$parent.$emit('sendfeature',tosend)
       }
+
     },
     mounted () {
       console.log('Morph is mounted')
@@ -153,6 +163,7 @@
   }
 
   .alpheios-morph__linked-attr {
+    color: $alpheios-link-color;
   	font-weight: bold;
   	cursor: pointer;
   }

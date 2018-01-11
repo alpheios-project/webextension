@@ -31,6 +31,9 @@
                 <div v-show="data.tabs.status" data-element="statusPanel">
                     <div v-html="data.messages"></div>
                 </div>
+                <div v-show="data.tabs.grammar" data-element="grammarPanel" class="alpheios-panel__fullheight">
+                    <iframe class="alpheios-panel__grammarframe" :src="data.grammarSrc"></iframe>
+                </div>
                 <div v-show="data.tabs.options" data-element="optionsPanel">
                     <setting :data="data.settings.preferredLanguage" @change="settingChanged"></setting>
                     <setting :data="data.settings.locale" @change="settingChanged"></setting>
@@ -62,6 +65,11 @@
                     <options-icon class="icon"></options-icon>
                 </div>
 
+                <div v-bind:class="{ active: data.tabs.grammar }" @click="changeTab('grammar')"
+                      class="alpheios-panel__nav-btn">
+                    <grammar-icon class="icon"></grammar-icon>
+                </div>
+
                 <div v-bind:class="{ active: data.tabs.info }" @click="changeTab('info')"
                       class="alpheios-panel__nav-btn">
                     <info-icon class="icon"></info-icon>
@@ -85,6 +93,7 @@
   import InflectionsIcon from '../images/inline-icons/inflections.svg';
   import StatusIcon from '../images/inline-icons/status.svg';
   import OptionsIcon from '../images/inline-icons/options.svg';
+  import GrammarIcon from '../images/inline-icons/resources.svg';
   import InfoIcon from '../images/inline-icons/info.svg';
 
   export default {
@@ -101,7 +110,8 @@
       inflectionsIcon: InflectionsIcon,
       statusIcon: StatusIcon,
       optionsIcon: OptionsIcon,
-      infoIcon: InfoIcon
+      infoIcon: InfoIcon,
+      grammarIcon: GrammarIcon
     },
     props: {
       data: {
@@ -328,4 +338,15 @@
         fill: $alpheios-link-hover-color;
         stroke: $alpheios-link-hover-color;
     }
+
+    .alpheios-panel__grammarframe {
+        height: 100%;
+        width: 100%;
+    }
+
+    .alpheios-panel__fullheight {
+        height: 100%;
+    }
+
+
 </style>
