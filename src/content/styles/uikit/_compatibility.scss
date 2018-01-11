@@ -19,6 +19,19 @@
     font-size: 0.875*$alpheios-base-font-size;
 }
 
+.#{$alpheios-uikit-namespace}.#{$alpheios-irregular-base-font-class} .uk-text-lead {
+    font-size: 1.5*$alpheios-base-font-size;
+}
+
 .#{$alpheios-uikit-namespace}.#{$alpheios-irregular-base-font-class} .uk-text-small {
     font-size: 0.875*$alpheios-base-font-size;
+}
+
+.#{$alpheios-uikit-namespace}.#{$alpheios-irregular-base-font-class} .uk-button-small {
+    font-size: 0.875*$alpheios-base-font-size;
+}
+
+.#{$alpheios-uikit-namespace}.#{$alpheios-irregular-base-font-class} h3,
+.#{$alpheios-uikit-namespace}.#{$alpheios-irregular-base-font-class} .uk-h3 {
+    font-size: 1.5*$alpheios-base-font-size;
 }

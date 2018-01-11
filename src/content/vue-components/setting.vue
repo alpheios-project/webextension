@@ -1,6 +1,6 @@
 <template>
-    <div class="uk-margin">
-        <label class="uk-form-label">{{data.labelText}}</label>
+    <div :class="classes">
+        <label class="uk-form-label" v-show="showTitle">{{data.labelText}}</label>
         <select v-model="selected" class="uk-select">
             <option v-for="item in data.textValues()">{{item}}</option>
         </select>
@@ -13,6 +13,18 @@
       data: {
         type: Object,
         required: true
+      },
+      showTitle: {
+        type: Boolean,
+        required: false,
+        default: true
+      },
+      classes: {
+        type: Array,
+        required: false,
+        default: function () {
+          return ['uk-margin']
+        }
       }
     },
     computed: {
@@ -24,6 +36,9 @@
           this.$emit('change', this.data.name, newValue)
         }
       }
+    },
+    mounted: function () {
+      console.log(`Setting is ${this.showTitle}`)
     }
   }
 </script>

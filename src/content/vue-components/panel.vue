@@ -1,6 +1,7 @@
 <template>
-    <div class="alpheios-panel auk" v-bind:class="classes" v-bind:style="this.data.styles"
-         data-component="alpheios-panel" data-resizable="true" v-show="data.isOpen">
+    <div class="alpheios-panel auk" :class="classes" :style="this.data.styles"
+         data-component="alpheios-panel" data-resizable="true" v-show="data.isOpen"
+        :data-notification-visible="data.notification.visible">
 
         <div class="alpheios-panel__header">
             <div class="alpheios-panel__header-title">
@@ -17,56 +18,68 @@
             </span>
         </div>
 
-        <div class="alpheios-panel__body">
-            <div class="alpheios-panel__content">
-                <div v-show="data.tabs.definitions" data-element="definitionsPanel">
-                  <div class="alpheios-panel__contentitem" v-for="definition in data.shortDefinitions">
+        <div class="alpheios-panel__notifications uk-text-small" :class="notificationClasses">
+            <span @click="closeNotifications" class="alpheios-panel__notifications-close-btn">
+                <close-icon></close-icon>
+            </span>
+            <span v-html="data.notification.text"></span>
+            <setting :data="data.settings.preferredLanguage" :show-title="false"
+                     :classes="['alpheios-panel__notifications--lang-switcher']" @change="settingChanged"
+                     v-show="data.notification.showLanguageSwitcher"></setting>
+        </div>
+        <div id="alpheios-panel__nav" class="alpheios-panel__nav">
+            <div :class="{ active: data.tabs.definitions }" @click="changeTab('definitions')"
+                 class="alpheios-panel__nav-btn">
+                <definitions-icon class="icon"></definitions-icon>
+            </div>
+
+            <div v-bind:class="{ active: data.tabs.inflections }" @click="changeTab('inflections')"
+                 class="alpheios-panel__nav-btn">
+                <inflections-icon class="icon"></inflections-icon>
+            </div>
+
+            <div v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
+                 class="alpheios-panel__nav-btn">
+                <status-icon class="icon"></status-icon>
+            </div>
+
+            <div v-bind:class="{ active: data.tabs.options }" @click="changeTab('options')"
+                 class="alpheios-panel__nav-btn">
+                <options-icon class="icon"></options-icon>
+            </div>
+
+            <div v-bind:class="{ active: data.tabs.info }" @click="changeTab('info')"
+                 class="alpheios-panel__nav-btn">
+                <info-icon class="icon"></info-icon>
+            </div>
+        </div>
+        <div class="alpheios-panel__content">
+            <div v-show="data.tabs.definitions" data-element="definitionsPanel">
+                <div class="alpheios-panel__contentitem" v-for="definition in data.shortDefinitions">
                     <shortdef :definition="definition"></shortdef>
-                   </div>
-                   <div class="alpheios-panel__contentitem" v-html="data.fullDefinitions"></div>
                 </div>
-                <div v-show="data.tabs.inflections" data-element="inflectionsPanel">
-                    <inflections :infldata="data.inflectionData" :locale="data.settings.locale.currentValue"></inflections>
-                </div>
-                <div v-show="data.tabs.status" data-element="statusPanel">
-                    <div v-html="data.messages"></div>
-                </div>
-                <div v-show="data.tabs.options" data-element="optionsPanel">
-                    <setting :data="data.settings.preferredLanguage" @change="settingChanged"></setting>
-                    <setting :data="data.settings.locale" @change="settingChanged"></setting>
-                    <setting :data="data.settings.panelPosition" @change="settingChanged"></setting>
-                    <setting :data="data.settings.uiType" @change="settingChanged"></setting>
-                </div>
-                <div v-show="data.tabs.info" data-element="infoPanel">
-                    <info></info>
-                </div>
+                <div class="alpheios-panel__contentitem" v-html="data.fullDefinitions"></div>
             </div>
-            <div id="alpheios-panel__nav" class="alpheios-panel__nav">
-                <div :class="{ active: data.tabs.definitions }" @click="changeTab('definitions')"
-                  class="alpheios-panel__nav-btn">
-                    <definitions-icon class="icon"></definitions-icon>
-                </div>
-
-                <div v-bind:class="{ active: data.tabs.inflections }" @click="changeTab('inflections')"
-                     class="alpheios-panel__nav-btn">
-                    <inflections-icon class="icon"></inflections-icon>
-                </div>
-
-                <div v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
-                      class="alpheios-panel__nav-btn">
-                    <status-icon class="icon"></status-icon>
-                </div>
-
-                <div v-bind:class="{ active: data.tabs.options }" @click="changeTab('options')"
-                      class="alpheios-panel__nav-btn">
-                    <options-icon class="icon"></options-icon>
-                </div>
-
-                <div v-bind:class="{ active: data.tabs.info }" @click="changeTab('info')"
-                      class="alpheios-panel__nav-btn">
-                    <info-icon class="icon"></info-icon>
-                </div>
+            <div v-show="data.tabs.inflections" data-element="inflectionsPanel">
+                <inflections :infldata="data.inflectionData" :locale="data.settings.locale.currentValue"></inflections>
             </div>
+            <div v-show="data.tabs.status" data-element="statusPanel">
+                <div v-html="data.messages"></div>
+            </div>
+            <div v-show="data.tabs.options" data-element="optionsPanel">
+                <setting :data="data.settings.preferredLanguage" @change="settingChanged"></setting>
+                <setting :data="data.settings.locale" @change="settingChanged"></setting>
+                <setting :data="data.settings.panelPosition" @change="settingChanged"></setting>
+                <setting :data="data.settings.uiType" @change="settingChanged"></setting>
+            </div>
+            <div v-show="data.tabs.info" data-element="infoPanel">
+                <info></info>
+            </div>
+        </div>
+
+        <div class="alpheios-panel__status">
+            <span v-show="data.status.selectedText">Selected text: {{data.status.selectedText}}</span><br>
+            <span v-show="data.status.languageName">Language: {{data.status.languageName}}</span>
         </div>
     </div>
 </template>
@@ -118,13 +131,19 @@
         })
       },
 
+      notificationClasses: function () {
+        return {
+          'alpheios-panel__notifications--important': this.data.notification.important
+        }
+      },
+
       attachToLeftVisible: function () {
         return this.data.settings.panelPosition.currentValue === 'right'
       },
 
       attachToRightVisible: function () {
         return this.data.settings.panelPosition.currentValue === 'left'
-      }
+      },
     },
     methods: {
       updateZIndex: function (zIndexMax) {
@@ -137,6 +156,10 @@
 
       close () {
         this.$emit('close')
+      },
+
+      closeNotifications () {
+        this.$emit('closenotifications')
       },
 
       setPosition (position) {
@@ -207,7 +230,6 @@
     $alpheios-panel-header-height: 60px;
 
     .alpheios-panel {
-        display: block;
         width: 400px; // Initial width
         height: 100vh;
         top: 0;
@@ -217,6 +239,22 @@
         resize: both;
         opacity: 0.95;
         direction: ltr;
+        display: grid;
+        grid-template-columns: auto 60px;
+        grid-template-rows: 60px 60px auto 60px;
+        grid-template-areas:
+            "header header"
+            "content sidebar"
+            "content sidebar"
+            "status sidebar"
+    }
+
+    .alpheios-panel[data-notification-visible="true"] {
+        grid-template-areas:
+                "header header"
+                "notifications sidebar"
+                "content sidebar"
+                "status sidebar"
     }
 
     .alpheios-panel.alpheios-panel-left {
@@ -224,24 +262,24 @@
     }
 
     .alpheios-panel.alpheios-panel-right {
-        display: block;
         right: 0;
-    }
+        grid-template-columns: 60px auto;
+        grid-template-areas:
+                "header header"
+                "sidebar notifications "
+                "sidebar content"
+                "sidebar status"
 
-    .alpheios-panel.full-width {
-        display: block;
-        width: 100%;
-        left: 0;
     }
 
     .alpheios-panel__header {
         position: relative;
         display: flex;
         flex-wrap: nowrap;
-        height: $alpheios-panel-header-height;
         padding: 10px;
         box-sizing: border-box;
         background-color: $alpheios-toolbar-color;
+        grid-area: header;
     }
 
     .alpheios-panel-right .alpheios-panel__header {
@@ -296,10 +334,65 @@
     }
 
     .alpheios-panel__content {
-        flex-grow: 1;
-        direction: ltr;
+        padding: 20px 20px 100px;
         overflow: auto;
-        padding: 10px 20px 100px;
+        grid-area: content;
+        direction: ltr;
+    }
+
+    .alpheios-panel__notifications {
+        display: none;
+        position: relative;
+        padding: 10px 20px;
+        background: $alpheios-logo-color;
+        grid-area: notifications;
+        overflow: hidden;
+    }
+
+    .alpheios-panel__notifications-close-btn {
+        position: absolute;
+        right: 0;
+        top: 0;
+        display: block;
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        cursor: pointer;
+        fill: $alpheios-link-color-dark-bg;
+        stroke: $alpheios-link-color-dark-bg;
+    }
+
+    .alpheios-panel__notifications-close-btn:hover,
+    .alpheios-panel__notifications-close-btn:focus {
+        fill: $alpheios-link-hover-color;
+        stroke: $alpheios-link-hover-color;
+    }
+
+    .alpheios-panel__notifications--lang-switcher {
+        font-size: 12px;
+        float: right;
+        margin: -20px 10px 0 0;
+        display: inline-block;
+    }
+
+    .alpheios-panel__notifications--lang-switcher .uk-select {
+        width: 120px;
+        height: 25px;
+    }
+
+    .alpheios-panel__notifications--important {
+        background: $alpheios-icon-color;
+    }
+
+    [data-notification-visible="true"] .alpheios-panel__notifications {
+        display: block;
+    }
+
+    .alpheios-panel__status {
+        padding: 10px 20px;
+        background: $alpheios-toolbar-color;
+        color: #FFF;
+        grid-area: status;
     }
 
     .alpheios-panel__contentitem {
@@ -309,6 +402,7 @@
     .alpheios-panel__nav {
         width: 60px;
         background: $alpheios-toolbar-active-color;
+        grid-area: sidebar;
     }
 
     .alpheios-panel__nav-btn,

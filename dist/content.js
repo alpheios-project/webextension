@@ -1979,7 +1979,7 @@ class Lemma {
    * @return {string} the key
    */
   get key () {
-    return [this.word, this.languageCode, ...this.features[Feature.types.part]].join('-')
+    return [this.word, this.languageCode, ...Object.values(this.features)].join('-')
   }
 }
 
@@ -10672,6 +10672,19 @@ exports.clearImmediate = clearImmediate;
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -10720,6 +10733,12 @@ exports.clearImmediate = clearImmediate;
       });
     },
 
+    notificationClasses: function () {
+      return {
+        'alpheios-panel__notifications--important': this.data.notification.important
+      };
+    },
+
     attachToLeftVisible: function () {
       return this.data.settings.panelPosition.currentValue === 'right';
     },
@@ -10741,6 +10760,10 @@ exports.clearImmediate = clearImmediate;
 
     close() {
       this.$emit('close');
+    },
+
+    closeNotifications() {
+      this.$emit('closenotifications');
     },
 
     setPosition(position) {
@@ -11008,6 +11031,18 @@ exports.clearImmediate = clearImmediate;
     data: {
       type: Object,
       required: true
+    },
+    showTitle: {
+      type: Boolean,
+      required: false,
+      default: true
+    },
+    classes: {
+      type: Array,
+      required: false,
+      default: function () {
+        return ['uk-margin'];
+      }
     }
   },
   computed: {
@@ -11019,6 +11054,9 @@ exports.clearImmediate = clearImmediate;
         this.$emit('change', this.data.name, newValue);
       }
     }
+  },
+  mounted: function () {
+    console.log(`Setting is ${this.showTitle}`);
   }
 });
 
@@ -19096,7 +19134,7 @@ class WordTestData {
   }
 }
 
-var DefaultConfig = "{\n  \"engine\": {\n    \"lat\": [\"whitakerLat\"],\n    \"grc\": [\"morpheusgrc\"],\n    \"ara\": [\"aramorph\"],\n    \"per\": [\"hazm\"]\n  },\n  \"url\": \"http://morph.alpheios.net/api/v1/analysis/word?word=r_WORD&engine=r_ENGINE&lang=r_LANG\",\n  \"allowUnknownValues\": true\n}\n";
+var DefaultConfig = "{\n  \"engine\": {\n    \"lat\": [\"whitakerLat\"],\n    \"grc\": [\"morpheusgrc\"],\n    \"ara\": [\"aramorph\"],\n    \"per\": [\"hazm\"]\n  },\n  \"url\": \"https://morph.alpheios.net/api/v1/analysis/word?word=r_WORD&engine=r_ENGINE&lang=r_LANG\",\n  \"allowUnknownValues\": true\n}\n";
 
 class TuftsAdapter extends BaseAdapter {
   /**
@@ -20967,7 +21005,7 @@ var papaparse = createCommonjsModule(function (module, exports) {
 }));
 });
 
-var DefaultConfig = "{\n  \"https://github.com/alpheios-project/lsj\": {\n    \"urls\": {\n      \"short\": \"https://raw.githubusercontent.com/alpheios-project/lsj/master/dat/grc-lsj-defs.dat\",\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/lsj/master/dat/grc-lsj-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lsj&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\",\n    \"rights\": \"From \\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\"\n  },\n  \"https://github.com/alpheios-project/aut\": {\n    \"urls\": {\n      \"short\": \"https://raw.githubusercontent.com/alpheios-project/aut/master/dat/grc-aut-defs.dat\",\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/aut/master/dat/grc-aut-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=aut&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\",\n    \"rights\": \"From \\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\"\n  },\n  \"https://github.com/alpheios-project/ml\": {\n    \"urls\": {\n      \"short\": \"https://raw.githubusercontent.com/alpheios-project/ml/master/dat/grc-ml-defs.dat\",\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/ml/master/dat/grc-ml-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ml&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Middle Liddell\\\"\",\n    \"rights\": \"From \\\"An Intermediate Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://raw.githubusercontent.com/alpheios-project/dod/master/dat/grc-dod-defs.dat\",\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/dod/master/dat/grc-dod-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=dod&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"From \\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Created for The Greek New Testament for Beginning Readers: The Byzantine Greek Text & Verb Parsing</span>. Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://raw.githubusercontent.com/alpheios-project/dod/master/dat/grc-dod-defs.dat\",\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/dod/master/dat/grc-dod-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=dod&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"From \\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Created for The Greek New Testament for Beginning Readers: The Byzantine Greek Text & Verb Parsing</span>. Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/ls\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/ls/master/dat/lat-ls-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ls&lg=lat&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"lat\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\",\n    \"rights\": \"From \\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\"\n  },\n  \"https://github.com/alpheios-project/lan\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/lan/master/dat/ara-lan-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lan&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane)\",\n    \"rights\": \"From \\\"The Arabic-English Lexicon\\\" (Edward Lane)\"\n  },\n  \"https://github.com/alpheios-project/sal\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/sal/master/dat/ara-sal-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=sal&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\",\n    \"rights\": \"From \\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\"\n  },\n  \"https://github.com/alpheios-project/stg\": {\n    \"urls\": {\n      \"short\": \"https://raw.githubusercontent.com/alpheios-project/stg/master/dat/per-stg-defs.dat\",\n      \"index\": \"https://raw.githubusercontent.com/alpheios-project/stg/master/dat/per-stg-ids.dat\",\n      \"full\": \"http://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=stg&lg=per&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"per\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\",\n    \"rights\": \"From \\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\"\n  }\n}\n";
+var DefaultConfig = "{\n  \"https://github.com/alpheios-project/lsj\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lsj&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\",\n    \"rights\": \"From \\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\"\n  },\n  \"https://github.com/alpheios-project/aut\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/aut/dat/grc-aut-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/aut//dat/grc-aut-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=aut&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\",\n    \"rights\": \"From \\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\"\n  },\n  \"https://github.com/alpheios-project/ml\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ml&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Middle Liddell\\\"\",\n    \"rights\": \"From \\\"An Intermediate Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=dod&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"From \\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Created for The Greek New Testament for Beginning Readers: The Byzantine Greek Text & Verb Parsing</span>. Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=dod&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"From \\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Created for The Greek New Testament for Beginning Readers: The Byzantine Greek Text & Verb Parsing</span>. Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/ls\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/ls/dat/lat-ls-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ls&lg=lat&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"lat\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\",\n    \"rights\": \"From \\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\"\n  },\n  \"https://github.com/alpheios-project/lan\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/lan/dat/ara-lan-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lan&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane)\",\n    \"rights\": \"From \\\"The Arabic-English Lexicon\\\" (Edward Lane)\"\n  },\n  \"https://github.com/alpheios-project/sal\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/sal/dat/ara-sal-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=sal&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\",\n    \"rights\": \"From \\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\"\n  },\n  \"https://github.com/alpheios-project/stg\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=stg&lg=per&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"per\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\",\n    \"rights\": \"From \\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\"\n  }\n}\n";
 
 class AlpheiosLexAdapter extends BaseLexiconAdapter {
   /**
@@ -22155,7 +22193,7 @@ class LexicalQuery {
   }
 
   async getData () {
-    this.ui.clear().open().message(`Please wait while data is retrieved ...`)
+    this.ui.clear().open().changeTab('definitions').message(`Please wait while data is retrieved ...`)
     let iterator = this.iterations()
 
     let result = iterator.next()
@@ -22230,7 +22268,6 @@ class LexicalQuery {
             this.ui.updateDefinitions(this.homonym)
           }
           if (definitionRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`All lexical data is available now`) }
             this.finalize()
           }
         },
@@ -22241,7 +22278,6 @@ class LexicalQuery {
             this.ui.addMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"`)
           }
           if (definitionRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`All lexical data is available now`) }
             this.finalize()
           }
         }
@@ -22252,7 +22288,10 @@ class LexicalQuery {
   }
 
   finalize (result) {
-    console.log('Finalize query called')
+    if (this.active) {
+      this.ui.addMessage(`All lexical data is available now`)
+      this.ui.showLanguageInfo(this.homonym)
+    }
     // Record experience in a wrapper
     LexicalQuery.destroy(this)
     return result
@@ -22285,6 +22324,13 @@ class LexicalQuery {
 
 
 
+
+const languageNames = new Map([
+  [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_LATIN, 'Latin'],
+  [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_GREEK, 'Greek'],
+  [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_ARABIC, 'Arabic'],
+  [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_PERSIAN, 'Persian']
+])
 
 class ContentUIController {
   constructor (state, options) {
@@ -22330,6 +22376,16 @@ class ContentUIController {
             tableBody: 'alpheios-panel-content-infl-table-body'
           },
           messages: '',
+          notification: {
+            visible: false,
+            important: false,
+            showLanguageSwitcher: false,
+            text: ''
+          },
+          status: {
+            selectedText: '',
+            languageName: ''
+          },
           settings: this.options.items,
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
@@ -22381,18 +22437,20 @@ class ContentUIController {
             if (this.panelData.tabs[key]) { this.panelData.tabs[key] = false }
           }
           this.panelData.tabs[name] = true
+          return this
         },
 
         clearContent: function () {
           this.panelData.shortDefinitions = []
           this.panelData.fullDefinitions = ''
           this.panelData.messages = ''
+          this.clearNotifications()
           return this
         },
 
         showMessage: function (messageHTML) {
           this.panelData.messages = messageHTML + '<br>'
-          this.changeTab('status')
+          // this.changeTab('status')
         },
 
         appendMessage: function (messageHTML) {
@@ -22401,6 +22459,42 @@ class ContentUIController {
 
         clearMessages: function () {
           this.panelData.messages = ''
+        },
+
+        showNotification: function (text, important = false) {
+          this.panelData.notification.visible = true
+          this.panelData.notification.important = important
+          this.panelData.notification.showLanguageSwitcher = false
+          this.panelData.notification.text = text
+        },
+
+        showImportantNotification: function (text) {
+          this.showNotification(text, true)
+        },
+
+        showLanguageNotification: function (homonym, notFound = false) {
+          this.panelData.notification.visible = true
+          let languageName = ContentUIController.getLanguageName(homonym.languageID)
+          if (notFound) {
+            this.panelData.notification.important = true
+            this.panelData.notification.showLanguageSwitcher = true
+          } else {
+            this.panelData.notification.important = false
+            this.panelData.notification.showLanguageSwitcher = false
+          }
+          this.panelData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
+
+          this.panelData.status.languageName = languageName
+          this.panelData.status.selectedText = homonym.targetWord
+        },
+
+        clearNotifications: function () {
+          this.panelData.notification.visible = false
+          this.panelData.notification.important = false
+          this.panelData.notification.showLanguageSwitcher = false
+          this.panelData.notification.text = ''
+          this.panelData.status.languageName = ''
+          this.panelData.status.selectedText = ''
         },
 
         toggle: function () {
@@ -22582,11 +22676,33 @@ class ContentUIController {
   message (message) {
     this.panel.showMessage(message)
     this.popup.showMessage(message)
+    this.panel.showNotification(message)
+    return this
   }
 
   addMessage (message) {
     this.panel.appendMessage(message)
     this.popup.appendMessage(message)
+    this.panel.showNotification(message)
+  }
+
+  static getLanguageName (languageID) {
+    return languageNames.has(languageID) ? languageNames.get(languageID) : ''
+  }
+
+  showLanguageInfo (homonym) {
+    let notFound = !homonym.lexemes || homonym.lexemes.length < 1
+    notFound = true // Debug only
+    this.panel.showLanguageNotification(homonym, notFound)
+  }
+
+  showImportantNotification (message) {
+    this.panel.showImportantNotification(message)
+  }
+
+  changeTab (tabName) {
+    this.panel.changeTab(tabName)
+    return this
   }
 
   updateMorphology (homonym) {
@@ -33840,7 +33956,7 @@ process.umask = function() { return 0; };
 /* 43 */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\r\n           :data=\"popupData\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div id=\"alpheios-panel\">\r\n    <panel :data=\"panelData\" @close=\"close\" @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\r\n           @changetab=\"changeTab\"></panel>\r\n</div>\r\n";
+module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\"\r\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\r\n           :data=\"popupData\"\r\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\">\r\n    </popup>\r\n</div>\r\n<div id=\"alpheios-panel\">\r\n    <panel :data=\"panelData\" @close=\"close\" @closenotifications=\"clearNotifications\"\r\n           @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\r\n           @changetab=\"changeTab\"></panel>\r\n</div>\r\n";
 
 /***/ }),
 /* 44 */
@@ -33933,7 +34049,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-panel {\n  display: block;\n  width: 400px;\n  height: 100vh;\n  top: 0;\n  z-index: 2000;\n  position: fixed;\n  background: #FFF;\n  resize: both;\n  opacity: 0.95;\n  direction: ltr;\n}\n.alpheios-panel.alpheios-panel-left {\n  left: 0;\n}\n.alpheios-panel.alpheios-panel-right {\n  display: block;\n  right: 0;\n}\n.alpheios-panel.full-width {\n  display: block;\n  width: 100%;\n  left: 0;\n}\n.alpheios-panel__header {\n  position: relative;\n  display: flex;\n  flex-wrap: nowrap;\n  height: 60px;\n  padding: 10px;\n  box-sizing: border-box;\n  background-color: #4E6476;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: ltr;\n  padding: 10px 0 10px 20px;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: rtl;\n  padding: 10px 20px 10px 0;\n}\n.alpheios-panel__header-title {\n  flex-grow: 1;\n}\n.alpheios-panel__header-logo {\n  margin-top: -1px;\n}\n.alpheios-panel__header-action-btn,\n.alpheios-panel__header-action-btn.active:hover,\n.alpheios-panel__header-action-btn.active:focus {\n  display: block;\n  width: 40px;\n  height: 40px;\n  margin: 0 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__header-action-btn:hover,\n.alpheios-panel__header-action-btn:focus,\n.alpheios-panel__header-action-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__body {\n  display: flex;\n  height: calc(100vh - 60px);\n}\n.alpheios-panel-left .alpheios-panel__body {\n  flex-direction: row;\n}\n.alpheios-panel-right .alpheios-panel__body {\n  flex-direction: row-reverse;\n}\n.alpheios-panel__content {\n  flex-grow: 1;\n  direction: ltr;\n  overflow: auto;\n  padding: 10px 20px 100px;\n}\n.alpheios-panel__contentitem {\n  margin-bottom: 1em;\n}\n.alpheios-panel__nav {\n  width: 60px;\n  background: #7E8897;\n}\n.alpheios-panel__nav-btn,\n.alpheios-panel__nav-btn.active:hover,\n.alpheios-panel__nav-btn.active:focus {\n  cursor: pointer;\n  margin: 20px 10px;\n  width: 40px;\n  height: 40px;\n  background: transparent no-repeat center center;\n  background-size: contain;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__nav-btn:hover,\n.alpheios-panel__nav-btn:focus,\n.alpheios-panel__nav-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-panel {\n  width: 400px;\n  height: 100vh;\n  top: 0;\n  z-index: 2000;\n  position: fixed;\n  background: #FFF;\n  resize: both;\n  opacity: 0.95;\n  direction: ltr;\n  display: grid;\n  grid-template-columns: auto 60px;\n  grid-template-rows: 60px 60px auto 60px;\n  grid-template-areas: \"header header\" \"content sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel[data-notification-visible=\"true\"] {\n  grid-template-areas: \"header header\" \"notifications sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel.alpheios-panel-left {\n  left: 0;\n}\n.alpheios-panel.alpheios-panel-right {\n  right: 0;\n  grid-template-columns: 60px auto;\n  grid-template-areas: \"header header\" \"sidebar notifications \" \"sidebar content\" \"sidebar status\";\n}\n.alpheios-panel__header {\n  position: relative;\n  display: flex;\n  flex-wrap: nowrap;\n  padding: 10px;\n  box-sizing: border-box;\n  background-color: #4E6476;\n  grid-area: header;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: ltr;\n  padding: 10px 0 10px 20px;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: rtl;\n  padding: 10px 20px 10px 0;\n}\n.alpheios-panel__header-title {\n  flex-grow: 1;\n}\n.alpheios-panel__header-logo {\n  margin-top: -1px;\n}\n.alpheios-panel__header-action-btn,\n.alpheios-panel__header-action-btn.active:hover,\n.alpheios-panel__header-action-btn.active:focus {\n  display: block;\n  width: 40px;\n  height: 40px;\n  margin: 0 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__header-action-btn:hover,\n.alpheios-panel__header-action-btn:focus,\n.alpheios-panel__header-action-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__body {\n  display: flex;\n  height: calc(100vh - 60px);\n}\n.alpheios-panel-left .alpheios-panel__body {\n  flex-direction: row;\n}\n.alpheios-panel-right .alpheios-panel__body {\n  flex-direction: row-reverse;\n}\n.alpheios-panel__content {\n  padding: 20px 20px 100px;\n  overflow: auto;\n  grid-area: content;\n  direction: ltr;\n}\n.alpheios-panel__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  grid-area: notifications;\n  overflow: hidden;\n}\n.alpheios-panel__notifications-close-btn {\n  position: absolute;\n  right: 0;\n  top: 0;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__notifications-close-btn:hover,\n.alpheios-panel__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-panel__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-panel__notifications--important {\n  background: #73CDDE;\n}\n[data-notification-visible=\"true\"] .alpheios-panel__notifications {\n  display: block;\n}\n.alpheios-panel__status {\n  padding: 10px 20px;\n  background: #4E6476;\n  color: #FFF;\n  grid-area: status;\n}\n.alpheios-panel__contentitem {\n  margin-bottom: 1em;\n}\n.alpheios-panel__nav {\n  width: 60px;\n  background: #7E8897;\n  grid-area: sidebar;\n}\n.alpheios-panel__nav-btn,\n.alpheios-panel__nav-btn.active:hover,\n.alpheios-panel__nav-btn.active:focus {\n  cursor: pointer;\n  margin: 20px 10px;\n  width: 40px;\n  height: 40px;\n  background: transparent no-repeat center center;\n  background-size: contain;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__nav-btn:hover,\n.alpheios-panel__nav-btn:focus,\n.alpheios-panel__nav-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n", ""]);
 
 // exports
 
@@ -34301,10 +34417,22 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "uk-margin" }, [
-    _c("label", { staticClass: "uk-form-label" }, [
-      _vm._v(_vm._s(_vm.data.labelText))
-    ]),
+  return _c("div", { class: _vm.classes }, [
+    _c(
+      "label",
+      {
+        directives: [
+          {
+            name: "show",
+            rawName: "v-show",
+            value: _vm.showTitle,
+            expression: "showTitle"
+          }
+        ],
+        staticClass: "uk-form-label"
+      },
+      [_vm._v(_vm._s(_vm.data.labelText))]
+    ),
     _vm._v(" "),
     _c(
       "select",
@@ -34651,7 +34779,11 @@ var render = function() {
       staticClass: "alpheios-panel auk",
       class: _vm.classes,
       style: this.data.styles,
-      attrs: { "data-component": "alpheios-panel", "data-resizable": "true" }
+      attrs: {
+        "data-component": "alpheios-panel",
+        "data-resizable": "true",
+        "data-notification-visible": _vm.data.notification.visible
+      }
     },
     [
       _c("div", { staticClass: "alpheios-panel__header" }, [
@@ -34712,216 +34844,288 @@ var render = function() {
         )
       ]),
       _vm._v(" "),
-      _c("div", { staticClass: "alpheios-panel__body" }, [
-        _c("div", { staticClass: "alpheios-panel__content" }, [
+      _c(
+        "div",
+        {
+          staticClass: "alpheios-panel__notifications uk-text-small",
+          class: _vm.notificationClasses
+        },
+        [
           _c(
-            "div",
+            "span",
             {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.definitions,
-                  expression: "data.tabs.definitions"
-                }
-              ],
-              attrs: { "data-element": "definitionsPanel" }
+              staticClass: "alpheios-panel__notifications-close-btn",
+              on: { click: _vm.closeNotifications }
             },
-            [
-              _vm._l(_vm.data.shortDefinitions, function(definition) {
-                return _c(
-                  "div",
-                  { staticClass: "alpheios-panel__contentitem" },
-                  [_c("shortdef", { attrs: { definition: definition } })],
-                  1
-                )
-              }),
-              _vm._v(" "),
-              _c("div", {
-                staticClass: "alpheios-panel__contentitem",
-                domProps: { innerHTML: _vm._s(_vm.data.fullDefinitions) }
-              })
-            ],
-            2
+            [_c("close-icon")],
+            1
           ),
           _vm._v(" "),
+          _c("span", {
+            domProps: { innerHTML: _vm._s(_vm.data.notification.text) }
+          }),
+          _vm._v(" "),
+          _c("setting", {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.notification.showLanguageSwitcher,
+                expression: "data.notification.showLanguageSwitcher"
+              }
+            ],
+            attrs: {
+              data: _vm.data.settings.preferredLanguage,
+              "show-title": false,
+              classes: ["alpheios-panel__notifications--lang-switcher"]
+            },
+            on: { change: _vm.settingChanged }
+          })
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "alpheios-panel__nav",
+          attrs: { id: "alpheios-panel__nav" }
+        },
+        [
           _c(
             "div",
             {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.inflections,
-                  expression: "data.tabs.inflections"
+              staticClass: "alpheios-panel__nav-btn",
+              class: { active: _vm.data.tabs.definitions },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("definitions")
                 }
-              ],
-              attrs: { "data-element": "inflectionsPanel" }
+              }
             },
-            [
-              _c("inflections", {
-                attrs: {
-                  infldata: _vm.data.inflectionData,
-                  locale: _vm.data.settings.locale.currentValue
-                }
-              })
-            ],
+            [_c("definitions-icon", { staticClass: "icon" })],
             1
           ),
           _vm._v(" "),
           _c(
             "div",
             {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.status,
-                  expression: "data.tabs.status"
+              staticClass: "alpheios-panel__nav-btn",
+              class: { active: _vm.data.tabs.inflections },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("inflections")
                 }
-              ],
-              attrs: { "data-element": "statusPanel" }
+              }
             },
-            [_c("div", { domProps: { innerHTML: _vm._s(_vm.data.messages) } })]
-          ),
-          _vm._v(" "),
-          _c(
-            "div",
-            {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.options,
-                  expression: "data.tabs.options"
-                }
-              ],
-              attrs: { "data-element": "optionsPanel" }
-            },
-            [
-              _c("setting", {
-                attrs: { data: _vm.data.settings.preferredLanguage },
-                on: { change: _vm.settingChanged }
-              }),
-              _vm._v(" "),
-              _c("setting", {
-                attrs: { data: _vm.data.settings.locale },
-                on: { change: _vm.settingChanged }
-              }),
-              _vm._v(" "),
-              _c("setting", {
-                attrs: { data: _vm.data.settings.panelPosition },
-                on: { change: _vm.settingChanged }
-              }),
-              _vm._v(" "),
-              _c("setting", {
-                attrs: { data: _vm.data.settings.uiType },
-                on: { change: _vm.settingChanged }
-              })
-            ],
+            [_c("inflections-icon", { staticClass: "icon" })],
             1
           ),
           _vm._v(" "),
           _c(
             "div",
             {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.info,
-                  expression: "data.tabs.info"
+              staticClass: "alpheios-panel__nav-btn",
+              class: { active: _vm.data.tabs.status },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("status")
                 }
-              ],
-              attrs: { "data-element": "infoPanel" }
+              }
             },
-            [_c("info")],
+            [_c("status-icon", { staticClass: "icon" })],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              staticClass: "alpheios-panel__nav-btn",
+              class: { active: _vm.data.tabs.options },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("options")
+                }
+              }
+            },
+            [_c("options-icon", { staticClass: "icon" })],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              staticClass: "alpheios-panel__nav-btn",
+              class: { active: _vm.data.tabs.info },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("info")
+                }
+              }
+            },
+            [_c("info-icon", { staticClass: "icon" })],
             1
           )
-        ]),
+        ]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "alpheios-panel__content" }, [
+        _c(
+          "div",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.tabs.definitions,
+                expression: "data.tabs.definitions"
+              }
+            ],
+            attrs: { "data-element": "definitionsPanel" }
+          },
+          [
+            _vm._l(_vm.data.shortDefinitions, function(definition) {
+              return _c(
+                "div",
+                { staticClass: "alpheios-panel__contentitem" },
+                [_c("shortdef", { attrs: { definition: definition } })],
+                1
+              )
+            }),
+            _vm._v(" "),
+            _c("div", {
+              staticClass: "alpheios-panel__contentitem",
+              domProps: { innerHTML: _vm._s(_vm.data.fullDefinitions) }
+            })
+          ],
+          2
+        ),
         _vm._v(" "),
         _c(
           "div",
           {
-            staticClass: "alpheios-panel__nav",
-            attrs: { id: "alpheios-panel__nav" }
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.tabs.inflections,
+                expression: "data.tabs.inflections"
+              }
+            ],
+            attrs: { "data-element": "inflectionsPanel" }
           },
           [
-            _c(
-              "div",
+            _c("inflections", {
+              attrs: {
+                infldata: _vm.data.inflectionData,
+                locale: _vm.data.settings.locale.currentValue
+              }
+            })
+          ],
+          1
+        ),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            directives: [
               {
-                staticClass: "alpheios-panel__nav-btn",
-                class: { active: _vm.data.tabs.definitions },
-                on: {
-                  click: function($event) {
-                    _vm.changeTab("definitions")
-                  }
-                }
-              },
-              [_c("definitions-icon", { staticClass: "icon" })],
-              1
-            ),
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.tabs.status,
+                expression: "data.tabs.status"
+              }
+            ],
+            attrs: { "data-element": "statusPanel" }
+          },
+          [_c("div", { domProps: { innerHTML: _vm._s(_vm.data.messages) } })]
+        ),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.tabs.options,
+                expression: "data.tabs.options"
+              }
+            ],
+            attrs: { "data-element": "optionsPanel" }
+          },
+          [
+            _c("setting", {
+              attrs: { data: _vm.data.settings.preferredLanguage },
+              on: { change: _vm.settingChanged }
+            }),
             _vm._v(" "),
-            _c(
-              "div",
-              {
-                staticClass: "alpheios-panel__nav-btn",
-                class: { active: _vm.data.tabs.inflections },
-                on: {
-                  click: function($event) {
-                    _vm.changeTab("inflections")
-                  }
-                }
-              },
-              [_c("inflections-icon", { staticClass: "icon" })],
-              1
-            ),
+            _c("setting", {
+              attrs: { data: _vm.data.settings.locale },
+              on: { change: _vm.settingChanged }
+            }),
             _vm._v(" "),
-            _c(
-              "div",
-              {
-                staticClass: "alpheios-panel__nav-btn",
-                class: { active: _vm.data.tabs.status },
-                on: {
-                  click: function($event) {
-                    _vm.changeTab("status")
-                  }
-                }
-              },
-              [_c("status-icon", { staticClass: "icon" })],
-              1
-            ),
+            _c("setting", {
+              attrs: { data: _vm.data.settings.panelPosition },
+              on: { change: _vm.settingChanged }
+            }),
             _vm._v(" "),
-            _c(
-              "div",
+            _c("setting", {
+              attrs: { data: _vm.data.settings.uiType },
+              on: { change: _vm.settingChanged }
+            })
+          ],
+          1
+        ),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            directives: [
               {
-                staticClass: "alpheios-panel__nav-btn",
-                class: { active: _vm.data.tabs.options },
-                on: {
-                  click: function($event) {
-                    _vm.changeTab("options")
-                  }
-                }
-              },
-              [_c("options-icon", { staticClass: "icon" })],
-              1
-            ),
-            _vm._v(" "),
-            _c(
-              "div",
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.tabs.info,
+                expression: "data.tabs.info"
+              }
+            ],
+            attrs: { "data-element": "infoPanel" }
+          },
+          [_c("info")],
+          1
+        )
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "alpheios-panel__status" }, [
+        _c(
+          "span",
+          {
+            directives: [
               {
-                staticClass: "alpheios-panel__nav-btn",
-                class: { active: _vm.data.tabs.info },
-                on: {
-                  click: function($event) {
-                    _vm.changeTab("info")
-                  }
-                }
-              },
-              [_c("info-icon", { staticClass: "icon" })],
-              1
-            )
-          ]
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.status.selectedText,
+                expression: "data.status.selectedText"
+              }
+            ]
+          },
+          [_vm._v("Selected text: " + _vm._s(_vm.data.status.selectedText))]
+        ),
+        _c("br"),
+        _vm._v(" "),
+        _c(
+          "span",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.status.languageName,
+                expression: "data.status.languageName"
+              }
+            ]
+          },
+          [_vm._v("Language: " + _vm._s(_vm.data.status.languageName))]
         )
       ])
     ]
