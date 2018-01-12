@@ -112,6 +112,5 @@
     ]
   },
   "dependencies": {
-    "alpheios-res-client": "file:../res-client"
   }
 }
