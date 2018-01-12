@@ -185,7 +185,6 @@ export default class BackgroundProcess {
    * @return {Promise.<void>}
    */
   async navigationCompletedListener (details) {
-    console.log('navigatibrowser.webNavigation.onCompletedonCompletedListener called')
     // make sure this is a tab we know about AND that it's not an iframe event
     if (this.tabs.has(details.tabId) && details.frameId === 0 ) {
       // If content script was loaded to that tab, restore it to the state it had before
