@@ -437,11 +437,6 @@
         stroke: $alpheios-link-hover-color;
     }
 
-    .alpheios-panel__grammarframe {
-        height: 100%;
-        width: 100%;
-    }
-
     .alpheios-panel__fullheight {
         height: 100%;
     }
