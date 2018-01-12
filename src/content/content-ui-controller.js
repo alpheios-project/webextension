@@ -38,7 +38,7 @@ export default class ContentUIController {
             options: false,
             info: true
           },
-          grammarSrc: "",
+          grammarRes: {},
           inflectionData: false, // If no inflection data present, it is set to false
           shortDefinitions: [],
           fullDefinitions: '',
@@ -337,7 +337,7 @@ export default class ContentUIController {
   }
   updateGrammar (urls) {
     if (urls.length > 0) {
-      this.panel.panelData.grammarSrc = urls[0]
+      this.panel.panelData.grammarRes = urls[0]
     } else {
       console.log("Requested Grammar Resource Not Found")
     }

@@ -32,7 +32,7 @@
                     <div v-html="data.messages"></div>
                 </div>
                 <div v-show="data.tabs.grammar" data-element="grammarPanel" class="alpheios-panel__fullheight">
-                    <iframe class="alpheios-panel__grammarframe" :src="data.grammarSrc"></iframe>
+                    <grammar :res="data.grammarRes"></grammar>
                 </div>
                 <div v-show="data.tabs.options" data-element="optionsPanel">
                     <setting :data="data.settings.preferredLanguage" @change="settingChanged"></setting>
@@ -82,6 +82,7 @@
   import Inflections from './inflections.vue'
   import Setting from './setting.vue'
   import ShortDef from './shortdef.vue'
+  import Grammar from './grammar.vue'
   import Info from './info.vue'
   import interact from 'interactjs'
 
@@ -103,6 +104,7 @@
       setting: Setting,
       shortdef: ShortDef,
       info: Info,
+      grammar: Grammar,
       attachLeftIcon: AttachLeftIcon,
       attachRightIcon: AttachRightIcon,
       closeIcon: CloseIcon,
