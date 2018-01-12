@@ -1,6 +1,8 @@
 <template>
-    <div ref="popup" class="alpheios-popup" v-show="visible">
-        <span class="alpheios-popup__close-btn" @click="closePopup" uk-icon="icon: close; ratio: 2"></span>
+    <div ref="popup" class="alpheios-popup" v-bind:class="data.classes" v-show="visible">
+        <span class="alpheios-popup__close-btn" @click="closePopup">
+            <close-icon></close-icon>
+        </span>
         <div class="alpheios-popup__message-area">
           <ul>
             <li @beforehide="clearMessages" v-for="message in messages" class="alpheios-popup__message uk-alert-primary" uk-alert>
@@ -20,9 +22,15 @@
   import Morph from './morph.vue'
   import interact from 'interactjs'
 
+  // Embeddable SVG icons
+  import CloseIcon from '../images/inline-icons/close.svg';
+
   export default {
     name: 'Popup',
-    components: { morph: Morph },
+    components: {
+      morph: Morph,
+      closeIcon: CloseIcon,
+    },
     data: function () {
       return {
         resizable: true,
@@ -176,7 +184,6 @@
     }
 
     .alpheios-popup__close-btn {
-        color: $alpheios-copy-color;
         display: block;
         width: 40px;
         height: 40px;
@@ -184,6 +191,8 @@
         right: 0;
         margin: 10px;
         cursor: pointer;
+        fill: $alpheios-copy-color;
+        stroke: $alpheios-copy-color;
         position: absolute;
     }
 

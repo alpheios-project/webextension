@@ -1,5 +1,5 @@
 /* global Node */
-import {Lexeme, Feature, Definition} from 'alpheios-data-models'
+import {Constants, Lexeme, Feature, Definition} from 'alpheios-data-models'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import Template from './template.htmlf'
 import TabScript from '../lib/content/tab-script'
@@ -7,11 +7,20 @@ import Panel from './vue-components/panel.vue'
 import Popup from './vue-components/popup.vue'
 import UIkit from '../../node_modules/uikit/dist/js/uikit'
 
+const languageNames = new Map([
+  [Constants.LANG_LATIN, 'Latin'],
+  [Constants.LANG_GREEK, 'Greek'],
+  [Constants.LANG_ARABIC, 'Arabic'],
+  [Constants.LANG_PERSIAN, 'Persian']
+])
+
 export default class ContentUIController {
   constructor (state, options) {
     this.state = state
     this.options = options
     this.settings = ContentUIController.settingValues
+    this.irregularBaseFontSizeClassName = 'alpheios-irregular-base-font-size'
+    this.irregularBaseFontSize = !ContentUIController.hasRegularBaseFontSize()
 
     this.zIndex = this.getZIndexMax()
 
@@ -49,7 +58,20 @@ export default class ContentUIController {
             tableBody: 'alpheios-panel-content-infl-table-body'
           },
           messages: '',
+          notification: {
+            visible: false,
+            important: false,
+            showLanguageSwitcher: false,
+            text: ''
+          },
+          status: {
+            selectedText: '',
+            languageName: ''
+          },
           settings: this.options.items,
+          classes: {
+            [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
+          },
           styles: {
             zIndex: this.zIndex
           },
@@ -97,18 +119,20 @@ export default class ContentUIController {
             if (this.panelData.tabs[key]) { this.panelData.tabs[key] = false }
           }
           this.panelData.tabs[name] = true
+          return this
         },
 
         clearContent: function () {
           this.panelData.shortDefinitions = []
           this.panelData.fullDefinitions = ''
           this.panelData.messages = ''
+          this.clearNotifications()
           return this
         },
 
         showMessage: function (messageHTML) {
           this.panelData.messages = messageHTML + '<br>'
-          this.changeTab('status')
+          // this.changeTab('status')
         },
 
         appendMessage: function (messageHTML) {
@@ -117,6 +141,49 @@ export default class ContentUIController {
 
         clearMessages: function () {
           this.panelData.messages = ''
+        },
+
+        showNotification: function (text, important = false) {
+          this.panelData.notification.visible = true
+          this.panelData.notification.important = important
+          this.panelData.notification.showLanguageSwitcher = false
+          this.panelData.notification.text = text
+        },
+
+        showImportantNotification: function (text) {
+          this.showNotification(text, true)
+        },
+
+        showLanguageNotification: function (homonym, notFound = false) {
+          this.panelData.notification.visible = true
+          let languageName = ContentUIController.getLanguageName(homonym.languageID)
+          if (notFound) {
+            this.panelData.notification.important = true
+            this.panelData.notification.showLanguageSwitcher = true
+          } else {
+            this.panelData.notification.important = false
+            this.panelData.notification.showLanguageSwitcher = false
+          }
+          this.panelData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
+
+          this.panelData.status.languageName = languageName
+          this.panelData.status.selectedText = homonym.targetWord
+        },
+
+        showErrorInformation: function (errorText) {
+          this.panelData.notification.visible = true
+          this.panelData.notification.important = true
+          this.panelData.notification.showLanguageSwitcher = false
+          this.panelData.notification.text = errorText
+        },
+
+        clearNotifications: function () {
+          this.panelData.notification.visible = false
+          this.panelData.notification.important = false
+          this.panelData.notification.showLanguageSwitcher = false
+          this.panelData.notification.text = ''
+          this.panelData.status.languageName = ''
+          this.panelData.status.selectedText = ''
         },
 
         toggle: function () {
@@ -170,8 +237,12 @@ export default class ContentUIController {
         morphDataReady: false,
         popupData: {
           minWidth: 400,
-          minHeight: 400
-        }
+          minHeight: 400,
+          classes: {
+            [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
+          }
+        },
+        panel: this.panel
       },
       methods: {
         showMessage: function (message) {
@@ -222,7 +293,6 @@ export default class ContentUIController {
         }
       }
     })
-    this.popup.panel = this.panel
   }
 
   static get settingValues () {
@@ -279,6 +349,11 @@ export default class ContentUIController {
     return zIndexMax
   }
 
+  static hasRegularBaseFontSize () {
+    let htmlElement = document.querySelector('html')
+    return window.getComputedStyle(htmlElement, null).getPropertyValue('font-size') === '16px'
+  }
+
   formatFullDefinitions (lexeme) {
     let content = `<h3>${lexeme.lemma.word}</h3>\n`
     for (let fullDef of lexeme.meaning.fullDefs) {
@@ -290,11 +365,37 @@ export default class ContentUIController {
   message (message) {
     this.panel.showMessage(message)
     this.popup.showMessage(message)
+    this.panel.showNotification(message)
+    return this
   }
 
   addMessage (message) {
     this.panel.appendMessage(message)
     this.popup.appendMessage(message)
+    this.panel.showNotification(message)
+  }
+
+  static getLanguageName (languageID) {
+    return languageNames.has(languageID) ? languageNames.get(languageID) : ''
+  }
+
+  showLanguageInfo (homonym) {
+    let notFound = !homonym.lexemes || homonym.lexemes.length < 1
+    notFound = true // Debug only
+    this.panel.showLanguageNotification(homonym, notFound)
+  }
+
+  showErrorInfo (errorText) {
+    this.panel.showErrorInformation(errorText)
+  }
+
+  showImportantNotification (message) {
+    this.panel.showImportantNotification(message)
+  }
+
+  changeTab (tabName) {
+    this.panel.changeTab(tabName)
+    return this
   }
 
   updateMorphology (homonym) {
