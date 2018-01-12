@@ -36,9 +36,6 @@
           this.$emit('change', this.data.name, newValue)
         }
       }
-    },
-    mounted: function () {
-      console.log(`Setting is ${this.showTitle}`)
     }
   }
 </script>

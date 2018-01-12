@@ -11054,9 +11054,6 @@ exports.clearImmediate = clearImmediate;
         this.$emit('change', this.data.name, newValue);
       }
     }
-  },
-  mounted: function () {
-    console.log(`Setting is ${this.showTitle}`);
   }
 });
 
@@ -22204,8 +22201,8 @@ class LexicalQuery {
           let resolvedValue = await result.value
           result = iterator.next(resolvedValue)
         } catch (error) {
-          console.error(error)
           iterator.return()
+          this.finalize(error)
           break
         }
       } else {
@@ -22268,7 +22265,7 @@ class LexicalQuery {
             this.ui.updateDefinitions(this.homonym)
           }
           if (definitionRequests.every(request => request.complete)) {
-            this.finalize()
+            this.finalize('Success')
           }
         },
         error => {
@@ -22278,7 +22275,7 @@ class LexicalQuery {
             this.ui.addMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"`)
           }
           if (definitionRequests.every(request => request.complete)) {
-            this.finalize()
+            this.finalize(error)
           }
         }
       )
@@ -22289,8 +22286,14 @@ class LexicalQuery {
 
   finalize (result) {
     if (this.active) {
-      this.ui.addMessage(`All lexical data is available now`)
-      this.ui.showLanguageInfo(this.homonym)
+      if (typeof result === 'object' && result instanceof Error) {
+        console.error(`LexicalQuery failed: ${result.message}`)
+        this.ui.showErrorInfo(`LexicalQuery failed: ${result.message}`)
+      } else {
+        console.log('LexicalQuery completed successfully')
+        this.ui.addMessage(`All lexical data is available now`)
+        this.ui.showLanguageInfo(this.homonym)
+      }
     }
     // Record experience in a wrapper
     LexicalQuery.destroy(this)
@@ -22486,6 +22489,13 @@ class ContentUIController {
 
           this.panelData.status.languageName = languageName
           this.panelData.status.selectedText = homonym.targetWord
+        },
+
+        showErrorInformation: function (errorText) {
+          this.panelData.notification.visible = true
+          this.panelData.notification.important = true
+          this.panelData.notification.showLanguageSwitcher = false
+          this.panelData.notification.text = errorText
         },
 
         clearNotifications: function () {
@@ -22694,6 +22704,10 @@ class ContentUIController {
     let notFound = !homonym.lexemes || homonym.lexemes.length < 1
     notFound = true // Debug only
     this.panel.showLanguageNotification(homonym, notFound)
+  }
+
+  showErrorInfo (errorText) {
+    this.panel.showErrorInformation(errorText)
   }
 
   showImportantNotification (message) {

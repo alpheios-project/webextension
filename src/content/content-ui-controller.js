@@ -170,6 +170,13 @@ export default class ContentUIController {
           this.panelData.status.selectedText = homonym.targetWord
         },
 
+        showErrorInformation: function (errorText) {
+          this.panelData.notification.visible = true
+          this.panelData.notification.important = true
+          this.panelData.notification.showLanguageSwitcher = false
+          this.panelData.notification.text = errorText
+        },
+
         clearNotifications: function () {
           this.panelData.notification.visible = false
           this.panelData.notification.important = false
@@ -376,6 +383,10 @@ export default class ContentUIController {
     let notFound = !homonym.lexemes || homonym.lexemes.length < 1
     notFound = true // Debug only
     this.panel.showLanguageNotification(homonym, notFound)
+  }
+
+  showErrorInfo (errorText) {
+    this.panel.showErrorInformation(errorText)
   }
 
   showImportantNotification (message) {
