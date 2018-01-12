@@ -6,6 +6,7 @@
     </popup>
 </div>
 <div id="alpheios-panel">
-    <panel :data="panelData" @close="close" @setposition="setPositionTo" @settingchange="settingChange"
+    <panel :data="panelData" @close="close" @closenotifications="clearNotifications"
+           @setposition="setPositionTo" @settingchange="settingChange"
            @changetab="changeTab"></panel>
 </div>

@@ -32,7 +32,7 @@ export default class LexicalQuery {
   }
 
   async getData () {
-    this.ui.clear().open().message(`Please wait while data is retrieved ...`)
+    this.ui.clear().open().changeTab('definitions').message(`Please wait while data is retrieved ...`)
     let iterator = this.iterations()
 
     let result = iterator.next()
@@ -43,8 +43,8 @@ export default class LexicalQuery {
           let resolvedValue = await result.value
           result = iterator.next(resolvedValue)
         } catch (error) {
-          console.error(error)
           iterator.return()
+          this.finalize(error)
           break
         }
       } else {
@@ -107,8 +107,7 @@ export default class LexicalQuery {
             this.ui.updateDefinitions(this.homonym)
           }
           if (definitionRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`All lexical data is available now`) }
-            this.finalize()
+            this.finalize('Success')
           }
         },
         error => {
@@ -118,8 +117,7 @@ export default class LexicalQuery {
             this.ui.addMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"`)
           }
           if (definitionRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`All lexical data is available now`) }
-            this.finalize()
+            this.finalize(error)
           }
         }
       )
@@ -129,7 +127,16 @@ export default class LexicalQuery {
   }
 
   finalize (result) {
-    console.log('Finalize query called')
+    if (this.active) {
+      if (typeof result === 'object' && result instanceof Error) {
+        console.error(`LexicalQuery failed: ${result.message}`)
+        this.ui.showErrorInfo(`LexicalQuery failed: ${result.message}`)
+      } else {
+        console.log('LexicalQuery completed successfully')
+        this.ui.addMessage(`All lexical data is available now`)
+        this.ui.showLanguageInfo(this.homonym)
+      }
+    }
     // Record experience in a wrapper
     LexicalQuery.destroy(this)
     return result

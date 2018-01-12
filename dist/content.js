@@ -2981,22 +2981,26 @@ class TabScript {
   }
 
   /**
-   * Creates a serializable copy of a source object.
+   * Creates a serializable copy of a source object. Firefox uses the structured clone algorithm
+   * (https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) to serialize objects.
+   * Requirements of this algorithm are that a serializable object to have no Function or Error properties,
+   * neither any DOM Nodes. That's why an empty serializable object is created and only
+   * selected properties are copied into it.
    * @param {TabScript} source - An object to be serialized.
-   * @return {TabScript} A serializable copy of a source.
+   * @return {Object} A serializable copy of a source.
    */
   static serializable (source) {
-    let serializable = TabScript.create(source)
+    let serializable = {}
     serializable.tabID = source.tabID
-    for (let key of Object.keys(serializable)) {
+    for (let key of Object.keys(source)) {
       if (TabScript.dataProps.includes(key)) {
         /*
         Only certain features will be stored within a serialized version of a TabScript. This is done
         to prevent context-specific features (such as local event handlers) to be passed over the network
         to a different context where they would make no sense.
          */
-        let value = serializable[key]
-        if (typeof value === 'symbol') { serializable[key] = Symbol.keyFor(value) }
+        let value = source[key]
+        serializable[key] = (typeof value === 'symbol') ? Symbol.keyFor(value) : value
       }
     }
     return serializable
@@ -10660,6 +10664,19 @@ exports.clearImmediate = clearImmediate;
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -10705,12 +10722,17 @@ exports.clearImmediate = clearImmediate;
   },
 
   computed: {
-    panelClasses: function () {
-      if (this.data.settings.panelPosition.currentValue === 'right') {
-        return 'alpheios-panel-right';
-      } else {
-        return 'alpheios-panel-left';
-      }
+    classes: function () {
+      return Object.assign(this.data.classes, {
+        'alpheios-panel-left': this.data.settings.panelPosition.currentValue === 'left',
+        'alpheios-panel-right': this.data.settings.panelPosition.currentValue === 'right'
+      });
+    },
+
+    notificationClasses: function () {
+      return {
+        'alpheios-panel__notifications--important': this.data.notification.important
+      };
     },
 
     attachToLeftVisible: function () {
@@ -10734,6 +10756,10 @@ exports.clearImmediate = clearImmediate;
 
     close() {
       this.$emit('close');
+    },
+
+    closeNotifications() {
+      this.$emit('closenotifications');
     },
 
     setPosition(position) {
@@ -11001,6 +11027,18 @@ exports.clearImmediate = clearImmediate;
     data: {
       type: Object,
       required: true
+    },
+    showTitle: {
+      type: Boolean,
+      required: false,
+      default: true
+    },
+    classes: {
+      type: Array,
+      required: false,
+      default: function () {
+        return ['uk-margin'];
+      }
     }
   },
   computed: {
@@ -18360,6 +18398,8 @@ module.exports = {render: function () {with(this){return _c('svg',{attrs:{"viewB
 
 
 
+// Embeddable SVG icons
+
 
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: 'Popup',
@@ -22278,7 +22318,7 @@ class LexicalQuery {
   }
 
   async getData () {
-    this.ui.clear().open().message(`Please wait while data is retrieved ...`)
+    this.ui.clear().open().changeTab('definitions').message(`Please wait while data is retrieved ...`)
     let iterator = this.iterations()
 
     let result = iterator.next()
@@ -22289,8 +22329,8 @@ class LexicalQuery {
           let resolvedValue = await result.value
           result = iterator.next(resolvedValue)
         } catch (error) {
-          console.error(error)
           iterator.return()
+          this.finalize(error)
           break
         }
       } else {
@@ -22353,8 +22393,7 @@ class LexicalQuery {
             this.ui.updateDefinitions(this.homonym)
           }
           if (definitionRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`All lexical data is available now`) }
-            this.finalize()
+            this.finalize('Success')
           }
         },
         error => {
@@ -22364,8 +22403,7 @@ class LexicalQuery {
             this.ui.addMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"`)
           }
           if (definitionRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`All lexical data is available now`) }
-            this.finalize()
+            this.finalize(error)
           }
         }
       )
@@ -22375,7 +22413,16 @@ class LexicalQuery {
   }
 
   finalize (result) {
-    console.log('Finalize query called')
+    if (this.active) {
+      if (typeof result === 'object' && result instanceof Error) {
+        console.error(`LexicalQuery failed: ${result.message}`)
+        this.ui.showErrorInfo(`LexicalQuery failed: ${result.message}`)
+      } else {
+        console.log('LexicalQuery completed successfully')
+        this.ui.addMessage(`All lexical data is available now`)
+        this.ui.showLanguageInfo(this.homonym)
+      }
+    }
     // Record experience in a wrapper
     LexicalQuery.destroy(this)
     return result
@@ -22416,11 +22463,20 @@ class LexicalQuery {
 
 
 
+const languageNames = new Map([
+  [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_LATIN, 'Latin'],
+  [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_GREEK, 'Greek'],
+  [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_ARABIC, 'Arabic'],
+  [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_PERSIAN, 'Persian']
+])
+
 class ContentUIController {
   constructor (state, options) {
     this.state = state
     this.options = options
     this.settings = ContentUIController.settingValues
+    this.irregularBaseFontSizeClassName = 'alpheios-irregular-base-font-size'
+    this.irregularBaseFontSize = !ContentUIController.hasRegularBaseFontSize()
 
     this.zIndex = this.getZIndexMax()
 
@@ -22459,7 +22515,20 @@ class ContentUIController {
             tableBody: 'alpheios-panel-content-infl-table-body'
           },
           messages: '',
+          notification: {
+            visible: false,
+            important: false,
+            showLanguageSwitcher: false,
+            text: ''
+          },
+          status: {
+            selectedText: '',
+            languageName: ''
+          },
           settings: this.options.items,
+          classes: {
+            [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
+          },
           styles: {
             zIndex: this.zIndex
           },
@@ -22507,18 +22576,20 @@ class ContentUIController {
             if (this.panelData.tabs[key]) { this.panelData.tabs[key] = false }
           }
           this.panelData.tabs[name] = true
+          return this
         },
 
         clearContent: function () {
           this.panelData.shortDefinitions = []
           this.panelData.fullDefinitions = ''
           this.panelData.messages = ''
+          this.clearNotifications()
           return this
         },
 
         showMessage: function (messageHTML) {
           this.panelData.messages = messageHTML + '<br>'
-          this.changeTab('status')
+          // this.changeTab('status')
         },
 
         appendMessage: function (messageHTML) {
@@ -22527,6 +22598,49 @@ class ContentUIController {
 
         clearMessages: function () {
           this.panelData.messages = ''
+        },
+
+        showNotification: function (text, important = false) {
+          this.panelData.notification.visible = true
+          this.panelData.notification.important = important
+          this.panelData.notification.showLanguageSwitcher = false
+          this.panelData.notification.text = text
+        },
+
+        showImportantNotification: function (text) {
+          this.showNotification(text, true)
+        },
+
+        showLanguageNotification: function (homonym, notFound = false) {
+          this.panelData.notification.visible = true
+          let languageName = ContentUIController.getLanguageName(homonym.languageID)
+          if (notFound) {
+            this.panelData.notification.important = true
+            this.panelData.notification.showLanguageSwitcher = true
+          } else {
+            this.panelData.notification.important = false
+            this.panelData.notification.showLanguageSwitcher = false
+          }
+          this.panelData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
+
+          this.panelData.status.languageName = languageName
+          this.panelData.status.selectedText = homonym.targetWord
+        },
+
+        showErrorInformation: function (errorText) {
+          this.panelData.notification.visible = true
+          this.panelData.notification.important = true
+          this.panelData.notification.showLanguageSwitcher = false
+          this.panelData.notification.text = errorText
+        },
+
+        clearNotifications: function () {
+          this.panelData.notification.visible = false
+          this.panelData.notification.important = false
+          this.panelData.notification.showLanguageSwitcher = false
+          this.panelData.notification.text = ''
+          this.panelData.status.languageName = ''
+          this.panelData.status.selectedText = ''
         },
 
         toggle: function () {
@@ -22596,8 +22710,12 @@ class ContentUIController {
         morphDataReady: false,
         popupData: {
           minWidth: 400,
-          minHeight: 400
-        }
+          minHeight: 400,
+          classes: {
+            [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
+          }
+        },
+        panel: this.panel
       },
       methods: {
         showMessage: function (message) {
@@ -22657,7 +22775,6 @@ class ContentUIController {
 
       }
     })
-    this.popup.panel = this.panel
   }
 
   static get settingValues () {
@@ -22714,6 +22831,11 @@ class ContentUIController {
     return zIndexMax
   }
 
+  static hasRegularBaseFontSize () {
+    let htmlElement = document.querySelector('html')
+    return window.getComputedStyle(htmlElement, null).getPropertyValue('font-size') === '16px'
+  }
+
   formatFullDefinitions (lexeme) {
     let content = `<h3>${lexeme.lemma.word}</h3>\n`
     for (let fullDef of lexeme.meaning.fullDefs) {
@@ -22725,11 +22847,37 @@ class ContentUIController {
   message (message) {
     this.panel.showMessage(message)
     this.popup.showMessage(message)
+    this.panel.showNotification(message)
+    return this
   }
 
   addMessage (message) {
     this.panel.appendMessage(message)
     this.popup.appendMessage(message)
+    this.panel.showNotification(message)
+  }
+
+  static getLanguageName (languageID) {
+    return languageNames.has(languageID) ? languageNames.get(languageID) : ''
+  }
+
+  showLanguageInfo (homonym) {
+    let notFound = !homonym.lexemes || homonym.lexemes.length < 1
+    notFound = true // Debug only
+    this.panel.showLanguageNotification(homonym, notFound)
+  }
+
+  showErrorInfo (errorText) {
+    this.panel.showErrorInformation(errorText)
+  }
+
+  showImportantNotification (message) {
+    this.panel.showImportantNotification(message)
+  }
+
+  changeTab (tabName) {
+    this.panel.changeTab(tabName)
+    return this
   }
 
   updateMorphology (homonym) {
@@ -33995,7 +34143,7 @@ process.umask = function() { return 0; };
 /* 44 */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"alpheios-popup\" >\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\" :linkedfeatures=\"linkedFeatures\"\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\n           :data=\"popupData\"\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\" @sendfeature=\"sendFeature\">\n    </popup>\n</div>\n<div id=\"alpheios-panel\">\n    <panel :data=\"panelData\" @close=\"close\" @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\n           @changetab=\"changeTab\"></panel>\n</div>\n";
+module.exports = "<div id=\"alpheios-popup\" >\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\" :linkedfeatures=\"linkedFeatures\"\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\n           :data=\"popupData\"\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\" @sendfeature=\"sendFeature\">\n    </popup>\n</div>\n<div id=\"alpheios-panel\">\n    <panel :data=\"panelData\" @close=\"close\" @closenotifications=\"clearNotifications\"\n           @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\n           @changetab=\"changeTab\"></panel>\n</div>\n";
 
 /***/ }),
 /* 45 */
@@ -34088,7 +34236,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-panel {\n  display: block;\n  width: 400px;\n  height: 100vh;\n  top: 0;\n  z-index: 2000;\n  position: fixed;\n  background: #FFF;\n  resize: both;\n  opacity: 0.95;\n  direction: ltr;\n}\n.alpheios-panel.alpheios-panel-left {\n  left: 0;\n}\n.alpheios-panel.alpheios-panel-right {\n  display: block;\n  right: 0;\n}\n.alpheios-panel.full-width {\n  display: block;\n  width: 100%;\n  left: 0;\n}\n.alpheios-panel__header {\n  position: relative;\n  display: flex;\n  flex-wrap: nowrap;\n  height: 60px;\n  padding: 10px;\n  box-sizing: border-box;\n  background-color: #4E6476;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: ltr;\n  padding: 10px 0 10px 20px;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: rtl;\n  padding: 10px 20px 10px 0;\n}\n.alpheios-panel__header-title {\n  flex-grow: 1;\n}\n.alpheios-panel__header-logo {\n  margin-top: -1px;\n}\n.alpheios-panel__header-action-btn,\n.alpheios-panel__header-action-btn.active:hover,\n.alpheios-panel__header-action-btn.active:focus {\n  display: block;\n  width: 40px;\n  height: 40px;\n  margin: 0 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__header-action-btn:hover,\n.alpheios-panel__header-action-btn:focus,\n.alpheios-panel__header-action-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__body {\n  display: flex;\n  height: calc(100vh - 60px);\n}\n.alpheios-panel-left .alpheios-panel__body {\n  flex-direction: row;\n}\n.alpheios-panel-right .alpheios-panel__body {\n  flex-direction: row-reverse;\n}\n.alpheios-panel__content {\n  flex-grow: 1;\n  direction: ltr;\n  overflow: auto;\n  padding: 10px 20px 100px;\n}\n.alpheios-panel__contentitem {\n  margin-bottom: 1em;\n}\n.alpheios-panel__nav {\n  width: 60px;\n  background: #7E8897;\n}\n.alpheios-panel__nav-btn,\n.alpheios-panel__nav-btn.active:hover,\n.alpheios-panel__nav-btn.active:focus {\n  cursor: pointer;\n  margin: 20px 10px;\n  width: 40px;\n  height: 40px;\n  background: transparent no-repeat center center;\n  background-size: contain;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__nav-btn:hover,\n.alpheios-panel__nav-btn:focus,\n.alpheios-panel__nav-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__grammarframe {\n  height: 100%;\n  width: 100%;\n}\n.alpheios-panel__fullheight {\n  height: 100%;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-panel {\n  width: 400px;\n  height: 100vh;\n  top: 0;\n  z-index: 2000;\n  position: fixed;\n  background: #FFF;\n  resize: both;\n  opacity: 0.95;\n  direction: ltr;\n  display: grid;\n  grid-template-columns: auto 60px;\n  grid-template-rows: 60px 60px auto 60px;\n  grid-template-areas: \"header header\" \"content sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel[data-notification-visible=\"true\"] {\n  grid-template-areas: \"header header\" \"notifications sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel.alpheios-panel-left {\n  left: 0;\n}\n.alpheios-panel.alpheios-panel-right {\n  right: 0;\n  grid-template-columns: 60px auto;\n  grid-template-areas: \"header header\" \"sidebar notifications \" \"sidebar content\" \"sidebar status\";\n}\n.alpheios-panel__header {\n  position: relative;\n  display: flex;\n  flex-wrap: nowrap;\n  padding: 10px;\n  box-sizing: border-box;\n  background-color: #4E6476;\n  grid-area: header;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: ltr;\n  padding: 10px 0 10px 20px;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: rtl;\n  padding: 10px 20px 10px 0;\n}\n.alpheios-panel__header-title {\n  flex-grow: 1;\n}\n.alpheios-panel__header-logo {\n  margin-top: -1px;\n}\n.alpheios-panel__header-action-btn,\n.alpheios-panel__header-action-btn.active:hover,\n.alpheios-panel__header-action-btn.active:focus {\n  display: block;\n  width: 40px;\n  height: 40px;\n  margin: 0 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__header-action-btn:hover,\n.alpheios-panel__header-action-btn:focus,\n.alpheios-panel__header-action-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__body {\n  display: flex;\n  height: calc(100vh - 60px);\n}\n.alpheios-panel-left .alpheios-panel__body {\n  flex-direction: row;\n}\n.alpheios-panel-right .alpheios-panel__body {\n  flex-direction: row-reverse;\n}\n.alpheios-panel__content {\n  padding: 20px 20px 100px;\n  overflow: auto;\n  grid-area: content;\n  direction: ltr;\n}\n.alpheios-panel__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  grid-area: notifications;\n  overflow: hidden;\n}\n.alpheios-panel__notifications-close-btn {\n  position: absolute;\n  right: 0;\n  top: 0;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__notifications-close-btn:hover,\n.alpheios-panel__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-panel__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-panel__notifications--important {\n  background: #73CDDE;\n}\n[data-notification-visible=\"true\"] .alpheios-panel__notifications {\n  display: block;\n}\n.alpheios-panel__status {\n  padding: 10px 20px;\n  background: #4E6476;\n  color: #FFF;\n  grid-area: status;\n}\n.alpheios-panel__contentitem {\n  margin-bottom: 1em;\n}\n.alpheios-panel__nav {\n  width: 60px;\n  background: #7E8897;\n  grid-area: sidebar;\n}\n.alpheios-panel__nav-btn,\n.alpheios-panel__nav-btn.active:hover,\n.alpheios-panel__nav-btn.active:focus {\n  cursor: pointer;\n  margin: 20px 10px;\n  width: 40px;\n  height: 40px;\n  background: transparent no-repeat center center;\n  background-size: contain;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__nav-btn:hover,\n.alpheios-panel__nav-btn:focus,\n.alpheios-panel__nav-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__grammarframe {\n  height: 100%;\n  width: 100%;\n}\n.alpheios-panel__fullheight {\n  height: 100%;\n}\n", ""]);
 
 // exports
 
@@ -34456,10 +34604,22 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", { staticClass: "uk-margin" }, [
-    _c("label", { staticClass: "uk-form-label" }, [
-      _vm._v(_vm._s(_vm.data.labelText))
-    ]),
+  return _c("div", { class: _vm.classes }, [
+    _c(
+      "label",
+      {
+        directives: [
+          {
+            name: "show",
+            rawName: "v-show",
+            value: _vm.showTitle,
+            expression: "showTitle"
+          }
+        ],
+        staticClass: "uk-form-label"
+      },
+      [_vm._v(_vm._s(_vm.data.labelText))]
+    ),
     _vm._v(" "),
     _c(
       "select",
@@ -34673,7 +34833,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-grammar__provider {\n  font-size: 12px;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  margin-top: .5em;\n  margin-bottom: .5em;\n}\n.alpheios-grammar, .alpheios-grammar__frame {\n  height: 100%;\n  width: 100%;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-grammar__provider {\n  font-size: 16px;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  margin-top: .5em;\n  margin-bottom: .5em;\n}\n.alpheios-grammar, .alpheios-grammar__frame {\n  height: 100%;\n  width: 100%;\n}\n", ""]);
 
 // exports
 
@@ -34937,9 +35097,13 @@ var render = function() {
         }
       ],
       staticClass: "alpheios-panel auk",
-      class: _vm.panelClasses,
+      class: _vm.classes,
       style: this.data.styles,
-      attrs: { "data-component": "alpheios-panel", "data-resizable": "true" }
+      attrs: {
+        "data-component": "alpheios-panel",
+        "data-resizable": "true",
+        "data-notification-visible": _vm.data.notification.visible
+      }
     },
     [
       _c("div", { staticClass: "alpheios-panel__header" }, [
@@ -35000,249 +35164,321 @@ var render = function() {
         )
       ]),
       _vm._v(" "),
-      _c("div", { staticClass: "alpheios-panel__body" }, [
-        _c("div", { staticClass: "alpheios-panel__content" }, [
+      _c(
+        "div",
+        {
+          staticClass: "alpheios-panel__notifications uk-text-small",
+          class: _vm.notificationClasses
+        },
+        [
           _c(
-            "div",
+            "span",
             {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.definitions,
-                  expression: "data.tabs.definitions"
-                }
-              ],
-              attrs: { "data-element": "definitionsPanel" }
+              staticClass: "alpheios-panel__notifications-close-btn",
+              on: { click: _vm.closeNotifications }
             },
-            [
-              _vm._l(_vm.data.shortDefinitions, function(definition) {
-                return _c(
-                  "div",
-                  { staticClass: "alpheios-panel__contentitem" },
-                  [_c("shortdef", { attrs: { definition: definition } })],
-                  1
-                )
-              }),
-              _vm._v(" "),
-              _c("div", {
-                staticClass: "alpheios-panel__contentitem",
-                domProps: { innerHTML: _vm._s(_vm.data.fullDefinitions) }
-              })
-            ],
-            2
+            [_c("close-icon")],
+            1
           ),
           _vm._v(" "),
+          _c("span", {
+            domProps: { innerHTML: _vm._s(_vm.data.notification.text) }
+          }),
+          _vm._v(" "),
+          _c("setting", {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.notification.showLanguageSwitcher,
+                expression: "data.notification.showLanguageSwitcher"
+              }
+            ],
+            attrs: {
+              data: _vm.data.settings.preferredLanguage,
+              "show-title": false,
+              classes: ["alpheios-panel__notifications--lang-switcher"]
+            },
+            on: { change: _vm.settingChanged }
+          })
+        ],
+        1
+      ),
+      _vm._v(" "),
+      _c(
+        "div",
+        {
+          staticClass: "alpheios-panel__nav",
+          attrs: { id: "alpheios-panel__nav" }
+        },
+        [
           _c(
             "div",
             {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.inflections,
-                  expression: "data.tabs.inflections"
+              staticClass: "alpheios-panel__nav-btn",
+              class: { active: _vm.data.tabs.definitions },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("definitions")
                 }
-              ],
-              attrs: { "data-element": "inflectionsPanel" }
+              }
             },
-            [
-              _c("inflections", {
-                attrs: {
-                  infldata: _vm.data.inflectionData,
-                  locale: _vm.data.settings.locale.currentValue
-                }
-              })
-            ],
+            [_c("definitions-icon", { staticClass: "icon" })],
             1
           ),
           _vm._v(" "),
           _c(
             "div",
             {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.status,
-                  expression: "data.tabs.status"
+              staticClass: "alpheios-panel__nav-btn",
+              class: { active: _vm.data.tabs.inflections },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("inflections")
                 }
-              ],
-              attrs: { "data-element": "statusPanel" }
+              }
             },
-            [_c("div", { domProps: { innerHTML: _vm._s(_vm.data.messages) } })]
-          ),
-          _vm._v(" "),
-          _c(
-            "div",
-            {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.grammar,
-                  expression: "data.tabs.grammar"
-                }
-              ],
-              staticClass: "alpheios-panel__fullheight",
-              attrs: { "data-element": "grammarPanel" }
-            },
-            [_c("grammar", { attrs: { res: _vm.data.grammarRes } })],
+            [_c("inflections-icon", { staticClass: "icon" })],
             1
           ),
           _vm._v(" "),
           _c(
             "div",
             {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.options,
-                  expression: "data.tabs.options"
+              staticClass: "alpheios-panel__nav-btn",
+              class: { active: _vm.data.tabs.grammar },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("grammar")
                 }
-              ],
-              attrs: { "data-element": "optionsPanel" }
+              }
             },
-            [
-              _c("setting", {
-                attrs: { data: _vm.data.settings.preferredLanguage },
-                on: { change: _vm.settingChanged }
-              }),
-              _vm._v(" "),
-              _c("setting", {
-                attrs: { data: _vm.data.settings.locale },
-                on: { change: _vm.settingChanged }
-              }),
-              _vm._v(" "),
-              _c("setting", {
-                attrs: { data: _vm.data.settings.panelPosition },
-                on: { change: _vm.settingChanged }
-              }),
-              _vm._v(" "),
-              _c("setting", {
-                attrs: { data: _vm.data.settings.uiType },
-                on: { change: _vm.settingChanged }
-              })
-            ],
+            [_c("grammar-icon", { staticClass: "icon" })],
             1
           ),
           _vm._v(" "),
           _c(
             "div",
             {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.tabs.info,
-                  expression: "data.tabs.info"
+              staticClass: "alpheios-panel__nav-btn",
+              class: { active: _vm.data.tabs.status },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("status")
                 }
-              ],
-              attrs: { "data-element": "infoPanel" }
+              }
             },
-            [_c("info")],
+            [_c("status-icon", { staticClass: "icon" })],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              staticClass: "alpheios-panel__nav-btn",
+              class: { active: _vm.data.tabs.options },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("options")
+                }
+              }
+            },
+            [_c("options-icon", { staticClass: "icon" })],
+            1
+          ),
+          _vm._v(" "),
+          _c(
+            "div",
+            {
+              staticClass: "alpheios-panel__nav-btn",
+              class: { active: _vm.data.tabs.info },
+              on: {
+                click: function($event) {
+                  _vm.changeTab("info")
+                }
+              }
+            },
+            [_c("info-icon", { staticClass: "icon" })],
             1
           )
-        ]),
+        ]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "alpheios-panel__content" }, [
+        _c(
+          "div",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.tabs.definitions,
+                expression: "data.tabs.definitions"
+              }
+            ],
+            attrs: { "data-element": "definitionsPanel" }
+          },
+          [
+            _vm._l(_vm.data.shortDefinitions, function(definition) {
+              return _c(
+                "div",
+                { staticClass: "alpheios-panel__contentitem" },
+                [_c("shortdef", { attrs: { definition: definition } })],
+                1
+              )
+            }),
+            _vm._v(" "),
+            _c("div", {
+              staticClass: "alpheios-panel__contentitem",
+              domProps: { innerHTML: _vm._s(_vm.data.fullDefinitions) }
+            })
+          ],
+          2
+        ),
         _vm._v(" "),
         _c(
           "div",
           {
-            staticClass: "alpheios-panel__nav",
-            attrs: { id: "alpheios-panel__nav" }
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.tabs.inflections,
+                expression: "data.tabs.inflections"
+              }
+            ],
+            attrs: { "data-element": "inflectionsPanel" }
           },
           [
-            _c(
-              "div",
+            _c("inflections", {
+              attrs: {
+                infldata: _vm.data.inflectionData,
+                locale: _vm.data.settings.locale.currentValue
+              }
+            })
+          ],
+          1
+        ),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            directives: [
               {
-                staticClass: "alpheios-panel__nav-btn",
-                class: { active: _vm.data.tabs.definitions },
-                on: {
-                  click: function($event) {
-                    _vm.changeTab("definitions")
-                  }
-                }
-              },
-              [_c("definitions-icon", { staticClass: "icon" })],
-              1
-            ),
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.tabs.grammar,
+                expression: "data.tabs.grammar"
+              }
+            ],
+            staticClass: "alpheios-panel__fullheight",
+            attrs: { "data-element": "grammarPanel" }
+          },
+          [_c("grammar", { attrs: { res: _vm.data.grammarRes } })],
+          1
+        ),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.tabs.status,
+                expression: "data.tabs.status"
+              }
+            ],
+            attrs: { "data-element": "statusPanel" }
+          },
+          [_c("div", { domProps: { innerHTML: _vm._s(_vm.data.messages) } })]
+        ),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            directives: [
+              {
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.tabs.options,
+                expression: "data.tabs.options"
+              }
+            ],
+            attrs: { "data-element": "optionsPanel" }
+          },
+          [
+            _c("setting", {
+              attrs: { data: _vm.data.settings.preferredLanguage },
+              on: { change: _vm.settingChanged }
+            }),
             _vm._v(" "),
-            _c(
-              "div",
-              {
-                staticClass: "alpheios-panel__nav-btn",
-                class: { active: _vm.data.tabs.inflections },
-                on: {
-                  click: function($event) {
-                    _vm.changeTab("inflections")
-                  }
-                }
-              },
-              [_c("inflections-icon", { staticClass: "icon" })],
-              1
-            ),
+            _c("setting", {
+              attrs: { data: _vm.data.settings.locale },
+              on: { change: _vm.settingChanged }
+            }),
             _vm._v(" "),
-            _c(
-              "div",
-              {
-                staticClass: "alpheios-panel__nav-btn",
-                class: { active: _vm.data.tabs.status },
-                on: {
-                  click: function($event) {
-                    _vm.changeTab("status")
-                  }
-                }
-              },
-              [_c("status-icon", { staticClass: "icon" })],
-              1
-            ),
+            _c("setting", {
+              attrs: { data: _vm.data.settings.panelPosition },
+              on: { change: _vm.settingChanged }
+            }),
             _vm._v(" "),
-            _c(
-              "div",
+            _c("setting", {
+              attrs: { data: _vm.data.settings.uiType },
+              on: { change: _vm.settingChanged }
+            })
+          ],
+          1
+        ),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            directives: [
               {
-                staticClass: "alpheios-panel__nav-btn",
-                class: { active: _vm.data.tabs.options },
-                on: {
-                  click: function($event) {
-                    _vm.changeTab("options")
-                  }
-                }
-              },
-              [_c("options-icon", { staticClass: "icon" })],
-              1
-            ),
-            _vm._v(" "),
-            _c(
-              "div",
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.tabs.info,
+                expression: "data.tabs.info"
+              }
+            ],
+            attrs: { "data-element": "infoPanel" }
+          },
+          [_c("info")],
+          1
+        )
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "alpheios-panel__status" }, [
+        _c(
+          "span",
+          {
+            directives: [
               {
-                staticClass: "alpheios-panel__nav-btn",
-                class: { active: _vm.data.tabs.grammar },
-                on: {
-                  click: function($event) {
-                    _vm.changeTab("grammar")
-                  }
-                }
-              },
-              [_c("grammar-icon", { staticClass: "icon" })],
-              1
-            ),
-            _vm._v(" "),
-            _c(
-              "div",
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.status.selectedText,
+                expression: "data.status.selectedText"
+              }
+            ]
+          },
+          [_vm._v("Selected text: " + _vm._s(_vm.data.status.selectedText))]
+        ),
+        _c("br"),
+        _vm._v(" "),
+        _c(
+          "span",
+          {
+            directives: [
               {
-                staticClass: "alpheios-panel__nav-btn",
-                class: { active: _vm.data.tabs.info },
-                on: {
-                  click: function($event) {
-                    _vm.changeTab("info")
-                  }
-                }
-              },
-              [_c("info-icon", { staticClass: "icon" })],
-              1
-            )
-          ]
+                name: "show",
+                rawName: "v-show",
+                value: _vm.data.status.languageName,
+                expression: "data.status.languageName"
+              }
+            ]
+          },
+          [_vm._v("Language: " + _vm._s(_vm.data.status.languageName))]
         )
       ])
     ]
@@ -35368,7 +35604,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n  background: #FFF;\n  border: 1px solid lightgray;\n  width: 400px;\n  height: 500px;\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  top: 100px;\n  padding: 50px 20px 20px;\n  box-sizing: border-box;\n  /* Required for Interact.js to take element size with paddings and work correctly */\n  overflow: auto;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 12px;\n  color: #666666;\n}\n.alpheios-popup li {\n  list-style-type: none;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 12px;\n  color: #666666;\n  padding: 0;\n}\n.alpheios-morph__close-btn,\n.alpheios-morph__close-btn.active:hover,\n.alpheios-morph__close-btn.active:focus {\n  display: block;\n  width: 40px;\n  height: 40px;\n  top: 0;\n  right: 0;\n  margin: 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n  cursor: pointer;\n  position: absolute;\n}\n.alpheios-morph__close-btn:hover,\n.alpheios-morph__close-btn:focus,\n.alpheios-morph_close-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-popup__message-area {\n  margin-bottom: 20px;\n}\n.alpheios-popup__content-area {\n  margin-bottom: 20px;\n}\n.alpheios-popup__more-btn {\n  float: right;\n  margin-bottom: 10px;\n}\nli.alpheios-popup__message {\n  display: none;\n}\nli.alpheios-popup__message:last-child {\n  display: block;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-popup {\n  background: #FFF;\n  border: 1px solid lightgray;\n  width: 400px;\n  height: 500px;\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  top: 100px;\n  padding: 50px 20px 20px;\n  box-sizing: border-box;\n  /* Required for Interact.js to take element size with paddings and work correctly */\n  overflow: auto;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 16px;\n  color: #666666;\n}\n.alpheios-popup li {\n  list-style-type: none;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 12px;\n  color: #666666;\n  padding: 0;\n}\n.alpheios-popup__close-btn,\n.alpheios-popup__close-btn.active:hover,\n.alpheios-popup__close-btn.active:focus {\n  display: block;\n  width: 40px;\n  height: 40px;\n  top: 0;\n  right: 0;\n  margin: 10px;\n  cursor: pointer;\n  fill: #666666;\n  stroke: #666666;\n  position: absolute;\n}\n.alpheios-popup__close-btn:hover,\n.alpheios-popup__close-btn:focus,\n.alpheios-popup_close-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-popup__message-area {\n  margin-bottom: 20px;\n}\n.alpheios-popup__content-area {\n  margin-bottom: 20px;\n}\n.alpheios-popup__more-btn {\n  float: right;\n  margin-bottom: 10px;\n}\nli.alpheios-popup__message {\n  display: none;\n}\nli.alpheios-popup__message:last-child {\n  display: block;\n}\n", ""]);
 
 // exports
 
@@ -35464,7 +35700,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n#alpheios-morph__lexemes {\n  color: #0E2233;\n}\n.alpheios-morph__dictentry {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__formtext {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476;\n  font-style: italic;\n}\n.alpheios-morph__dial {\n  font-size: smaller;\n}\n.alpheios-morph__attr {\n  font-weight: normal;\n  padding-right: .25em;\n}\n.alpheios-morph__linkedattr {\n  color: #3E8D9C;\n  font-weight: bold;\n  cursor: pointer;\n  padding-right: .25em;\n}\n.alpheios-morph__linkedattr:hover {\n  color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n  content: \";\";\n}\n.alpheios-morph__inflset {\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-morph__inflset h3 {\n  display: none;\n  font-size: 12px;\n  line-height: 1;\n  margin-bottom: .5em;\n}\n.alpheios-morph__inflset:first-child h3 {\n  color: #4E6476;\n  display: block;\n}\n.alpheios-morph__morphdata {\n  display: inline;\n}\n.alpheios-morph__inflections, .alpheios-morph__definition, .alpheios-morph__forms {\n  margin-left: .5em;\n}\n.alpheios-morph__provider, #alpheios-morph__lexemes .alpheios-definition__provider {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-morph__provider {\n  display: none;\n}\n.alpheios-morph__dictentry:last-child .alpheios-morph__provider {\n  display: block;\n}\n.alpheios-morph__listitem:after {\n  content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n  content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n  content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n  content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n  display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n  display: none;\n}\n#alpheios-morph__lexemes .alpheios-definition__lemma {\n  display: none;\n}\ndiv.alpheios-morph__inline {\n  display: inline;\n}\ndiv.alpheios-morph__block {\n  display: block;\n}\n", ""]);
+exports.push([module.i, "\n#alpheios-morph__lexemes {\n  color: #0E2233;\n}\n.alpheios-morph__dictentry {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__formtext {\n  font-weight: bold;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476;\n  font-style: italic;\n}\n.alpheios-morph__dial {\n  font-size: smaller;\n}\n.alpheios-morph__attr {\n  font-weight: normal;\n  padding-right: .25em;\n}\n.alpheios-morph__linkedattr {\n  color: #3E8D9C;\n  font-weight: bold;\n  cursor: pointer;\n  padding-right: .25em;\n}\n.alpheios-morph__linkedattr:hover {\n  color: #5BC8DC !important;\n}\n.alpheios-morph__pofs:after {\n  content: \";\";\n}\n.alpheios-morph__inflset {\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-morph__inflset h5 {\n  display: none;\n  font-size: 16px;\n  line-height: 1;\n  margin-bottom: .5em;\n}\n.alpheios-morph__inflset:first-child h5 {\n  color: #4E6476;\n  display: block;\n}\n.alpheios-morph__morphdata {\n  display: inline;\n}\n.alpheios-morph__inflections, .alpheios-morph__definition, .alpheios-morph__forms {\n  margin-left: .5em;\n}\n.alpheios-morph__provider, #alpheios-morph__lexemes .alpheios-definition__provider {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-morph__provider {\n  display: none;\n}\n.alpheios-morph__dictentry:last-child .alpheios-morph__provider {\n  display: block;\n}\n.alpheios-morph__listitem:after {\n  content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n  content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n  content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n  content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n  display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n  display: none;\n}\n#alpheios-morph__lexemes .alpheios-definition__lemma {\n  display: none;\n}\ndiv.alpheios-morph__inline {\n  display: inline;\n}\ndiv.alpheios-morph__block {\n  display: block;\n}\n", ""]);
 
 // exports
 
@@ -35764,7 +36000,7 @@ var render = function() {
             { staticClass: "alpheios-morph__inflections" },
             _vm._l(lex.getGroupedInflections(), function(inflset) {
               return _c("div", { staticClass: "alpheios-morph__inflset" }, [
-                _c("h3", [_vm._v("Form(s):")]),
+                _c("h5", [_vm._v("Form(s):")]),
                 _vm._v(" "),
                 _c(
                   "div",
@@ -36339,13 +36575,14 @@ var render = function() {
         }
       ],
       ref: "popup",
-      staticClass: "alpheios-popup"
+      staticClass: "alpheios-popup",
+      class: _vm.data.classes
     },
     [
       _c(
         "span",
         {
-          staticClass: "alpheios-morph__close-btn",
+          staticClass: "alpheios-popup__close-btn",
           on: { click: _vm.closePopup }
         },
         [_c("close-icon")],

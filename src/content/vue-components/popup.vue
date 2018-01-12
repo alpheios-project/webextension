@@ -1,7 +1,7 @@
 <template>
-    <div ref="popup" class="alpheios-popup" v-show="visible">
-        <span @click="closePopup" class="alpheios-morph__close-btn">
-          <close-icon></close-icon>
+    <div ref="popup" class="alpheios-popup" v-bind:class="data.classes" v-show="visible">
+        <span class="alpheios-popup__close-btn" @click="closePopup">
+            <close-icon></close-icon>
         </span>
         <div class="alpheios-popup__message-area">
           <ul>
@@ -21,6 +21,8 @@
 <script>
   import Morph from './morph.vue'
   import interact from 'interactjs'
+
+  // Embeddable SVG icons
   import CloseIcon from '../images/inline-icons/close.svg';
 
   export default {
@@ -185,9 +187,9 @@
         padding: 0;
     }
 
-    .alpheios-morph__close-btn,
-    .alpheios-morph__close-btn.active:hover,
-    .alpheios-morph__close-btn.active:focus {
+    .alpheios-popup__close-btn,
+    .alpheios-popup__close-btn.active:hover,
+    .alpheios-popup__close-btn.active:focus {
         display: block;
         width: 40px;
         height: 40px;
@@ -195,15 +197,14 @@
         right: 0;
         margin: 10px;
         cursor: pointer;
-        fill: $alpheios-link-color-dark-bg;
-        stroke: $alpheios-link-color-dark-bg;
-        cursor: pointer;
+        fill: $alpheios-copy-color;
+        stroke: $alpheios-copy-color;
         position: absolute;
     }
 
-    .alpheios-morph__close-btn:hover,
-    .alpheios-morph__close-btn:focus,
-    .alpheios-morph_close-btn.active {
+    .alpheios-popup__close-btn:hover,
+    .alpheios-popup__close-btn:focus,
+    .alpheios-popup_close-btn.active {
         fill: $alpheios-link-hover-color;
         stroke: $alpheios-link-hover-color;
     }
