@@ -64,6 +64,7 @@ export default class LexicalQuery {
     this.ui.addMessage(`Morphological analyzer data is ready`)
     this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
+    this.ui.showStatusInfo(this.homonym)
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)
     this.ui.addMessage(`Inflection data is ready`)

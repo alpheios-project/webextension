@@ -5,7 +5,6 @@ import Template from './template.htmlf'
 import TabScript from '../lib/content/tab-script'
 import Panel from './vue-components/panel.vue'
 import Popup from './vue-components/popup.vue'
-import UIkit from '../../node_modules/uikit/dist/js/uikit'
 
 const languageNames = new Map([
   [Constants.LANG_LATIN, 'Latin'],
@@ -127,6 +126,7 @@ export default class ContentUIController {
           this.panelData.fullDefinitions = ''
           this.panelData.messages = ''
           this.clearNotifications()
+          this.clearStatus()
           return this
         },
 
@@ -165,8 +165,10 @@ export default class ContentUIController {
             this.panelData.notification.showLanguageSwitcher = false
           }
           this.panelData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
+        },
 
-          this.panelData.status.languageName = languageName
+        showStatusInfo: function (homonym) {
+          this.panelData.status.languageName = ContentUIController.getLanguageName(homonym.languageID)
           this.panelData.status.selectedText = homonym.targetWord
         },
 
@@ -182,6 +184,9 @@ export default class ContentUIController {
           this.panelData.notification.important = false
           this.panelData.notification.showLanguageSwitcher = false
           this.panelData.notification.text = ''
+        },
+
+        clearStatus: function () {
           this.panelData.status.languageName = ''
           this.panelData.status.selectedText = ''
         },
@@ -232,14 +237,25 @@ export default class ContentUIController {
         lexemes: [],
         definitions: {},
         visible: false,
-        defDataReady: false,
-        inflDataReady: false,
         morphDataReady: false,
         popupData: {
           minWidth: 400,
           minHeight: 400,
+          settings: this.options.items,
+          defDataReady: false,
+          inflDataReady: false,
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
+          },
+          notification: {
+            visible: false,
+            important: false,
+            showLanguageSwitcher: false,
+            text: ''
+          },
+          status: {
+            selectedText: '',
+            languageName: ''
           }
         },
         panel: this.panel
@@ -262,10 +278,60 @@ export default class ContentUIController {
           return this
         },
 
+        showNotification: function (text, important = false) {
+          this.popupData.notification.visible = true
+          this.popupData.notification.important = important
+          this.popupData.notification.showLanguageSwitcher = false
+          this.popupData.notification.text = text
+        },
+
+        showImportantNotification: function (text) {
+          this.showNotification(text, true)
+        },
+
+        showLanguageNotification: function (homonym, notFound = false) {
+          this.popupData.notification.visible = true
+          let languageName = ContentUIController.getLanguageName(homonym.languageID)
+          if (notFound) {
+            this.popupData.notification.important = true
+            this.popupData.notification.showLanguageSwitcher = true
+          } else {
+            this.popupData.notification.important = false
+            this.popupData.notification.showLanguageSwitcher = false
+          }
+          this.popupData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
+        },
+
+        showStatusInfo: function (homonym) {
+          this.popupData.status.languageName = ContentUIController.getLanguageName(homonym.languageID)
+          this.popupData.status.selectedText = homonym.targetWord
+        },
+
+        showErrorInformation: function (errorText) {
+          this.popupData.notification.visible = true
+          this.popupData.notification.important = true
+          this.popupData.notification.showLanguageSwitcher = false
+          this.popupData.notification.text = errorText
+        },
+
         clearContent: function () {
           this.definitions = {}
           this.lexemes = []
+          this.clearNotifications()
+          this.clearStatus()
           return this
+        },
+
+        clearNotifications: function () {
+          this.popupData.notification.visible = false
+          this.popupData.notification.important = false
+          this.popupData.notification.showLanguageSwitcher = false
+          this.popupData.notification.text = ''
+        },
+
+        clearStatus: function () {
+          this.popupData.status.languageName = ''
+          this.popupData.status.selectedText = ''
         },
 
         open: function () {
@@ -366,6 +432,7 @@ export default class ContentUIController {
     this.panel.showMessage(message)
     this.popup.showMessage(message)
     this.panel.showNotification(message)
+    this.popup.showNotification(message)
     return this
   }
 
@@ -373,6 +440,7 @@ export default class ContentUIController {
     this.panel.appendMessage(message)
     this.popup.appendMessage(message)
     this.panel.showNotification(message)
+    this.popup.showNotification(message)
   }
 
   static getLanguageName (languageID) {
@@ -383,6 +451,12 @@ export default class ContentUIController {
     let notFound = !homonym.lexemes || homonym.lexemes.length < 1
     notFound = true // Debug only
     this.panel.showLanguageNotification(homonym, notFound)
+    this.popup.showLanguageNotification(homonym, notFound)
+  }
+
+  showStatusInfo (homonym) {
+    this.panel.showStatusInfo(homonym)
+    this.popup.showStatusInfo(homonym)
   }
 
   showErrorInfo (errorText) {
@@ -391,6 +465,7 @@ export default class ContentUIController {
 
   showImportantNotification (message) {
     this.panel.showImportantNotification(message)
+    this.popup.showImportantNotification(message)
   }
 
   changeTab (tabName) {
@@ -429,12 +504,12 @@ export default class ContentUIController {
 
     // Populate a popup
     this.popup.definitions = definitions
-    this.popup.defDataReady = true
+    this.popup.popupData.defDataReady = true
   }
 
   updateInflections (inflectionData, homonym) {
     this.panel.updateInflections(inflectionData, homonym)
-    this.popup.inflDataReady = true
+    this.popup.popupData.inflDataReady = true
   }
 
   clear () {

@@ -1,25 +1,45 @@
 <template>
-    <div ref="popup" class="alpheios-popup" v-bind:class="data.classes" v-show="visible">
-        <span class="alpheios-popup__close-btn" @click="closePopup">
-            <close-icon></close-icon>
-        </span>
-        <div class="alpheios-popup__message-area">
-          <ul>
-            <li @beforehide="clearMessages" v-for="message in messages" class="alpheios-popup__message uk-alert-primary" uk-alert>
-              <a class="uk-alert-close" uk-close></a>
-              {{ message }}
-            </li>
-          </ul>
+    <div ref="popup" class="alpheios-popup auk" v-bind:class="data.classes"
+         v-show="visible" :data-notification-visible="data.notification.visible">
+        <div class="alpheios-popup__header">
+            <img class="alpheios-popup__header-logo" src="../images/logo.png">
+            <span class="alpheios-popup__close-btn" @click="closePopup">
+                <close-icon></close-icon>
+            </span>
         </div>
-        <morph v-show="morphdataready" :lexemes="lexemes" :definitions="definitions"></morph>
-        <div class="uk-button-group">
-          <button @click="showInflectionsPanelTab" v-show="defdataready" class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Inflect</button>
-          <button @click="showDefinitionsPanelTab" v-show="infldataready" class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Define</button>
+        <div class="alpheios-popup__notifications uk-text-small" :class="notificationClasses">
+            <span @click="closeNotifications" class="alpheios-popup__notifications-close-btn">
+                <close-icon></close-icon>
+            </span>
+            <span v-html="data.notification.text"></span>
+            <setting :data="data.settings.preferredLanguage" :show-title="false"
+                     :classes="['alpheios-popup__notifications--lang-switcher']" @change="settingChanged"
+                     v-show="data.notification.showLanguageSwitcher"></setting>
+        </div>
+        <div v-show="!morphdataready"
+             class="alpheios-popup__definitions alpheios-popup__definitions--placeholder uk-text-small">
+            No lexical data is available yet
+        </div>
+        <div v-show="morphdataready" class="alpheios-popup__definitions uk-text-small">
+            <morph :lexemes="lexemes" :definitions="definitions"></morph>
+        </div>
+        <div class="alpheios-popup__button-area">
+            <div class="uk-button-group">
+                <button @click="showInflectionsPanelTab" v-show="data.defDataReady"
+                        class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Inflect</button>
+                <button @click="showDefinitionsPanelTab" v-show="data.inflDataReady"
+                        class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Define</button>
+            </div>
+        </div>
+        <div class="alpheios-popup__status uk-text-small">
+            <span v-show="data.status.selectedText">Selected text: {{data.status.selectedText}}</span><br>
+            <span v-show="data.status.languageName">Language: {{data.status.languageName}}</span>
         </div>
     </div>
 </template>
 <script>
   import Morph from './morph.vue'
+  import Setting from './setting.vue'
   import interact from 'interactjs'
 
   // Embeddable SVG icons
@@ -29,6 +49,7 @@
     name: 'Popup',
     components: {
       morph: Morph,
+      setting: Setting,
       closeIcon: CloseIcon,
     },
     data: function () {
@@ -58,19 +79,20 @@
         type: Boolean,
         required: true
       },
-      defdataready: {
-        type: Boolean,
-        required: true
-      },
-      infldataready: {
-        type: Boolean,
-        required: true
-      },
       morphdataready: {
         type: Boolean,
         required: true
       }
     },
+
+    computed: {
+      notificationClasses: function () {
+        return {
+          'alpheios-popup__notifications--important': this.data.notification.important
+        }
+      }
+    },
+
     methods: {
       clearMessages() {
         while (this.messages.length >0) {
@@ -82,12 +104,20 @@
         this.$emit('close')
       },
 
+      closeNotifications () {
+        this.$emit('closepopupnotifications')
+      },
+
       showDefinitionsPanelTab () {
         this.$emit('showdefspaneltab')
       },
 
       showInflectionsPanelTab () {
         this.$emit('showinflpaneltab')
+      },
+
+      settingChanged: function (name, value) {
+        this.$emit('settingchange', name, value) // Re-emit for a Vue instance
       },
 
       resizeListener(event) {
@@ -159,6 +189,8 @@
     @import "../styles/alpheios";
 
     .alpheios-popup {
+        display: flex;
+        flex-direction: column;
         background: #FFF;
         border: 1px solid lightgray;
         width: 400px;
@@ -167,7 +199,6 @@
         position: fixed;
         left: 200px;
         top: 100px;
-        padding: 50px 20px 20px;
         box-sizing: border-box;  /* Required for Interact.js to take element size with paddings and work correctly */
         overflow: auto;
         font-family: $alpheios-font-family;
@@ -175,33 +206,107 @@
         color: $alpheios-copy-color;
     }
 
-    .alpheios-popup li {
-        list-style-type: none;
-        font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
-        font-size: 12px;
-        color: $alpheios-copy-color;
-        padding: 0;
+    .alpheios-popup__header {
+        position: relative;
+        box-sizing: border-box;
+        background-color: $alpheios-toolbar-color;
+        width: 100%;
+        flex: 0 0 50px;
+    }
+
+    img.alpheios-popup__header-logo {
+        position: absolute;
+        height: 30px;
+        width: auto;
+        left: 10px;
+        top: 9px;
     }
 
     .alpheios-popup__close-btn {
         display: block;
-        width: 40px;
-        height: 40px;
-        top: 0;
-        right: 0;
-        margin: 10px;
-        cursor: pointer;
-        fill: $alpheios-copy-color;
-        stroke: $alpheios-copy-color;
         position: absolute;
+        width: 30px;
+        right: 5px;
+        top: 10px;
+        cursor: pointer;
+        fill: $alpheios-link-color-dark-bg;
+        stroke: $alpheios-link-color-dark-bg;
     }
 
-    .alpheios-popup__message-area {
-        margin-bottom: 20px;
+    .alpheios-popup__close-btn:hover,
+    .alpheios-popup__close-btn:focus {
+        fill: $alpheios-link-hover-color;
+        stroke: $alpheios-link-hover-color;
     }
 
-    .alpheios-popup__content-area {
-        margin-bottom: 20px;
+    .alpheios-popup__notifications {
+        display: none;
+        position: relative;
+        padding: 10px 20px;
+        background: $alpheios-logo-color;
+        flex: 0 0 60px;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+
+    .alpheios-popup__notifications-close-btn {
+        position: absolute;
+        right: 5px;
+        top: 5px;
+        display: block;
+        width: 20px;
+        height: 20px;
+        margin: 0;
+        cursor: pointer;
+        fill: $alpheios-link-color-dark-bg;
+        stroke: $alpheios-link-color-dark-bg;
+    }
+
+    .alpheios-popup__notifications-close-btn:hover,
+    .alpheios-popup__notifications-close-btn:focus {
+        fill: $alpheios-link-hover-color;
+        stroke: $alpheios-link-hover-color;
+    }
+
+    [data-notification-visible="true"] .alpheios-popup__notifications {
+        display: block;
+    }
+
+    .alpheios-popup__notifications--lang-switcher {
+        font-size: 12px;
+        float: right;
+        margin: -20px 10px 0 0;
+        display: inline-block;
+    }
+
+    .alpheios-popup__notifications--lang-switcher .uk-select {
+        width: 120px;
+        height: 25px;
+    }
+
+    .alpheios-popup__notifications--important {
+        background: $alpheios-icon-color;
+    }
+
+    .alpheios-popup__definitions {
+        flex: 1 1 260px;
+        box-sizing: border-box;
+        margin: 10px 20px 0;
+        overflow: auto;
+        padding: 10px;
+        border: 1px solid $alpheios-sidebar-header-border-color;
+    }
+
+    .alpheios-popup__definitions--placeholder {
+        border: 0 none;
+        padding: 10px 0 0;
+    }
+
+    .alpheios-popup__button-area {
+        flex: 0 1 auto;
+        padding: 10px 20px 10px 10px;
+        text-align: right;
+        box-sizing: border-box;
     }
 
     .alpheios-popup__more-btn {
@@ -209,12 +314,14 @@
         margin-bottom: 10px;
     }
 
-    li.alpheios-popup__message {
-        display:none;
-    }
-
-    li.alpheios-popup__message:last-child {
-        display:block;
+    .alpheios-popup__status,
+    .#{$alpheios-uikit-namespace} .alpheios-popup__status {
+        flex: 0 1 50px;
+        padding: 5px 20px;
+        background: $alpheios-toolbar-color;
+        color: #FFF;
+        box-sizing: border-box;
+        line-height: 1.3;
     }
 
 </style>
