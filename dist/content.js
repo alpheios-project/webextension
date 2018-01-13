@@ -10618,6 +10618,13 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a"
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -22553,7 +22560,7 @@ class ContentUIController {
             viewSelector: 'alpheios-panel-content-infl-table-view-selector',
             tableBody: 'alpheios-panel-content-infl-table-body'
           },
-          messages: '',
+          messages: [],
           notification: {
             visible: false,
             important: false,
@@ -22627,17 +22634,16 @@ class ContentUIController {
           return this
         },
 
-        showMessage: function (messageHTML) {
-          this.panelData.messages = messageHTML + '<br>'
-          // this.changeTab('status')
+        showMessage: function (message) {
+          this.panelData.messages = [message]
         },
 
-        appendMessage: function (messageHTML) {
-          this.panelData.messages += messageHTML + '<br>'
+        appendMessage: function (message) {
+          this.panelData.messages.push(message)
         },
 
         clearMessages: function () {
-          this.panelData.messages = ''
+          this.panelData.messages = []
         },
 
         showNotification: function (text, important = false) {
@@ -34414,7 +34420,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-panel {\n  width: 400px;\n  height: 100vh;\n  top: 0;\n  z-index: 2000;\n  position: fixed;\n  background: #FFF;\n  resize: both;\n  opacity: 0.95;\n  direction: ltr;\n  display: grid;\n  grid-template-columns: auto 60px;\n  grid-template-rows: 60px 60px auto 60px;\n  grid-template-areas: \"header header\" \"content sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel[data-notification-visible=\"true\"] {\n  grid-template-areas: \"header header\" \"notifications sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel.alpheios-panel-left {\n  left: 0;\n}\n.alpheios-panel.alpheios-panel-right {\n  right: 0;\n  grid-template-columns: 60px auto;\n  grid-template-areas: \"header header\" \"sidebar notifications \" \"sidebar content\" \"sidebar status\";\n}\n.alpheios-panel__header {\n  position: relative;\n  display: flex;\n  flex-wrap: nowrap;\n  padding: 10px;\n  box-sizing: border-box;\n  background-color: #4E6476;\n  grid-area: header;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: ltr;\n  padding: 10px 0 10px 20px;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: rtl;\n  padding: 10px 20px 10px 0;\n}\n.alpheios-panel__header-title {\n  flex-grow: 1;\n}\n.alpheios-panel__header-logo {\n  margin-top: -1px;\n}\n.alpheios-panel__header-action-btn,\n.alpheios-panel__header-action-btn.active:hover,\n.alpheios-panel__header-action-btn.active:focus {\n  display: block;\n  width: 40px;\n  height: 40px;\n  margin: 0 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__header-action-btn:hover,\n.alpheios-panel__header-action-btn:focus,\n.alpheios-panel__header-action-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__body {\n  display: flex;\n  height: calc(100vh - 60px);\n}\n.alpheios-panel-left .alpheios-panel__body {\n  flex-direction: row;\n}\n.alpheios-panel-right .alpheios-panel__body {\n  flex-direction: row-reverse;\n}\n.alpheios-panel__content {\n  overflow: auto;\n  grid-area: content;\n  direction: ltr;\n  box-sizing: border-box;\n  display: flex;\n}\n.alpheios-panel__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  grid-area: notifications;\n  overflow: hidden;\n}\n.alpheios-panel__notifications-close-btn {\n  position: absolute;\n  right: 0;\n  top: 0;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__notifications-close-btn:hover,\n.alpheios-panel__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-panel__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-panel__notifications--important {\n  background: #73CDDE;\n}\n[data-notification-visible=\"true\"] .alpheios-panel__notifications {\n  display: block;\n}\n.alpheios-panel__tab-panel {\n  display: flex;\n  flex-direction: column;\n  padding: 20px;\n}\n.alpheios-panel__tab-panel--no-padding {\n  padding: 0;\n}\n.alpheios-panel__status {\n  padding: 10px 20px;\n  background: #4E6476;\n  color: #FFF;\n  grid-area: status;\n}\n.alpheios-panel__contentitem {\n  margin-bottom: 1em;\n}\n.alpheios-panel__nav {\n  width: 60px;\n  background: #7E8897;\n  grid-area: sidebar;\n}\n.alpheios-panel__nav-btn,\n.alpheios-panel__nav-btn.active:hover,\n.alpheios-panel__nav-btn.active:focus {\n  cursor: pointer;\n  margin: 20px 10px;\n  width: 40px;\n  height: 40px;\n  background: transparent no-repeat center center;\n  background-size: contain;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__nav-btn:hover,\n.alpheios-panel__nav-btn:focus,\n.alpheios-panel__nav-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-panel {\n  width: 400px;\n  height: 100vh;\n  top: 0;\n  z-index: 2000;\n  position: fixed;\n  background: #FFF;\n  resize: both;\n  opacity: 0.95;\n  direction: ltr;\n  display: grid;\n  grid-template-columns: auto 60px;\n  grid-template-rows: 60px 60px auto 60px;\n  grid-template-areas: \"header header\" \"content sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel[data-notification-visible=\"true\"] {\n  grid-template-areas: \"header header\" \"notifications sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel.alpheios-panel-left {\n  left: 0;\n}\n.alpheios-panel.alpheios-panel-right {\n  right: 0;\n  grid-template-columns: 60px auto;\n  grid-template-areas: \"header header\" \"sidebar notifications \" \"sidebar content\" \"sidebar status\";\n}\n.alpheios-panel__header {\n  position: relative;\n  display: flex;\n  flex-wrap: nowrap;\n  padding: 10px;\n  box-sizing: border-box;\n  background-color: #4E6476;\n  grid-area: header;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: ltr;\n  padding: 10px 0 10px 20px;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: rtl;\n  padding: 10px 20px 10px 0;\n}\n.alpheios-panel__header-title {\n  flex-grow: 1;\n}\n.alpheios-panel__header-logo {\n  margin-top: -1px;\n}\n.alpheios-panel__header-action-btn,\n.alpheios-panel__header-action-btn.active:hover,\n.alpheios-panel__header-action-btn.active:focus {\n  display: block;\n  width: 40px;\n  height: 40px;\n  margin: 0 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__header-action-btn:hover,\n.alpheios-panel__header-action-btn:focus,\n.alpheios-panel__header-action-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__body {\n  display: flex;\n  height: calc(100vh - 60px);\n}\n.alpheios-panel-left .alpheios-panel__body {\n  flex-direction: row;\n}\n.alpheios-panel-right .alpheios-panel__body {\n  flex-direction: row-reverse;\n}\n.alpheios-panel__content {\n  overflow: auto;\n  grid-area: content;\n  direction: ltr;\n  box-sizing: border-box;\n  display: flex;\n}\n.alpheios-panel__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  grid-area: notifications;\n  overflow: hidden;\n}\n.alpheios-panel__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__notifications-close-btn:hover,\n.alpheios-panel__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-panel__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-panel__notifications--important {\n  background: #73CDDE;\n}\n[data-notification-visible=\"true\"] .alpheios-panel__notifications {\n  display: block;\n}\n.alpheios-panel__tab-panel {\n  display: flex;\n  flex-direction: column;\n  padding: 20px;\n}\n.alpheios-panel__tab-panel--no-padding {\n  padding: 0;\n}\n.alpheios-panel-inflections {\n  max-width: 280px;\n}\n.alpheios-panel__message {\n  margin-bottom: 0.5rem;\n}\n.alpheios-panel__options-item {\n  margin-bottom: 0.5rem;\n}\n.alpheios-panel__status {\n  padding: 10px 20px;\n  background: #4E6476;\n  color: #FFF;\n  grid-area: status;\n}\n.alpheios-panel__contentitem {\n  margin-bottom: 1em;\n}\n.alpheios-panel__nav {\n  width: 60px;\n  background: #7E8897;\n  grid-area: sidebar;\n}\n.alpheios-panel__nav-btn,\n.alpheios-panel__nav-btn.active:hover,\n.alpheios-panel__nav-btn.active:focus {\n  cursor: pointer;\n  margin: 20px 10px;\n  width: 40px;\n  height: 40px;\n  background: transparent no-repeat center center;\n  background-size: contain;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__nav-btn:hover,\n.alpheios-panel__nav-btn:focus,\n.alpheios-panel__nav-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n", ""]);
 
 // exports
 
@@ -35473,6 +35479,7 @@ var render = function() {
           },
           [
             _c("inflections", {
+              staticClass: "alpheios-panel-inflections",
               attrs: {
                 infldata: _vm.data.inflectionData,
                 locale: _vm.data.settings.locale.currentValue
@@ -35513,7 +35520,13 @@ var render = function() {
             ],
             staticClass: "alpheios-panel__tab-panel"
           },
-          [_c("div", { domProps: { innerHTML: _vm._s(_vm.data.messages) } })]
+          _vm._l(_vm.data.messages, function(message) {
+            return _c("div", [
+              _c("div", { staticClass: "alpheios-panel__message" }, [
+                _vm._v(_vm._s(message))
+              ])
+            ])
+          })
         ),
         _vm._v(" "),
         _c(
@@ -35531,22 +35544,34 @@ var render = function() {
           },
           [
             _c("setting", {
-              attrs: { data: _vm.data.settings.preferredLanguage },
+              attrs: {
+                data: _vm.data.settings.preferredLanguage,
+                classes: ["alpheios-panel__options-item"]
+              },
               on: { change: _vm.settingChanged }
             }),
             _vm._v(" "),
             _c("setting", {
-              attrs: { data: _vm.data.settings.locale },
+              attrs: {
+                data: _vm.data.settings.locale,
+                classes: ["alpheios-panel__options-item"]
+              },
               on: { change: _vm.settingChanged }
             }),
             _vm._v(" "),
             _c("setting", {
-              attrs: { data: _vm.data.settings.panelPosition },
+              attrs: {
+                data: _vm.data.settings.panelPosition,
+                classes: ["alpheios-panel__options-item"]
+              },
               on: { change: _vm.settingChanged }
             }),
             _vm._v(" "),
             _c("setting", {
-              attrs: { data: _vm.data.settings.uiType },
+              attrs: {
+                data: _vm.data.settings.uiType,
+                classes: ["alpheios-panel__options-item"]
+              },
               on: { change: _vm.settingChanged }
             })
           ],

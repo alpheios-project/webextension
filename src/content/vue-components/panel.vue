@@ -66,19 +66,26 @@
                 <div class="alpheios-panel__contentitem" v-html="data.fullDefinitions"></div>
             </div>
             <div v-show="data.tabs.inflections" class="alpheios-panel__tab-panel">
-                <inflections :infldata="data.inflectionData" :locale="data.settings.locale.currentValue"></inflections>
+                <inflections class="alpheios-panel-inflections"
+                             :infldata="data.inflectionData" :locale="data.settings.locale.currentValue"></inflections>
             </div>
             <div v-show="data.tabs.grammar" class="alpheios-panel__tab-panel alpheios-panel__tab-panel--no-padding">
                   <grammar :res="data.grammarRes"></grammar>
               </div>
             <div v-show="data.tabs.status" class="alpheios-panel__tab-panel">
-                <div v-html="data.messages"></div>
+                <div v-for="message in data.messages">
+                    <div class="alpheios-panel__message">{{message}}</div>
+                </div>
             </div>
             <div v-show="data.tabs.options" class="alpheios-panel__tab-panel">
-                <setting :data="data.settings.preferredLanguage" @change="settingChanged"></setting>
-                <setting :data="data.settings.locale" @change="settingChanged"></setting>
-                <setting :data="data.settings.panelPosition" @change="settingChanged"></setting>
-                <setting :data="data.settings.uiType" @change="settingChanged"></setting>
+                <setting :data="data.settings.preferredLanguage" @change="settingChanged"
+                         :classes="['alpheios-panel__options-item']"></setting>
+                <setting :data="data.settings.locale" @change="settingChanged"
+                         :classes="['alpheios-panel__options-item']"></setting>
+                <setting :data="data.settings.panelPosition" @change="settingChanged"
+                         :classes="['alpheios-panel__options-item']"></setting>
+                <setting :data="data.settings.uiType" @change="settingChanged"
+                         :classes="['alpheios-panel__options-item']"></setting>
             </div>
             <div v-show="data.tabs.info" class="alpheios-panel__tab-panel">
                 <info></info>
@@ -364,8 +371,8 @@
 
     .alpheios-panel__notifications-close-btn {
         position: absolute;
-        right: 0;
-        top: 0;
+        right: 5px;
+        top: 5px;
         display: block;
         width: 20px;
         height: 20px;
@@ -409,6 +416,18 @@
 
     .alpheios-panel__tab-panel--no-padding {
         padding: 0;
+    }
+
+    .alpheios-panel-inflections {
+        max-width: 280px;
+    }
+
+    .alpheios-panel__message {
+        margin-bottom: 0.5rem;
+    }
+
+    .alpheios-panel__options-item {
+        margin-bottom: 0.5rem;
     }
 
     .alpheios-panel__status {

@@ -60,7 +60,7 @@ export default class ContentUIController {
             viewSelector: 'alpheios-panel-content-infl-table-view-selector',
             tableBody: 'alpheios-panel-content-infl-table-body'
           },
-          messages: '',
+          messages: [],
           notification: {
             visible: false,
             important: false,
@@ -134,17 +134,16 @@ export default class ContentUIController {
           return this
         },
 
-        showMessage: function (messageHTML) {
-          this.panelData.messages = messageHTML + '<br>'
-          // this.changeTab('status')
+        showMessage: function (message) {
+          this.panelData.messages = [message]
         },
 
-        appendMessage: function (messageHTML) {
-          this.panelData.messages += messageHTML + '<br>'
+        appendMessage: function (message) {
+          this.panelData.messages.push(message)
         },
 
         clearMessages: function () {
-          this.panelData.messages = ''
+          this.panelData.messages = []
         },
 
         showNotification: function (text, important = false) {
