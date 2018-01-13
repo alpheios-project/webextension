@@ -1,4 +1,5 @@
 import uuidv4 from 'uuid/v4'
+import { LanguageModelFactory as LMF } from 'alpheios-data-models'
 
 let queries = new Map()
 
@@ -32,7 +33,9 @@ export default class LexicalQuery {
   }
 
   async getData () {
+    this.languageID = LMF.getLanguageIdFromCode(this.selector.languageCode)
     this.ui.clear().open().changeTab('definitions').message(`Please wait while data is retrieved ...`)
+    this.ui.showStatusInfo(this.selector.normalizedText, this.languageID)
     let iterator = this.iterations()
 
     let result = iterator.next()
@@ -64,7 +67,8 @@ export default class LexicalQuery {
     this.ui.addMessage(`Morphological analyzer data is ready`)
     this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
-    this.ui.showStatusInfo(this.homonym)
+    // Update status info with data from a morphological analyzer
+    this.ui.showStatusInfo(this.homonym.targetWord, this.homonym.languageID)
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)
     this.ui.addMessage(`Inflection data is ready`)

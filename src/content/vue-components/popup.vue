@@ -16,11 +16,11 @@
                      :classes="['alpheios-popup__notifications--lang-switcher']" @change="settingChanged"
                      v-show="data.notification.showLanguageSwitcher"></setting>
         </div>
-        <div v-show="!morphdataready"
+        <div v-show="!data.morphDataReady"
              class="alpheios-popup__definitions alpheios-popup__definitions--placeholder uk-text-small">
             No lexical data is available yet
         </div>
-        <div v-show="morphdataready" class="alpheios-popup__definitions uk-text-small">
+        <div v-show="data.morphDataReady" class="alpheios-popup__definitions uk-text-small">
             <morph :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures"></morph>
         </div>
         <div class="alpheios-popup__button-area">
@@ -80,10 +80,6 @@
         required: true
       },
       visible: {
-        type: Boolean,
-        required: true
-      },
-      morphdataready: {
         type: Boolean,
         required: true
       }

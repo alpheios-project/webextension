@@ -59,28 +59,28 @@
             </div>
         </div>
         <div class="alpheios-panel__content">
-            <div v-show="data.tabs.definitions" data-element="definitionsPanel">
+            <div v-show="data.tabs.definitions" class="alpheios-panel__tab-panel">
                 <div class="alpheios-panel__contentitem" v-for="definition in data.shortDefinitions">
                     <shortdef :definition="definition"></shortdef>
                 </div>
                 <div class="alpheios-panel__contentitem" v-html="data.fullDefinitions"></div>
             </div>
-            <div v-show="data.tabs.inflections" data-element="inflectionsPanel">
+            <div v-show="data.tabs.inflections" class="alpheios-panel__tab-panel">
                 <inflections :infldata="data.inflectionData" :locale="data.settings.locale.currentValue"></inflections>
             </div>
-            <div v-show="data.tabs.grammar" data-element="grammarPanel" class="alpheios-panel__fullheight">
+            <div v-show="data.tabs.grammar" class="alpheios-panel__tab-panel alpheios-panel__tab-panel--no-padding">
                   <grammar :res="data.grammarRes"></grammar>
               </div>
-            <div v-show="data.tabs.status" data-element="statusPanel">
+            <div v-show="data.tabs.status" class="alpheios-panel__tab-panel">
                 <div v-html="data.messages"></div>
             </div>
-            <div v-show="data.tabs.options" data-element="optionsPanel">
+            <div v-show="data.tabs.options" class="alpheios-panel__tab-panel">
                 <setting :data="data.settings.preferredLanguage" @change="settingChanged"></setting>
                 <setting :data="data.settings.locale" @change="settingChanged"></setting>
                 <setting :data="data.settings.panelPosition" @change="settingChanged"></setting>
                 <setting :data="data.settings.uiType" @change="settingChanged"></setting>
             </div>
-            <div v-show="data.tabs.info" data-element="infoPanel">
+            <div v-show="data.tabs.info" class="alpheios-panel__tab-panel">
                 <info></info>
             </div>
         </div>
@@ -346,10 +346,11 @@
     }
 
     .alpheios-panel__content {
-        padding: 20px 20px 100px;
         overflow: auto;
         grid-area: content;
         direction: ltr;
+        box-sizing: border-box;
+        display: flex;
     }
 
     .alpheios-panel__notifications {
@@ -400,6 +401,16 @@
         display: block;
     }
 
+    .alpheios-panel__tab-panel {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .alpheios-panel__tab-panel--no-padding {
+        padding: 0;
+    }
+
     .alpheios-panel__status {
         padding: 10px 20px;
         background: $alpheios-toolbar-color;
@@ -436,10 +447,4 @@
         fill: $alpheios-link-hover-color;
         stroke: $alpheios-link-hover-color;
     }
-
-    .alpheios-panel__fullheight {
-        height: 100%;
-    }
-
-
 </style>

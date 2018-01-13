@@ -171,9 +171,9 @@ export default class ContentUIController {
           this.panelData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
         },
 
-        showStatusInfo: function (homonym) {
-          this.panelData.status.languageName = ContentUIController.getLanguageName(homonym.languageID)
-          this.panelData.status.selectedText = homonym.targetWord
+        showStatusInfo: function (selectionText, languageID) {
+          this.panelData.status.languageName = ContentUIController.getLanguageName(languageID)
+          this.panelData.status.selectedText = selectionText
         },
 
         showErrorInformation: function (errorText) {
@@ -257,13 +257,13 @@ export default class ContentUIController {
         definitions: {},
         linkedFeatures: [],
         visible: false,
-        morphDataReady: false,
         popupData: {
           minWidth: 400,
           minHeight: 400,
           settings: this.options.items,
           defDataReady: false,
           inflDataReady: false,
+          morphDataReady: false,
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
           },
@@ -322,9 +322,9 @@ export default class ContentUIController {
           this.popupData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
         },
 
-        showStatusInfo: function (homonym) {
-          this.popupData.status.languageName = ContentUIController.getLanguageName(homonym.languageID)
-          this.popupData.status.selectedText = homonym.targetWord
+        showStatusInfo: function (selectionText, languageID) {
+          this.popupData.status.languageName = ContentUIController.getLanguageName(languageID)
+          this.popupData.status.selectedText = selectionText
         },
 
         showErrorInformation: function (errorText) {
@@ -337,6 +337,9 @@ export default class ContentUIController {
         clearContent: function () {
           this.definitions = {}
           this.lexemes = []
+          this.popupData.defDataReady = false
+          this.popupData.inflDataReady = false
+          this.popupData.morphDataReady = false
           this.clearNotifications()
           this.clearStatus()
           return this
@@ -483,9 +486,9 @@ export default class ContentUIController {
     this.popup.showLanguageNotification(homonym, notFound)
   }
 
-  showStatusInfo (homonym) {
-    this.panel.showStatusInfo(homonym)
-    this.popup.showStatusInfo(homonym)
+  showStatusInfo (selectionText, languageID) {
+    this.panel.showStatusInfo(selectionText, languageID)
+    this.popup.showStatusInfo(selectionText, languageID)
   }
 
   showErrorInfo (errorText) {
@@ -509,7 +512,7 @@ export default class ContentUIController {
       // TODO we could really move this into the morph component and have it be calculated for each lemma in case languages are multiple
       this.popup.linkedFeatures = LanguageModelFactory.getLanguageForCode(homonym.lexemes[0].lemma.language).grammarFeatures()
     }
-    this.popup.morphDataReady = true
+    this.popup.popupData.morphDataReady = true
   }
 
   updateGrammar (urls) {

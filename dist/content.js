@@ -18468,10 +18468,6 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAz
     visible: {
       type: Boolean,
       required: true
-    },
-    morphdataready: {
-      type: Boolean,
-      required: true
     }
   },
 
@@ -22324,6 +22320,8 @@ class MediaSelector {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(8);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
+
 
 
 let queries = new Map()
@@ -22358,7 +22356,9 @@ class LexicalQuery {
   }
 
   async getData () {
+    this.languageID = __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(this.selector.languageCode)
     this.ui.clear().open().changeTab('definitions').message(`Please wait while data is retrieved ...`)
+    this.ui.showStatusInfo(this.selector.normalizedText, this.languageID)
     let iterator = this.iterations()
 
     let result = iterator.next()
@@ -22390,7 +22390,8 @@ class LexicalQuery {
     this.ui.addMessage(`Morphological analyzer data is ready`)
     this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
-    this.ui.showStatusInfo(this.homonym)
+    // Update status info with data from a morphological analyzer
+    this.ui.showStatusInfo(this.homonym.targetWord, this.homonym.languageID)
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)
     this.ui.addMessage(`Inflection data is ready`)
@@ -22663,9 +22664,9 @@ class ContentUIController {
           this.panelData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
         },
 
-        showStatusInfo: function (homonym) {
-          this.panelData.status.languageName = ContentUIController.getLanguageName(homonym.languageID)
-          this.panelData.status.selectedText = homonym.targetWord
+        showStatusInfo: function (selectionText, languageID) {
+          this.panelData.status.languageName = ContentUIController.getLanguageName(languageID)
+          this.panelData.status.selectedText = selectionText
         },
 
         showErrorInformation: function (errorText) {
@@ -22749,13 +22750,13 @@ class ContentUIController {
         definitions: {},
         linkedFeatures: [],
         visible: false,
-        morphDataReady: false,
         popupData: {
           minWidth: 400,
           minHeight: 400,
           settings: this.options.items,
           defDataReady: false,
           inflDataReady: false,
+          morphDataReady: false,
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
           },
@@ -22814,9 +22815,9 @@ class ContentUIController {
           this.popupData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
         },
 
-        showStatusInfo: function (homonym) {
-          this.popupData.status.languageName = ContentUIController.getLanguageName(homonym.languageID)
-          this.popupData.status.selectedText = homonym.targetWord
+        showStatusInfo: function (selectionText, languageID) {
+          this.popupData.status.languageName = ContentUIController.getLanguageName(languageID)
+          this.popupData.status.selectedText = selectionText
         },
 
         showErrorInformation: function (errorText) {
@@ -22829,6 +22830,9 @@ class ContentUIController {
         clearContent: function () {
           this.definitions = {}
           this.lexemes = []
+          this.popupData.defDataReady = false
+          this.popupData.inflDataReady = false
+          this.popupData.morphDataReady = false
           this.clearNotifications()
           this.clearStatus()
           return this
@@ -22975,9 +22979,9 @@ class ContentUIController {
     this.popup.showLanguageNotification(homonym, notFound)
   }
 
-  showStatusInfo (homonym) {
-    this.panel.showStatusInfo(homonym)
-    this.popup.showStatusInfo(homonym)
+  showStatusInfo (selectionText, languageID) {
+    this.panel.showStatusInfo(selectionText, languageID)
+    this.popup.showStatusInfo(selectionText, languageID)
   }
 
   showErrorInfo (errorText) {
@@ -23001,7 +23005,7 @@ class ContentUIController {
       // TODO we could really move this into the morph component and have it be calculated for each lemma in case languages are multiple
       this.popup.linkedFeatures = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageForCode(homonym.lexemes[0].lemma.language).grammarFeatures()
     }
-    this.popup.morphDataReady = true
+    this.popup.popupData.morphDataReady = true
   }
 
   updateGrammar (urls) {
@@ -34317,7 +34321,7 @@ process.umask = function() { return 0; };
 /* 46 */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\" :linkedfeatures=\"linkedFeatures\"\r\n           :morphdataready=\"morphDataReady\"\r\n           :data=\"popupData\"\r\n           @close=\"close\" @closepopupnotifications=\"clearNotifications\"\r\n           @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\" @sendfeature=\"sendFeature\">\r\n    </popup>\r\n</div>\r\n<div id=\"alpheios-panel\">\r\n    <panel :data=\"panelData\" @close=\"close\" @closenotifications=\"clearNotifications\"\r\n           @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\r\n           @changetab=\"changeTab\"></panel>\r\n</div>\r\n";
+module.exports = "<div id=\"alpheios-popup\" >\r\n    <popup :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\" :linkedfeatures=\"linkedFeatures\"\r\n           :data=\"popupData\" @close=\"close\" @closepopupnotifications=\"clearNotifications\"\r\n           @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\" @sendfeature=\"sendFeature\">\r\n    </popup>\r\n</div>\r\n<div id=\"alpheios-panel\">\r\n    <panel :data=\"panelData\" @close=\"close\" @closenotifications=\"clearNotifications\"\r\n           @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\r\n           @changetab=\"changeTab\"></panel>\r\n</div>\r\n";
 
 /***/ }),
 /* 47 */
@@ -34410,7 +34414,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-panel {\n  width: 400px;\n  height: 100vh;\n  top: 0;\n  z-index: 2000;\n  position: fixed;\n  background: #FFF;\n  resize: both;\n  opacity: 0.95;\n  direction: ltr;\n  display: grid;\n  grid-template-columns: auto 60px;\n  grid-template-rows: 60px 60px auto 60px;\n  grid-template-areas: \"header header\" \"content sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel[data-notification-visible=\"true\"] {\n  grid-template-areas: \"header header\" \"notifications sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel.alpheios-panel-left {\n  left: 0;\n}\n.alpheios-panel.alpheios-panel-right {\n  right: 0;\n  grid-template-columns: 60px auto;\n  grid-template-areas: \"header header\" \"sidebar notifications \" \"sidebar content\" \"sidebar status\";\n}\n.alpheios-panel__header {\n  position: relative;\n  display: flex;\n  flex-wrap: nowrap;\n  padding: 10px;\n  box-sizing: border-box;\n  background-color: #4E6476;\n  grid-area: header;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: ltr;\n  padding: 10px 0 10px 20px;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: rtl;\n  padding: 10px 20px 10px 0;\n}\n.alpheios-panel__header-title {\n  flex-grow: 1;\n}\n.alpheios-panel__header-logo {\n  margin-top: -1px;\n}\n.alpheios-panel__header-action-btn,\n.alpheios-panel__header-action-btn.active:hover,\n.alpheios-panel__header-action-btn.active:focus {\n  display: block;\n  width: 40px;\n  height: 40px;\n  margin: 0 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__header-action-btn:hover,\n.alpheios-panel__header-action-btn:focus,\n.alpheios-panel__header-action-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__body {\n  display: flex;\n  height: calc(100vh - 60px);\n}\n.alpheios-panel-left .alpheios-panel__body {\n  flex-direction: row;\n}\n.alpheios-panel-right .alpheios-panel__body {\n  flex-direction: row-reverse;\n}\n.alpheios-panel__content {\n  padding: 20px 20px 100px;\n  overflow: auto;\n  grid-area: content;\n  direction: ltr;\n}\n.alpheios-panel__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  grid-area: notifications;\n  overflow: hidden;\n}\n.alpheios-panel__notifications-close-btn {\n  position: absolute;\n  right: 0;\n  top: 0;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__notifications-close-btn:hover,\n.alpheios-panel__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-panel__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-panel__notifications--important {\n  background: #73CDDE;\n}\n[data-notification-visible=\"true\"] .alpheios-panel__notifications {\n  display: block;\n}\n.alpheios-panel__status {\n  padding: 10px 20px;\n  background: #4E6476;\n  color: #FFF;\n  grid-area: status;\n}\n.alpheios-panel__contentitem {\n  margin-bottom: 1em;\n}\n.alpheios-panel__nav {\n  width: 60px;\n  background: #7E8897;\n  grid-area: sidebar;\n}\n.alpheios-panel__nav-btn,\n.alpheios-panel__nav-btn.active:hover,\n.alpheios-panel__nav-btn.active:focus {\n  cursor: pointer;\n  margin: 20px 10px;\n  width: 40px;\n  height: 40px;\n  background: transparent no-repeat center center;\n  background-size: contain;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__nav-btn:hover,\n.alpheios-panel__nav-btn:focus,\n.alpheios-panel__nav-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__fullheight {\n  height: 100%;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-panel {\n  width: 400px;\n  height: 100vh;\n  top: 0;\n  z-index: 2000;\n  position: fixed;\n  background: #FFF;\n  resize: both;\n  opacity: 0.95;\n  direction: ltr;\n  display: grid;\n  grid-template-columns: auto 60px;\n  grid-template-rows: 60px 60px auto 60px;\n  grid-template-areas: \"header header\" \"content sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel[data-notification-visible=\"true\"] {\n  grid-template-areas: \"header header\" \"notifications sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel.alpheios-panel-left {\n  left: 0;\n}\n.alpheios-panel.alpheios-panel-right {\n  right: 0;\n  grid-template-columns: 60px auto;\n  grid-template-areas: \"header header\" \"sidebar notifications \" \"sidebar content\" \"sidebar status\";\n}\n.alpheios-panel__header {\n  position: relative;\n  display: flex;\n  flex-wrap: nowrap;\n  padding: 10px;\n  box-sizing: border-box;\n  background-color: #4E6476;\n  grid-area: header;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: ltr;\n  padding: 10px 0 10px 20px;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: rtl;\n  padding: 10px 20px 10px 0;\n}\n.alpheios-panel__header-title {\n  flex-grow: 1;\n}\n.alpheios-panel__header-logo {\n  margin-top: -1px;\n}\n.alpheios-panel__header-action-btn,\n.alpheios-panel__header-action-btn.active:hover,\n.alpheios-panel__header-action-btn.active:focus {\n  display: block;\n  width: 40px;\n  height: 40px;\n  margin: 0 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__header-action-btn:hover,\n.alpheios-panel__header-action-btn:focus,\n.alpheios-panel__header-action-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__body {\n  display: flex;\n  height: calc(100vh - 60px);\n}\n.alpheios-panel-left .alpheios-panel__body {\n  flex-direction: row;\n}\n.alpheios-panel-right .alpheios-panel__body {\n  flex-direction: row-reverse;\n}\n.alpheios-panel__content {\n  overflow: auto;\n  grid-area: content;\n  direction: ltr;\n  box-sizing: border-box;\n  display: flex;\n}\n.alpheios-panel__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  grid-area: notifications;\n  overflow: hidden;\n}\n.alpheios-panel__notifications-close-btn {\n  position: absolute;\n  right: 0;\n  top: 0;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__notifications-close-btn:hover,\n.alpheios-panel__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-panel__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-panel__notifications--important {\n  background: #73CDDE;\n}\n[data-notification-visible=\"true\"] .alpheios-panel__notifications {\n  display: block;\n}\n.alpheios-panel__tab-panel {\n  display: flex;\n  flex-direction: column;\n  padding: 20px;\n}\n.alpheios-panel__tab-panel--no-padding {\n  padding: 0;\n}\n.alpheios-panel__status {\n  padding: 10px 20px;\n  background: #4E6476;\n  color: #FFF;\n  grid-area: status;\n}\n.alpheios-panel__contentitem {\n  margin-bottom: 1em;\n}\n.alpheios-panel__nav {\n  width: 60px;\n  background: #7E8897;\n  grid-area: sidebar;\n}\n.alpheios-panel__nav-btn,\n.alpheios-panel__nav-btn.active:hover,\n.alpheios-panel__nav-btn.active:focus {\n  cursor: pointer;\n  margin: 20px 10px;\n  width: 40px;\n  height: 40px;\n  background: transparent no-repeat center center;\n  background-size: contain;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__nav-btn:hover,\n.alpheios-panel__nav-btn:focus,\n.alpheios-panel__nav-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n", ""]);
 
 // exports
 
@@ -34951,7 +34955,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-grammar__provider {\n  font-size: 16px;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  margin-top: .5em;\n  margin-bottom: .5em;\n}\n.alpheios-grammar, .alpheios-grammar__frame {\n  height: 100%;\n  width: 100%;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-grammar {\n  display: flex;\n  flex-direction: column;\n}\n.alpheios-grammar__provider {\n  flex: 1 1 auto;\n  font-size: 16px;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  padding: 20px;\n}\n.alpheios-grammar__frame {\n  flex: 1 1 100vh;\n}\n", ""]);
 
 // exports
 
@@ -35434,7 +35438,7 @@ var render = function() {
                 expression: "data.tabs.definitions"
               }
             ],
-            attrs: { "data-element": "definitionsPanel" }
+            staticClass: "alpheios-panel__tab-panel"
           },
           [
             _vm._l(_vm.data.shortDefinitions, function(definition) {
@@ -35465,7 +35469,7 @@ var render = function() {
                 expression: "data.tabs.inflections"
               }
             ],
-            attrs: { "data-element": "inflectionsPanel" }
+            staticClass: "alpheios-panel__tab-panel"
           },
           [
             _c("inflections", {
@@ -35489,8 +35493,8 @@ var render = function() {
                 expression: "data.tabs.grammar"
               }
             ],
-            staticClass: "alpheios-panel__fullheight",
-            attrs: { "data-element": "grammarPanel" }
+            staticClass:
+              "alpheios-panel__tab-panel alpheios-panel__tab-panel--no-padding"
           },
           [_c("grammar", { attrs: { res: _vm.data.grammarRes } })],
           1
@@ -35507,7 +35511,7 @@ var render = function() {
                 expression: "data.tabs.status"
               }
             ],
-            attrs: { "data-element": "statusPanel" }
+            staticClass: "alpheios-panel__tab-panel"
           },
           [_c("div", { domProps: { innerHTML: _vm._s(_vm.data.messages) } })]
         ),
@@ -35523,7 +35527,7 @@ var render = function() {
                 expression: "data.tabs.options"
               }
             ],
-            attrs: { "data-element": "optionsPanel" }
+            staticClass: "alpheios-panel__tab-panel"
           },
           [
             _c("setting", {
@@ -35560,7 +35564,7 @@ var render = function() {
                 expression: "data.tabs.info"
               }
             ],
-            attrs: { "data-element": "infoPanel" }
+            staticClass: "alpheios-panel__tab-panel"
           },
           [_c("info")],
           1
@@ -36757,8 +36761,8 @@ var render = function() {
             {
               name: "show",
               rawName: "v-show",
-              value: !_vm.morphdataready,
-              expression: "!morphdataready"
+              value: !_vm.data.morphDataReady,
+              expression: "!data.morphDataReady"
             }
           ],
           staticClass:
@@ -36774,8 +36778,8 @@ var render = function() {
             {
               name: "show",
               rawName: "v-show",
-              value: _vm.morphdataready,
-              expression: "morphdataready"
+              value: _vm.data.morphDataReady,
+              expression: "data.morphDataReady"
             }
           ],
           staticClass: "alpheios-popup__definitions uk-text-small"
