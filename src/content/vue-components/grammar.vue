@@ -1,6 +1,6 @@
 <template>
   <div class="alpheios-grammar">
-    <div class="alpheios-grammar__provider">{{ res.provider.toString() }}</div>
+    <div class="alpheios-grammar__provider">{{ grammarProvider }}</div>
     <iframe class="alpheios-grammar__frame" :src="res.url"></iframe>
   </div>
 </template>
@@ -12,6 +12,12 @@
         type: Object,
         required: true
       },
+    },
+
+    computed: {
+      grammarProvider: function () {
+        return (this.res.provider) ? this.res.provider.toString() : ''
+      }
     }
   }
 </script>

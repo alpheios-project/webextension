@@ -212,8 +212,8 @@ export default class ContentUIController {
           ExpObjMon.track(
             ResourceQuery.create(feature, {
               uiController: this.uiController,
-              grammars: Grammars,
-              }),
+              grammars: Grammars
+            }),
             {
               experience: 'Get resource',
               actions: [
@@ -378,7 +378,7 @@ export default class ContentUIController {
           return this
         },
 
-        sendFeature: function(feature) {
+        sendFeature: function (feature) {
           this.visible = false
           this.panel.requestGrammar(feature)
           this.panel.changeTab('grammar')
@@ -511,11 +511,12 @@ export default class ContentUIController {
     }
     this.popup.morphDataReady = true
   }
+
   updateGrammar (urls) {
     if (urls.length > 0) {
       this.panel.panelData.grammarRes = urls[0]
     } else {
-      console.log("Requested Grammar Resource Not Found")
+      console.log('Requested Grammar Resource Not Found')
     }
     // todo show TOC or not found
   }
