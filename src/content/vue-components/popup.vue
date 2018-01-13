@@ -21,7 +21,7 @@
             No lexical data is available yet
         </div>
         <div v-show="morphdataready" class="alpheios-popup__definitions uk-text-small">
-            <morph :lexemes="lexemes" :definitions="definitions"></morph>
+            <morph :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures"></morph>
         </div>
         <div class="alpheios-popup__button-area">
             <div class="uk-button-group">
@@ -73,6 +73,10 @@
       },
       definitions: {
         type: Object,
+        required: true
+      },
+      linkedfeatures: {
+        type: Array,
         required: true
       },
       visible: {

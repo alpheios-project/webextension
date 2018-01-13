@@ -80,7 +80,7 @@ export default class ContentProcess {
     }
     this.messagingService.sendResponseToBg(new StateResponse(request, this.state)).catch(
       (error) => {
-        console.error(`Unable to send a response to a state request: ${error}`)
+        console.error('Unable to send a response to a state request', error)
       }
     )
   }
@@ -88,7 +88,7 @@ export default class ContentProcess {
   sendStateToBackground () {
     this.messagingService.sendMessageToBg(new StateMessage(this.state)).catch(
       (error) => {
-        console.error(`Unable to send a response to activation request: ${error}`)
+        console.error('Unable to send a response to activation request',error)
       }
     )
   }

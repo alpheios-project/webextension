@@ -49,8 +49,9 @@ export default class BackgroundProcess {
     this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
-    browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
+    //browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
     browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
+    browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
 
     this.menuItems = {
       activate: new ContextMenuItem(BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
@@ -174,24 +175,25 @@ export default class BackgroundProcess {
   }
 
   /**
-   * Called when tab is updated
-   * @param tabID
-   * @param changeInfo
-   * @param tab
+   * Called when a page is loaded.
+   * Use this to listen on webNavigation.onCompleted rather than tabs.onUpdated
+   * because you can't tell from the tabs.onUpdated event whether it's the main
+   * browser window or an iframe that has been updated.
+   * the webNavigation.onCompleted event is the equivalent of domLoaded and you
+   * can distinguish iFrames from the main window in the details
+   * @param details
    * @return {Promise.<void>}
    */
-  async tabUpdatedListener (tabID, changeInfo, tab) {
-    if (changeInfo.status === 'complete') {
-      console.log('tab update complete')
-      if (this.tabs.has(tabID)) {
-        // If content script was loaded to that tab, restore it to the state it had before
-        let tab = this.tabs.get(tabID)
-        try {
-          await this.loadContentData(tab)
-          this.setContentState(tab)
-        } catch (error) {
-          console.error(`Cannot load content script for a tab with an ID of ${tabID}`)
-        }
+  async navigationCompletedListener (details) {
+    // make sure this is a tab we know about AND that it's not an iframe event
+    if (this.tabs.has(details.tabId) && details.frameId === 0 ) {
+      // If content script was loaded to that tab, restore it to the state it had before
+      let tab = this.tabs.get(details.tabId)
+      try {
+        await this.loadContentData(tab)
+        this.setContentState(tab)
+      } catch (error) {
+        console.error(`Cannot load content script for a tab with an ID of ${details.tabId}`)
       }
     }
   }

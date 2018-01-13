@@ -38,6 +38,11 @@
                 <inflections-icon class="icon"></inflections-icon>
             </div>
 
+            <div v-bind:class="{ active: data.tabs.grammar }" @click="changeTab('grammar')"
+              class="alpheios-panel__nav-btn">
+                <grammar-icon class="icon"></grammar-icon>
+            </div>
+
             <div v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
                  class="alpheios-panel__nav-btn">
                 <status-icon class="icon"></status-icon>
@@ -63,6 +68,9 @@
             <div v-show="data.tabs.inflections" data-element="inflectionsPanel">
                 <inflections :infldata="data.inflectionData" :locale="data.settings.locale.currentValue"></inflections>
             </div>
+            <div v-show="data.tabs.grammar" data-element="grammarPanel" class="alpheios-panel__fullheight">
+                  <grammar :res="data.grammarRes"></grammar>
+              </div>
             <div v-show="data.tabs.status" data-element="statusPanel">
                 <div v-html="data.messages"></div>
             </div>
@@ -87,6 +95,7 @@
   import Inflections from './inflections.vue'
   import Setting from './setting.vue'
   import ShortDef from './shortdef.vue'
+  import Grammar from './grammar.vue'
   import Info from './info.vue'
   import interact from 'interactjs'
 
@@ -98,6 +107,7 @@
   import InflectionsIcon from '../images/inline-icons/inflections.svg';
   import StatusIcon from '../images/inline-icons/status.svg';
   import OptionsIcon from '../images/inline-icons/options.svg';
+  import GrammarIcon from '../images/inline-icons/resources.svg';
   import InfoIcon from '../images/inline-icons/info.svg';
 
   export default {
@@ -107,6 +117,7 @@
       setting: Setting,
       shortdef: ShortDef,
       info: Info,
+      grammar: Grammar,
       attachLeftIcon: AttachLeftIcon,
       attachRightIcon: AttachRightIcon,
       closeIcon: CloseIcon,
@@ -114,7 +125,8 @@
       inflectionsIcon: InflectionsIcon,
       statusIcon: StatusIcon,
       optionsIcon: OptionsIcon,
-      infoIcon: InfoIcon
+      infoIcon: InfoIcon,
+      grammarIcon: GrammarIcon
     },
     props: {
       data: {
@@ -424,4 +436,10 @@
         fill: $alpheios-link-hover-color;
         stroke: $alpheios-link-hover-color;
     }
+
+    .alpheios-panel__fullheight {
+        height: 100%;
+    }
+
+
 </style>

@@ -1,10 +1,13 @@
 /* global Node */
-import {Constants, Lexeme, Feature, Definition} from 'alpheios-data-models'
+import {Lexeme, Feature, Definition, LanguageModelFactory, Constants} from 'alpheios-data-models'
+import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
 import Template from './template.htmlf'
 import TabScript from '../lib/content/tab-script'
 import Panel from './vue-components/panel.vue'
 import Popup from './vue-components/popup.vue'
+import { Grammars } from 'alpheios-res-client'
+import ResourceQuery from './resource-query'
 
 const languageNames = new Map([
   [Constants.LANG_LATIN, 'Latin'],
@@ -43,6 +46,7 @@ export default class ContentUIController {
             options: false,
             info: true
           },
+          grammarRes: {},
           inflectionData: false, // If no inflection data present, it is set to false
           shortDefinitions: [],
           fullDefinitions: '',
@@ -204,6 +208,21 @@ export default class ContentUIController {
           this.panelData.inflectionData = inflectionData
         },
 
+        requestGrammar: function (feature) {
+          ExpObjMon.track(
+            ResourceQuery.create(feature, {
+              uiController: this.uiController,
+              grammars: Grammars,
+              }),
+            {
+              experience: 'Get resource',
+              actions: [
+                { name: 'getData', action: ExpObjMon.actions.START, event: ExpObjMon.events.GET },
+                { name: 'finalize', action: ExpObjMon.actions.STOP, event: ExpObjMon.events.GET }
+              ]
+            }).getData()
+        },
+
         settingChange: function (name, value) {
           console.log('Change inside instance', name, value)
           this.options.items[name].setTextValue(value)
@@ -236,6 +255,7 @@ export default class ContentUIController {
         messages: [],
         lexemes: [],
         definitions: {},
+        linkedFeatures: [],
         visible: false,
         morphDataReady: false,
         popupData: {
@@ -356,7 +376,16 @@ export default class ContentUIController {
           this.panel.changeTab('inflections')
           this.panel.open()
           return this
+        },
+
+        sendFeature: function(feature) {
+          this.visible = false
+          this.panel.requestGrammar(feature)
+          this.panel.changeTab('grammar')
+          this.panel.open()
+          return this
         }
+
       }
     })
   }
@@ -476,7 +505,19 @@ export default class ContentUIController {
   updateMorphology (homonym) {
     homonym.lexemes.sort(Lexeme.getSortByTwoLemmaFeatures(Feature.types.frequency, Feature.types.part))
     this.popup.lexemes = homonym.lexemes
+    if (homonym.lexemes.length > 0) {
+      // TODO we could really move this into the morph component and have it be calculated for each lemma in case languages are multiple
+      this.popup.linkedFeatures = LanguageModelFactory.getLanguageForCode(homonym.lexemes[0].lemma.language).grammarFeatures()
+    }
     this.popup.morphDataReady = true
+  }
+  updateGrammar (urls) {
+    if (urls.length > 0) {
+      this.panel.panelData.grammarRes = urls[0]
+    } else {
+      console.log("Requested Grammar Resource Not Found")
+    }
+    // todo show TOC or not found
   }
 
   updateDefinitions (homonym) {
