@@ -1,5 +1,6 @@
 /* global browser */
 import {LanguageDataList} from 'alpheios-inflection-tables'
+import {Constants} from 'alpheios-data-models'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import {Lexicons} from 'alpheios-lexicon-client'
 import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
@@ -106,7 +107,8 @@ export default class ContentProcess {
             maAdapter: this.maAdapter,
             langData: this.langData,
             lexicons: Lexicons,
-            resourceOptions: this.resourceOptions
+            resourceOptions: this.resourceOptions,
+            langOpts: { [Constants.LANG_PERSIAN] : { lookupForm: true } } // TODO this should be externalized
           }),
           {
             experience: 'Get word data',

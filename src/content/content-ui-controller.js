@@ -297,7 +297,8 @@ export default class ContentUIController {
             languageName: ''
           }
         },
-        panel: this.panel
+        panel: this.panel,
+        options: this.options
       },
       methods: {
         showMessage: function (message) {
@@ -406,8 +407,19 @@ export default class ContentUIController {
           this.panel.changeTab('grammar')
           this.panel.open()
           return this
-        }
+        },
 
+        settingChange: function (name, value) {
+          console.log('Change inside instance', name, value)
+          this.options.items[name].setTextValue(value)
+          switch (name) {
+            case 'locale':
+              if (this.uiController.presenter) {
+                this.uiController.presenter.setLocale(this.options.items.locale.currentValue)
+              }
+              break
+          }
+        }
       }
     })
   }
