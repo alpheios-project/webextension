@@ -1,5 +1,5 @@
 import uuidv4 from 'uuid/v4'
-import { LanguageModelFactory as LMF } from 'alpheios-data-models'
+import { LanguageModelFactory as LMF, Lexeme, Lemma, Homonym } from 'alpheios-data-models'
 
 let queries = new Map()
 
@@ -11,6 +11,7 @@ export default class LexicalQuery {
     this.maAdapter = options.maAdapter
     this.langData = options.langData
     this.lexicons = options.lexicons
+    this.langOpts = options.langOpts
     this.active = true
   }
 
@@ -62,9 +63,19 @@ export default class LexicalQuery {
   }
 
   * iterations () {
+    let formLexeme = new Lexeme(new Lemma(this.selector.normalizedText,this.selector.languageCode),[])
     this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
 
-    this.ui.addMessage(`Morphological analyzer data is ready`)
+    if (this.homonym) {
+      if (this.langOpts[this.homonym.languageID] && this.langOpts[this.homonym.languageID].lookupForm &&
+        this.homonym.lexemes.filter((l) => l.lemma.word === this.selector.normalizedText).length === 0) {
+        this.homonym.lexemes.push(formLexeme)
+      }
+      this.ui.addMessage(`Morphological analyzer data is ready`)
+    } else {
+      this.ui.addMessage(`Morphological analyzer data unavailable`)
+      this.homonym = new Homonym([formLexeme])
+    }
     this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
     // Update status info with data from a morphological analyzer
