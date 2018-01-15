@@ -79,6 +79,9 @@
                 <setting :data="data.settings.locale" @change="settingChanged"></setting>
                 <setting :data="data.settings.panelPosition" @change="settingChanged"></setting>
                 <setting :data="data.settings.uiType" @change="settingChanged"></setting>
+                <setting :data="languageSetting" @change="resourceSettingChanged"
+                  :key="languageSetting.name"
+                  v-for="languageSetting in data.resourceSettings.lexicons"></setting>
             </div>
             <div v-show="data.tabs.info" data-element="infoPanel">
                 <info></info>
@@ -206,7 +209,10 @@
 
       settingChanged: function (name, value) {
         this.$emit('settingchange', name, value) // Re-emit for a Vue instance
+      },
 
+      resourceSettingChanged: function (name, value) {
+        this.$emit('resourcesettingchange', name, value) // Re-emit for a Vue instance
       }
     },
     mounted: function () {

@@ -7,6 +7,6 @@
 </div>
 <div id="alpheios-panel">
     <panel :data="panelData" @close="close" @closenotifications="clearNotifications"
-           @setposition="setPositionTo" @settingchange="settingChange"
+           @setposition="setPositionTo" @settingchange="settingChange" @resourcesettingchange="resourceSettingChange"
            @changetab="changeTab"></panel>
 </div>

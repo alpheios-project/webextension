@@ -10,6 +10,7 @@ export default class LexicalQuery {
     this.maAdapter = options.maAdapter
     this.langData = options.langData
     this.lexicons = options.lexicons
+    this.resourceOptions = options.resourceOptions
     this.active = true
   }
 
@@ -69,10 +70,12 @@ export default class LexicalQuery {
     this.ui.addMessage(`Inflection data is ready`)
     this.ui.updateInflections(this.lexicalData, this.homonym)
 
+    let userLexiconChoices = []
+    this.resourceOptions.items.lexicons.forEach((i) => userLexiconChoices.push(...i.currentValue))
     let definitionRequests = []
     for (let lexeme of this.homonym.lexemes) {
       // Short definition requests
-      let requests = this.lexicons.fetchShortDefs(lexeme.lemma)
+      let requests = this.lexicons.fetchShortDefs(lexeme.lemma, { allow: [...userLexiconChoices] })
       definitionRequests = definitionRequests.concat(requests.map(request => {
         return {
           request: request,

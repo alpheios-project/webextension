@@ -2371,7 +2371,7 @@ if (typeof DEBUG !== 'undefined' && DEBUG) {
   ) }
 }
 
-var listToStyles = __webpack_require__(48)
+var listToStyles = __webpack_require__(49)
 
 /*
 type StyleObject = {
@@ -10549,7 +10549,7 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(42);
+__webpack_require__(43);
 exports.setImmediate = setImmediate;
 exports.clearImmediate = clearImmediate;
 
@@ -10559,31 +10559,34 @@ exports.clearImmediate = clearImmediate;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__inflections_vue__ = __webpack_require__(49);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__setting_vue__ = __webpack_require__(53);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__inflections_vue__ = __webpack_require__(50);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__setting_vue__ = __webpack_require__(54);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__shortdef_vue__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__grammar_vue__ = __webpack_require__(60);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__info_vue__ = __webpack_require__(64);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__grammar_vue__ = __webpack_require__(61);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__info_vue__ = __webpack_require__(65);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_interactjs__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_interactjs__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__images_inline_icons_attach_left_svg__ = __webpack_require__(68);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__images_inline_icons_attach_left_svg__ = __webpack_require__(69);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__images_inline_icons_attach_left_svg___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6__images_inline_icons_attach_left_svg__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__images_inline_icons_attach_right_svg__ = __webpack_require__(69);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__images_inline_icons_attach_right_svg__ = __webpack_require__(70);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__images_inline_icons_attach_right_svg___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__images_inline_icons_attach_right_svg__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__images_inline_icons_close_svg__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__images_inline_icons_close_svg___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__images_inline_icons_close_svg__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__images_inline_icons_definitions_svg__ = __webpack_require__(70);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__images_inline_icons_definitions_svg__ = __webpack_require__(71);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__images_inline_icons_definitions_svg___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__images_inline_icons_definitions_svg__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__images_inline_icons_inflections_svg__ = __webpack_require__(71);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__images_inline_icons_inflections_svg__ = __webpack_require__(72);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__images_inline_icons_inflections_svg___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10__images_inline_icons_inflections_svg__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__images_inline_icons_status_svg__ = __webpack_require__(72);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__images_inline_icons_status_svg__ = __webpack_require__(73);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__images_inline_icons_status_svg___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11__images_inline_icons_status_svg__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__images_inline_icons_options_svg__ = __webpack_require__(73);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__images_inline_icons_options_svg__ = __webpack_require__(74);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__images_inline_icons_options_svg___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_12__images_inline_icons_options_svg__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__images_inline_icons_resources_svg__ = __webpack_require__(74);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__images_inline_icons_resources_svg__ = __webpack_require__(75);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__images_inline_icons_resources_svg___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13__images_inline_icons_resources_svg__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__images_inline_icons_info_svg__ = __webpack_require__(75);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__images_inline_icons_info_svg__ = __webpack_require__(76);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__images_inline_icons_info_svg___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14__images_inline_icons_info_svg__);
+//
+//
+//
 //
 //
 //
@@ -10794,6 +10797,10 @@ exports.clearImmediate = clearImmediate;
 
     settingChanged: function (name, value) {
       this.$emit('settingchange', name, value); // Re-emit for a Vue instance
+    },
+
+    resourceSettingChanged: function (name, value) {
+      this.$emit('resourcesettingchange', name, value); // Re-emit for a Vue instance
     }
   },
   mounted: function () {
@@ -11020,6 +11027,9 @@ exports.clearImmediate = clearImmediate;
 //
 //
 //
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: 'Setting',
@@ -11060,11 +11070,11 @@ exports.clearImmediate = clearImmediate;
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_shortdef_vue__ = __webpack_require__(16);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_31ff257d_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_shortdef_vue__ = __webpack_require__(59);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_31ff257d_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_shortdef_vue__ = __webpack_require__(60);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(57)
+  __webpack_require__(58)
 }
 var normalizeComponent = __webpack_require__(3)
 /* script */
@@ -18369,7 +18379,7 @@ module.exports = {render: function () {with(this){return _c('svg',{attrs:{"viewB
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__morph_vue__ = __webpack_require__(81);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__morph_vue__ = __webpack_require__(82);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_interactjs__ = __webpack_require__(19);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_interactjs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_interactjs__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__images_inline_icons_close_svg__ = __webpack_require__(20);
@@ -18813,10 +18823,12 @@ contentProcess.initialize()
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_messaging_response_state_response__ = __webpack_require__(32);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__content_options__ = __webpack_require__(33);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__ = __webpack_require__(34);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lexical_query__ = __webpack_require__(39);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__content_ui_controller__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__resource_options__ = __webpack_require__(34);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_selection_media_html_selector__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lexical_query__ = __webpack_require__(40);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__content_ui_controller__ = __webpack_require__(41);
 /* global browser */
+
 
 
 
@@ -18838,12 +18850,13 @@ class ContentProcess {
     this.state.panelStatus = __WEBPACK_IMPORTED_MODULE_8__lib_content_tab_script__["a" /* default */].statuses.panel.CLOSED
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.options = new __WEBPACK_IMPORTED_MODULE_9__content_options__["a" /* default */]()
+    this.resourceOptions = new __WEBPACK_IMPORTED_MODULE_10__resource_options__["a" /* default */]()
 
     this.messagingService = new __WEBPACK_IMPORTED_MODULE_5__lib_messaging_service__["a" /* default */]()
 
     this.maAdapter = new __WEBPACK_IMPORTED_MODULE_1_alpheios_tufts_adapter__["a" /* default */]() // Morphological analyzer adapter, with default arguments
     this.langData = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["c" /* LanguageDataList */]().loadData()
-    this.ui = new __WEBPACK_IMPORTED_MODULE_12__content_ui_controller__["a" /* default */](this.state, this.options)
+    this.ui = new __WEBPACK_IMPORTED_MODULE_13__content_ui_controller__["a" /* default */](this.state, this.options, this.resourceOptions)
   }
 
   initialize () {
@@ -18913,15 +18926,16 @@ class ContentProcess {
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = __WEBPACK_IMPORTED_MODULE_10__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.options.items.preferredLanguage.currentValue)
+      let textSelector = __WEBPACK_IMPORTED_MODULE_11__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.options.items.preferredLanguage.currentValue)
 
       if (!textSelector.isEmpty()) {
         __WEBPACK_IMPORTED_MODULE_3_alpheios_experience__["ObjectMonitor"].track(
-          __WEBPACK_IMPORTED_MODULE_11__lexical_query__["a" /* default */].create(textSelector, {
+          __WEBPACK_IMPORTED_MODULE_12__lexical_query__["a" /* default */].create(textSelector, {
             uiController: this.ui,
             maAdapter: this.maAdapter,
             langData: this.langData,
-            lexicons: __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__["a" /* Lexicons */]
+            lexicons: __WEBPACK_IMPORTED_MODULE_2_alpheios_lexicon_client__["a" /* Lexicons */],
+            resourceOptions: this.resourceOptions
           }),
           {
             experience: 'Get word data',
@@ -21130,7 +21144,7 @@ var papaparse = createCommonjsModule(function (module, exports) {
 }));
 });
 
-var DefaultConfig = "{\n  \"https://github.com/alpheios-project/lsj\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lsj&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\",\n    \"rights\": \"From \\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\"\n  },\n  \"https://github.com/alpheios-project/aut\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/aut/dat/grc-aut-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/aut//dat/grc-aut-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=aut&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\",\n    \"rights\": \"From \\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\"\n  },\n  \"https://github.com/alpheios-project/ml\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ml&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Middle Liddell\\\"\",\n    \"rights\": \"From \\\"An Intermediate Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=dod&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"From \\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Created for The Greek New Testament for Beginning Readers: The Byzantine Greek Text & Verb Parsing</span>. Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=dod&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"From \\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Created for The Greek New Testament for Beginning Readers: The Byzantine Greek Text & Verb Parsing</span>. Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/ls\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/ls/dat/lat-ls-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ls&lg=lat&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"lat\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\",\n    \"rights\": \"From \\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\"\n  },\n  \"https://github.com/alpheios-project/lan\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/lan/dat/ara-lan-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lan&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane)\",\n    \"rights\": \"From \\\"The Arabic-English Lexicon\\\" (Edward Lane)\"\n  },\n  \"https://github.com/alpheios-project/sal\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/sal/dat/ara-sal-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=sal&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\",\n    \"rights\": \"From \\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\"\n  },\n  \"https://github.com/alpheios-project/stg\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=stg&lg=per&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"per\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\",\n    \"rights\": \"From \\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\"\n  }\n}\n";
+var DefaultConfig = "{\n  \"https://github.com/alpheios-project/lsj\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lsj&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\",\n    \"rights\": \"From \\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\"\n  },\n  \"https://github.com/alpheios-project/aut\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/aut/dat/grc-aut-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/aut//dat/grc-aut-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=aut&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\",\n    \"rights\": \"From \\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\"\n  },\n  \"https://github.com/alpheios-project/ml\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ml&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Middle Liddell\\\"\",\n    \"rights\": \"From \\\"An Intermediate Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\"\n  },\n  \"https://github.com/alpheios-project/as\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-as-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-as-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=as&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Manual Greek Lexicon of the New Testament\\\"\",\n    \"rights\": \"From \\\"A Manual Greek Lexicon of the New Testament\\\" (G. Abbott-Smith). Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=dod&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"From \\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Created for The Greek New Testament for Beginning Readers: The Byzantine Greek Text & Verb Parsing</span>. Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/ls\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/ls/dat/lat-ls-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ls&lg=lat&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"lat\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\",\n    \"rights\": \"From \\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\"\n  },\n  \"https://github.com/alpheios-project/lan\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/lan/dat/ara-lan-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lan&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane)\",\n    \"rights\": \"From \\\"The Arabic-English Lexicon\\\" (Edward Lane)\"\n  },\n  \"https://github.com/alpheios-project/sal\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/sal/dat/ara-sal-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=sal&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\",\n    \"rights\": \"From \\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\"\n  },\n  \"https://github.com/alpheios-project/stg\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=stg&lg=per&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"per\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\",\n    \"rights\": \"From \\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\"\n  }\n}\n";
 
 class AlpheiosLexAdapter extends BaseLexiconAdapter {
   /**
@@ -21415,11 +21429,9 @@ class Lexicons {
    */
   static fetchDefinitions (lemma, requestOptions, lookupFunction) {
     let options = Object.assign(Lexicons.defaults, requestOptions);
-
     let requests = [];
     try {
-      let adapters = Lexicons.getLexiconAdapters(lemma.languageID);
-      if (!adapters || adapters.length === 0) { return [] } // No adapters found for this language
+      let adapters = Lexicons._filterAdapters(lemma, requestOptions);
       requests = adapters.map(adapter => {
         console.log(`Preparing a request to "${adapter.config.description}"`);
         return new Promise((resolve, reject) => {
@@ -21452,6 +21464,22 @@ class Lexicons {
       console.log(`Unable to fetch full definitions due to: ${error}`);
       return []
     }
+  }
+
+  /**
+   * Filter the adapters for a request according to the options
+   * @param {Lemma} lemma - the requested lemma
+   * @param {Object} objects - the request options
+   * @return the list of applicable Adapters
+   */
+  static _filterAdapters (lemma, options) {
+    console.log('Request Options', options);
+    let adapters = Lexicons.getLexiconAdapters(lemma.languageID);
+    if (adapters && options.allow) {
+      adapters = adapters.filter((a) => options.allow.includes(a.lexid));
+    }
+    if (!adapters || adapters.length === 0) { return [] } // No adapters found for this language
+    return adapters
   }
 
   /**
@@ -21893,11 +21921,180 @@ class ContentOptions {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(35);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(0);
+/* global browser */
+
+
+let codes = {
+  greek: __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageCodeFromId(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_GREEK),
+  latin: __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageCodeFromId(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_LATIN),
+  persian: __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageCodeFromId(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_PERSIAN),
+  arabic: __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageCodeFromId(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_ARABIC)
+}
+
+class ResourceOptions {
+  /**
+   * ResourceOptions is a class which encapsulates defaults and user preferences
+   * for settings related to language specific resources such as Lexicons and Grammars
+   */
+  constructor () {
+    this.items = ResourceOptions.initItems()
+  }
+
+  static get defaults () {
+    return {
+      lexicons: {
+        labelText: 'Lexicons',
+        languages: {
+          [codes.greek]: {
+            defaultValue: ['https://github.com/alpheios-project/lsj'],
+            labelText: 'Greek Lexicons',
+            multiValue: true,
+            values: [
+              {value: 'https://github.com/alpheios-project/ml', text: 'Middle Liddell'},
+              {value: 'https://github.com/alpheios-project/lsj', text: 'Liddell, Scott, Jones'},
+              {value: 'https://github.com/alpheios-project/aut', text: 'Autenrieth Homeric Lexicon'},
+              {value: 'https://github.com/alpheios-project/dod', text: 'Dodson'},
+              {value: 'https://github.com/alpheios-project/dod', text: 'Abbott-Smith'},
+            ]
+          },
+          [codes.latin]: {
+            defaultValue: ['https://github.com/alpheios-project/ls'],
+            labelText: 'Latin Lexicons',
+            multiValue: true,
+            values: [
+              {value: 'https://github.com/alpheios-project/ls', text: 'Lewis & Short'}
+            ]
+          },
+          [codes.arabic]: {
+            defaultValue: ['https://github.com/alpheios-project/lan'],
+            labelText: 'Arabic Lexicons' ,
+            multiValue: true,
+            values: [
+              {value: 'https://github.com/alpheios-project/lan', text: 'Lane'},
+              {value: 'https://github.com/alpheios-project/sal', text: 'Salmone'}
+            ]
+          },
+          [codes.persian]: {
+            defaultValue: ['https://github.com/alpheios-project/stg'],
+            labelText: 'Persian Lexicons' ,
+            multiValue: true,
+            values: [
+              {value: 'https://github.com/alpheios-project/stg', text: 'Steingass'},
+            ]
+          }
+        }
+      }
+    }
+  }
+
+  static initItems () {
+    let items = {}
+    for (let [option, langs] of Object.entries(ResourceOptions.defaults)) {
+      items[option] = []
+      for (let [key, item] of Object.entries(langs.languages)) {
+        item.currentValue = item.defaultValue
+        item.name = `${option}-${key}`
+        item.textValues = function () {
+          return this.values.map(value => value.text)
+        }
+        item.currentTextValue = function () {
+          let currentTextValues = []
+          for (let value of this.values) {
+            if (this.currentValue.includes(value.value)) { currentTextValues.push(value.text) }
+          }
+          return currentTextValues
+        }
+        item.setValue = function (value) {
+          item.currentValue = value
+          ResourceOptions.save(item.name, item.currentValue)
+          return this
+        }
+        item.setTextValue = function (textValues) {
+          item.currentValue = []
+          for (let value of item.values) {
+            for (let textValue of textValues) {
+              if (value.text === textValue) { item.currentValue.push(value.value) }
+            }
+          }
+          ResourceOptions.save(item.name, item.currentValue)
+          return this
+        }
+        items[option].push(item)
+      }
+    }
+    return items
+  }
+
+  get names () {
+    return Object.keys(this.items)
+  }
+
+  /**
+   * Will always return a resolved promise.
+   */
+  load (callbackFunc) {
+    browser.storage.sync.get().then(
+      values => {
+        for (let key in values) {
+          let keyinfo = this.parseKey(key)
+          if (this.items.hasOwnProperty(keyinfo.setting)) {
+            this.items[keyinfo.setting].forEach((f) => { if (f.name === key) { f.currentValue = JSON.parse(values[key]) }})
+          }
+        }
+        callbackFunc(this)
+      },
+      error => {
+        console.error(`Cannot retrieve options for Alpheios extension from a local storage: ${error}. Default values
+          will be used instead`)
+        callbackFunc(this)
+      }
+    )
+  }
+
+ /**
+  * Parse a stored setting name into its component parts
+  * (for simplicity of the data structure, setting names are stored under
+  * keys which combine the setting and the language)
+  */
+  parseKey(name) {
+    let [setting,language] = name.split('-')
+    return {
+      setting: setting,
+      language: language
+    }
+  }
+
+  static save (optionName, optionValue) {
+    // Update value in the local storage
+    let option = {}
+    option[optionName] = JSON.stringify(optionValue)
+
+    browser.storage.sync.set(option).then(
+      () => {
+        // Options storage succeeded
+        console.log(`Value "${optionValue}" of "${optionName}" option value was stored successfully`)
+      },
+      (errorMessage) => {
+        console.error(`Storage of an option value failed: ${errorMessage}`)
+      }
+    )
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = ResourceOptions;
+
+
+
+/***/ }),
+/* 35 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(36);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(36);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(38);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(39);
  // To polyfill Element.closest() if required
 
 
@@ -22085,7 +22282,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports) {
 
 // element-closest | CC0-1.0 | github.com/jonathantneal/closest
@@ -22124,11 +22321,11 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(38);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
 
 
@@ -22211,7 +22408,7 @@ class TextSelector {
 
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22225,7 +22422,7 @@ class TextQuoteSelector {
 
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22278,7 +22475,7 @@ class MediaSelector {
 
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22296,6 +22493,7 @@ class LexicalQuery {
     this.maAdapter = options.maAdapter
     this.langData = options.langData
     this.lexicons = options.lexicons
+    this.resourceOptions = options.resourceOptions
     this.active = true
   }
 
@@ -22355,10 +22553,13 @@ class LexicalQuery {
     this.ui.addMessage(`Inflection data is ready`)
     this.ui.updateInflections(this.lexicalData, this.homonym)
 
+    let userLexiconChoices = []
+    this.resourceOptions.items.lexicons.forEach((i) => userLexiconChoices.push(...i.currentValue))
+    console.log(`LEXICONS = ${userLexiconChoices}`)
     let definitionRequests = []
     for (let lexeme of this.homonym.lexemes) {
       // Short definition requests
-      let requests = this.lexicons.fetchShortDefs(lexeme.lemma)
+      let requests = this.lexicons.fetchShortDefs(lexeme.lemma, { allow: [...userLexiconChoices] })
       definitionRequests = definitionRequests.concat(requests.map(request => {
         return {
           request: request,
@@ -22433,24 +22634,24 @@ class LexicalQuery {
 
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__ = __webpack_require__(41);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__ = __webpack_require__(42);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf__ = __webpack_require__(44);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf__ = __webpack_require__(45);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3__template_htmlf__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__vue_components_panel_vue__ = __webpack_require__(45);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_popup_vue__ = __webpack_require__(78);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__ = __webpack_require__(86);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__vue_components_panel_vue__ = __webpack_require__(46);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__vue_components_popup_vue__ = __webpack_require__(79);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__ = __webpack_require__(87);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__node_modules_uikit_dist_js_uikit__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_alpheios_res_client__ = __webpack_require__(87);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__resource_query__ = __webpack_require__(88);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_alpheios_res_client__ = __webpack_require__(88);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__resource_query__ = __webpack_require__(89);
 /* global Node */
 
 
@@ -22471,9 +22672,10 @@ const languageNames = new Map([
 ])
 
 class ContentUIController {
-  constructor (state, options) {
+  constructor (state, options, resourceOptions) {
     this.state = state
     this.options = options
+    this.resourceOptions = resourceOptions
     this.settings = ContentUIController.settingValues
     this.irregularBaseFontSizeClassName = 'alpheios-irregular-base-font-size'
     this.irregularBaseFontSize = !ContentUIController.hasRegularBaseFontSize()
@@ -22485,7 +22687,7 @@ class ContentUIController {
     let container = document.createElement('div')
     document.body.insertBefore(container, null)
     container.outerHTML = __WEBPACK_IMPORTED_MODULE_3__template_htmlf___default.a
-
+    console.log(this.resourceOptions.items.lexicons)
     // Initialize components
     this.panel = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
       el: '#alpheios-panel',
@@ -22526,6 +22728,7 @@ class ContentUIController {
             languageName: ''
           },
           settings: this.options.items,
+          resourceSettings: this.resourceOptions.items,
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
           },
@@ -22536,6 +22739,7 @@ class ContentUIController {
         },
         state: this.state,
         options: this.options,
+        resourceOptions: this.resourceOptions,
         uiController: this
       },
       methods: {
@@ -22681,6 +22885,11 @@ class ContentUIController {
               }
               break
           }
+        },
+        resourceSettingChange: function (name, value) {
+          let keyinfo = this.resourceOptions.parseKey(name)
+          console.log('Change inside instance', keyinfo.setting, keyinfo.language, value)
+          this.resourceOptions.items[keyinfo.setting].filter((f) => f.name === name).forEach((f) => { f.setTextValue(value) })
         }
       },
       mounted: function () {
@@ -22691,8 +22900,10 @@ class ContentUIController {
     })
 
     this.options.load(() => {
-      this.state.status = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
-      console.log('Content script is activated')
+      this.resourceOptions.load(() => {
+        this.state.status = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+        console.log('Content script is activated')
+      })
     })
 
     // Create a Vue instance for a popup
@@ -22952,7 +23163,7 @@ class ContentUIController {
 
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
@@ -33757,7 +33968,7 @@ return Vue$3;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(11).setImmediate))
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -33947,10 +34158,10 @@ return Vue$3;
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(43)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4), __webpack_require__(44)))
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -34140,23 +34351,23 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports) {
 
-module.exports = "<div id=\"alpheios-popup\" >\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\" :linkedfeatures=\"linkedFeatures\"\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\n           :data=\"popupData\"\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\" @sendfeature=\"sendFeature\">\n    </popup>\n</div>\n<div id=\"alpheios-panel\">\n    <panel :data=\"panelData\" @close=\"close\" @closenotifications=\"clearNotifications\"\n           @setposition=\"setPositionTo\" @settingchange=\"settingChange\"\n           @changetab=\"changeTab\"></panel>\n</div>\n";
+module.exports = "<div id=\"alpheios-popup\" >\n    <popup class='auk' :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\" :linkedfeatures=\"linkedFeatures\"\n           :defdataready=\"defDataReady\" :infldataready=\"inflDataReady\" :morphdataready=\"morphDataReady\"\n           :data=\"popupData\"\n           @close=\"close\" @showdefspaneltab=\"showDefinitionsPanelTab\"  @showinflpaneltab=\"showInflectionsPanelTab\" @sendfeature=\"sendFeature\">\n    </popup>\n</div>\n<div id=\"alpheios-panel\">\n    <panel :data=\"panelData\" @close=\"close\" @closenotifications=\"clearNotifications\"\n           @setposition=\"setPositionTo\" @settingchange=\"settingChange\" @resourcesettingchange=\"resourceSettingChange\"\n           @changetab=\"changeTab\"></panel>\n</div>\n";
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_panel_vue__ = __webpack_require__(12);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_352b9280_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_panel_vue__ = __webpack_require__(76);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_352b9280_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_panel_vue__ = __webpack_require__(77);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(46)
+  __webpack_require__(47)
 }
 var normalizeComponent = __webpack_require__(3)
 /* script */
@@ -34202,13 +34413,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 46 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(47);
+var content = __webpack_require__(48);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -34228,7 +34439,7 @@ if(false) {
 }
 
 /***/ }),
-/* 47 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(false);
@@ -34242,7 +34453,7 @@ exports.push([module.i, "\n.alpheios-panel {\n  width: 400px;\n  height: 100vh;\
 
 
 /***/ }),
-/* 48 */
+/* 49 */
 /***/ (function(module, exports) {
 
 /**
@@ -34275,17 +34486,17 @@ module.exports = function listToStyles (parentId, list) {
 
 
 /***/ }),
-/* 49 */
+/* 50 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_inflections_vue__ = __webpack_require__(13);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_05cff89c_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_inflections_vue__ = __webpack_require__(52);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_05cff89c_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_inflections_vue__ = __webpack_require__(53);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(50)
+  __webpack_require__(51)
 }
 var normalizeComponent = __webpack_require__(3)
 /* script */
@@ -34331,13 +34542,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 50 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(51);
+var content = __webpack_require__(52);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -34357,7 +34568,7 @@ if(false) {
 }
 
 /***/ }),
-/* 51 */
+/* 52 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(false);
@@ -34371,7 +34582,7 @@ exports.push([module.i, "\n.auk .uk-button-small.alpheios-inflections__control-b
 
 
 /***/ }),
-/* 52 */
+/* 53 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -34500,17 +34711,17 @@ if (false) {
 }
 
 /***/ }),
-/* 53 */
+/* 54 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_setting_vue__ = __webpack_require__(14);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_20e7bc0c_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_setting_vue__ = __webpack_require__(56);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_20e7bc0c_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_setting_vue__ = __webpack_require__(57);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(54)
+  __webpack_require__(55)
 }
 var normalizeComponent = __webpack_require__(3)
 /* script */
@@ -34556,13 +34767,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 54 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(55);
+var content = __webpack_require__(56);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -34582,7 +34793,7 @@ if(false) {
 }
 
 /***/ }),
-/* 55 */
+/* 56 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(false);
@@ -34596,7 +34807,7 @@ exports.push([module.i, "", ""]);
 
 
 /***/ }),
-/* 56 */
+/* 57 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -34621,38 +34832,76 @@ var render = function() {
       [_vm._v(_vm._s(_vm.data.labelText))]
     ),
     _vm._v(" "),
-    _c(
-      "select",
-      {
-        directives: [
+    _vm.data.multiValue
+      ? _c(
+          "select",
           {
-            name: "model",
-            rawName: "v-model",
-            value: _vm.selected,
-            expression: "selected"
-          }
-        ],
-        staticClass: "uk-select",
-        on: {
-          change: function($event) {
-            var $$selectedVal = Array.prototype.filter
-              .call($event.target.options, function(o) {
-                return o.selected
-              })
-              .map(function(o) {
-                var val = "_value" in o ? o._value : o.value
-                return val
-              })
-            _vm.selected = $event.target.multiple
-              ? $$selectedVal
-              : $$selectedVal[0]
-          }
-        }
-      },
-      _vm._l(_vm.data.textValues(), function(item) {
-        return _c("option", [_vm._v(_vm._s(item))])
-      })
-    )
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.selected,
+                expression: "selected"
+              }
+            ],
+            staticClass: "uk-select",
+            attrs: { multiple: "" },
+            on: {
+              change: function($event) {
+                var $$selectedVal = Array.prototype.filter
+                  .call($event.target.options, function(o) {
+                    return o.selected
+                  })
+                  .map(function(o) {
+                    var val = "_value" in o ? o._value : o.value
+                    return val
+                  })
+                _vm.selected = $event.target.multiple
+                  ? $$selectedVal
+                  : $$selectedVal[0]
+              }
+            }
+          },
+          _vm._l(_vm.data.textValues(), function(item) {
+            return _c("option", [_vm._v(_vm._s(item))])
+          })
+        )
+      : _vm._e(),
+    _vm._v(" "),
+    !_vm.data.multiValue
+      ? _c(
+          "select",
+          {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.selected,
+                expression: "selected"
+              }
+            ],
+            staticClass: "uk-select",
+            on: {
+              change: function($event) {
+                var $$selectedVal = Array.prototype.filter
+                  .call($event.target.options, function(o) {
+                    return o.selected
+                  })
+                  .map(function(o) {
+                    var val = "_value" in o ? o._value : o.value
+                    return val
+                  })
+                _vm.selected = $event.target.multiple
+                  ? $$selectedVal
+                  : $$selectedVal[0]
+              }
+            }
+          },
+          _vm._l(_vm.data.textValues(), function(item) {
+            return _c("option", [_vm._v(_vm._s(item))])
+          })
+        )
+      : _vm._e()
   ])
 }
 var staticRenderFns = []
@@ -34667,13 +34916,13 @@ if (false) {
 }
 
 /***/ }),
-/* 57 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(58);
+var content = __webpack_require__(59);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -34693,7 +34942,7 @@ if(false) {
 }
 
 /***/ }),
-/* 58 */
+/* 59 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(false);
@@ -34707,7 +34956,7 @@ exports.push([module.i, "\n.alpheios-definition__text {\n  color: #0E2233;\n  fo
 
 
 /***/ }),
-/* 59 */
+/* 60 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -34743,17 +34992,17 @@ if (false) {
 }
 
 /***/ }),
-/* 60 */
+/* 61 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_grammar_vue__ = __webpack_require__(17);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_73b291e3_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_grammar_vue__ = __webpack_require__(63);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_73b291e3_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_grammar_vue__ = __webpack_require__(64);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(61)
+  __webpack_require__(62)
 }
 var normalizeComponent = __webpack_require__(3)
 /* script */
@@ -34799,13 +35048,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 61 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(62);
+var content = __webpack_require__(63);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -34825,7 +35074,7 @@ if(false) {
 }
 
 /***/ }),
-/* 62 */
+/* 63 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(false);
@@ -34839,7 +35088,7 @@ exports.push([module.i, "\n.alpheios-grammar__provider {\n  font-size: 16px;\n  
 
 
 /***/ }),
-/* 63 */
+/* 64 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -34870,17 +35119,17 @@ if (false) {
 }
 
 /***/ }),
-/* 64 */
+/* 65 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_info_vue__ = __webpack_require__(18);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_ce2840bc_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_info_vue__ = __webpack_require__(67);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_ce2840bc_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_info_vue__ = __webpack_require__(68);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(65)
+  __webpack_require__(66)
 }
 var normalizeComponent = __webpack_require__(3)
 /* script */
@@ -34926,13 +35175,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 65 */
+/* 66 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(66);
+var content = __webpack_require__(67);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -34952,7 +35201,7 @@ if(false) {
 }
 
 /***/ }),
-/* 66 */
+/* 67 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(false);
@@ -34966,7 +35215,7 @@ exports.push([module.i, "\n.alpheios-text {\n  font-family: Arial, \"Helvetica N
 
 
 /***/ }),
-/* 67 */
+/* 68 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -35029,55 +35278,55 @@ if (false) {
 }
 
 /***/ }),
-/* 68 */
+/* 69 */
 /***/ (function(module, exports) {
 
 module.exports = {render: function () {with(this){return _c('svg',{attrs:{"viewBox":"0 0 20 20","xmlns":"http://www.w3.org/2000/svg"}},[_c('path',{attrs:{"fill":"none","stroke-width":"1.03","d":"M13 16l-6-6 6-6"}})])}}};
 
 /***/ }),
-/* 69 */
+/* 70 */
 /***/ (function(module, exports) {
 
 module.exports = {render: function () {with(this){return _c('svg',{attrs:{"viewBox":"0 0 20 20","xmlns":"http://www.w3.org/2000/svg"}},[_c('path',{attrs:{"fill":"none","stroke-width":"1.03","d":"M7 4l6 6-6 6"}})])}}};
 
 /***/ }),
-/* 70 */
+/* 71 */
 /***/ (function(module, exports) {
 
 module.exports = {render: function () {with(this){return _c('svg',{attrs:{"viewBox":"0 0 20 20","xmlns":"http://www.w3.org/2000/svg"}},[_c('path',{attrs:{"stroke-width":"0","d":"M6 18.71V14H1V1h18v13h-8.29L6 18.71zM2 13h5v3.29L10.29 13H18V2H2v11z"}})])}}};
 
 /***/ }),
-/* 71 */
+/* 72 */
 /***/ (function(module, exports) {
 
 module.exports = {render: function () {with(this){return _c('svg',{attrs:{"viewBox":"0 0 20 20","xmlns":"http://www.w3.org/2000/svg"}},[_c('path',{attrs:{"stroke-width":"0","d":"M1 3h18v1H1zM1 7h18v1H1zM1 11h18v1H1zM1 15h18v1H1z"}})])}}};
 
 /***/ }),
-/* 72 */
+/* 73 */
 /***/ (function(module, exports) {
 
 module.exports = {render: function () {with(this){return _c('svg',{attrs:{"viewBox":"0 0 20 20","xmlns":"http://www.w3.org/2000/svg"}},[_c('circle',{attrs:{"fill":"none","stroke-width":"1.1","cx":"10","cy":"10","r":"9"}}),_c('path',{attrs:{"stroke-width":"0","d":"M9 4h1v7H9z"}}),_c('path',{attrs:{"fill":"none","stroke-width":"1.1","d":"M13.018 14.197l-3.573-3.572"}})])}}};
 
 /***/ }),
-/* 73 */
+/* 74 */
 /***/ (function(module, exports) {
 
 module.exports = {render: function () {with(this){return _c('svg',{attrs:{"viewBox":"0 0 20 20","xmlns":"http://www.w3.org/2000/svg"}},[_c('circle',{attrs:{"fill":"none","cx":"9.997","cy":"10","r":"3.31"}}),_c('path',{attrs:{"fill":"none","d":"M18.488 12.285l-2.283 3.952c-.883-.741-2.02-.956-2.902-.446-.875.498-1.256 1.582-1.057 2.709H7.735c.203-1.126-.182-2.201-1.051-2.709-.883-.521-2.029-.299-2.911.446L1.5 12.285c1.073-.414 1.817-1.286 1.817-2.294-.012-1.011-.744-1.87-1.817-2.275l2.265-3.932c.88.732 2.029.954 2.922.448.868-.51 1.252-1.595 1.048-2.732h4.528c-.191 1.137.178 2.21 1.051 2.72.892.51 2.029.296 2.911-.426l2.262 3.92c-1.083.403-1.826 1.274-1.817 2.295.002 1.009.745 1.871 1.818 2.276z"}})])}}};
 
 /***/ }),
-/* 74 */
+/* 75 */
 /***/ (function(module, exports) {
 
 module.exports = {render: function () {with(this){return _c('svg',{attrs:{"viewBox":"0 0 20 20","xmlns":"http://www.w3.org/2000/svg"}},[_c('circle',{attrs:{"cx":"3","cy":"10","r":"2"}}),_c('circle',{attrs:{"cx":"10","cy":"10","r":"2"}}),_c('circle',{attrs:{"cx":"17","cy":"10","r":"2"}})])}}};
 
 /***/ }),
-/* 75 */
+/* 76 */
 /***/ (function(module, exports) {
 
 module.exports = {render: function () {with(this){return _c('svg',{attrs:{"viewBox":"0 0 20 20","xmlns":"http://www.w3.org/2000/svg"}},[_c('path',{attrs:{"stroke-width":"0","d":"M12.13 11.59c-.16 1.25-1.78 2.53-3.03 2.57-2.93.04.79-4.7-.36-5.79.56-.21 1.88-.54 1.88.44 0 .82-.5 1.74-.74 2.51-1.22 3.84 2.25-.17 2.26-.14.02.03.02.17-.01.41-.05.36.03-.24 0 0zm-.57-5.92c0 1-2.2 1.48-2.2.36 0-1.03 2.2-1.49 2.2-.36z"}}),_c('circle',{attrs:{"fill":"none","stroke-width":"1.1","cx":"10","cy":"10","r":"9"}})])}}};
 
 /***/ }),
-/* 76 */
+/* 77 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -35426,9 +35675,19 @@ var render = function() {
             _c("setting", {
               attrs: { data: _vm.data.settings.uiType },
               on: { change: _vm.settingChanged }
+            }),
+            _vm._v(" "),
+            _vm._l(_vm.data.resourceSettings.lexicons, function(
+              languageSetting
+            ) {
+              return _c("setting", {
+                key: languageSetting.name,
+                attrs: { data: languageSetting },
+                on: { change: _vm.resourceSettingChanged }
+              })
             })
           ],
-          1
+          2
         ),
         _vm._v(" "),
         _c(
@@ -35492,7 +35751,7 @@ var staticRenderFns = [
     return _c("div", { staticClass: "alpheios-panel__header-title" }, [
       _c("img", {
         staticClass: "alpheios-panel__header-logo",
-        attrs: { src: __webpack_require__(77) }
+        attrs: { src: __webpack_require__(78) }
       })
     ])
   }
@@ -35508,23 +35767,23 @@ if (false) {
 }
 
 /***/ }),
-/* 77 */
+/* 78 */
 /***/ (function(module, exports) {
 
 module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAzMYbbAAAAolBMVEUAAAD///8GITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITW85fAGITWPtMG85fAGITW85fAGITVPb4C85fAGITWbwc685fAGITW85fAGITU+XW+85fAGITU6WWq85fAGITW85fAGITURLUEdOkwoRlg0UmQ/Xm9Ka3tWd4dhg5Nsj554nKqDqLaPtMGawM2lzdmx2eS85fBSA/ZbAAAAJXRSTlMAABAQICAwMEBAUFBgYHBwgICAj4+fn5+vr6+/v8/Pz9/f3+/vxRX+wgAABfhJREFUaN7dWn9XqzgQpTykkYeVFVnZh+zjicOPUoqU9vt/tZ1JQggt1dZ/lJ1zPIcmBHIzd+5MgsbCmLLlLZkxXzuBdfvw/HKQ9vrr/ub/AGv59Ho4sufbucO6ez5M2fNyzrCW06DI7ucL6/Hwjj19g5lan4D14/fh8L1xmQm7Gtby9fCBfTUPzQhSdiWsE1Rt29R13bS7oemLdcMDgNi6CtaIgbu6zEBZtm5k++8vdpcD4ZUk/KUwdZucsJQb9FTbbus1/iyky+6+GJdnXgfrpwJVIaZ10+l03K0hE7heLgiAbyTwP/paqckgb/Yc31tNtuV4mh7XR9FlhiOxcj2G5niqjXm9ubZskWYZlrziHcxhg42GutrjwwSjLXS1pbSCBNLIYybBupeoKsi23D/VEFv5GzZsoeA3PL6Pyk5xgPZe26OGZKXi3GKxenDE5+9FdJ34zGA+3QwhH295yRDdYqhDQ9N+OTDS1B3pSp9AHGEHI1jSWW/CKV1JOlG3ZFskZYVta6jHomGZk6iC1QiX4eNbHf0ehg0BLjS+PxVoaXbiyhV9vT4g2ggtBnto8UdPjhzmhKCNwmcRRCf1ENZSoNpnsBNELJohsrqCcHVZxrkpuebGEE1kS2pEXPZYlNkxLG8EIer9ofqOfgRsottVvGCpepTdP2qF8BeyaGq4X1oAQcRNWWRl1R72BXmqFu6iWt4OKIE4J7B8seoRJObHsAxa7Mtg2ROwLO2a2sVLmMKKK7uQBe6aOyuHRhIR4wqIgl0G3aGDjMMiR0HqT2RFXKpQrqN3GSz/EljO6VDyIF7T4pmm/MFfbXJCykVdSLrlGY8vctmOiEisa3L00hZKkhPUju5f9HjkTupFIFcKFzK9jISWgsVIuk5hRZ7nD6Gpd6fS174vuZeqgIPUG8GiySPZSPlKDk4GXIce3CHedYMuTIMz5QutlN3HrfMRLAoIuTpRL2hxfAxLGDuFZUkKe6JFyaUphDa2T2G16BR+2Ufchkfdju4v/jZVgkjH+FzFpUjTs0lYCaobqAQXgW6n3nInvMUELFocqn4HHpu+kHx7ClYr9EG6K6M/CrNyd/ipQOnCIP2fKjYm78LC2a4GtZRzwrQbXBxbPe3MhM8i1nhvi0SowSp4bG3IW/mg8BVUBVVUGyLmLZf3iAh8lLjGi/6xZBzDOq+EZ2KLM12UIL1kSN6Izh5WCeQcrngYW3uRtZoq55K4RtiI9cb2iL6xe5KNiVeivIk0KBos5n8aljmphLGeuflLXEf99pTAb7haVERA1PSsRBM7ExSNDAhrzRti3+5rI212Kg+NPDRcWyIWPwHLiify1pCDqQyQr3YCNZeVSsdC2zteQe25k6DAGgrzGf2VBeds4Fqas61LYPElZHFwPQmFf2PvTJUBIb3fRp7Epgy5PiunpiqeDqJA2vblem8bnpZRMaD8S2N6NKr+LFBCEWj1bjCEmzNR2En2gqn6lIau4FjhR91Y93HmkKhC1IcEhjxjrkgeqtSthABidbuRG659K3iXV6QnWd5vTLhqRIOayYI7wsV0OZLUp7l4Q70upIrxkh4CrQzhpWqCexfZ5/MVcaJj/emHqqU0RQMOHlY3EE08eSyMB1nVQtbJXRfkFFqZgESBlQNVV5x09irkqqHn4l4WTMMWxLQsUZkdnYjZo9vFCP5MS/XZ0xuEUXcv5u6wcdN2dHa/jZTnM7XcVu23ElG5oY0yFYsVBtgWPMcL+RbKt+dw/CnddShU0aTbFuq2grUQDUjD1ffHJI9o5METbkKKsV7gsVqZq/hAd1nGTGyhHRPuUSFKsTF+qzcSECaxeovJ+CaE2YCSx593qrTN9SKorOp2j9ykZPyEouvO7dPC8F2ha/ihE/psr8rCFrMXw+QUzg2W8XT+9H2LO+Y3OvxIYH4fgs5/B2qxrP+HPOXa84Nl3J39aALlk5Ems/0aee4TV4HkC2GusDAvTzvsD+mFPV9Yxs2EcrzcusCMudnR/2XcPLyMQdHnn/mhOv13E2N5/0tCe36c4b8ucPsPj8KYSwhZmDoAAAAASUVORK5CYII="
 
 /***/ }),
-/* 78 */
+/* 79 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_popup_vue__ = __webpack_require__(21);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_190d0968_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_popup_vue__ = __webpack_require__(85);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_190d0968_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_popup_vue__ = __webpack_require__(86);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(79)
+  __webpack_require__(80)
 }
 var normalizeComponent = __webpack_require__(3)
 /* script */
@@ -35570,13 +35829,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 79 */
+/* 80 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(80);
+var content = __webpack_require__(81);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -35596,7 +35855,7 @@ if(false) {
 }
 
 /***/ }),
-/* 80 */
+/* 81 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(false);
@@ -35610,17 +35869,17 @@ exports.push([module.i, "\n.alpheios-popup {\n  background: #FFF;\n  border: 1px
 
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_morph_vue__ = __webpack_require__(22);
 /* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_85d98878_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_morph_vue__ = __webpack_require__(84);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_85d98878_hasScoped_false_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_morph_vue__ = __webpack_require__(85);
 var disposed = false
 function injectStyle (ssrContext) {
   if (disposed) return
-  __webpack_require__(82)
+  __webpack_require__(83)
 }
 var normalizeComponent = __webpack_require__(3)
 /* script */
@@ -35666,13 +35925,13 @@ if (false) {(function () {
 
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // style-loader: Adds some css to the DOM by adding a <style> tag
 
 // load the styles
-var content = __webpack_require__(83);
+var content = __webpack_require__(84);
 if(typeof content === 'string') content = [[module.i, content, '']];
 if(content.locals) module.exports = content.locals;
 // add the styles to the DOM
@@ -35692,7 +35951,7 @@ if(false) {
 }
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 exports = module.exports = __webpack_require__(1)(false);
@@ -35706,7 +35965,7 @@ exports.push([module.i, "\n#alpheios-morph__lexemes {\n  color: #0E2233;\n}\n.al
 
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -36555,7 +36814,7 @@ if (false) {
 }
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -36681,7 +36940,7 @@ if (false) {
 }
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(setImmediate) {/*! UIkit 3.0.0-beta.35 | http://www.getuikit.com | (c) 2014 - 2017 YOOtheme | MIT License */
@@ -47179,7 +47438,7 @@ return UIkit$2;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(11).setImmediate))
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -49034,7 +49293,7 @@ class Grammars {
 
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
