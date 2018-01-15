@@ -12,23 +12,33 @@
         type: Object,
         required: true
       },
+    },
+
+    computed: {
+      grammarProvider: function () {
+        return (this.res.provider) ? this.res.provider.toString() : ''
+      }
     }
   }
 </script>
 <style lang="scss">
     @import "../styles/alpheios";
 
-    .alpheios-grammar__provider {
-      font-size: $alpheios-base-font-size;
-      font-weight: normal;
-      color: $alpheios-toolbar-color;
-      font-style: italic;
-      margin-top: .5em;
-      margin-bottom: .5em;
+    .alpheios-grammar {
+        display: flex;
+        flex-direction: column;
     }
 
-    .alpheios-grammar, .alpheios-grammar__frame {
-        height: 100%;
-        width: 100%;
+    .alpheios-grammar__provider {
+        flex: 1 1 auto;
+        font-size: $alpheios-base-font-size;
+        font-weight: normal;
+        color: $alpheios-toolbar-color;
+        font-style: italic;
+        padding: 20px;
+    }
+
+    .alpheios-grammar__frame {
+        flex: 1 1 100vh;
     }
 </style>

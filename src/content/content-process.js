@@ -11,7 +11,7 @@ import TabScript from '../lib/content/tab-script'
 import Options from './content-options'
 import ResourceOptions from './resource-options'
 import HTMLSelector from '../lib/selection/media/html-selector'
-import LexicalQuery from './lexical-query'
+import LexicalQuery from './queries/lexical-query'
 import ContentUIController from './content-ui-controller'
 
 export default class ContentProcess {

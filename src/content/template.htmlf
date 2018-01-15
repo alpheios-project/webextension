@@ -1,8 +1,7 @@
 <div id="alpheios-popup" >
-    <popup class='auk' :messages="messages" :definitions="definitions" :visible="visible" :lexemes="lexemes" :linkedfeatures="linkedFeatures"
-           :defdataready="defDataReady" :infldataready="inflDataReady" :morphdataready="morphDataReady"
-           :data="popupData"
-           @close="close" @showdefspaneltab="showDefinitionsPanelTab"  @showinflpaneltab="showInflectionsPanelTab" @sendfeature="sendFeature">
+    <popup :messages="messages" :definitions="definitions" :visible="visible" :lexemes="lexemes" :linkedfeatures="linkedFeatures"
+           :data="popupData" @close="close" @closepopupnotifications="clearNotifications"
+           @showdefspaneltab="showDefinitionsPanelTab"  @showinflpaneltab="showInflectionsPanelTab" @sendfeature="sendFeature">
     </popup>
 </div>
 <div id="alpheios-panel">

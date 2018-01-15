@@ -1,4 +1,5 @@
 import uuidv4 from 'uuid/v4'
+import { LanguageModelFactory as LMF, Lexeme, Lemma, Homonym } from 'alpheios-data-models'
 
 let queries = new Map()
 
@@ -10,7 +11,7 @@ export default class LexicalQuery {
     this.maAdapter = options.maAdapter
     this.langData = options.langData
     this.lexicons = options.lexicons
-    this.resourceOptions = options.resourceOptions
+    this.langOpts = options.langOpts
     this.active = true
   }
 
@@ -33,7 +34,9 @@ export default class LexicalQuery {
   }
 
   async getData () {
+    this.languageID = LMF.getLanguageIdFromCode(this.selector.languageCode)
     this.ui.clear().open().changeTab('definitions').message(`Please wait while data is retrieved ...`)
+    this.ui.showStatusInfo(this.selector.normalizedText, this.languageID)
     let iterator = this.iterations()
 
     let result = iterator.next()
@@ -60,22 +63,32 @@ export default class LexicalQuery {
   }
 
   * iterations () {
+    let formLexeme = new Lexeme(new Lemma(this.selector.normalizedText,this.selector.languageCode),[])
     this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
 
-    this.ui.addMessage(`Morphological analyzer data is ready`)
+    if (this.homonym) {
+      if (this.langOpts[this.homonym.languageID] && this.langOpts[this.homonym.languageID].lookupForm &&
+        this.homonym.lexemes.filter((l) => l.lemma.word === this.selector.normalizedText).length === 0) {
+        this.homonym.lexemes.push(formLexeme)
+      }
+      this.ui.addMessage(`Morphological analyzer data is ready`)
+    } else {
+      this.ui.addMessage(`Morphological analyzer data unavailable`)
+      this.homonym = new Homonym([formLexeme])
+    }
     this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
+    // Update status info with data from a morphological analyzer
+    this.ui.showStatusInfo(this.homonym.targetWord, this.homonym.languageID)
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)
     this.ui.addMessage(`Inflection data is ready`)
     this.ui.updateInflections(this.lexicalData, this.homonym)
 
-    let userLexiconChoices = []
-    this.resourceOptions.items.lexicons.forEach((i) => userLexiconChoices.push(...i.currentValue))
     let definitionRequests = []
     for (let lexeme of this.homonym.lexemes) {
       // Short definition requests
-      let requests = this.lexicons.fetchShortDefs(lexeme.lemma, { allow: [...userLexiconChoices] })
+      let requests = this.lexicons.fetchShortDefs(lexeme.lemma)
       definitionRequests = definitionRequests.concat(requests.map(request => {
         return {
           request: request,

@@ -59,32 +59,50 @@
             </div>
         </div>
         <div class="alpheios-panel__content">
-            <div v-show="data.tabs.definitions" data-element="definitionsPanel">
+            <div v-show="data.tabs.definitions" class="alpheios-panel__tab-panel">
                 <div class="alpheios-panel__contentitem" v-for="definition in data.shortDefinitions">
                     <shortdef :definition="definition"></shortdef>
                 </div>
                 <div class="alpheios-panel__contentitem" v-html="data.fullDefinitions"></div>
             </div>
-            <div v-show="data.tabs.inflections" data-element="inflectionsPanel">
-                <inflections :infldata="data.inflectionData" :locale="data.settings.locale.currentValue"></inflections>
+            <div v-show="data.tabs.inflections" class="alpheios-panel__tab-panel">
+                <inflections class="alpheios-panel-inflections"
+                             :infldata="data.inflectionData" :locale="data.settings.locale.currentValue"></inflections>
             </div>
-            <div v-show="data.tabs.grammar" data-element="grammarPanel" class="alpheios-panel__fullheight">
+            <div v-show="data.tabs.grammar" class="alpheios-panel__tab-panel alpheios-panel__tab-panel--no-padding">
                   <grammar :res="data.grammarRes"></grammar>
               </div>
-            <div v-show="data.tabs.status" data-element="statusPanel">
-                <div v-html="data.messages"></div>
+            <div v-show="data.tabs.status" class="alpheios-panel__tab-panel">
+                <div v-for="message in data.messages">
+                    <div class="alpheios-panel__message">{{message}}</div>
+                </div>
             </div>
-            <div v-show="data.tabs.options" data-element="optionsPanel">
-                <setting :data="data.settings.preferredLanguage" @change="settingChanged"></setting>
-                <setting :data="data.settings.locale" @change="settingChanged"></setting>
-                <setting :data="data.settings.panelPosition" @change="settingChanged"></setting>
-                <setting :data="data.settings.uiType" @change="settingChanged"></setting>
+            <div v-show="data.tabs.options" class="alpheios-panel__tab-panel">
+                <setting :data="data.settings.preferredLanguage" @change="settingChanged"
+                         :classes="['alpheios-panel__options-item']"></setting>
+                <setting :data="data.settings.locale" @change="settingChanged"
+                         :classes="['alpheios-panel__options-item']"></setting>
+                <setting :data="data.settings.panelPosition" @change="settingChanged"
+                         :classes="['alpheios-panel__options-item']"></setting>
+                <setting :data="data.settings.uiType" @change="settingChanged"
+                         :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="languageSetting" @change="resourceSettingChanged"
                   :key="languageSetting.name"
                   v-for="languageSetting in data.resourceSettings.lexicons"></setting>
             </div>
-            <div v-show="data.tabs.info" data-element="infoPanel">
+            <div v-show="data.tabs.info" class="alpheios-panel__tab-panel">
                 <info></info>
+                <h3>Localized messages test</h3>
+                <p>
+                    {{data.l10n.messages.COOKIE_TEST_MESSAGE}}<br>
+                    {{data.l10n.messages.NUM_LINES_TEST_MESSAGE.get(0)}}<br>
+                    {{data.l10n.messages.NUM_LINES_TEST_MESSAGE.get(1)}}<br>
+                    {{data.l10n.messages.NUM_LINES_TEST_MESSAGE.get(3)}}
+                </p>
+                <p>
+                    Messages above are localized. They can be switched with a link below:<br>
+                    <a @click="changeLocale">Change to {{data.l10n.locale==='en-US'? 'en-GB' : 'en-US'}}</a>
+                </p>
             </div>
         </div>
 
@@ -101,6 +119,7 @@
   import Grammar from './grammar.vue'
   import Info from './info.vue'
   import interact from 'interactjs'
+  import Locales from '../../locales/locales'
 
   // Embeddable SVG icons
   import AttachLeftIcon from '../images/inline-icons/attach-left.svg';
@@ -213,6 +232,12 @@
 
       resourceSettingChanged: function (name, value) {
         this.$emit('resourcesettingchange', name, value) // Re-emit for a Vue instance
+      },
+
+      changeLocale() {
+        this.data.l10n.locale === 'en-US'
+        ? this.data.l10n.setLocale('en-GB')
+        : this.data.l10n.setLocale('en-US')
       }
     },
     mounted: function () {
@@ -352,10 +377,11 @@
     }
 
     .alpheios-panel__content {
-        padding: 20px 20px 100px;
         overflow: auto;
         grid-area: content;
         direction: ltr;
+        box-sizing: border-box;
+        display: flex;
     }
 
     .alpheios-panel__notifications {
@@ -369,8 +395,8 @@
 
     .alpheios-panel__notifications-close-btn {
         position: absolute;
-        right: 0;
-        top: 0;
+        right: 5px;
+        top: 5px;
         display: block;
         width: 20px;
         height: 20px;
@@ -404,6 +430,28 @@
 
     [data-notification-visible="true"] .alpheios-panel__notifications {
         display: block;
+    }
+
+    .alpheios-panel__tab-panel {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .alpheios-panel__tab-panel--no-padding {
+        padding: 0;
+    }
+
+    .alpheios-panel-inflections {
+        max-width: 280px;
+    }
+
+    .alpheios-panel__message {
+        margin-bottom: 0.5rem;
+    }
+
+    .alpheios-panel__options-item {
+        margin-bottom: 0.5rem;
     }
 
     .alpheios-panel__status {
@@ -442,10 +490,4 @@
         fill: $alpheios-link-hover-color;
         stroke: $alpheios-link-hover-color;
     }
-
-    .alpheios-panel__fullheight {
-        height: 100%;
-    }
-
-
 </style>

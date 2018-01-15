@@ -1,0 +1,13 @@
+{
+  "COOKIE_TEST_MESSAGE": {
+    "message": "This is a test message about a cookie.",
+    "description": "A test message that is shown in a panel",
+    "component": "Panel"
+  },
+  "NUM_LINES_TEST_MESSAGE": {
+    "message": "There {numLines, plural, =0 {are no lines} =1 {is one line} other {are # lines}}.",
+    "description": "A test message that is shown in a panel",
+    "component": "Panel",
+    "params": ["numLines"]
+  }
+}

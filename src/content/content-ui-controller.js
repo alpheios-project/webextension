@@ -6,9 +6,12 @@ import Template from './template.htmlf'
 import TabScript from '../lib/content/tab-script'
 import Panel from './vue-components/panel.vue'
 import Popup from './vue-components/popup.vue'
-import UIkit from '../../node_modules/uikit/dist/js/uikit'
 import { Grammars } from 'alpheios-res-client'
-import ResourceQuery from './resource-query'
+import ResourceQuery from './queries/resource-query'
+import L10n from '../lib/l10n/l10n'
+import Locales from '../locales/locales'
+import enUS from '../locales/en-us/messages.json'
+import enGB from '../locales/en-gb/messages'
 
 const languageNames = new Map([
   [Constants.LANG_LATIN, 'Latin'],
@@ -27,6 +30,11 @@ export default class ContentUIController {
     this.irregularBaseFontSize = !ContentUIController.hasRegularBaseFontSize()
 
     this.zIndex = this.getZIndexMax()
+
+    this.l10n = new L10n()
+      .addMessages(enUS, Locales.en_US)
+      .addMessages(enGB, Locales.en_GB)
+      .setLocale(Locales.en_US)
 
     // Inject HTML code of a plugin. Should go in reverse order.
     document.body.classList.add('alpheios')
@@ -62,7 +70,7 @@ export default class ContentUIController {
             viewSelector: 'alpheios-panel-content-infl-table-view-selector',
             tableBody: 'alpheios-panel-content-infl-table-body'
           },
-          messages: '',
+          messages: [],
           notification: {
             visible: false,
             important: false,
@@ -81,7 +89,8 @@ export default class ContentUIController {
           styles: {
             zIndex: this.zIndex
           },
-          minWidth: 400
+          minWidth: 400,
+          l10n: this.l10n
         },
         state: this.state,
         options: this.options,
@@ -134,20 +143,20 @@ export default class ContentUIController {
           this.panelData.fullDefinitions = ''
           this.panelData.messages = ''
           this.clearNotifications()
+          this.clearStatus()
           return this
         },
 
-        showMessage: function (messageHTML) {
-          this.panelData.messages = messageHTML + '<br>'
-          // this.changeTab('status')
+        showMessage: function (message) {
+          this.panelData.messages = [message]
         },
 
-        appendMessage: function (messageHTML) {
-          this.panelData.messages += messageHTML + '<br>'
+        appendMessage: function (message) {
+          this.panelData.messages.push(message)
         },
 
         clearMessages: function () {
-          this.panelData.messages = ''
+          this.panelData.messages = []
         },
 
         showNotification: function (text, important = false) {
@@ -172,9 +181,11 @@ export default class ContentUIController {
             this.panelData.notification.showLanguageSwitcher = false
           }
           this.panelData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
+        },
 
-          this.panelData.status.languageName = languageName
-          this.panelData.status.selectedText = homonym.targetWord
+        showStatusInfo: function (selectionText, languageID) {
+          this.panelData.status.languageName = ContentUIController.getLanguageName(languageID)
+          this.panelData.status.selectedText = selectionText
         },
 
         showErrorInformation: function (errorText) {
@@ -189,6 +200,9 @@ export default class ContentUIController {
           this.panelData.notification.important = false
           this.panelData.notification.showLanguageSwitcher = false
           this.panelData.notification.text = ''
+        },
+
+        clearStatus: function () {
           this.panelData.status.languageName = ''
           this.panelData.status.selectedText = ''
         },
@@ -210,8 +224,8 @@ export default class ContentUIController {
           ExpObjMon.track(
             ResourceQuery.create(feature, {
               uiController: this.uiController,
-              grammars: Grammars,
-              }),
+              grammars: Grammars
+            }),
             {
               experience: 'Get resource',
               actions: [
@@ -262,14 +276,25 @@ export default class ContentUIController {
         definitions: {},
         linkedFeatures: [],
         visible: false,
-        defDataReady: false,
-        inflDataReady: false,
-        morphDataReady: false,
         popupData: {
           minWidth: 400,
           minHeight: 400,
+          settings: this.options.items,
+          defDataReady: false,
+          inflDataReady: false,
+          morphDataReady: false,
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
+          },
+          notification: {
+            visible: false,
+            important: false,
+            showLanguageSwitcher: false,
+            text: ''
+          },
+          status: {
+            selectedText: '',
+            languageName: ''
           }
         },
         panel: this.panel
@@ -292,10 +317,63 @@ export default class ContentUIController {
           return this
         },
 
+        showNotification: function (text, important = false) {
+          this.popupData.notification.visible = true
+          this.popupData.notification.important = important
+          this.popupData.notification.showLanguageSwitcher = false
+          this.popupData.notification.text = text
+        },
+
+        showImportantNotification: function (text) {
+          this.showNotification(text, true)
+        },
+
+        showLanguageNotification: function (homonym, notFound = false) {
+          this.popupData.notification.visible = true
+          let languageName = ContentUIController.getLanguageName(homonym.languageID)
+          if (notFound) {
+            this.popupData.notification.important = true
+            this.popupData.notification.showLanguageSwitcher = true
+          } else {
+            this.popupData.notification.important = false
+            this.popupData.notification.showLanguageSwitcher = false
+          }
+          this.popupData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
+        },
+
+        showStatusInfo: function (selectionText, languageID) {
+          this.popupData.status.languageName = ContentUIController.getLanguageName(languageID)
+          this.popupData.status.selectedText = selectionText
+        },
+
+        showErrorInformation: function (errorText) {
+          this.popupData.notification.visible = true
+          this.popupData.notification.important = true
+          this.popupData.notification.showLanguageSwitcher = false
+          this.popupData.notification.text = errorText
+        },
+
         clearContent: function () {
           this.definitions = {}
           this.lexemes = []
+          this.popupData.defDataReady = false
+          this.popupData.inflDataReady = false
+          this.popupData.morphDataReady = false
+          this.clearNotifications()
+          this.clearStatus()
           return this
+        },
+
+        clearNotifications: function () {
+          this.popupData.notification.visible = false
+          this.popupData.notification.important = false
+          this.popupData.notification.showLanguageSwitcher = false
+          this.popupData.notification.text = ''
+        },
+
+        clearStatus: function () {
+          this.popupData.status.languageName = ''
+          this.popupData.status.selectedText = ''
         },
 
         open: function () {
@@ -322,7 +400,7 @@ export default class ContentUIController {
           return this
         },
 
-        sendFeature: function(feature) {
+        sendFeature: function (feature) {
           this.visible = false
           this.panel.requestGrammar(feature)
           this.panel.changeTab('grammar')
@@ -405,6 +483,7 @@ export default class ContentUIController {
     this.panel.showMessage(message)
     this.popup.showMessage(message)
     this.panel.showNotification(message)
+    this.popup.showNotification(message)
     return this
   }
 
@@ -412,6 +491,7 @@ export default class ContentUIController {
     this.panel.appendMessage(message)
     this.popup.appendMessage(message)
     this.panel.showNotification(message)
+    this.popup.showNotification(message)
   }
 
   static getLanguageName (languageID) {
@@ -422,6 +502,12 @@ export default class ContentUIController {
     let notFound = !homonym.lexemes || homonym.lexemes.length < 1
     notFound = true // Debug only
     this.panel.showLanguageNotification(homonym, notFound)
+    this.popup.showLanguageNotification(homonym, notFound)
+  }
+
+  showStatusInfo (selectionText, languageID) {
+    this.panel.showStatusInfo(selectionText, languageID)
+    this.popup.showStatusInfo(selectionText, languageID)
   }
 
   showErrorInfo (errorText) {
@@ -430,6 +516,7 @@ export default class ContentUIController {
 
   showImportantNotification (message) {
     this.panel.showImportantNotification(message)
+    this.popup.showImportantNotification(message)
   }
 
   changeTab (tabName) {
@@ -444,13 +531,14 @@ export default class ContentUIController {
       // TODO we could really move this into the morph component and have it be calculated for each lemma in case languages are multiple
       this.popup.linkedFeatures = LanguageModelFactory.getLanguageForCode(homonym.lexemes[0].lemma.language).grammarFeatures()
     }
-    this.popup.morphDataReady = true
+    this.popup.popupData.morphDataReady = true
   }
+
   updateGrammar (urls) {
     if (urls.length > 0) {
       this.panel.panelData.grammarRes = urls[0]
     } else {
-      console.log("Requested Grammar Resource Not Found")
+      console.log('Requested Grammar Resource Not Found')
     }
     // todo show TOC or not found
   }
@@ -480,12 +568,12 @@ export default class ContentUIController {
 
     // Populate a popup
     this.popup.definitions = definitions
-    this.popup.defDataReady = true
+    this.popup.popupData.defDataReady = true
   }
 
   updateInflections (inflectionData, homonym) {
     this.panel.updateInflections(inflectionData, homonym)
-    this.popup.inflDataReady = true
+    this.popup.popupData.inflDataReady = true
   }
 
   clear () {
