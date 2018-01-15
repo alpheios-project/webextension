@@ -39006,12 +39006,9 @@ class ResourceQuery {
 
 
 /**
- * Combines several message bundle for different locales.
+ * Combines several message bundles for different locales.
  */
 class L10n {
-  /**
-   * Creates an object. If an array of message bundle data is provided, initializes an object with this data.
-   */
   constructor () {
     this.locales = []
     this.bundles = new Map()
@@ -39028,7 +39025,7 @@ class L10n {
   /**
    * Adds one or several message bundles.
    * This function is chainable.
-   * @param {MessageBundle} messageBundle - An array of message bundles to be stored within.
+   * @param {MessageBundle} messageBundle - A message bundle that will be stored within an L10n object.
    * @return {L10n} - Returns self for chaining.
    */
   addMessageBundle (messageBundle) {
@@ -39040,34 +39037,7 @@ class L10n {
   setLocale (locale) {
     this.locale = locale
     const bundle = this.bundles.get(this.locale)
-    this.messages = {}
-    for (const [key, message] of bundle.messages.entries()) {
-      if (message.params && Array.isArray(message.params) && message.params.length > 0) {
-        // This message has parameters
-        this.messages[key] = {
-          format (options) {
-            return message.formatFunc.format(options)
-          },
-          get (...options) {
-            let params = {}
-            // TODO: Add checks
-            for (let [index, param] of message.params.entries()) {
-              params[param] = options[index]
-            }
-            return message.formatFunc.format(params)
-          }
-        }
-      } else {
-        // A message without parameters
-        Object.defineProperty(this.messages, key, {
-          get () {
-            console.log('Get accessed', arguments)
-            return message.formatFunc.format()
-          },
-          enumerable: true
-        })
-      }
-    }
+    this.messages = bundle.messages
     return this
   }
 }
@@ -39085,13 +39055,12 @@ class L10n {
 
 
 /**
- * Combines messages with the same locale code.
+ * Combines messages with the same locale code into a single message bundle.
  */
 class MessageBundle {
   /**
    * Creates a message bundle (a list of messages) for a locale.
-   * @param {String} messagesJSON - Messages for a locale in an object. Object keys are message IDss, strings that
-   * are used to reference a message, and key values are message texts in a string format.
+   * @param {String} messagesJSON - Messages for a locale in a JSON format.
    * @param {string} locale - A locale code for a message group. IETF language tag format is recommended.
    */
   constructor (messagesJSON, locale) {
@@ -39103,15 +39072,52 @@ class MessageBundle {
     }
 
     this._locale = locale
-    let messageObject = JSON.parse(messagesJSON)
-    this.messages = new Map(Object.entries(messageObject))
-    Array.from(this.messages.values()).forEach(message => { message.formatFunc = new __WEBPACK_IMPORTED_MODULE_0_intl_messageformat___default.a(message.message, this._locale) })
+    this.messages = {}
+    let jsonObject = JSON.parse(messagesJSON)
+    for (const [key, message] of Object.entries(jsonObject)) {
+      if (!this.hasOwnProperty(key)) {
+        this[key] = message
+        this[key].formatFunc = new __WEBPACK_IMPORTED_MODULE_0_intl_messageformat___default.a(message.message, this._locale)
+
+        if (message.params && Array.isArray(message.params) && message.params.length > 0) {
+          // This message has parameters
+          this.messages[key] = {
+            format (options) {
+              return message.formatFunc.format(options)
+            },
+            get (...options) {
+              let params = {}
+              // TODO: Add checks
+              for (let [index, param] of message.params.entries()) {
+                params[param] = options[index]
+              }
+              return message.formatFunc.format(params)
+            }
+          }
+        } else {
+          // A message without parameters
+          Object.defineProperty(this.messages, key, {
+            get () {
+              return message.formatFunc.format()
+            },
+            enumerable: true,
+            configurable: true // So it can be deleted
+          })
+        }
+      } else {
+        console.warn(`A key name "{key} is reserved. It can not be used as a message key and will be ignored"`)
+      }
+    }
   }
 
   /**
    * Returns a (formatted) message for a message ID provided.
    * @param messageID - An ID of a message.
-   * @param options - Options that can be used for message formatting.
+   * @param options - Options that can be used for message formatting in the following format:
+   * {
+   *     paramOneName: paramOneValue,
+   *     paramTwoName: paramTwoValue
+   * }.
    * @returns {string} A formatted message. If message not found, returns a message that contains an error text.
    */
   get (messageID, options = undefined) {

@@ -18,9 +18,42 @@ export default class MessageBundle {
     }
 
     this._locale = locale
-    let messageObject = JSON.parse(messagesJSON)
-    this.messages = new Map(Object.entries(messageObject))
-    Array.from(this.messages.values()).forEach(message => { message.formatFunc = new IntlMessageFormat(message.message, this._locale) })
+    this.messages = {}
+    let jsonObject = JSON.parse(messagesJSON)
+    for (const [key, message] of Object.entries(jsonObject)) {
+      if (!this.hasOwnProperty(key)) {
+        this[key] = message
+        this[key].formatFunc = new IntlMessageFormat(message.message, this._locale)
+
+        if (message.params && Array.isArray(message.params) && message.params.length > 0) {
+          // This message has parameters
+          this.messages[key] = {
+            format (options) {
+              return message.formatFunc.format(options)
+            },
+            get (...options) {
+              let params = {}
+              // TODO: Add checks
+              for (let [index, param] of message.params.entries()) {
+                params[param] = options[index]
+              }
+              return message.formatFunc.format(params)
+            }
+          }
+        } else {
+          // A message without parameters
+          Object.defineProperty(this.messages, key, {
+            get () {
+              return message.formatFunc.format()
+            },
+            enumerable: true,
+            configurable: true // So it can be deleted
+          })
+        }
+      } else {
+        console.warn(`A key name "{key} is reserved. It can not be used as a message key and will be ignored"`)
+      }
+    }
   }
 
   /**

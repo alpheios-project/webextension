@@ -32,34 +32,7 @@ export default class L10n {
   setLocale (locale) {
     this.locale = locale
     const bundle = this.bundles.get(this.locale)
-    this.messages = {}
-    for (const [key, message] of bundle.messages.entries()) {
-      if (message.params && Array.isArray(message.params) && message.params.length > 0) {
-        // This message has parameters
-        this.messages[key] = {
-          format (options) {
-            return message.formatFunc.format(options)
-          },
-          get (...options) {
-            let params = {}
-            // TODO: Add checks
-            for (let [index, param] of message.params.entries()) {
-              params[param] = options[index]
-            }
-            return message.formatFunc.format(params)
-          }
-        }
-      } else {
-        // A message without parameters
-        Object.defineProperty(this.messages, key, {
-          get () {
-            console.log('Get accessed', arguments)
-            return message.formatFunc.format()
-          },
-          enumerable: true
-        })
-      }
-    }
+    this.messages = bundle.messages
     return this
   }
 }
