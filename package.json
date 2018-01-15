@@ -60,6 +60,7 @@
     "imagemin-optipng": "^5.2.1",
     "imagemin-svgo": "^6.0.0",
     "interactjs": "^1.3.3",
+    "intl-messageformat": "^2.2.0",
     "jest": "^21.2.1",
     "jest-environment-jsdom-11.0.0": "^20.0.9",
     "jest-serializer-vue": "^0.3.0",

@@ -7,7 +7,11 @@ import TabScript from '../lib/content/tab-script'
 import Panel from './vue-components/panel.vue'
 import Popup from './vue-components/popup.vue'
 import { Grammars } from 'alpheios-res-client'
-import ResourceQuery from './resource-query'
+import ResourceQuery from './queries/resource-query'
+import L10n from '../lib/l10n/l10n'
+import Locales from '../locales/locales'
+import enUS from '../locales/en-us/messages.json'
+import enGB from '../locales/en-gb/messages'
 
 const languageNames = new Map([
   [Constants.LANG_LATIN, 'Latin'],
@@ -25,6 +29,11 @@ export default class ContentUIController {
     this.irregularBaseFontSize = !ContentUIController.hasRegularBaseFontSize()
 
     this.zIndex = this.getZIndexMax()
+
+    this.l10n = new L10n()
+      .addMessages(enUS, Locales.en_US)
+      .addMessages(enGB, Locales.en_GB)
+      .setLocale(Locales.en_US)
 
     // Inject HTML code of a plugin. Should go in reverse order.
     document.body.classList.add('alpheios')
@@ -78,7 +87,8 @@ export default class ContentUIController {
           styles: {
             zIndex: this.zIndex
           },
-          minWidth: 400
+          minWidth: 400,
+          l10n: this.l10n
         },
         state: this.state,
         options: this.options,
