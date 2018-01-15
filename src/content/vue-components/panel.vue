@@ -88,6 +88,7 @@
                          :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="languageSetting" @change="resourceSettingChanged"
                   :key="languageSetting.name"
+                  v-if="languageSetting.values.length > 1"
                   v-for="languageSetting in data.resourceSettings.lexicons"></setting>
             </div>
             <div v-show="data.tabs.info" class="alpheios-panel__tab-panel">

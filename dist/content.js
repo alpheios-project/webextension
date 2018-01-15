@@ -10640,6 +10640,7 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a"
 //
 //
 //
+//
 
 
 
@@ -35944,11 +35945,13 @@ var render = function() {
             _vm._l(_vm.data.resourceSettings.lexicons, function(
               languageSetting
             ) {
-              return _c("setting", {
-                key: languageSetting.name,
-                attrs: { data: languageSetting },
-                on: { change: _vm.resourceSettingChanged }
-              })
+              return languageSetting.values.length > 1
+                ? _c("setting", {
+                    key: languageSetting.name,
+                    attrs: { data: languageSetting },
+                    on: { change: _vm.resourceSettingChanged }
+                  })
+                : _vm._e()
             })
           ],
           2
