@@ -22836,7 +22836,6 @@ class ContentUIController {
     let container = document.createElement('div')
     document.body.insertBefore(container, null)
     container.outerHTML = __WEBPACK_IMPORTED_MODULE_3__template_htmlf___default.a
-    console.log(this.resourceOptions.items.lexicons)
     // Initialize components
     this.panel = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
       el: '#alpheios-panel',

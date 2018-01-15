@@ -41,7 +41,6 @@ export default class ContentUIController {
     let container = document.createElement('div')
     document.body.insertBefore(container, null)
     container.outerHTML = Template
-    console.log(this.resourceOptions.items.lexicons)
     // Initialize components
     this.panel = new Vue({
       el: '#alpheios-panel',
