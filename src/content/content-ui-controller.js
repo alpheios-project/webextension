@@ -559,17 +559,22 @@ export default class ContentUIController {
     this.panel.panelData.shortDefinitions = []
     let definitions = {}
     let defsList = []
+    let toRemove = []
     for (let lexeme of homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
         definitions[lexeme.lemma.key] = []
         for (let def of lexeme.meaning.shortDefs) {
-          if (def.provider.uri === lexeme.provider.uri) {
+          // for now, to avoid duplicate showing of the provider we create a new unproxied definitions
+          // object without a provider if it has the same provider as the morphology info
+          if (def.provider && lexeme.provider && def.provider.uri === lexeme.provider.uri) {
             definitions[lexeme.lemma.key].push(new Definition(def.text, def.language, def.format, def.lemmaText))
           } else {
             definitions[lexeme.lemma.key].push(def)
           }
         }
         this.panel.panelData.shortDefinitions.push(...lexeme.meaning.shortDefs)
+      } else if (Object.entries(lexeme.lemma.features).size > 0) {
+        definitions[lexeme.lemma.key] = [new Definition("No definition found.", 'en-US', 'text/plain', lexeme.lemma.word)]
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {

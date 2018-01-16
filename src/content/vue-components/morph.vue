@@ -1,6 +1,6 @@
 <template>
   <div id="alpheios-morph__lexemes">
-    <div class="alpheios-morph__dictentry" v-for="lex in lexemes">
+    <div class="alpheios-morph__dictentry" v-for="lex in lexemes" v-show="showLexeme(lex)">
       <span class="alpheios-morph__formtext"
         v-if="! lex.lemma.principalParts.includes(lex.lemma.word)"
         :lang="lex.lemma.language">{{ lex.lemma.word }}</span>
@@ -225,6 +225,9 @@
           this.$parent.$emit('sendfeature',tosend)
         }
         else return false
+      },
+      showLexeme(lex) {
+        return Object.entries(lex.lemma.features).size > 0 || lex.meaning.shortDefs.length > 0
       }
     },
     mounted () {
@@ -273,7 +276,7 @@
       color: $alpheios-link-hover-color !important;
   }
 
-  .alpheios-morph__pofs:after {
+  .alpheios-morph__pofs span:last-child:after {
       content: ";";
   }
 
