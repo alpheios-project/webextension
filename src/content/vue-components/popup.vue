@@ -25,9 +25,9 @@
         </div>
         <div class="alpheios-popup__button-area">
             <div class="uk-button-group">
-                <button @click="showInflectionsPanelTab" v-show="data.defDataReady"
+                <button @click="showInflectionsPanelTab" v-show="data.inflDataReady"
                         class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Inflect</button>
-                <button @click="showDefinitionsPanelTab" v-show="data.inflDataReady"
+                <button @click="showDefinitionsPanelTab" v-show="data.defDataReady"
                         class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Define</button>
             </div>
         </div>

@@ -559,7 +559,7 @@ export default class ContentUIController {
     this.panel.panelData.shortDefinitions = []
     let definitions = {}
     let defsList = []
-    let toRemove = []
+    let hasFullDefs = false
     for (let lexeme of homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
         definitions[lexeme.lemma.key] = []
@@ -579,17 +579,18 @@ export default class ContentUIController {
 
       if (lexeme.meaning.fullDefs.length > 0) {
         this.panel.panelData.fullDefinitions += this.formatFullDefinitions(lexeme)
+        hasFullDefs = true
       }
     }
 
     // Populate a popup
     this.popup.definitions = definitions
-    this.popup.popupData.defDataReady = true
+    this.popup.popupData.defDataReady = hasFullDefs
   }
 
   updateInflections (inflectionData, homonym) {
     this.panel.updateInflections(inflectionData, homonym)
-    this.popup.popupData.inflDataReady = true
+    this.popup.popupData.inflDataReady = inflectionData[Feature.types.part].length > 0 // TODO should be a method on InflectionData
   }
 
   clear () {

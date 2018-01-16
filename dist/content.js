@@ -23349,7 +23349,7 @@ class ContentUIController {
     this.panel.panelData.shortDefinitions = []
     let definitions = {}
     let defsList = []
-    let toRemove = []
+    let hasFullDefs = false
     for (let lexeme of homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
         definitions[lexeme.lemma.key] = []
@@ -23369,17 +23369,18 @@ class ContentUIController {
 
       if (lexeme.meaning.fullDefs.length > 0) {
         this.panel.panelData.fullDefinitions += this.formatFullDefinitions(lexeme)
+        hasFullDefs = true
       }
     }
 
     // Populate a popup
     this.popup.definitions = definitions
-    this.popup.popupData.defDataReady = true
+    this.popup.popupData.defDataReady = hasFullDefs
   }
 
   updateInflections (inflectionData, homonym) {
     this.panel.updateInflections(inflectionData, homonym)
-    this.popup.popupData.inflDataReady = true
+    this.popup.popupData.inflDataReady = inflectionData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].length > 0 // TODO should be a method on InflectionData
   }
 
   clear () {
@@ -37226,8 +37227,8 @@ var render = function() {
                 {
                   name: "show",
                   rawName: "v-show",
-                  value: _vm.data.defDataReady,
-                  expression: "data.defDataReady"
+                  value: _vm.data.inflDataReady,
+                  expression: "data.inflDataReady"
                 }
               ],
               staticClass:
@@ -37244,8 +37245,8 @@ var render = function() {
                 {
                   name: "show",
                   rawName: "v-show",
-                  value: _vm.data.inflDataReady,
-                  expression: "data.inflDataReady"
+                  value: _vm.data.defDataReady,
+                  expression: "data.defDataReady"
                 }
               ],
               staticClass:
