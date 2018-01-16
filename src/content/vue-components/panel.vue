@@ -93,17 +93,6 @@
             </div>
             <div v-show="data.tabs.info" class="alpheios-panel__tab-panel">
                 <info></info>
-                <h3>Localized messages test</h3>
-                <p>
-                    {{data.l10n.messages.COOKIE_TEST_MESSAGE}}<br>
-                    {{data.l10n.messages.NUM_LINES_TEST_MESSAGE.get(0)}}<br>
-                    {{data.l10n.messages.NUM_LINES_TEST_MESSAGE.get(1)}}<br>
-                    {{data.l10n.messages.NUM_LINES_TEST_MESSAGE.get(3)}}
-                </p>
-                <p>
-                    Messages above are localized. They can be switched with a link below:<br>
-                    <a @click="changeLocale">Change to {{data.l10n.locale==='en-US'? 'en-GB' : 'en-US'}}</a>
-                </p>
             </div>
         </div>
 
@@ -234,12 +223,6 @@
       resourceSettingChanged: function (name, value) {
         this.$emit('resourcesettingchange', name, value) // Re-emit for a Vue instance
       },
-
-      changeLocale() {
-        this.data.l10n.locale === 'en-US'
-        ? this.data.l10n.setLocale('en-GB')
-        : this.data.l10n.setLocale('en-US')
-      }
     },
     mounted: function () {
       // Initialize Interact.js: make panel resizable
