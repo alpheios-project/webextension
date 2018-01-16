@@ -86,6 +86,10 @@
                          :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="data.settings.uiType" @change="settingChanged"
                          :classes="['alpheios-panel__options-item']"></setting>
+                <setting :data="languageSetting" @change="resourceSettingChanged"
+                  :key="languageSetting.name"
+                  v-if="languageSetting.values.length > 1"
+                  v-for="languageSetting in data.resourceSettings.lexicons"></setting>
             </div>
             <div v-show="data.tabs.info" class="alpheios-panel__tab-panel">
                 <info></info>
@@ -225,7 +229,10 @@
 
       settingChanged: function (name, value) {
         this.$emit('settingchange', name, value) // Re-emit for a Vue instance
+      },
 
+      resourceSettingChanged: function (name, value) {
+        this.$emit('resourcesettingchange', name, value) // Re-emit for a Vue instance
       },
 
       changeLocale() {

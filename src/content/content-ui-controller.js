@@ -21,9 +21,10 @@ const languageNames = new Map([
 ])
 
 export default class ContentUIController {
-  constructor (state, options) {
+  constructor (state, options, resourceOptions) {
     this.state = state
     this.options = options
+    this.resourceOptions = resourceOptions
     this.settings = ContentUIController.settingValues
     this.irregularBaseFontSizeClassName = 'alpheios-irregular-base-font-size'
     this.irregularBaseFontSize = !ContentUIController.hasRegularBaseFontSize()
@@ -40,7 +41,6 @@ export default class ContentUIController {
     let container = document.createElement('div')
     document.body.insertBefore(container, null)
     container.outerHTML = Template
-
     // Initialize components
     this.panel = new Vue({
       el: '#alpheios-panel',
@@ -81,6 +81,7 @@ export default class ContentUIController {
             languageName: ''
           },
           settings: this.options.items,
+          resourceSettings: this.resourceOptions.items,
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
           },
@@ -92,6 +93,7 @@ export default class ContentUIController {
         },
         state: this.state,
         options: this.options,
+        resourceOptions: this.resourceOptions,
         uiController: this
       },
       methods: {
@@ -242,6 +244,11 @@ export default class ContentUIController {
               }
               break
           }
+        },
+        resourceSettingChange: function (name, value) {
+          let keyinfo = this.resourceOptions.parseKey(name)
+          console.log('Change inside instance', keyinfo.setting, keyinfo.language, value)
+          this.resourceOptions.items[keyinfo.setting].filter((f) => f.name === name).forEach((f) => { f.setTextValue(value) })
         }
       },
       mounted: function () {
@@ -252,8 +259,10 @@ export default class ContentUIController {
     })
 
     this.options.load(() => {
-      this.state.status = TabScript.statuses.script.ACTIVE
-      console.log('Content script is activated')
+      this.resourceOptions.load(() => {
+        this.state.status = TabScript.statuses.script.ACTIVE
+        console.log('Content script is activated')
+      })
     })
 
     // Create a Vue instance for a popup
@@ -287,7 +296,8 @@ export default class ContentUIController {
             languageName: ''
           }
         },
-        panel: this.panel
+        panel: this.panel,
+        options: this.options
       },
       methods: {
         showMessage: function (message) {
@@ -396,8 +406,19 @@ export default class ContentUIController {
           this.panel.changeTab('grammar')
           this.panel.open()
           return this
-        }
+        },
 
+        settingChange: function (name, value) {
+          console.log('Change inside instance', name, value)
+          this.options.items[name].setTextValue(value)
+          switch (name) {
+            case 'locale':
+              if (this.uiController.presenter) {
+                this.uiController.presenter.setLocale(this.options.items.locale.currentValue)
+              }
+              break
+          }
+        }
       }
     })
   }

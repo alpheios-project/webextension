@@ -1,7 +1,10 @@
 <template>
     <div :class="classes">
         <label class="uk-form-label" v-show="showTitle">{{data.labelText}}</label>
-        <select v-model="selected" class="uk-select">
+        <select v-model="selected" class="uk-select" multiple v-if="data.multiValue">
+            <option v-for="item in data.textValues()">{{item}}</option>
+        </select>
+        <select v-model="selected" class="uk-select" v-if="! data.multiValue">
             <option v-for="item in data.textValues()">{{item}}</option>
         </select>
     </div>

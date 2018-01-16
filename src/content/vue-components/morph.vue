@@ -24,7 +24,8 @@
             v-for="gender in lex.lemma.features[types.gender]"
             v-if="lex.lemma.features[types.gender]">{{gender.value}}</span>
           <span @click="sendFeature(lex.lemma.features[types.part])"
-            :class="attributeClass(types.part)">{{ lex.lemma.features[types.part].toString() }}</span>
+            :class="attributeClass(types.part)"
+            v-if="lex.lemma.features[types.part]">{{ lex.lemma.features[types.part].toString() }}</span>
         </span>
         <span @click="sendFeature(kind)"
           :class="attributeClass(types.kind)"
@@ -159,7 +160,7 @@
           </div>
         </div>
       </div>
-      <div class="alpheios-morph__provider">
+      <div class="alpheios-morph__provider" v-if="lex.provider">
         {{ lex.provider.toString() }}
       </div>
     </div>

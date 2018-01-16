@@ -1,5 +1,6 @@
 /* global browser */
 import {LanguageDataList} from 'alpheios-inflection-tables'
+import {Constants} from 'alpheios-data-models'
 import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
 import {Lexicons} from 'alpheios-lexicon-client'
 import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
@@ -9,6 +10,7 @@ import StateMessage from '../lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
 import TabScript from '../lib/content/tab-script'
 import Options from './content-options'
+import ResourceOptions from './resource-options'
 import HTMLSelector from '../lib/selection/media/html-selector'
 import LexicalQuery from './queries/lexical-query'
 import ContentUIController from './content-ui-controller'
@@ -20,12 +22,13 @@ export default class ContentProcess {
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.options = new Options()
+    this.resourceOptions = new ResourceOptions()
 
     this.messagingService = new MessagingService()
 
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
     this.langData = new LanguageDataList().loadData()
-    this.ui = new ContentUIController(this.state, this.options)
+    this.ui = new ContentUIController(this.state, this.options, this.resourceOptions)
   }
 
   initialize () {
@@ -103,7 +106,9 @@ export default class ContentProcess {
             uiController: this.ui,
             maAdapter: this.maAdapter,
             langData: this.langData,
-            lexicons: Lexicons
+            lexicons: Lexicons,
+            resourceOptions: this.resourceOptions,
+            langOpts: { [Constants.LANG_PERSIAN] : { lookupForm: true } } // TODO this should be externalized
           }),
           {
             experience: 'Get word data',
