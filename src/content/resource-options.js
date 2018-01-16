@@ -33,7 +33,7 @@ export default class ResourceOptions {
               {value: 'https://github.com/alpheios-project/lsj', text: 'Liddell, Scott, Jones'},
               {value: 'https://github.com/alpheios-project/aut', text: 'Autenrieth Homeric Lexicon'},
               {value: 'https://github.com/alpheios-project/dod', text: 'Dodson'},
-              {value: 'https://github.com/alpheios-project/dod', text: 'Abbott-Smith'},
+              {value: 'https://github.com/alpheios-project/dod', text: 'Abbott-Smith'}
             ]
           },
           [codes.latin]: {
@@ -46,7 +46,7 @@ export default class ResourceOptions {
           },
           [codes.arabic]: {
             defaultValue: ['https://github.com/alpheios-project/lan'],
-            labelText: 'Arabic Lexicons' ,
+            labelText: 'Arabic Lexicons',
             multiValue: true,
             values: [
               {value: 'https://github.com/alpheios-project/lan', text: 'Lane'},
@@ -55,7 +55,7 @@ export default class ResourceOptions {
           },
           [codes.persian]: {
             defaultValue: ['https://github.com/alpheios-project/stg'],
-            labelText: 'Persian Lexicons' ,
+            labelText: 'Persian Lexicons',
             multiValue: true,
             values: [
               {value: 'https://github.com/alpheios-project/stg', text: 'Steingass'},
@@ -135,8 +135,8 @@ export default class ResourceOptions {
   * (for simplicity of the data structure, setting names are stored under
   * keys which combine the setting and the language)
   */
-  parseKey(name) {
-    let [setting,language] = name.split('-')
+  parseKey (name) {
+    let [setting, language] = name.split('-')
     return {
       setting: setting,
       language: language

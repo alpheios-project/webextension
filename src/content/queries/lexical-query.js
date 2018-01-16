@@ -63,7 +63,7 @@ export default class LexicalQuery {
   }
 
   * iterations () {
-    let formLexeme = new Lexeme(new Lemma(this.selector.normalizedText,this.selector.languageCode),[])
+    let formLexeme = new Lexeme(new Lemma(this.selector.normalizedText, this.selector.languageCode), [])
     this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
 
     if (this.homonym) {
@@ -74,7 +74,7 @@ export default class LexicalQuery {
       this.ui.addMessage(`Morphological analyzer data is ready`)
     } else {
       this.ui.addMessage(`Morphological analyzer data unavailable`)
-      this.homonym = new Homonym([formLexeme])
+      this.homonym = new Homonym([formLexeme], this.selector.normalizedText)
     }
     this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
