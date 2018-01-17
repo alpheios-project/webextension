@@ -21,6 +21,7 @@ export default class ContentProcess {
     this.state.status = TabScript.statuses.script.PENDING
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
+    this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
     this.options = new Options()
     this.resourceOptions = new ResourceOptions()
 
@@ -78,8 +79,11 @@ export default class ContentProcess {
         console.log('Content has been deactivated')
       }
     }
-    if (diff.hasOwnProperty('panelStatus')) {
+    if (diff.has('panelStatus')) {
       if (diff.panelStatus === TabScript.statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
+    }
+    if (diff.has('tab') && diff.tab) {
+      this.ui.changeTab(diff.tab)
     }
     this.messagingService.sendResponseToBg(new StateResponse(request, this.state)).catch(
       (error) => {

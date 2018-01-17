@@ -1,30 +1,3 @@
-const propTypes = {
-  NUMERIC: Symbol('Numeric'),
-  SYMBOL: Symbol('Symbol')
-}
-
-const props = {
-  status: {
-    name: 'status',
-    valueType: propTypes.SYMBOL,
-    values: {
-      PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
-      ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
-      DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated') // Content script has been loaded, but is deactivated
-    },
-    defaultValueIndex: 0
-  },
-  panelStatus: {
-    name: 'panelStatus',
-    valueType: propTypes.SYMBOL,
-    values: {
-      OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
-      CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
-    },
-    defaultValueIndex: 1
-  }
-}
-
 /**
  * Contains a state of a tab content script.
  * @property {Number} tabID - An ID of a tab where the content script is loaded
@@ -36,12 +9,57 @@ export default class TabScript {
     this.tabID = tabID
     this.status = undefined
     this.panelStatus = undefined
+    this.tab = undefined
 
     this.watchers = new Map()
   }
 
+  static get propTypes () {
+    return {
+      NUMERIC: Symbol('Numeric'),
+      STRING: Symbol('String'),
+      SYMBOL: Symbol('Symbol')
+    }
+  }
+
+  static get props () {
+    return {
+      status: {
+        name: 'status',
+        valueType: TabScript.propTypes.SYMBOL,
+        values: {
+          PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
+          ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
+          DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated') // Content script has been loaded, but is deactivated
+        },
+        defaultValueIndex: 0
+      },
+      panelStatus: {
+        name: 'panelStatus',
+        valueType: TabScript.propTypes.SYMBOL,
+        values: {
+          OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
+          CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
+        },
+        defaultValueIndex: 1
+      },
+      tab: {
+        name: 'tab',
+        valueType: TabScript.propTypes.STRING,
+        values: {
+          INFO: 'info'
+        },
+        defaultValueIndex: 0
+      }
+    }
+  }
+
   static get symbolProps () {
-    return [props.status.name, props.panelStatus.name]
+    return [TabScript.props.status.name, TabScript.props.panelStatus.name]
+  }
+
+  static get stringProps () {
+    return [TabScript.props.tab.name]
   }
 
   /**
@@ -51,7 +69,7 @@ export default class TabScript {
    * @return {String[]}
    */
   static get dataProps () {
-    return TabScript.symbolProps
+    return TabScript.symbolProps.concat(TabScript.stringProps)
   }
 
   /**
@@ -156,6 +174,11 @@ export default class TabScript {
     return this
   }
 
+  changeTab (tabName) {
+    this.setItem(TabScript.props.tab.name, tabName)
+    return this
+  }
+
   update (source) {
     for (let key of Object.keys(source)) {
       this[key] = source[key]
@@ -168,13 +191,16 @@ export default class TabScript {
       _changedKeys: [],
       _changedEntries: []
     }
+
+    // Check if there are any differences in tab IDs
+    if (this.tabID !== state.tabID) {
+      diff.tabID = state.tabID
+      diff['_changedKeys'].push('tabID')
+      diff['_changedEntries'].push(['tabID', state.tabID])
+    }
+
     for (let key of Object.keys(state)) {
       // Build diffs only for data properties
-      if (this.tabID !== state.tabID) {
-        diff.tabID = state.tabID
-        diff['_changedKeys'].push('tabID')
-        diff['_changedEntries'].push(['tabID', state.tabID])
-      }
       if (TabScript.dataProps.includes(key)) {
         if (this.hasOwnProperty(key)) {
           if (this[key] !== state[key]) {
@@ -237,6 +263,10 @@ export default class TabScript {
 
     for (let prop of TabScript.symbolProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
+    }
+
+    for (let prop of TabScript.stringProps) {
+      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
     }
 
     return tabScript

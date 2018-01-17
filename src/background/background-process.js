@@ -1,9 +1,10 @@
 /* global browser */
-import Message from '../lib/messaging/message/message'
-import MessagingService from '../lib/messaging/service'
-import StateRequest from '../lib/messaging/request/state-request'
-import ContextMenuItem from './context-menu-item'
-import TabScript from '../lib/content/tab-script'
+import Message from '../lib/messaging/message/message.js'
+import MessagingService from '../lib/messaging/service.js'
+import StateRequest from '../lib/messaging/request/state-request.js'
+import ContextMenuItem from './context-menu-item.js'
+import ContentMenuSeprator from './context-menu-separator.js'
+import TabScript from '../lib/content/tab-script.js'
 import {
   Transporter,
   StorageAdapter as LocalExperienceStorage,
@@ -19,7 +20,7 @@ export default class BackgroundProcess {
     this.settings = BackgroundProcess.defaults
 
     this.tabs = new Map() // A list of tabs that have content script loaded
-    this.activeTab = undefined // A tab that is currently active in a browser window
+    this.tab = undefined // A tab that is currently active in a browser window
 
     this.messagingService = new MessagingService()
   }
@@ -32,6 +33,9 @@ export default class BackgroundProcess {
       deactivateMenuItemText: 'Deactivate',
       openPanelMenuItemId: 'open-alpheios-panel',
       openPanelMenuItemText: 'Open Panel',
+      infoMenuItemId: 'show-alpheios-panel-info',
+      infoMenuItemText: 'Info',
+      separatorOneId: 'separator-one',
       sendExperiencesMenuItemId: 'send-experiences',
       sendExperiencesMenuItemText: 'Send Experiences to a remote server',
       contentCSSFileName: 'styles/style.min.css',
@@ -49,14 +53,16 @@ export default class BackgroundProcess {
     this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
-    //browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
+    // browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
     browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
     browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
 
     this.menuItems = {
       activate: new ContextMenuItem(BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
       deactivate: new ContextMenuItem(BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
-      openPanel: new ContextMenuItem(BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText)
+      openPanel: new ContextMenuItem(BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText),
+      separatorOne: new ContentMenuSeprator(BackgroundProcess.defaults.separatorOneId),
+      info: new ContextMenuItem(BackgroundProcess.defaults.infoMenuItemId, BackgroundProcess.defaults.infoMenuItemText)
     }
     this.menuItems.activate.enable() // This one will be enabled by default
 
@@ -82,6 +88,12 @@ export default class BackgroundProcess {
   async openPanel (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
     let tab = TabScript.create(this.tabs.get(tabID)).activate().setPanelOpen()
+    this.setContentState(tab)
+  }
+
+  async openInfoTab (tabID) {
+    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
+    let tab = TabScript.create(this.tabs.get(tabID)).activate().setPanelOpen().changeTab('info')
     this.setContentState(tab)
   }
 
@@ -121,6 +133,7 @@ export default class BackgroundProcess {
   async createTab (tabID) {
     console.log(`Creating a new tab with an ID of ${tabID}`)
     let newTab = new TabScript(tabID)
+    newTab.tab = TabScript.props.tab.values.INFO // Set active tab to `info` by default
     this.tabs.set(tabID, newTab)
     try {
       await this.loadContentData(newTab)
@@ -166,10 +179,11 @@ export default class BackgroundProcess {
   stateMessageHandler (message, sender) {
     let contentState = TabScript.readObject(message.body)
     this.updateTabState(contentState.tabID, contentState)
+    console.log(this.tabs.get(contentState.tabID))
   }
 
   tabActivationListener (info) {
-    this.activeTab = info.tabId
+    this.tab = info.tabId
     let tab = this.tabs.has(info.tabId) ? this.tabs.get(info.tabId) : undefined
     this.setMenuForTab(tab)
   }
@@ -186,7 +200,7 @@ export default class BackgroundProcess {
    */
   async navigationCompletedListener (details) {
     // make sure this is a tab we know about AND that it's not an iframe event
-    if (this.tabs.has(details.tabId) && details.frameId === 0 ) {
+    if (this.tabs.has(details.tabId) && details.frameId === 0) {
       // If content script was loaded to that tab, restore it to the state it had before
       let tab = this.tabs.get(details.tabId)
       try {
@@ -211,6 +225,8 @@ export default class BackgroundProcess {
       this.deactivateContent(tab.id)
     } else if (info.menuItemId === this.settings.openPanelMenuItemId) {
       this.openPanel(tab.id)
+    } else if (info.menuItemId === this.settings.infoMenuItemId) {
+      this.openInfoTab(tab.id)
     }
   }
 
@@ -230,6 +246,13 @@ export default class BackgroundProcess {
   }
 
   setMenuForTab (tab) {
+    // Deactivate all previously activated menu items to keep an order intact
+    this.menuItems.activate.disable()
+    this.menuItems.deactivate.disable()
+    this.menuItems.openPanel.disable()
+    this.menuItems.separatorOne.disable()
+    this.menuItems.info.disable()
+
     if (tab) {
       // Menu state should reflect a status of a content script
       if (tab.hasOwnProperty('status')) {
@@ -251,11 +274,16 @@ export default class BackgroundProcess {
           this.menuItems.openPanel.disable()
         }
       }
+
+      this.menuItems.separatorOne.enable()
+      this.menuItems.info.enable()
     } else {
       // If tab is not provided will set menu do an initial state
       this.menuItems.activate.enable()
       this.menuItems.deactivate.disable()
       this.menuItems.openPanel.disable()
+      this.menuItems.separatorOne.enable()
+      this.menuItems.info.enable()
     }
   }
 }

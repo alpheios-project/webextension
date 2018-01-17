@@ -154,33 +154,6 @@ module.exports = g;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-const propTypes = {
-  NUMERIC: Symbol('Numeric'),
-  SYMBOL: Symbol('Symbol')
-}
-
-const props = {
-  status: {
-    name: 'status',
-    valueType: propTypes.SYMBOL,
-    values: {
-      PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
-      ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
-      DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated') // Content script has been loaded, but is deactivated
-    },
-    defaultValueIndex: 0
-  },
-  panelStatus: {
-    name: 'panelStatus',
-    valueType: propTypes.SYMBOL,
-    values: {
-      OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
-      CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
-    },
-    defaultValueIndex: 1
-  }
-}
-
 /**
  * Contains a state of a tab content script.
  * @property {Number} tabID - An ID of a tab where the content script is loaded
@@ -192,12 +165,57 @@ class TabScript {
     this.tabID = tabID
     this.status = undefined
     this.panelStatus = undefined
+    this.tab = undefined
 
     this.watchers = new Map()
   }
 
+  static get propTypes () {
+    return {
+      NUMERIC: Symbol('Numeric'),
+      STRING: Symbol('String'),
+      SYMBOL: Symbol('Symbol')
+    }
+  }
+
+  static get props () {
+    return {
+      status: {
+        name: 'status',
+        valueType: TabScript.propTypes.SYMBOL,
+        values: {
+          PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
+          ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
+          DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated') // Content script has been loaded, but is deactivated
+        },
+        defaultValueIndex: 0
+      },
+      panelStatus: {
+        name: 'panelStatus',
+        valueType: TabScript.propTypes.SYMBOL,
+        values: {
+          OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
+          CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
+        },
+        defaultValueIndex: 1
+      },
+      tab: {
+        name: 'tab',
+        valueType: TabScript.propTypes.STRING,
+        values: {
+          INFO: 'info'
+        },
+        defaultValueIndex: 0
+      }
+    }
+  }
+
   static get symbolProps () {
-    return [props.status.name, props.panelStatus.name]
+    return [TabScript.props.status.name, TabScript.props.panelStatus.name]
+  }
+
+  static get stringProps () {
+    return [TabScript.props.tab.name]
   }
 
   /**
@@ -207,7 +225,7 @@ class TabScript {
    * @return {String[]}
    */
   static get dataProps () {
-    return TabScript.symbolProps
+    return TabScript.symbolProps.concat(TabScript.stringProps)
   }
 
   /**
@@ -312,6 +330,11 @@ class TabScript {
     return this
   }
 
+  changeTab (tabName) {
+    this.setItem(TabScript.props.tab.name, tabName)
+    return this
+  }
+
   update (source) {
     for (let key of Object.keys(source)) {
       this[key] = source[key]
@@ -324,13 +347,16 @@ class TabScript {
       _changedKeys: [],
       _changedEntries: []
     }
+
+    // Check if there are any differences in tab IDs
+    if (this.tabID !== state.tabID) {
+      diff.tabID = state.tabID
+      diff['_changedKeys'].push('tabID')
+      diff['_changedEntries'].push(['tabID', state.tabID])
+    }
+
     for (let key of Object.keys(state)) {
       // Build diffs only for data properties
-      if (this.tabID !== state.tabID) {
-        diff.tabID = state.tabID
-        diff['_changedKeys'].push('tabID')
-        diff['_changedEntries'].push(['tabID', state.tabID])
-      }
       if (TabScript.dataProps.includes(key)) {
         if (this.hasOwnProperty(key)) {
           if (this[key] !== state[key]) {
@@ -393,6 +419,10 @@ class TabScript {
 
     for (let prop of TabScript.symbolProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
+    }
+
+    for (let prop of TabScript.stringProps) {
+      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
     }
 
     return tabScript
@@ -954,7 +984,7 @@ let browserFeatures = new __WEBPACK_IMPORTED_MODULE_0__lib_browser__["a" /* defa
 console.log(`Support of a "browser" namespace: ${browserFeatures.browserNamespace}`)
 if (!browserFeatures.browserNamespace) {
   console.log('"browser" namespace is not supported, will load a WebExtensions polyfill into the background script')
-  window.browser = __webpack_require__(16)
+  window.browser = __webpack_require__(17)
 }
 
 let monitoredBackgroundProcess = __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].track(
@@ -1013,14 +1043,16 @@ class Browser {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_messaging_message_message__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_service__ = __webpack_require__(10);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_request_state_request__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__context_menu_item__ = __webpack_require__(15);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_alpheios_experience__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_alpheios_experience__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_messaging_message_message_js__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_service_js__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_request_state_request_js__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__context_menu_item_js__ = __webpack_require__(15);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__context_menu_separator_js__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script_js__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_alpheios_experience__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_alpheios_experience__);
 /* global browser */
+
 
 
 
@@ -1037,9 +1069,9 @@ class BackgroundProcess {
     this.settings = BackgroundProcess.defaults
 
     this.tabs = new Map() // A list of tabs that have content script loaded
-    this.activeTab = undefined // A tab that is currently active in a browser window
+    this.tab = undefined // A tab that is currently active in a browser window
 
-    this.messagingService = new __WEBPACK_IMPORTED_MODULE_1__lib_messaging_service__["a" /* default */]()
+    this.messagingService = new __WEBPACK_IMPORTED_MODULE_1__lib_messaging_service_js__["a" /* default */]()
   }
 
   static get defaults () {
@@ -1050,6 +1082,9 @@ class BackgroundProcess {
       deactivateMenuItemText: 'Deactivate',
       openPanelMenuItemId: 'open-alpheios-panel',
       openPanelMenuItemText: 'Open Panel',
+      infoMenuItemId: 'show-alpheios-panel-info',
+      infoMenuItemText: 'Info',
+      separatorOneId: 'separator-one',
       sendExperiencesMenuItemId: 'send-experiences',
       sendExperiencesMenuItemText: 'Send Experiences to a remote server',
       contentCSSFileName: 'styles/style.min.css',
@@ -1064,42 +1099,50 @@ class BackgroundProcess {
   initialize () {
     console.log('Background script initialization started ...')
 
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_0__lib_messaging_message_message__["a" /* default */].types.STATE_MESSAGE, this.stateMessageHandler, this)
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_0__lib_messaging_message_message_js__["a" /* default */].types.STATE_MESSAGE, this.stateMessageHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
-    //browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
+    // browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
     browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
     browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
 
     this.menuItems = {
-      activate: new __WEBPACK_IMPORTED_MODULE_3__context_menu_item__["a" /* default */](BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
-      deactivate: new __WEBPACK_IMPORTED_MODULE_3__context_menu_item__["a" /* default */](BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
-      openPanel: new __WEBPACK_IMPORTED_MODULE_3__context_menu_item__["a" /* default */](BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText)
+      activate: new __WEBPACK_IMPORTED_MODULE_3__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
+      deactivate: new __WEBPACK_IMPORTED_MODULE_3__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
+      openPanel: new __WEBPACK_IMPORTED_MODULE_3__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText),
+      separatorOne: new __WEBPACK_IMPORTED_MODULE_4__context_menu_separator_js__["a" /* default */](BackgroundProcess.defaults.separatorOneId),
+      info: new __WEBPACK_IMPORTED_MODULE_3__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.infoMenuItemId, BackgroundProcess.defaults.infoMenuItemText)
     }
     this.menuItems.activate.enable() // This one will be enabled by default
 
     browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
     browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
 
-    this.transporter = new __WEBPACK_IMPORTED_MODULE_5_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_5_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_5_alpheios_experience__["TestAdapter"],
+    this.transporter = new __WEBPACK_IMPORTED_MODULE_6_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_6_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_6_alpheios_experience__["TestAdapter"],
       BackgroundProcess.defaults.experienceStorageThreshold, BackgroundProcess.defaults.experienceStorageCheckInterval)
   }
 
   async activateContent (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen()
+    let tab = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script_js__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen()
     this.setContentState(tab)
   }
 
   async deactivateContent (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].create(this.tabs.get(tabID)).deactivate().setPanelClosed()
+    let tab = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script_js__["a" /* default */].create(this.tabs.get(tabID)).deactivate().setPanelClosed()
     this.setContentState(tab)
   }
 
   async openPanel (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen()
+    let tab = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script_js__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen()
+    this.setContentState(tab)
+  }
+
+  async openInfoTab (tabID) {
+    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
+    let tab = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script_js__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen().changeTab('info')
     this.setContentState(tab)
   }
 
@@ -1138,7 +1181,8 @@ class BackgroundProcess {
    */
   async createTab (tabID) {
     console.log(`Creating a new tab with an ID of ${tabID}`)
-    let newTab = new __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */](tabID)
+    let newTab = new __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script_js__["a" /* default */](tabID)
+    newTab.tab = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script_js__["a" /* default */].props.tab.values.INFO // Set active tab to `info` by default
     this.tabs.set(tabID, newTab)
     try {
       await this.loadContentData(newTab)
@@ -1155,9 +1199,9 @@ class BackgroundProcess {
    * @param {TabScript} tab - A TabScript object that represents a tab and it desired state
    */
   setContentState (tab) {
-    this.messagingService.sendRequestToTab(new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_request_state_request__["a" /* default */](tab), 10000, tab.tabID).then(
+    this.messagingService.sendRequestToTab(new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_request_state_request_js__["a" /* default */](tab), 10000, tab.tabID).then(
       message => {
-        let contentState = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].readObject(message.body)
+        let contentState = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script_js__["a" /* default */].readObject(message.body)
         /*
         ContentState is an actual state content script is in. It may not match a desired state because
         content script may fail in one or several operations.
@@ -1182,12 +1226,13 @@ class BackgroundProcess {
   }
 
   stateMessageHandler (message, sender) {
-    let contentState = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].readObject(message.body)
+    let contentState = __WEBPACK_IMPORTED_MODULE_5__lib_content_tab_script_js__["a" /* default */].readObject(message.body)
     this.updateTabState(contentState.tabID, contentState)
+    console.log(this.tabs.get(contentState.tabID))
   }
 
   tabActivationListener (info) {
-    this.activeTab = info.tabId
+    this.tab = info.tabId
     let tab = this.tabs.has(info.tabId) ? this.tabs.get(info.tabId) : undefined
     this.setMenuForTab(tab)
   }
@@ -1204,7 +1249,7 @@ class BackgroundProcess {
    */
   async navigationCompletedListener (details) {
     // make sure this is a tab we know about AND that it's not an iframe event
-    if (this.tabs.has(details.tabId) && details.frameId === 0 ) {
+    if (this.tabs.has(details.tabId) && details.frameId === 0) {
       // If content script was loaded to that tab, restore it to the state it had before
       let tab = this.tabs.get(details.tabId)
       try {
@@ -1229,6 +1274,8 @@ class BackgroundProcess {
       this.deactivateContent(tab.id)
     } else if (info.menuItemId === this.settings.openPanelMenuItemId) {
       this.openPanel(tab.id)
+    } else if (info.menuItemId === this.settings.infoMenuItemId) {
+      this.openInfoTab(tab.id)
     }
   }
 
@@ -1248,6 +1295,13 @@ class BackgroundProcess {
   }
 
   setMenuForTab (tab) {
+    // Deactivate all previously activated menu items to keep an order intact
+    this.menuItems.activate.disable()
+    this.menuItems.deactivate.disable()
+    this.menuItems.openPanel.disable()
+    this.menuItems.separatorOne.disable()
+    this.menuItems.info.disable()
+
     if (tab) {
       // Menu state should reflect a status of a content script
       if (tab.hasOwnProperty('status')) {
@@ -1269,11 +1323,16 @@ class BackgroundProcess {
           this.menuItems.openPanel.disable()
         }
       }
+
+      this.menuItems.separatorOne.enable()
+      this.menuItems.info.enable()
     } else {
       // If tab is not provided will set menu do an initial state
       this.menuItems.activate.enable()
       this.menuItems.deactivate.disable()
       this.menuItems.openPanel.disable()
+      this.menuItems.separatorOne.enable()
+      this.menuItems.info.enable()
     }
   }
 }
@@ -1678,6 +1737,40 @@ class ContentMenuItem {
 
 /***/ }),
 /* 16 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* global browser */
+class ContentMenuSeparator {
+  constructor (id) {
+    this.id = id
+    this.type = 'separator'
+    this.isActive = false
+  }
+
+  enable () {
+    if (!this.isActive) {
+      browser.contextMenus.create({
+        id: this.id,
+        type: this.type
+      })
+      this.isActive = true
+    }
+  }
+
+  disable () {
+    if (this.isActive) {
+      browser.contextMenus.remove(this.id)
+      this.isActive = false
+    }
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = ContentMenuSeparator;
+
+
+
+/***/ }),
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_FACTORY__, __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;(function (global, factory) {

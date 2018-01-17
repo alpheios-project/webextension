@@ -134,6 +134,7 @@ export default class ContentUIController {
             if (this.panelData.tabs[key]) { this.panelData.tabs[key] = false }
           }
           this.panelData.tabs[name] = true
+          this.state.changeTab(name) // Reflect a tab change in a state
           return this
         },
 
