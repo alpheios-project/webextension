@@ -61,11 +61,11 @@ export default class ResourceQuery {
     yield 'Retrieval of grammar info complete'
     let grammarRequests = []
     grammarRequests = grammarRequests.concat(this.grammarResources.map(res => {
-        return {
-          res: res,
-          complete: false
-        }
+      return {
+        res: res,
+        complete: false
       }
+    }
     ))
     for (let q of grammarRequests) {
       q.res.then(
@@ -81,7 +81,7 @@ export default class ResourceQuery {
           }
         },
         error => {
-          console.log("Error retrieving Grammar reourse",error)
+          console.log('Error retrieving Grammar resource', error)
           if (grammarRequests.every(request => request.complete)) {
             if (this.active) { this.ui.addMessage(`All resource data retrieved`) }
             this.finalize()
