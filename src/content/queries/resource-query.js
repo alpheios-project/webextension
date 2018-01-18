@@ -1,32 +1,15 @@
-import uuidv4 from 'uuid/v4'
+import Query from './query.js'
 
-let queries = new Map()
-
-export default class ResourceQuery {
-  constructor (feature, options) {
-    this.ID = uuidv4()
+export default class ResourceQuery extends Query {
+  constructor (name, feature, options) {
+    super(name)
     this.feature = feature
     this.ui = options.uiController
     this.grammars = options.grammars
-    this.active = true
   }
 
   static create (feature, options) {
-    queries.forEach(query => query.deactivate())
-    queries.clear() // Clean up all previous requests of that type
-    let query = new ResourceQuery(feature, options)
-    queries.set(query.ID, query)
-    console.log('ResourceQuery has been created')
-    return query
-  }
-
-  static destroy (query) {
-    console.log('Destroy ResourceQuery executed')
-    queries.delete(query.ID)
-  }
-
-  deactivate () {
-    this.active = false
+    return Query.create(ResourceQuery, feature, options)
   }
 
   async getData () {
@@ -36,7 +19,7 @@ export default class ResourceQuery {
     let result = iterator.next()
     while (true) {
       if (!this.active) { this.finalize() }
-      if (ResourceQuery.isPromise(result.value)) {
+      if (Query.isPromise(result.value)) {
         try {
           let resolvedValue = await result.value
           result = iterator.next(resolvedValue)
@@ -50,10 +33,6 @@ export default class ResourceQuery {
       }
       if (result.done) { break }
     }
-  }
-
-  static isPromise (obj) {
-    return Boolean(obj) && typeof obj.then === 'function'
   }
 
   * iterations () {
@@ -93,9 +72,7 @@ export default class ResourceQuery {
   }
 
   finalize (result) {
-    console.log('Finalize ResourceQuery called')
-    // Record experience in a wrapper
-    ResourceQuery.destroy(this)
+    Query.destroy(this)
     return result
   }
 }

@@ -1,36 +1,19 @@
-import uuidv4 from 'uuid/v4'
 import { LanguageModelFactory as LMF, Lexeme, Lemma, Homonym } from 'alpheios-data-models'
+import Query from './query.js'
 
-let queries = new Map()
-
-export default class LexicalQuery {
-  constructor (selector, options) {
-    this.ID = uuidv4()
+export default class LexicalQuery extends Query {
+  constructor (name, selector, options) {
+    super(name)
     this.selector = selector
     this.ui = options.uiController
     this.maAdapter = options.maAdapter
     this.langData = options.langData
     this.lexicons = options.lexicons
     this.langOpts = options.langOpts
-    this.active = true
   }
 
   static create (selector, options) {
-    queries.forEach(query => query.deactivate())
-    queries.clear() // Clean up all previous requests of that type
-    let query = new LexicalQuery(selector, options)
-    queries.set(query.ID, query)
-    console.log('Query had been created')
-    return query
-  }
-
-  static destroy (query) {
-    console.log('Destroy query executed')
-    queries.delete(query.ID)
-  }
-
-  deactivate () {
-    this.active = false
+    return Query.create(LexicalQuery, selector, options)
   }
 
   async getData () {
@@ -42,7 +25,7 @@ export default class LexicalQuery {
     let result = iterator.next()
     while (true) {
       if (!this.active) { this.finalize() }
-      if (LexicalQuery.isPromise(result.value)) {
+      if (Query.isPromise(result.value)) {
         try {
           let resolvedValue = await result.value
           result = iterator.next(resolvedValue)
@@ -56,10 +39,6 @@ export default class LexicalQuery {
       }
       if (result.done) { break }
     }
-  }
-
-  static isPromise (obj) {
-    return Boolean(obj) && typeof obj.then === 'function'
   }
 
   * iterations () {
@@ -153,8 +132,7 @@ export default class LexicalQuery {
         this.ui.showLanguageInfo(this.homonym)
       }
     }
-    // Record experience in a wrapper
-    LexicalQuery.destroy(this)
+    Query.destroy(this)
     return result
   }
 }
