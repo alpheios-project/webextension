@@ -426,10 +426,6 @@
         padding: 0;
     }
 
-    .alpheios-panel-inflections {
-        max-width: 280px;
-    }
-
     .alpheios-panel__message {
         margin-bottom: 0.5rem;
     }

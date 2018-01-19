@@ -8415,74 +8415,6 @@ const messages = [
   new MessageBundle('en-GB', messages$2)
 ];
 
-let classNames = {
-  cell: 'infl-cell',
-  widthPrefix: 'infl-cell--sp',
-  fullWidth: 'infl-cell--fw',
-  header: 'infl-cell--hdr',
-  highlight: 'infl-cell--hl',
-  hidden: 'hidden',
-  suffix: 'infl-suff',
-  suffixMatch: 'infl-suff--suffix-match',
-  suffixFullFeatureMatch: 'infl-suff--full-feature-match',
-  inflectionTable: 'infl-table',
-  wideView: 'infl-table--wide',
-  narrowViewsContainer: 'infl-table-narrow-views-cont',
-  narrowView: 'infl-table--narrow',
-  footnotesContainer: 'infl-footnotes'
-};
-
-let wideView = {
-  column: {
-    width: 1,
-    unit: 'fr'
-  }
-};
-
-let narrowView = {
-  column: {
-    width: 100,
-    unit: 'px'
-  }
-};
-
-let footnotes$2 = {
-  id: 'inlection-table-footer'
-};
-
-/**
- * Represents a list of footnotes.
- */
-class Footnotes {
-  /**
-   * Initialises a Footnotes object.
-   * @param {Footnote[]} footnotes - An array of footnote objects.
-   */
-  constructor (footnotes) {
-    this.footnotes = footnotes;
-
-    this.nodes = document.createElement('dl');
-    this.nodes.id = footnotes$2.id;
-    this.nodes.classList.add(classNames.footnotesContainer);
-    for (let footnote of footnotes) {
-      let index = document.createElement('dt');
-      index.innerHTML = footnote.index;
-      this.nodes.appendChild(index);
-      let text = document.createElement('dd');
-      text.innerHTML = footnote.text;
-      this.nodes.appendChild(text);
-    }
-  }
-
-  /**
-   * Returns an HTML representation of a Footnotes object.
-   * @returns {HTMLElement} An HTML representation of a Footnotes object.
-   */
-  get html () {
-    return this.nodes
-  }
-}
-
 /**
  * Represents a single view.
  */
@@ -8517,7 +8449,12 @@ class View {
   render (inflectionData, messages) {
     let selection = inflectionData[this.partOfSpeech];
 
-    this.footnotes = new Footnotes(selection.footnotes);
+    this.footnotes = new Map();
+    if (selection.footnotes && Array.isArray(selection.footnotes)) {
+      for (const footnote of selection.footnotes) {
+        this.footnotes.set(footnote.index, footnote);
+      }
+    }
 
     // Table is created during view construction
     this.table.messages = messages;
@@ -8531,10 +8468,6 @@ class View {
 
   get narrowViewNodes () {
     return this.table.narrowView.render()
-  }
-
-  get footnotesNodes () {
-    return this.footnotes.html
   }
 
   /**
@@ -8569,6 +8502,37 @@ class View {
     return this
   }
 }
+
+let classNames = {
+  cell: 'infl-cell',
+  widthPrefix: 'infl-cell--sp',
+  fullWidth: 'infl-cell--fw',
+  header: 'infl-cell--hdr',
+  highlight: 'infl-cell--hl',
+  hidden: 'hidden',
+  suffix: 'infl-suff',
+  suffixMatch: 'infl-suff--suffix-match',
+  suffixFullFeatureMatch: 'infl-suff--full-feature-match',
+  inflectionTable: 'infl-table',
+  wideView: 'infl-table--wide',
+  narrowViewsContainer: 'infl-table-narrow-views-cont',
+  narrowView: 'infl-table--narrow',
+  footnotesContainer: 'infl-footnotes'
+};
+
+let wideView = {
+  column: {
+    width: 1,
+    unit: 'fr'
+  }
+};
+
+let narrowView = {
+  column: {
+    width: 100,
+    unit: 'px'
+  }
+};
 
 /**
  * A cell that specifies a title for a row in an inflection table.
@@ -8860,14 +8824,19 @@ class Cell {
       if (suffix.match && suffix.match.fullMatch) {
         suffixElement.classList.add(classNames.suffixFullFeatureMatch);
       }
-      let suffixValue = suffix.value ? suffix.value : '-';
-      if (suffix.footnote && suffix.footnote.length) {
-        suffixValue += '[' + suffix.footnote + ']';
-      }
-      suffixElement.innerHTML = suffixValue;
+      suffixElement.innerHTML = suffix.value ? suffix.value : '-';
       element.appendChild(suffixElement);
+
+      if (suffix.footnote && suffix.footnote.length) {
+        let footnoteElement = document.createElement('a');
+        footnoteElement.innerHTML = '[' + suffix.footnote + ']';
+        footnoteElement.dataset.footnote = suffix.footnote;
+        footnoteElement.dataset.tooltipVisible = 'false';
+        footnoteElement.setAttribute('title', 'This is a title');
+        element.appendChild(footnoteElement);
+      }
       if (index < this.suffixes.length - 1) {
-        element.appendChild(document.createTextNode(',\u00A0'));
+        element.appendChild(document.createTextNode(',\u00A0')); // 00A0 is a non-breaking space
       }
     }
     this.wNode = element;
@@ -10938,6 +10907,10 @@ class Query {
 //
 //
 //
+//
+//
+//
+//
 
 
 
@@ -10964,7 +10937,6 @@ class Query {
       renderedView: {},
       elementIDs: {
         wideView: 'alph-inflection-table-wide',
-        narrowView: 'alph-inflection-table-narrow',
         footnotes: 'alph-inflection-footnotes'
       },
       htmlElements: {
@@ -11001,6 +10973,13 @@ class Query {
     },
     inflectionTable: function () {
       return this.selectedView.name;
+    },
+    footnotes: function () {
+      let footnotes = [];
+      if (this.selectedView && this.selectedView.footnotes) {
+        footnotes = Array.from(this.selectedView.footnotes.values());
+      }
+      return footnotes;
     }
   },
 
@@ -11042,9 +11021,55 @@ class Query {
     },
 
     displayInflections: function () {
+      let popupClassName = 'alpheios-inflections__footnote-popup';
+      let closeBtnClassName = 'alpheios-inflections__footnote-popup-close-btn';
+      let hiddenClassName = 'hidden';
+      let titleClassName = 'alpheios-inflections__footnote-popup-title';
       this.htmlElements.wideView.appendChild(this.selectedView.wideViewNodes);
-      this.htmlElements.narrowView.appendChild(this.selectedView.narrowViewNodes);
-      this.htmlElements.footnotes.appendChild(this.selectedView.footnotesNodes);
+      let footnoteLinks = this.htmlElements.wideView.querySelectorAll('[data-footnote]');
+      if (footnoteLinks) {
+        for (let footnoteLink of footnoteLinks) {
+          let index = footnoteLink.dataset.footnote;
+          if (!index) {
+            console.warn(`[data-footnote] attribute has no index value`);
+            break;
+          }
+          let indexes = index.replace(/\s*/g, '').split(',');
+          let popup = document.createElement('div');
+          popup.classList.add(popupClassName, hiddenClassName);
+          let title = document.createElement('div');
+          title.classList.add(titleClassName);
+          title.innerHTML = 'Footnotes:';
+          popup.appendChild(title);
+
+          for (const index of indexes) {
+            let footnote = this.selectedView.footnotes.get(index);
+            let dt = document.createElement('dt');
+            dt.innerHTML = footnote.index;
+            popup.appendChild(dt);
+            let dd = document.createElement('dd');
+            dd.innerHTML = footnote.text;
+            popup.appendChild(dd);
+          }
+          let closeBtn = document.createElement('div');
+          closeBtn.classList.add(closeBtnClassName);
+          closeBtn.innerHTML = `<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="none" stroke-width="1.06" d="M16 16L4 4M16 4L4 16"></path>
+             </svg>`;
+          popup.appendChild(closeBtn);
+          footnoteLink.appendChild(popup);
+
+          footnoteLink.addEventListener('click', event => {
+            popup.classList.remove(hiddenClassName);
+            event.stopPropagation();
+          });
+
+          closeBtn.addEventListener('click', event => {
+            popup.classList.add(hiddenClassName);
+            event.stopPropagation();
+          });
+        }
+      }
       return this;
     },
 
@@ -11085,10 +11110,9 @@ class Query {
     this.viewSet = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["d" /* ViewSet */]();
     this.l10n = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* L10n */](__WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* L10nMessages */]);
   },
+
   mounted: function () {
     this.htmlElements.wideView = this.$el.querySelector(`#${this.elementIDs.wideView}`);
-    this.htmlElements.narrowView = this.$el.querySelector(`#${this.elementIDs.narrowView}`);
-    this.htmlElements.footnotes = this.$el.querySelector(`#${this.elementIDs.footnotes}`);
   }
 });
 
@@ -34827,7 +34851,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-panel {\n  width: 400px;\n  height: 100vh;\n  top: 0;\n  z-index: 2000;\n  position: fixed;\n  background: #FFF;\n  resize: both;\n  opacity: 0.95;\n  direction: ltr;\n  display: grid;\n  grid-template-columns: auto 60px;\n  grid-template-rows: 60px 60px auto 60px;\n  grid-template-areas: \"header header\" \"content sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel[data-notification-visible=\"true\"] {\n  grid-template-areas: \"header header\" \"notifications sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel.alpheios-panel-left {\n  left: 0;\n}\n.alpheios-panel.alpheios-panel-right {\n  right: 0;\n  grid-template-columns: 60px auto;\n  grid-template-areas: \"header header\" \"sidebar notifications \" \"sidebar content\" \"sidebar status\";\n}\n.alpheios-panel__header {\n  position: relative;\n  display: flex;\n  flex-wrap: nowrap;\n  padding: 10px;\n  box-sizing: border-box;\n  background-color: #4E6476;\n  grid-area: header;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: ltr;\n  padding: 10px 0 10px 20px;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: rtl;\n  padding: 10px 20px 10px 0;\n}\n.alpheios-panel__header-title {\n  flex-grow: 1;\n}\n.alpheios-panel__header-logo {\n  margin-top: -1px;\n}\n.alpheios-panel__header-action-btn,\n.alpheios-panel__header-action-btn.active:hover,\n.alpheios-panel__header-action-btn.active:focus {\n  display: block;\n  width: 40px;\n  height: 40px;\n  margin: 0 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__header-action-btn:hover,\n.alpheios-panel__header-action-btn:focus,\n.alpheios-panel__header-action-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__body {\n  display: flex;\n  height: calc(100vh - 60px);\n}\n.alpheios-panel-left .alpheios-panel__body {\n  flex-direction: row;\n}\n.alpheios-panel-right .alpheios-panel__body {\n  flex-direction: row-reverse;\n}\n.alpheios-panel__content {\n  overflow: auto;\n  grid-area: content;\n  direction: ltr;\n  box-sizing: border-box;\n  display: flex;\n}\n.alpheios-panel__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  grid-area: notifications;\n  overflow: hidden;\n}\n.alpheios-panel__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__notifications-close-btn:hover,\n.alpheios-panel__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-panel__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-panel__notifications--important {\n  background: #73CDDE;\n}\n[data-notification-visible=\"true\"] .alpheios-panel__notifications {\n  display: block;\n}\n.alpheios-panel__tab-panel {\n  display: flex;\n  flex-direction: column;\n  padding: 20px;\n}\n.alpheios-panel__tab-panel--no-padding {\n  padding: 0;\n}\n.alpheios-panel-inflections {\n  max-width: 280px;\n}\n.alpheios-panel__message {\n  margin-bottom: 0.5rem;\n}\n.alpheios-panel__options-item {\n  margin-bottom: 0.5rem;\n}\n.alpheios-panel__status {\n  padding: 10px 20px;\n  background: #4E6476;\n  color: #FFF;\n  grid-area: status;\n}\n.alpheios-panel__contentitem {\n  margin-bottom: 1em;\n}\n.alpheios-panel__nav {\n  width: 60px;\n  background: #7E8897;\n  grid-area: sidebar;\n}\n.alpheios-panel__nav-btn,\n.alpheios-panel__nav-btn.active:hover,\n.alpheios-panel__nav-btn.active:focus {\n  cursor: pointer;\n  margin: 20px 10px;\n  width: 40px;\n  height: 40px;\n  background: transparent no-repeat center center;\n  background-size: contain;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__nav-btn:hover,\n.alpheios-panel__nav-btn:focus,\n.alpheios-panel__nav-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-panel {\n  width: 400px;\n  height: 100vh;\n  top: 0;\n  z-index: 2000;\n  position: fixed;\n  background: #FFF;\n  resize: both;\n  opacity: 0.95;\n  direction: ltr;\n  display: grid;\n  grid-template-columns: auto 60px;\n  grid-template-rows: 60px 60px auto 60px;\n  grid-template-areas: \"header header\" \"content sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel[data-notification-visible=\"true\"] {\n  grid-template-areas: \"header header\" \"notifications sidebar\" \"content sidebar\" \"status sidebar\";\n}\n.alpheios-panel.alpheios-panel-left {\n  left: 0;\n}\n.alpheios-panel.alpheios-panel-right {\n  right: 0;\n  grid-template-columns: 60px auto;\n  grid-template-areas: \"header header\" \"sidebar notifications \" \"sidebar content\" \"sidebar status\";\n}\n.alpheios-panel__header {\n  position: relative;\n  display: flex;\n  flex-wrap: nowrap;\n  padding: 10px;\n  box-sizing: border-box;\n  background-color: #4E6476;\n  grid-area: header;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: ltr;\n  padding: 10px 0 10px 20px;\n}\n.alpheios-panel-right .alpheios-panel__header {\n  direction: rtl;\n  padding: 10px 20px 10px 0;\n}\n.alpheios-panel__header-title {\n  flex-grow: 1;\n}\n.alpheios-panel__header-logo {\n  margin-top: -1px;\n}\n.alpheios-panel__header-action-btn,\n.alpheios-panel__header-action-btn.active:hover,\n.alpheios-panel__header-action-btn.active:focus {\n  display: block;\n  width: 40px;\n  height: 40px;\n  margin: 0 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__header-action-btn:hover,\n.alpheios-panel__header-action-btn:focus,\n.alpheios-panel__header-action-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__body {\n  display: flex;\n  height: calc(100vh - 60px);\n}\n.alpheios-panel-left .alpheios-panel__body {\n  flex-direction: row;\n}\n.alpheios-panel-right .alpheios-panel__body {\n  flex-direction: row-reverse;\n}\n.alpheios-panel__content {\n  overflow: auto;\n  grid-area: content;\n  direction: ltr;\n  box-sizing: border-box;\n  display: flex;\n}\n.alpheios-panel__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  grid-area: notifications;\n  overflow: hidden;\n}\n.alpheios-panel__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__notifications-close-btn:hover,\n.alpheios-panel__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-panel__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-panel__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-panel__notifications--important {\n  background: #73CDDE;\n}\n[data-notification-visible=\"true\"] .alpheios-panel__notifications {\n  display: block;\n}\n.alpheios-panel__tab-panel {\n  display: flex;\n  flex-direction: column;\n  padding: 20px;\n}\n.alpheios-panel__tab-panel--no-padding {\n  padding: 0;\n}\n.alpheios-panel__message {\n  margin-bottom: 0.5rem;\n}\n.alpheios-panel__options-item {\n  margin-bottom: 0.5rem;\n}\n.alpheios-panel__status {\n  padding: 10px 20px;\n  background: #4E6476;\n  color: #FFF;\n  grid-area: status;\n}\n.alpheios-panel__contentitem {\n  margin-bottom: 1em;\n}\n.alpheios-panel__nav {\n  width: 60px;\n  background: #7E8897;\n  grid-area: sidebar;\n}\n.alpheios-panel__nav-btn,\n.alpheios-panel__nav-btn.active:hover,\n.alpheios-panel__nav-btn.active:focus {\n  cursor: pointer;\n  margin: 20px 10px;\n  width: 40px;\n  height: 40px;\n  background: transparent no-repeat center center;\n  background-size: contain;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-panel__nav-btn:hover,\n.alpheios-panel__nav-btn:focus,\n.alpheios-panel__nav-btn.active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n", ""]);
 
 // exports
 
@@ -34956,7 +34980,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.auk .uk-button-small.alpheios-inflections__control-btn {\n  line-height: 1.5;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-inflections__view-selector-cont {\n  max-width: 280px;\n}\n.alpheios-inflections__control-btn-cont {\n  max-width: 280px;\n}\n.auk .uk-button-small.alpheios-inflections__control-btn {\n  line-height: 1.5;\n}\n.alpheios-inflections__footnotes {\n  display: grid;\n  grid-template-columns: 40px 1fr;\n  grid-row-gap: 2px;\n  max-width: 280px;\n}\n.alpheios-inflections__footnotes dt {\n    font-weight: 700;\n}\n[data-footnote] {\n  position: relative;\n  padding-left: 2px;\n}\n.alpheios-inflections__footnote-popup {\n  display: grid;\n  grid-template-columns: 20px 1fr;\n  grid-row-gap: 2px;\n  background: #4E6476;\n  color: #FFF;\n  position: absolute;\n  padding: 30px 15px 15px;\n  left: 0;\n  bottom: 20px;\n  transform: translateX(-50%);\n  z-index: 10;\n  min-width: 200px;\n}\n.alpheios-inflections__footnote-popup.hidden {\n  display: none;\n}\n.alpheios-inflections__footnote-popup-title {\n  font-weight: 700;\n  position: absolute;\n  text-transform: uppercase;\n  left: 15px;\n  top: 7px;\n}\n.alpheios-inflections__footnote-popup-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #FFF;\n  stroke: #FFF;\n}\n.alpheios-inflections__footnote-popup-close-btn:hover,\n.alpheios-inflections__footnote-popup-close-btn:active {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n", ""]);
 
 // exports
 
@@ -34985,78 +35009,89 @@ var render = function() {
     [
       _c("h3", [_vm._v(_vm._s(_vm.selectedView.title))]),
       _vm._v(" "),
-      _c("div", { staticClass: "uk-margin" }, [
-        _c("label", { staticClass: "uk-form-label" }, [
-          _vm._v("View selector:")
-        ]),
-        _vm._v(" "),
-        _c(
-          "select",
-          {
-            directives: [
-              {
-                name: "model",
-                rawName: "v-model",
-                value: _vm.selectedViewModel,
-                expression: "selectedViewModel"
+      _c(
+        "div",
+        { staticClass: "alpheios-inflections__view-selector-cont uk-margin" },
+        [
+          _c("label", { staticClass: "uk-form-label" }, [
+            _vm._v("View selector:")
+          ]),
+          _vm._v(" "),
+          _c(
+            "select",
+            {
+              directives: [
+                {
+                  name: "model",
+                  rawName: "v-model",
+                  value: _vm.selectedViewModel,
+                  expression: "selectedViewModel"
+                }
+              ],
+              staticClass: "uk-select",
+              on: {
+                change: function($event) {
+                  var $$selectedVal = Array.prototype.filter
+                    .call($event.target.options, function(o) {
+                      return o.selected
+                    })
+                    .map(function(o) {
+                      var val = "_value" in o ? o._value : o.value
+                      return val
+                    })
+                  _vm.selectedViewModel = $event.target.multiple
+                    ? $$selectedVal
+                    : $$selectedVal[0]
+                }
               }
-            ],
-            staticClass: "uk-select",
-            on: {
-              change: function($event) {
-                var $$selectedVal = Array.prototype.filter
-                  .call($event.target.options, function(o) {
-                    return o.selected
-                  })
-                  .map(function(o) {
-                    var val = "_value" in o ? o._value : o.value
-                    return val
-                  })
-                _vm.selectedViewModel = $event.target.multiple
-                  ? $$selectedVal
-                  : $$selectedVal[0]
-              }
-            }
-          },
-          _vm._l(_vm.views, function(view) {
-            return _c("option", [_vm._v(_vm._s(view.name))])
-          })
-        )
-      ]),
+            },
+            _vm._l(_vm.views, function(view) {
+              return _c("option", [_vm._v(_vm._s(view.name))])
+            })
+          )
+        ]
+      ),
       _vm._v(" "),
-      _c("div", { staticClass: "uk-button-group uk-margin" }, [
-        _c(
-          "button",
-          {
-            staticClass:
-              "uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn",
-            on: { click: _vm.hideEmptyColsClick }
-          },
-          [
-            _vm._v(
-              "\n            " +
-                _vm._s(_vm.buttons.hideEmptyCols.text) +
-                "\n        "
-            )
-          ]
-        ),
-        _vm._v(" "),
-        _c(
-          "button",
-          {
-            staticClass:
-              "uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn",
-            on: { click: _vm.hideNoSuffixGroupsClick }
-          },
-          [
-            _vm._v(
-              "\n            " +
-                _vm._s(_vm.buttons.hideNoSuffixGroups.text) +
-                "\n        "
-            )
-          ]
-        )
-      ]),
+      _c(
+        "div",
+        {
+          staticClass:
+            "alpheios-inflections__control-btn-cont uk-button-group uk-margin"
+        },
+        [
+          _c(
+            "button",
+            {
+              staticClass:
+                "uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn",
+              on: { click: _vm.hideEmptyColsClick }
+            },
+            [
+              _vm._v(
+                "\n            " +
+                  _vm._s(_vm.buttons.hideEmptyCols.text) +
+                  "\n        "
+              )
+            ]
+          ),
+          _vm._v(" "),
+          _c(
+            "button",
+            {
+              staticClass:
+                "uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn",
+              on: { click: _vm.hideNoSuffixGroupsClick }
+            },
+            [
+              _vm._v(
+                "\n            " +
+                  _vm._s(_vm.buttons.hideNoSuffixGroups.text) +
+                  "\n        "
+              )
+            ]
+          )
+        ]
+      ),
       _vm._v(" "),
       _c("p", { staticClass: "uk-margin" }, [
         _vm._v("Hover over the suffix to see its grammar features")
@@ -35067,15 +35102,24 @@ var render = function() {
         attrs: { id: _vm.elementIDs.wideView }
       }),
       _vm._v(" "),
-      _c("div", {
-        staticClass: "uk-margin",
-        attrs: { id: _vm.elementIDs.narrowView }
-      }),
-      _vm._v(" "),
-      _c("div", {
-        staticClass: "uk-margin",
-        attrs: { id: _vm.elementIDs.footnotes }
-      })
+      _c(
+        "div",
+        {
+          staticClass:
+            "alpheios-inflections__footnotes uk-margin uk-text-small",
+          attrs: { id: _vm.elementIDs.footnotes }
+        },
+        [
+          _vm._l(_vm.footnotes, function(footnote) {
+            return [
+              _c("dt", [_vm._v(_vm._s(footnote.index))]),
+              _vm._v(" "),
+              _c("dd", [_vm._v(_vm._s(footnote.text))])
+            ]
+          })
+        ],
+        2
+      )
     ]
   )
 }
