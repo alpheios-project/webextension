@@ -227,7 +227,7 @@
         else return false
       },
       showLexeme(lex) {
-        return Object.entries(lex.lemma.features).size > 0 || lex.meaning.shortDefs.length > 0
+        return lex.isPopulated()
       }
     },
     mounted () {

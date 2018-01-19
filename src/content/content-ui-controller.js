@@ -176,11 +176,11 @@ export default class ContentUIController {
           if (notFound) {
             this.panelData.notification.important = true
             this.panelData.notification.showLanguageSwitcher = true
+            this.panelData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
           } else {
             this.panelData.notification.important = false
             this.panelData.notification.showLanguageSwitcher = false
           }
-          this.panelData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
         },
 
         showStatusInfo: function (selectionText, languageID) {
@@ -335,11 +335,11 @@ export default class ContentUIController {
           if (notFound) {
             this.popupData.notification.important = true
             this.popupData.notification.showLanguageSwitcher = true
+            this.popupData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
           } else {
             this.popupData.notification.important = false
             this.popupData.notification.showLanguageSwitcher = false
           }
-          this.popupData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
         },
 
         showStatusInfo: function (selectionText, languageID) {
@@ -511,8 +511,9 @@ export default class ContentUIController {
   }
 
   showLanguageInfo (homonym) {
-    let notFound = !homonym.lexemes || homonym.lexemes.length < 1
-    notFound = true // Debug only
+    let notFound = !homonym.lexemes
+      || homonym.lexemes.length < 1
+      || homonym.lexemes.filter((l) => l.isPopulated()).length < 1
     this.panel.showLanguageNotification(homonym, notFound)
     this.popup.showLanguageNotification(homonym, notFound)
   }
