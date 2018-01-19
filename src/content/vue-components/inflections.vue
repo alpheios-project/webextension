@@ -130,7 +130,9 @@
 
       renderInflections: function () {
         this.clearInflections().setDefaults()
-        this.selectedView.render(this.infldata, this.l10n.messages(this.locale))
+        // Hide empty columns by default
+        // TODO: change inflection library to take that as an option
+        this.selectedView.render(this.infldata, this.l10n.messages(this.locale)).hideEmptyColumns()
         return this
       },
 
@@ -189,8 +191,8 @@
       },
 
       setDefaults () {
-        this.buttons.hideEmptyCols.contentHidden = false
-        this.buttons.hideEmptyCols.text = this.buttons.hideEmptyCols.shownText
+        this.buttons.hideEmptyCols.contentHidden = true
+        this.buttons.hideEmptyCols.text = this.buttons.hideEmptyCols.hiddenText
         this.buttons.hideNoSuffixGroups.contentHidden = false
         this.buttons.hideNoSuffixGroups.text = this.buttons.hideNoSuffixGroups.shownText
         return this
@@ -246,6 +248,91 @@
         line-height: 1.5;
     }
 
+    // region Tables
+    .infl-table {
+        display: grid;
+        border-left: 1px solid #111;
+        border-bottom: 1px solid #111;
+        margin-bottom: 50px;
+    }
+
+    .infl-table--wide {
+        /* Data flow order: number- case - declension - gender - type*/
+        grid-auto-flow: row;
+        grid-template-columns: repeat(21, 1fr); /* Default value, will be redefined in JS if necessary */
+    }
+
+    .infl-table--narrow {
+        /* Data flow order: declension - number- case - gender - type*/
+        grid-auto-flow: row;
+        grid-template-columns: repeat(6, 1fr); /* Default value, will be redefined in JS if necessary */
+    }
+
+    .infl-table.hidden {
+        display: none;
+    }
+
+    .infl-table-narrow-views-cont {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .infl-cell {
+        font-size: 12px;
+        padding: 2px 5px;
+        border-right: 1px solid #111;
+        border-top: 1px solid #111;
+    }
+
+    .infl-cell.hidden {
+        display: none;
+    }
+
+    .infl-cell--hdr {
+        font-weight: 700;
+    }
+
+    .infl-cell--fw {
+        grid-column: 1 / -1;
+    }
+
+    .infl-cell.infl-cell--sep {
+        height: 50px;
+    }
+
+    .infl-cell--sp0 {
+        display: none;
+    }
+
+    @for $i from 1 through 24 {
+        .infl-cell--sp#{$i} {
+            grid-column-end: span #{$i};
+        }
+    }
+
+    .infl-cell--hl {
+        background: lightgray;
+    }
+
+    .infl-suff {
+        cursor: pointer;
+    }
+
+    .infl-suff--suffix-match {
+        background-color: rgb(188, 230, 240);
+    }
+
+    .infl-suff--full-feature-match {
+        background-color: lightgray;
+    }
+
+    .infl-suff--suffix-match.infl-suff--full-feature-match {
+        background-color: rgb(255, 238, 119);
+        font-weight: 700;
+    }
+    // endregion Tables
+
+    // region Footnotes
     .alpheios-inflections__footnotes {
         display: grid;
         grid-template-columns: 40px 1fr;
@@ -307,4 +394,5 @@
         fill: $alpheios-link-hover-color;
         stroke: $alpheios-link-hover-color;
     }
+    // endregion Footnotes
 </style>

@@ -69,7 +69,6 @@ export default class HTMLSelector extends MediaSelector {
     let ro
     let invalidAnchor = false
     if (!anchorText.match(this._escapeRegExp(focus.data))) {
-      console.log(this.target)
       anchorText = this.target.textContent
       ro = 0
       invalidAnchor = true
