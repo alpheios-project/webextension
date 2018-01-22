@@ -56,6 +56,7 @@ export default class ContentUIController {
             info: true
           },
           grammarRes: {},
+          lexemes: [],
           inflectionData: false, // If no inflection data present, it is set to false
           shortDefinitions: [],
           fullDefinitions: '',
@@ -545,6 +546,7 @@ export default class ContentUIController {
       this.popup.linkedFeatures = LanguageModelFactory.getLanguageForCode(homonym.lexemes[0].lemma.language).grammarFeatures()
     }
     this.popup.popupData.morphDataReady = true
+    this.panel.panelData.lexemes = homonym.lexemes
   }
 
   updateGrammar (urls) {

@@ -132,7 +132,7 @@
         this.clearInflections().setDefaults()
         // Hide empty columns by default
         // TODO: change inflection library to take that as an option
-        this.selectedView.render(this.infldata, this.l10n.messages(this.locale)).hideEmptyColumns()
+        this.selectedView.render(this.infldata, this.l10n.messages(this.locale)).hideEmptyColumns().hideNoSuffixGroups()
         return this
       },
 
@@ -194,7 +194,7 @@
         this.buttons.hideEmptyCols.contentHidden = true
         this.buttons.hideEmptyCols.text = this.buttons.hideEmptyCols.hiddenText
         this.buttons.hideNoSuffixGroups.contentHidden = false
-        this.buttons.hideNoSuffixGroups.text = this.buttons.hideNoSuffixGroups.shownText
+        this.buttons.hideNoSuffixGroups.text = this.buttons.hideNoSuffixGroups.hiddenText
         return this
       },
 

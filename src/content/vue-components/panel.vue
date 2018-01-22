@@ -66,6 +66,7 @@
                 <div class="alpheios-panel__contentitem" v-html="data.fullDefinitions"></div>
             </div>
             <div v-show="data.tabs.inflections" class="alpheios-panel__tab-panel">
+                <morph :lexemes="data.lexemes"></morph>
                 <inflections class="alpheios-panel-inflections"
                              :infldata="data.inflectionData" :locale="data.settings.locale.currentValue"></inflections>
             </div>
@@ -106,6 +107,7 @@
   import Inflections from './inflections.vue'
   import Setting from './setting.vue'
   import ShortDef from './shortdef.vue'
+  import Morph from './morph.vue'
   import Grammar from './grammar.vue'
   import Info from './info.vue'
   import interact from 'interactjs'
@@ -128,6 +130,7 @@
       inflections: Inflections,
       setting: Setting,
       shortdef: ShortDef,
+      morph: Morph,
       info: Info,
       grammar: Grammar,
       attachLeftIcon: AttachLeftIcon,
