@@ -1,14 +1,14 @@
 <template>
     <div v-show="visible">
         <h3>{{selectedView.title}}</h3>
-        <div class="alpheios-inflections__view-selector-cont uk-margin">
+        <div class="alpheios-inflections__view-selector-cont uk-margin" v-if="views.length > 1">
             <label class="uk-form-label">View selector:</label>
             <select v-model="selectedViewModel" class="uk-select">
                 <option v-for="view in views">{{view.name}}</option>
             </select>
         </div>
         <div class="alpheios-inflections__control-btn-cont uk-button-group uk-margin">
-            <button class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
+            <button v-show="false" class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
                     @click="hideEmptyColsClick">
                 {{buttons.hideEmptyCols.text}}
             </button>
@@ -17,7 +17,6 @@
                 {{buttons.hideNoSuffixGroups.text}}
             </button>
         </div>
-        <p class="uk-margin">Hover over the suffix to see its grammar features</p>
         <div :id="elementIDs.wideView" class="uk-margin"></div>
         <div :id="elementIDs.footnotes" class="alpheios-inflections__footnotes uk-margin uk-text-small">
             <template v-for="footnote in footnotes">
@@ -68,8 +67,8 @@
           hideNoSuffixGroups: {
             noSuffMatchHidden: false,
             text: '',
-            shownText: 'Hide groups with no suffix matching',
-            hiddenText: 'Show groups with no suffix matching'
+            shownText: 'Collapse',
+            hiddenText: 'Show Full Table'
           }
         }
       }
