@@ -1333,11 +1333,26 @@ class LatinLanguageModel extends LanguageModel {
   /**
    * Return a normalized version of a word which can be used to compare the word for equality
    * @param {String} word the source word
-   * @returns the normalized form of the word (default version just returns the same word,
-   *          override in language-specific subclass)
+   * @returns the normalized form of the word (Latin replaces accents and special chars)
    * @type String
    */
   normalizeWord (word) {
+    if (word) {
+      word = word.replace(/[\u00c0\u00c1\u00c2\u00c3\u00c4\u0100\u0102]/g, 'A');
+      word = word.replace(/[\u00c8\u00c9\u00ca\u00cb\u0112\u0114]/g, 'E');
+      word = word.replace(/[\u00cc\u00cd\u00ce\u00cf\u012a\u012c]/g, 'I');
+      word = word.replace(/[\u00d2\u00d3\u00d4\u00df\u00d6\u014c\u014e]/g, 'O');
+      word = word.replace(/[\u00d9\u00da\u00db\u00dc\u016a\u016c]/g, 'U');
+      word = word.replace(/[\u00c6\u01e2]/g, 'AE');
+      word = word.replace(/[\u0152]/g, 'OE');
+      word = word.replace(/[\u00e0\u00e1\u00e2\u00e3\u00e4\u0101\u0103]/g, 'a');
+      word = word.replace(/[\u00e8\u00e9\u00ea\u00eb\u0113\u0115]/g, 'e');
+      word = word.replace(/[\u00ec\u00ed\u00ee\u00ef\u012b\u012d\u0129]/g, 'i');
+      word = word.replace(/[\u00f2\u00f3\u00f4\u00f5\u00f6\u014d\u014f]/g, 'o');
+      word = word.replace(/[\u00f9\u00fa\u00fb\u00fc\u016b\u016d]/g, 'u');
+      word = word.replace(/[\u00e6\u01e3]/g, 'ae');
+      word = word.replace(/[\u0153]/g, 'oe');
+    }
     return word
   }
 
@@ -5971,10 +5986,6 @@ dataSet.addSuffixes = function (partOfSpeech, data) {
       suffix = null;
     }
 
-    if (suffix === 'us') {
-      console.log('BREAKHERE');
-    }
-
     let features = [partOfSpeech,
       languageModel.features[types.number].getFromImporter('csv', data[i][1]),
       languageModel.features[types.grmCase].getFromImporter('csv', data[i][2]),
@@ -6191,14 +6202,14 @@ dataSet.matcher = function (inflections, type, item) {
     }
 
     if (type === LanguageDataset.SUFFIX) {
-      if (inflection.suffix === item.value) {
+      if (languageModel.normalizeWord(inflection.suffix) === languageModel.normalizeWord(item.value)) {
         matchData.suffixMatch = true;
       }
     } else {
       let form = inflection.prefix ? inflection.prefix : '';
       form = form + inflection.stem;
       form = inflection.suffix ? form + inflection.suffix : form;
-      if (form === item.value) {
+      if (languageModel.normalizeWord(form) === languageModel.normalizeWord(item.value)) {
         matchData.suffixMatch = true;
       }
     }
@@ -10461,7 +10472,7 @@ class VoiceMoodConjugationView extends VerbView {
     super();
     this.id = 'verbVoiceMoodConjugation';
     this.name = 'verb voice-mood-conjugation';
-    this.title = 'Voice-Mood-Conjugation';
+    this.title = 'Verb (Voice-Mood-Conjugation)';
 
     this.createTable();
   }
@@ -10490,7 +10501,7 @@ class ConjugationVoiceMoodView extends VerbView {
     super();
     this.id = 'verbConjugationVoiceMood';
     this.name = 'verb conjugation-voice-mood';
-    this.title = 'Conjugation-Voice-Mood';
+    this.title = 'Verb (Conjugation-Voice-Mood)';
 
     this.createTable();
   }
@@ -10518,7 +10529,7 @@ class ConjugationMoodVoiceView extends VerbView {
     super();
     this.id = 'verbConjugationMoodVoice';
     this.name = 'verb conjugation-mood-voice';
-    this.title = 'Conjugation-Mood-Voice';
+    this.title = 'Verb (Conjugation-Mood-Voice)';
 
     this.createTable();
   }
@@ -10547,7 +10558,7 @@ class MoodVoiceConjugationView extends VerbView {
     super();
     this.id = 'verbMoodVoiceConjugation';
     this.name = 'verb mood-voice-conjugation';
-    this.title = 'Mood-Voice-Conjugation';
+    this.title = 'Verb (Mood-Voice-Conjugation)';
 
     this.createTable();
   }
@@ -10568,7 +10579,7 @@ class MoodConjugationVoiceView extends VerbView {
     super();
     this.id = 'verbMoodConjugationVoice';
     this.name = 'verb mood-conjugation-voice';
-    this.title = 'Mood-Conjugation-Voice';
+    this.title = 'Verb (Mood-Conjugation-Voice)';
 
     this.createTable();
   }
@@ -11211,7 +11222,6 @@ class Query {
 //
 //
 //
-//
 
 
 
@@ -11253,8 +11263,8 @@ class Query {
         hideNoSuffixGroups: {
           noSuffMatchHidden: false,
           text: '',
-          shownText: 'Hide groups with no suffix matching',
-          hiddenText: 'Show groups with no suffix matching'
+          shownText: 'Collapse',
+          hiddenText: 'Show Full Table'
         }
       }
     };
@@ -35400,48 +35410,52 @@ var render = function() {
     [
       _c("h3", [_vm._v(_vm._s(_vm.selectedView.title))]),
       _vm._v(" "),
-      _c(
-        "div",
-        { staticClass: "alpheios-inflections__view-selector-cont uk-margin" },
-        [
-          _c("label", { staticClass: "uk-form-label" }, [
-            _vm._v("View selector:")
-          ]),
-          _vm._v(" "),
-          _c(
-            "select",
+      _vm.views.length > 1
+        ? _c(
+            "div",
             {
-              directives: [
-                {
-                  name: "model",
-                  rawName: "v-model",
-                  value: _vm.selectedViewModel,
-                  expression: "selectedViewModel"
-                }
-              ],
-              staticClass: "uk-select",
-              on: {
-                change: function($event) {
-                  var $$selectedVal = Array.prototype.filter
-                    .call($event.target.options, function(o) {
-                      return o.selected
-                    })
-                    .map(function(o) {
-                      var val = "_value" in o ? o._value : o.value
-                      return val
-                    })
-                  _vm.selectedViewModel = $event.target.multiple
-                    ? $$selectedVal
-                    : $$selectedVal[0]
-                }
-              }
+              staticClass: "alpheios-inflections__view-selector-cont uk-margin"
             },
-            _vm._l(_vm.views, function(view) {
-              return _c("option", [_vm._v(_vm._s(view.name))])
-            })
+            [
+              _c("label", { staticClass: "uk-form-label" }, [
+                _vm._v("View selector:")
+              ]),
+              _vm._v(" "),
+              _c(
+                "select",
+                {
+                  directives: [
+                    {
+                      name: "model",
+                      rawName: "v-model",
+                      value: _vm.selectedViewModel,
+                      expression: "selectedViewModel"
+                    }
+                  ],
+                  staticClass: "uk-select",
+                  on: {
+                    change: function($event) {
+                      var $$selectedVal = Array.prototype.filter
+                        .call($event.target.options, function(o) {
+                          return o.selected
+                        })
+                        .map(function(o) {
+                          var val = "_value" in o ? o._value : o.value
+                          return val
+                        })
+                      _vm.selectedViewModel = $event.target.multiple
+                        ? $$selectedVal
+                        : $$selectedVal[0]
+                    }
+                  }
+                },
+                _vm._l(_vm.views, function(view) {
+                  return _c("option", [_vm._v(_vm._s(view.name))])
+                })
+              )
+            ]
           )
-        ]
-      ),
+        : _vm._e(),
       _vm._v(" "),
       _c(
         "div",
@@ -35453,6 +35467,14 @@ var render = function() {
           _c(
             "button",
             {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: false,
+                  expression: "false"
+                }
+              ],
               staticClass:
                 "uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn",
               on: { click: _vm.hideEmptyColsClick }
@@ -35483,10 +35505,6 @@ var render = function() {
           )
         ]
       ),
-      _vm._v(" "),
-      _c("p", { staticClass: "uk-margin" }, [
-        _vm._v("Hover over the suffix to see its grammar features")
-      ]),
       _vm._v(" "),
       _c("div", {
         staticClass: "uk-margin",
@@ -37139,6 +37157,7 @@ var render = function() {
             {
               staticClass: "alpheios-panel__nav-btn",
               class: { active: _vm.data.tabs.definitions },
+              attrs: { title: "Definitions" },
               on: {
                 click: function($event) {
                   _vm.changeTab("definitions")
@@ -37154,6 +37173,7 @@ var render = function() {
             {
               staticClass: "alpheios-panel__nav-btn",
               class: { active: _vm.data.tabs.inflections },
+              attrs: { title: "Inflection Tables" },
               on: {
                 click: function($event) {
                   _vm.changeTab("inflections")
@@ -37169,6 +37189,7 @@ var render = function() {
             {
               staticClass: "alpheios-panel__nav-btn",
               class: { active: _vm.data.tabs.grammar },
+              attrs: { title: "Grammar" },
               on: {
                 click: function($event) {
                   _vm.changeTab("grammar")
@@ -37184,6 +37205,7 @@ var render = function() {
             {
               staticClass: "alpheios-panel__nav-btn",
               class: { active: _vm.data.tabs.status },
+              attrs: { title: "Status Messages" },
               on: {
                 click: function($event) {
                   _vm.changeTab("status")
@@ -37199,6 +37221,7 @@ var render = function() {
             {
               staticClass: "alpheios-panel__nav-btn",
               class: { active: _vm.data.tabs.options },
+              attrs: { title: "Options" },
               on: {
                 click: function($event) {
                   _vm.changeTab("options")
@@ -37214,6 +37237,7 @@ var render = function() {
             {
               staticClass: "alpheios-panel__nav-btn",
               class: { active: _vm.data.tabs.info },
+              attrs: { title: "Help" },
               on: {
                 click: function($event) {
                   _vm.changeTab("info")
