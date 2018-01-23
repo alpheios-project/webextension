@@ -173,7 +173,12 @@ export default class ContentUIController {
 
         showLanguageNotification: function (homonym, notFound = false) {
           this.panelData.notification.visible = true
-          let languageName = ContentUIController.getLanguageName(homonym.languageID)
+          let languageName
+          if (homonym) {
+            languageName = ContentUIController.getLanguageName(homonym.languageID)
+          } else {
+            languageName = 'unknown' // TODO this wil be unnecessary when the morphological adapter returns a consistent response for erors
+          }
           if (notFound) {
             this.panelData.notification.important = true
             this.panelData.notification.showLanguageSwitcher = true
@@ -332,7 +337,12 @@ export default class ContentUIController {
 
         showLanguageNotification: function (homonym, notFound = false) {
           this.popupData.notification.visible = true
-          let languageName = ContentUIController.getLanguageName(homonym.languageID)
+          let languageName
+          if (homonym) {
+            languageName = ContentUIController.getLanguageName(homonym.languageID)
+          } else {
+            languageName = 'unknown' // TODO this wil be unnecessary when the morphological adapter returns a consistent response for erors
+          }
           if (notFound) {
             this.popupData.notification.important = true
             this.popupData.notification.showLanguageSwitcher = true
@@ -512,7 +522,8 @@ export default class ContentUIController {
   }
 
   showLanguageInfo (homonym) {
-    let notFound = !homonym.lexemes
+    let notFound = !homonym
+      || !homonym.lexemes
       || homonym.lexemes.length < 1
       || homonym.lexemes.filter((l) => l.isPopulated()).length < 1
     this.panel.showLanguageNotification(homonym, notFound)
