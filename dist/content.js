@@ -11291,13 +11291,13 @@ class Query {
       },
       buttons: {
         hideEmptyCols: {
-          contentHidden: false,
+          contentHidden: true,
           text: '',
           shownText: 'Hide empty columns',
           hiddenText: 'Show empty columns'
         },
         hideNoSuffixGroups: {
-          noSuffMatchHidden: false,
+          noSuffMatchHidden: true,
           text: '',
           shownText: 'Collapse',
           hiddenText: 'Show Full Table'
@@ -11425,7 +11425,7 @@ class Query {
     setDefaults() {
       this.buttons.hideEmptyCols.contentHidden = true;
       this.buttons.hideEmptyCols.text = this.buttons.hideEmptyCols.hiddenText;
-      this.buttons.hideNoSuffixGroups.contentHidden = false;
+      this.buttons.hideNoSuffixGroups.contentHidden = true;
       this.buttons.hideNoSuffixGroups.text = this.buttons.hideNoSuffixGroups.hiddenText;
       return this;
     },
