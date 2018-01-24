@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/alpheios-project/webextension#readme",
   "devDependencies": {
-    "alpheios-data-models": "github:alpheios-project/data-models#pronouns",
+    "alpheios-data-models": "github:alpheios-project/data-models",
     "alpheios-experience": "github:alpheios-project/experience",
     "alpheios-inflection-tables": "github:alpheios-project/inflection-tables",
     "alpheios-lexicon-client": "github:alpheios-project/lexicon-client",
@@ -83,7 +83,7 @@
     "vue": "^2.5.13",
     "vue-jest": "^1.4.0",
     "vue-loader": "^13.7.0",
-    "vue-style-loader": "^3.0.1",
+    "vue-style-loader": "^3.1.0",
     "vue-svg-loader": "^0.4.0",
     "vue-template-compiler": "^2.5.13",
     "webextension-polyfill": "^0.2.1",
