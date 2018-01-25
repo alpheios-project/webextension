@@ -1,7 +1,7 @@
 <template>
     <div class="alpheios-panel auk" :class="classes" :style="this.data.styles"
          data-component="alpheios-panel" data-resizable="true" v-show="data.isOpen"
-        :data-notification-visible="data.notification.visible">
+        :data-notification-visible="data.notification.isContentAvailable">
 
         <div class="alpheios-panel__header">
             <div class="alpheios-panel__header-title">
@@ -27,7 +27,7 @@
                      :classes="['alpheios-panel__notifications--lang-switcher']" @change="settingChanged"
                      v-show="data.notification.showLanguageSwitcher"></setting>
         </div>
-        <div id="alpheios-panel__nav" class="alpheios-panel__nav">
+        <div :id="navbarID" class="alpheios-panel__nav">
             <div :class="{ active: data.tabs.definitions }" @click="changeTab('definitions')"
                  class="alpheios-panel__nav-btn">
                 <definitions-icon class="icon"></definitions-icon>
@@ -65,9 +65,11 @@
                 </div>
                 <div class="alpheios-panel__contentitem" v-html="data.fullDefinitions"></div>
             </div>
-            <div v-show="data.tabs.inflections" class="alpheios-panel__tab-panel">
+            <div v-show="inflectionsTabVisible" :id="inflectionsPanelID" class="alpheios-panel__tab-panel">
                 <inflections class="alpheios-panel-inflections"
-                             :infldata="data.inflectionData" :locale="data.settings.locale.currentValue"></inflections>
+                             :data="data.inflectionComponentData" :locale="data.settings.locale.currentValue"
+                             @contentwidth="setContentWidth">
+                </inflections>
             </div>
             <div v-show="data.tabs.grammar" class="alpheios-panel__tab-panel alpheios-panel__tab-panel--no-padding">
                   <grammar :res="data.grammarRes"></grammar>
@@ -140,6 +142,12 @@
       infoIcon: InfoIcon,
       grammarIcon: GrammarIcon
     },
+    data: function () {
+      return {
+        navbarID: 'alpheios-panel__nav',
+        inflectionsPanelID: 'alpheios-panel__inflections-panel'
+      }
+    },
     props: {
       data: {
         type: Object,
@@ -168,6 +176,13 @@
       attachToRightVisible: function () {
         return this.data.settings.panelPosition.currentValue === 'left'
       },
+
+      // Need this to watch when inflections tab becomes active and adjust panel width to fully fit an inflection table in
+      inflectionsTabVisible: function () {
+        // Inform an inflection component about its visibility state change
+        this.data.inflectionComponentData.visible = this.data.tabs.inflections
+        return this.data.tabs.inflections
+      }
     },
     methods: {
       updateZIndex: function (zIndexMax) {
@@ -223,8 +238,29 @@
       resourceSettingChanged: function (name, value) {
         this.$emit('resourcesettingchange', name, value) // Re-emit for a Vue instance
       },
+
+      setContentWidth: function (width) {
+        let widthDelta = parseInt(this.navbarWidth, 10)
+          + parseInt(this.inflPanelLeftPadding, 10)
+          + parseInt(this.inflPanelRightPadding, 10)
+        if (width > this.data.minWidth + widthDelta) {
+          let adjustedWidth = width + widthDelta
+          // Max viewport width less some space to display page content
+          let maxWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0) - 20
+          if (adjustedWidth > maxWidth) { adjustedWidth = maxWidth }
+          this.$el.style.width = `${adjustedWidth}px`
+        }
+      }
     },
+
     mounted: function () {
+      // Determine paddings and sidebar width for calculation of a panel width to fit content
+      let navbar = this.$el.querySelector(`#${this.navbarID}`)
+      let inflectionsPanel = this.$el.querySelector(`#${this.inflectionsPanelID}`)
+      this.navbarWidth = navbar ? window.getComputedStyle(navbar).getPropertyValue('width').match(/\d+/)[0] : 0
+      this.inflPanelLeftPadding = inflectionsPanel ? window.getComputedStyle(inflectionsPanel).getPropertyValue('padding-left').match(/\d+/)[0] : 0
+      this.inflPanelRightPadding = inflectionsPanel ? window.getComputedStyle(inflectionsPanel).getPropertyValue('padding-right').match(/\d+/)[0] : 0
+
       // Initialize Interact.js: make panel resizable
       interact(this.$el)
         .resizable({

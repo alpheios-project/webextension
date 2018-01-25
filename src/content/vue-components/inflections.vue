@@ -1,5 +1,5 @@
 <template>
-    <div v-show="visible">
+    <div v-show="isContentAvailable">
         <h3>{{selectedView.title}}</h3>
         <div class="alpheios-inflections__view-selector-cont uk-margin">
             <label class="uk-form-label">View selector:</label>
@@ -34,7 +34,7 @@
     name: 'Inflections',
     props: {
       // This will be an InflectionData object
-      infldata: {
+      data: {
         type: [Object, Boolean],
         required: true
       },
@@ -46,7 +46,6 @@
 
     data: function () {
       return {
-        visible: false,
         views: [],
         selectedViewName: '',
         selectedView: {},
@@ -76,6 +75,16 @@
     },
 
     computed: {
+      isContentAvailable: function () {
+        return Boolean(this.data.inflectionData)
+      },
+      inflectionData: function () {
+        return this.data.inflectionData
+      },
+      // Need this for a watcher that will monitor a parent container visibility state
+      isVisible: function () {
+        return this.data.visible
+      },
       selectedViewModel: {
         get: function () {
           return this.selectedViewName
@@ -100,8 +109,7 @@
     },
 
     watch: {
-      infldata: function (inflectionData) {
-        console.log('Inflection data changed')
+      inflectionData: function (inflectionData) {
         if (inflectionData) {
           this.views = this.viewSet.getViews(inflectionData)
           // Select a first view by default
@@ -109,17 +117,30 @@
             this.selectedViewName = this.views[0].name
             this.selectedView = this.views[0]
             this.renderInflections().displayInflections()
-            this.visible = true
           }
+        }
+      },
+      /*
+      An inflection component needs to notify its parent of how wide an inflection table content is. Parent will
+      use this information to adjust a width of a container that displays an inflection component. However, a width
+      of an inflection table within an invisible parent container will always be zero. Because of that, we can determine
+      an inflection table width and notify a parent component only when a parent container is visible.
+      A parent component will notify us of that by setting a `visible` property. A change of that property state
+      will be monitored here with the help of a `isVisible` computed property. Computed property alone will not work
+      as it won't be used by anything and thus will not be calculated by Vue.
+       */
+      isVisible: function (visibility) {
+        if (visibility) {
+          // If container is become visible, update parent with its width
+          this.$emit('contentwidth', this.htmlElements.wideView.offsetWidth)
         }
       },
       locale: function (locale) {
         console.log(`locale changed to ${locale}`)
-        if (this.infldata) {
+        if (this.data.inflectionData) {
           this.renderInflections().displayInflections() // Re-render inflections for a different locale
         }
       }
-
     },
 
     methods: {
@@ -132,7 +153,7 @@
         this.clearInflections().setDefaults()
         // Hide empty columns by default
         // TODO: change inflection library to take that as an option
-        this.selectedView.render(this.infldata, this.l10n.messages(this.locale)).hideEmptyColumns()
+        this.selectedView.render(this.data.inflectionData, this.l10n.messages(this.locale)).hideEmptyColumns()
         return this
       },
 

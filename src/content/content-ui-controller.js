@@ -56,7 +56,10 @@ export default class ContentUIController {
             info: true
           },
           grammarRes: {},
-          inflectionData: false, // If no inflection data present, it is set to false
+          inflectionComponentData: {
+            visible: false,
+            inflectionData: false // If no inflection data present, it is set to false
+          },
           shortDefinitions: [],
           fullDefinitions: '',
           inflections: {
@@ -217,7 +220,7 @@ export default class ContentUIController {
         },
 
         updateInflections: function (inflectionData) {
-          this.panelData.inflectionData = inflectionData
+          this.panelData.inflectionComponentData.inflectionData = inflectionData
         },
 
         requestGrammar: function (feature) {
