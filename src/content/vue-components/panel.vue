@@ -29,32 +29,32 @@
         </div>
         <div :id="navbarID" class="alpheios-panel__nav">
             <div :class="{ active: data.tabs.definitions }" @click="changeTab('definitions')"
-                 class="alpheios-panel__nav-btn">
+                 class="alpheios-panel__nav-btn" title="Definitions">
                 <definitions-icon class="icon"></definitions-icon>
             </div>
 
             <div v-bind:class="{ active: data.tabs.inflections }" @click="changeTab('inflections')"
-                 class="alpheios-panel__nav-btn">
+                 class="alpheios-panel__nav-btn" title="Inflection Tables">
                 <inflections-icon class="icon"></inflections-icon>
             </div>
 
             <div v-bind:class="{ active: data.tabs.grammar }" @click="changeTab('grammar')"
-              class="alpheios-panel__nav-btn">
+              class="alpheios-panel__nav-btn" title="Grammar">
                 <grammar-icon class="icon"></grammar-icon>
             </div>
 
             <div v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
-                 class="alpheios-panel__nav-btn">
+                 class="alpheios-panel__nav-btn" title="Status Messages">
                 <status-icon class="icon"></status-icon>
             </div>
 
             <div v-bind:class="{ active: data.tabs.options }" @click="changeTab('options')"
-                 class="alpheios-panel__nav-btn">
+                 class="alpheios-panel__nav-btn" title="Options">
                 <options-icon class="icon"></options-icon>
             </div>
 
             <div v-bind:class="{ active: data.tabs.info }" @click="changeTab('info')"
-                 class="alpheios-panel__nav-btn">
+                 class="alpheios-panel__nav-btn" title="Help">
                 <info-icon class="icon"></info-icon>
             </div>
         </div>
@@ -66,6 +66,7 @@
                 <div class="alpheios-panel__contentitem" v-html="data.fullDefinitions"></div>
             </div>
             <div v-show="inflectionsTabVisible" :id="inflectionsPanelID" class="alpheios-panel__tab-panel">
+                <morph :lexemes="data.lexemes"></morph>
                 <inflections class="alpheios-panel-inflections"
                              :data="data.inflectionComponentData" :locale="data.settings.locale.currentValue"
                              @contentwidth="setContentWidth">
@@ -108,6 +109,7 @@
   import Inflections from './inflections.vue'
   import Setting from './setting.vue'
   import ShortDef from './shortdef.vue'
+  import Morph from './morph.vue'
   import Grammar from './grammar.vue'
   import Info from './info.vue'
   import interact from 'interactjs'
@@ -130,6 +132,7 @@
       inflections: Inflections,
       setting: Setting,
       shortdef: ShortDef,
+      morph: Morph,
       info: Info,
       grammar: Grammar,
       attachLeftIcon: AttachLeftIcon,

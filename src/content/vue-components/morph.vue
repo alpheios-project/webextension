@@ -63,8 +63,10 @@
         <span class="alpheios-morph__attr"
           v-for="note in lex.lemma.features.note" v-if="lex.lemma.features.note">[{{source.note}}]</span>
       </div>
-      <div v-for="definition in definitions[lex.lemma.key]" class="alpheios-morph__definition">
-        <shortdef :definition="definition"></shortdef>
+      <div v-if="definitions">
+        <div v-for="definition in definitions[lex.lemma.key]" class="alpheios-morph__definition">
+          <shortdef :definition="definition"></shortdef>
+        </div>
       </div>
       <div class="alpheios-morph__inflections">
         <div class="alpheios-morph__inflset" v-for="inflset in lex.getGroupedInflections()">
@@ -180,11 +182,13 @@
         },
         definitions: {
           type: Object,
-          required: true
+          required: false,
+          default: () => {}
         },
         linkedfeatures: {
           type: Array,
-          required: true
+          required: false,
+          default: () => []
         }
     },
     created: function () {
@@ -356,6 +360,10 @@
 
    div.alpheios-morph__block {
        display: block;
+   }
+
+   .alpheios-panel__tab-panel #alpheios-morph__lexemes {
+    font-size: 12px;
    }
 
 </style>
