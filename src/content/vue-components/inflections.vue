@@ -12,7 +12,7 @@
                     @click="hideEmptyColsClick">
                 {{buttons.hideEmptyCols.text}}
             </button>
-            <button class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
+            <button v-if="isContentAvailable && selectedView.table.canCollapse" class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
                     @click="hideNoSuffixGroupsClick">
                 {{buttons.hideNoSuffixGroups.text}}
             </button>
