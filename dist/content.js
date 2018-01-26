@@ -24110,21 +24110,18 @@ class ContentUIController {
         },
 
         showDefinitionsPanelTab: function () {
-          this.visible = false
           this.panel.changeTab('definitions')
           this.panel.open()
           return this
         },
 
         showInflectionsPanelTab: function () {
-          this.visible = false
           this.panel.changeTab('inflections')
           this.panel.open()
           return this
         },
 
         sendFeature: function (feature) {
-          this.visible = false
           this.panel.requestGrammar(feature)
           this.panel.changeTab('grammar')
           this.panel.open()
