@@ -17,6 +17,7 @@
                 {{buttons.hideNoSuffixGroups.text}}
             </button>
         </div>
+        <div class="alpheios-inflections__forms uk-margin" v-for="form in forms">{{form}}</div>
         <div :id="elementIDs.wideView" class="uk-margin"></div>
         <div :id="elementIDs.footnotes" class="alpheios-inflections__footnotes uk-margin uk-text-small">
             <template v-for="footnote in footnotes">
@@ -104,6 +105,20 @@
           footnotes = Array.from(this.selectedView.footnotes.values())
         }
         return footnotes
+      },
+      forms: function() {
+        let forms = []
+        if (this.selectedView && this.selectedView.forms) {
+          forms = Array.from(this.selectedView.forms.values())
+        }
+        return forms
+      },
+      canCollapse: function() {
+        if (this.selectedView && this.selectedView.table) {
+          return this.selectedView.table.canCollapse
+        } else {
+          return true
+        }
       }
     },
 
@@ -415,4 +430,8 @@
         stroke: $alpheios-link-hover-color;
     }
     // endregion Footnotes
+
+    .alpheios-inflections__forms {
+      font-weight: bold;
+    }
 </style>
