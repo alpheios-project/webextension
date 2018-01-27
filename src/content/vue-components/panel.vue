@@ -66,7 +66,6 @@
                 <div class="alpheios-panel__contentitem" v-html="data.fullDefinitions"></div>
             </div>
             <div v-show="inflectionsTabVisible" :id="inflectionsPanelID" class="alpheios-panel__tab-panel">
-                <morph :lexemes="data.lexemes"></morph>
                 <inflections class="alpheios-panel-inflections"
                              :data="data.inflectionComponentData" :locale="data.settings.locale.currentValue"
                              @contentwidth="setContentWidth">
