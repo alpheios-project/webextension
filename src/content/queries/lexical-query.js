@@ -10,6 +10,12 @@ export default class LexicalQuery extends Query {
     this.langData = options.langData
     this.lexicons = options.lexicons
     this.langOpts = options.langOpts
+    let langID = LMF.getLanguageIdFromCode(this.selector.languageCode)
+    if (this.langOpts[langID] && this.langOpts[langID].lookupMorphLast) {
+      this.canReset = true
+    } else {
+      this.canReset = false
+    }
   }
 
   static create (selector, options) {
@@ -42,18 +48,17 @@ export default class LexicalQuery extends Query {
   }
 
   * iterations () {
-    let formLexeme = new Lexeme(new Lemma(this.selector.normalizedText, this.selector.languageCode), [])
-    this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
-
-    if (this.homonym) {
-      if (this.langOpts[this.homonym.languageID] && this.langOpts[this.homonym.languageID].lookupForm &&
-        this.homonym.lexemes.filter((l) => l.lemma.word === this.selector.normalizedText).length === 0) {
-        this.homonym.lexemes.push(formLexeme)
+    if (! this.canReset) {
+      // if we can't reset, proceed with full lookup sequence
+      this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
+      if (this.homonym) {
+        this.ui.addMessage(`Morphological analyzer data is ready`)
+      } else {
+        this.ui.addImportantMessage("Morphological data not found. Definition queries pending.")
       }
-      this.ui.addMessage(`Morphological analyzer data is ready`)
-
     } else {
-      this.ui.addImportantMessage("Morphological data not found. Definition queries pending.")
+      // if we can reset then start with definitions of just the form first
+      let formLexeme = new Lexeme(new Lemma(this.selector.normalizedText, this.selector.languageCode), [])
       this.homonym = new Homonym([formLexeme], this.selector.normalizedText)
     }
     this.ui.updateMorphology(this.homonym)
@@ -118,12 +123,22 @@ export default class LexicalQuery extends Query {
         }
       )
     }
-
     yield 'Retrieval of short and full definitions complete'
   }
 
   finalize (result) {
     if (this.active) {
+      // if we can reset the query and we don't have ahy valid results yet
+      // then reset and try again
+      if ( this.canReset &&
+        (!this.homonym
+        || !this.homonym.lexemes
+        || this.homonym.lexemes.length < 1
+        || this.homonym.lexemes.filter((l) => l.isPopulated()).length < 1)) {
+          this.canReset = false // only reset once
+          this.getData()
+          return
+      }
       this.ui.addMessage(`All lexical queries complete.`)
       if (typeof result === 'object' && result instanceof Error) {
         console.error(`LexicalQuery failed: ${result.message}`)

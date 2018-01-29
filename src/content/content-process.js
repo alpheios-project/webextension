@@ -112,7 +112,7 @@ export default class ContentProcess {
             langData: this.langData,
             lexicons: Lexicons,
             resourceOptions: this.resourceOptions,
-            langOpts: { [Constants.LANG_PERSIAN]: { lookupForm: true } } // TODO this should be externalized
+            langOpts: { [Constants.LANG_PERSIAN]: { lookupMorphLast: true } } // TODO this should be externalized
           }),
           {
             experience: 'Get word data',
