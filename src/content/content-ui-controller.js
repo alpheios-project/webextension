@@ -504,17 +504,20 @@ export default class ContentUIController {
 
   message (message) {
     this.panel.showMessage(message)
-    this.popup.showMessage(message)
     this.panel.showNotification(message)
-    this.popup.showNotification(message)
     return this
   }
 
   addMessage (message) {
     this.panel.appendMessage(message)
-    this.popup.appendMessage(message)
     this.panel.showNotification(message)
-    this.popup.showNotification(message)
+  }
+
+  addImportantMessage (message) {
+    this.panel.appendMessage(message)
+    this.popup.appendMessage(message)
+    this.panel.showImportantNotification(message)
+    this.popup.showImportantNotification(message)
   }
 
   static getLanguageName (languageID) {

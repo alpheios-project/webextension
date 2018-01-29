@@ -12,7 +12,7 @@
                     @click="hideEmptyColsClick">
                 {{buttons.hideEmptyCols.text}}
             </button>
-            <button v-if="isContentAvailable && selectedView.table.canCollapse" class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
+            <button v-if="canCollapse" class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
                     @click="hideNoSuffixGroupsClick">
                 {{buttons.hideNoSuffixGroups.text}}
             </button>
@@ -114,7 +114,7 @@
         return forms
       },
       canCollapse: function() {
-        if (this.selectedView && this.selectedView.table) {
+        if (this.data.inflectionData && this.selectedView && this.selectedView.table) {
           return this.selectedView.table.canCollapse
         } else {
           return true

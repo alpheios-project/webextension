@@ -11683,7 +11683,7 @@ class Query {
       return forms;
     },
     canCollapse: function () {
-      if (this.selectedView && this.selectedView.table) {
+      if (this.data.inflectionData && this.selectedView && this.selectedView.table) {
         return this.selectedView.table.canCollapse;
       } else {
         return true;
@@ -19630,6 +19630,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANYAAAArCAMAAAAz
 //
 //
 //
+//
 
 
 
@@ -23593,8 +23594,9 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
         this.homonym.lexemes.push(formLexeme)
       }
       this.ui.addMessage(`Morphological analyzer data is ready`)
+
     } else {
-      this.ui.addMessage(`Morphological analyzer data unavailable`)
+      this.ui.addImportantMessage("Morphological data not found. Definition queries pending.")
       this.homonym = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["i" /* Homonym */]([formLexeme], this.selector.normalizedText)
     }
     this.ui.updateMorphology(this.homonym)
@@ -24212,17 +24214,20 @@ class ContentUIController {
 
   message (message) {
     this.panel.showMessage(message)
-    this.popup.showMessage(message)
     this.panel.showNotification(message)
-    this.popup.showNotification(message)
     return this
   }
 
   addMessage (message) {
     this.panel.appendMessage(message)
-    this.popup.appendMessage(message)
     this.panel.showNotification(message)
-    this.popup.showNotification(message)
+  }
+
+  addImportantMessage (message) {
+    this.panel.appendMessage(message)
+    this.popup.appendMessage(message)
+    this.panel.showImportantNotification(message)
+    this.popup.showImportantNotification(message)
   }
 
   static getLanguageName (languageID) {
@@ -35916,7 +35921,7 @@ var render = function() {
             ]
           ),
           _vm._v(" "),
-          _vm.isContentAvailable && _vm.selectedView.table.canCollapse
+          _vm.canCollapse
             ? _c(
                 "button",
                 {
@@ -38064,6 +38069,14 @@ var render = function() {
       _c(
         "div",
         {
+          directives: [
+            {
+              name: "show",
+              rawName: "v-show",
+              value: _vm.data.notification.important,
+              expression: "data.notification.important"
+            }
+          ],
           staticClass: "alpheios-popup__notifications uk-text-small",
           class: _vm.notificationClasses
         },

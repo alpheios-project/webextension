@@ -7,7 +7,8 @@
                 <close-icon></close-icon>
             </span>
         </div>
-        <div class="alpheios-popup__notifications uk-text-small" :class="notificationClasses">
+        <div class="alpheios-popup__notifications uk-text-small" :class="notificationClasses"
+          v-show="data.notification.important">
             <span @click="closeNotifications" class="alpheios-popup__notifications-close-btn">
                 <close-icon></close-icon>
             </span>
