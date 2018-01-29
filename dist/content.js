@@ -23996,6 +23996,7 @@ class ContentUIController {
       this.resourceOptions.load(() => {
         this.state.status = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
         console.log('Content script is activated')
+        this.panel.requestGrammar({ type: 'table-of-contents', value:'', languageID: __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(this.options.items.preferredLanguage.currentValue)})
       })
     })
 
@@ -39919,7 +39920,10 @@ class GrammarResAdapter extends BaseResourceAdapter {
     }
 
     let found = [];
-    let key = `${keyObj.type}-${keyObj.value}`;
+    let key = keyObj.type;
+    if (keyObj.value) {
+      key = `${key}-${keyObj.value}`;
+    }
     if (this.index) {
       found = this._lookupInDataIndex(this.index, key);
     }

@@ -272,6 +272,7 @@ export default class ContentUIController {
       this.resourceOptions.load(() => {
         this.state.status = TabScript.statuses.script.ACTIVE
         console.log('Content script is activated')
+        this.panel.requestGrammar({ type: 'table-of-contents', value:'', languageID: LanguageModelFactory.getLanguageIdFromCode(this.options.items.preferredLanguage.currentValue)})
       })
     })
 
