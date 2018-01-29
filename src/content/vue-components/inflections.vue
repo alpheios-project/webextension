@@ -325,10 +325,13 @@
 
     .infl-cell--hdr {
         font-weight: 700;
+        text-transform: capitalize;
     }
 
     .infl-cell--fw {
         grid-column: 1 / -1;
+        font-style: italic;
+        text-transform: capitalize;
     }
 
     .infl-cell.infl-cell--sep {
