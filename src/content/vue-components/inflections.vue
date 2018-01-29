@@ -391,8 +391,8 @@
         display: grid;
         grid-template-columns: 20px 1fr;
         grid-row-gap: 2px;
-        background: $alpheios-toolbar-color;
-        color: #FFF;
+        background: #FFF;
+        color: $alpheios-headers-color;
         position: absolute;
         padding: 30px 15px 15px;
         left: 0;
@@ -400,6 +400,7 @@
         transform: translateX(-50%);
         z-index: 10;
         min-width: 200px;
+        border: 1px solid $alpheios-toolbar-color;
     }
 
     .alpheios-inflections__footnote-popup.hidden {
@@ -423,8 +424,8 @@
         height: 20px;
         margin: 0;
         cursor: pointer;
-        fill: #FFF;
-        stroke: #FFF;
+        fill: $alpheios-toolbar-color;
+        stroke: $alpheios-toolbar-color;
     }
 
     .alpheios-inflections__footnote-popup-close-btn:hover,
