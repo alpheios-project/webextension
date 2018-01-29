@@ -60,6 +60,8 @@
         </div>
         <div class="alpheios-panel__content">
             <div v-show="data.tabs.definitions" class="alpheios-panel__tab-panel">
+                <div v-show="data.shortDefinitions.length < 1 && data.fullDefinitions.length < 1">
+                  Lookup a word to show definitions...</div>
                 <div class="alpheios-panel__contentitem" v-for="definition in data.shortDefinitions">
                     <shortdef :definition="definition"></shortdef>
                 </div>

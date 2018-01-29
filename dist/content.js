@@ -11375,6 +11375,8 @@ class Query {
 //
 //
 //
+//
+//
 
 
 
@@ -11567,6 +11569,9 @@ class Query {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(8);
+//
+//
+//
 //
 //
 //
@@ -35843,153 +35848,171 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c(
-    "div",
-    {
-      directives: [
-        {
-          name: "show",
-          rawName: "v-show",
-          value: _vm.isContentAvailable,
-          expression: "isContentAvailable"
-        }
-      ]
-    },
-    [
-      _c("h3", [_vm._v(_vm._s(_vm.selectedView.title))]),
-      _vm._v(" "),
-      _vm.views.length > 1
-        ? _c(
-            "div",
-            {
-              staticClass: "alpheios-inflections__view-selector-cont uk-margin"
-            },
-            [
-              _c("label", { staticClass: "uk-form-label" }, [
-                _vm._v("View selector:")
-              ]),
-              _vm._v(" "),
-              _c(
-                "select",
-                {
-                  directives: [
-                    {
-                      name: "model",
-                      rawName: "v-model",
-                      value: _vm.selectedViewModel,
-                      expression: "selectedViewModel"
-                    }
-                  ],
-                  staticClass: "uk-select",
-                  on: {
-                    change: function($event) {
-                      var $$selectedVal = Array.prototype.filter
-                        .call($event.target.options, function(o) {
-                          return o.selected
-                        })
-                        .map(function(o) {
-                          var val = "_value" in o ? o._value : o.value
-                          return val
-                        })
-                      _vm.selectedViewModel = $event.target.multiple
-                        ? $$selectedVal
-                        : $$selectedVal[0]
-                    }
-                  }
-                },
-                _vm._l(_vm.views, function(view) {
-                  return _c("option", [_vm._v(_vm._s(view.name))])
-                })
-              )
-            ]
-          )
-        : _vm._e(),
-      _vm._v(" "),
-      _c(
-        "div",
-        {
-          staticClass:
-            "alpheios-inflections__control-btn-cont uk-button-group uk-margin"
-        },
-        [
-          _c(
-            "button",
-            {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: false,
-                  expression: "false"
-                }
-              ],
-              staticClass:
-                "uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn",
-              on: { click: _vm.hideEmptyColsClick }
-            },
-            [
-              _vm._v(
-                "\n            " +
-                  _vm._s(_vm.buttons.hideEmptyCols.text) +
-                  "\n        "
-              )
-            ]
-          ),
-          _vm._v(" "),
-          _vm.canCollapse
-            ? _c(
-                "button",
-                {
-                  staticClass:
-                    "uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn",
-                  on: { click: _vm.hideNoSuffixGroupsClick }
-                },
-                [
-                  _vm._v(
-                    "\n            " +
-                      _vm._s(_vm.buttons.hideNoSuffixGroups.text) +
-                      "\n        "
-                  )
-                ]
-              )
-            : _vm._e()
+  return _c("div", [
+    _c(
+      "div",
+      {
+        directives: [
+          {
+            name: "show",
+            rawName: "v-show",
+            value: !_vm.isContentAvailable,
+            expression: "! isContentAvailable"
+          }
         ]
-      ),
-      _vm._v(" "),
-      _vm._l(_vm.forms, function(form) {
-        return _c(
+      },
+      [_vm._v("Lookup a word to show inflections...")]
+    ),
+    _vm._v(" "),
+    _c(
+      "div",
+      {
+        directives: [
+          {
+            name: "show",
+            rawName: "v-show",
+            value: _vm.isContentAvailable,
+            expression: "isContentAvailable"
+          }
+        ]
+      },
+      [
+        _c("h3", [_vm._v(_vm._s(_vm.selectedView.title))]),
+        _vm._v(" "),
+        _vm.views.length > 1
+          ? _c(
+              "div",
+              {
+                staticClass:
+                  "alpheios-inflections__view-selector-cont uk-margin"
+              },
+              [
+                _c("label", { staticClass: "uk-form-label" }, [
+                  _vm._v("View selector:")
+                ]),
+                _vm._v(" "),
+                _c(
+                  "select",
+                  {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.selectedViewModel,
+                        expression: "selectedViewModel"
+                      }
+                    ],
+                    staticClass: "uk-select",
+                    on: {
+                      change: function($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function(o) {
+                            return o.selected
+                          })
+                          .map(function(o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.selectedViewModel = $event.target.multiple
+                          ? $$selectedVal
+                          : $$selectedVal[0]
+                      }
+                    }
+                  },
+                  _vm._l(_vm.views, function(view) {
+                    return _c("option", [_vm._v(_vm._s(view.name))])
+                  })
+                )
+              ]
+            )
+          : _vm._e(),
+        _vm._v(" "),
+        _c(
           "div",
-          { staticClass: "alpheios-inflections__forms uk-margin" },
-          [_vm._v(_vm._s(form))]
+          {
+            staticClass:
+              "alpheios-inflections__control-btn-cont uk-button-group uk-margin"
+          },
+          [
+            _c(
+              "button",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: false,
+                    expression: "false"
+                  }
+                ],
+                staticClass:
+                  "uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn",
+                on: { click: _vm.hideEmptyColsClick }
+              },
+              [
+                _vm._v(
+                  "\n            " +
+                    _vm._s(_vm.buttons.hideEmptyCols.text) +
+                    "\n        "
+                )
+              ]
+            ),
+            _vm._v(" "),
+            _vm.canCollapse
+              ? _c(
+                  "button",
+                  {
+                    staticClass:
+                      "uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn",
+                    on: { click: _vm.hideNoSuffixGroupsClick }
+                  },
+                  [
+                    _vm._v(
+                      "\n            " +
+                        _vm._s(_vm.buttons.hideNoSuffixGroups.text) +
+                        "\n        "
+                    )
+                  ]
+                )
+              : _vm._e()
+          ]
+        ),
+        _vm._v(" "),
+        _vm._l(_vm.forms, function(form) {
+          return _c(
+            "div",
+            { staticClass: "alpheios-inflections__forms uk-margin" },
+            [_vm._v(_vm._s(form))]
+          )
+        }),
+        _vm._v(" "),
+        _c("div", {
+          staticClass: "uk-margin",
+          attrs: { id: _vm.elementIDs.wideView }
+        }),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            staticClass:
+              "alpheios-inflections__footnotes uk-margin uk-text-small",
+            attrs: { id: _vm.elementIDs.footnotes }
+          },
+          [
+            _vm._l(_vm.footnotes, function(footnote) {
+              return [
+                _c("dt", [_vm._v(_vm._s(footnote.index))]),
+                _vm._v(" "),
+                _c("dd", [_vm._v(_vm._s(footnote.text))])
+              ]
+            })
+          ],
+          2
         )
-      }),
-      _vm._v(" "),
-      _c("div", {
-        staticClass: "uk-margin",
-        attrs: { id: _vm.elementIDs.wideView }
-      }),
-      _vm._v(" "),
-      _c(
-        "div",
-        {
-          staticClass:
-            "alpheios-inflections__footnotes uk-margin uk-text-small",
-          attrs: { id: _vm.elementIDs.footnotes }
-        },
-        [
-          _vm._l(_vm.footnotes, function(footnote) {
-            return [
-              _c("dt", [_vm._v(_vm._s(footnote.index))]),
-              _vm._v(" "),
-              _c("dd", [_vm._v(_vm._s(footnote.text))])
-            ]
-          })
-        ],
-        2
-      )
-    ],
-    2
-  )
+      ],
+      2
+    )
+  ])
 }
 var staticRenderFns = []
 render._withStripped = true
@@ -37719,6 +37742,24 @@ var render = function() {
             staticClass: "alpheios-panel__tab-panel"
           },
           [
+            _c(
+              "div",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value:
+                      _vm.data.shortDefinitions.length < 1 &&
+                      _vm.data.fullDefinitions.length < 1,
+                    expression:
+                      "data.shortDefinitions.length < 1 && data.fullDefinitions.length < 1"
+                  }
+                ]
+              },
+              [_vm._v("\n              Lookup a word to show definitions...")]
+            ),
+            _vm._v(" "),
             _vm._l(_vm.data.shortDefinitions, function(definition) {
               return _c(
                 "div",

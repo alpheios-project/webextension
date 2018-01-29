@@ -1,5 +1,7 @@
 <template>
-    <div v-show="isContentAvailable">
+    <div>
+      <div v-show="! isContentAvailable">Lookup a word to show inflections...</div>
+      <div v-show="isContentAvailable">
         <h3>{{selectedView.title}}</h3>
         <div class="alpheios-inflections__view-selector-cont uk-margin" v-if="views.length > 1">
             <label class="uk-form-label">View selector:</label>
@@ -25,6 +27,7 @@
                 <dd>{{footnote.text}}</dd>
             </template>
         </div>
+      </div>
     </div>
 </template>
 <script>
