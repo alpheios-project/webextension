@@ -2,7 +2,7 @@
     <div>
       <div v-show="! isEnabled">Inflection data is unavailable.</div>
       <div v-show="isEnabled && ! isContentAvailable">Lookup a word to show inflections...</div>
-      <div v-show="isEnabled && isContentAvailable">
+      <div v-show="isContentAvailable">
         <h3>{{selectedView.title}}</h3>
         <div class="alpheios-inflections__view-selector-cont uk-margin">
             <div v-show="partsOfSpeech.length > 1">
@@ -95,7 +95,9 @@
         return this.data.enabled
       },
       isContentAvailable: function () {
-        return Boolean(this.data.inflectionData)
+        console.log("Checking if content is available")
+        console.log(this.data.enabled && Boolean(this.data.inflectionData))
+        return this.data.enabled && Boolean(this.data.inflectionData)
       },
       inflectionData: function () {
         return this.data.inflectionData

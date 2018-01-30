@@ -7,6 +7,7 @@
       <p class="uk-text-left uk-text-small alpheios-text">Click the Settings wheel to change the default language, default dictionaries or to disable the popup (set UI Type to 'panel').</p>
       <p class="uk-text-left uk-text-small alpheios-text">Use the arrow at the top of this panel to move it from the right to left of your browser window.</p>
       <p class="uk-text-left uk-text-small alpheios-text">You can reopen this panel at any time by selecting 'Info' from the Alpheios Reading Tools option in your browser's context menu.</p>
+      <p class="uk-text-left uk-text-small alpheios-text">Deactivate Alpheios by clicking the toolbar icon or choosing 'Deactivate' from the Alpheios Reading Tools option in your browser's context menu.</p>
     </div>
 </template>
 <script>
