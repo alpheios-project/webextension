@@ -1,11 +1,21 @@
 <template>
     <div v-show="isContentAvailable">
         <h3>{{selectedView.title}}</h3>
-        <div class="alpheios-inflections__view-selector-cont uk-margin" v-if="views.length > 1">
-            <label class="uk-form-label">View selector:</label>
-            <select v-model="selectedViewModel" class="uk-select">
-                <option v-for="view in views">{{view.name}}</option>
-            </select>
+        <div class="alpheios-inflections__view-selector-cont uk-margin">
+            <div v-show="partsOfSpeech.length > 1">
+                <label class="uk-form-label">Part of speech:</label>
+                <select v-model="partOfSpeechSelector" class="uk-select">
+                    <option v-for="partOfSpeech in partsOfSpeech">{{partOfSpeech}}</option>
+                </select>
+            </div>
+
+            <div v-show="views.length > 1">
+                <label class="uk-form-label">View:</label>
+                <select v-model="viewSelector" class="uk-select">
+                    <option v-for="view in views">{{view.name}}</option>
+                </select>
+            </div>
+
         </div>
         <div class="alpheios-inflections__control-btn-cont uk-button-group uk-margin">
             <button v-show="false" class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
@@ -46,6 +56,8 @@
 
     data: function () {
       return {
+        partsOfSpeech: [],
+        selectedPartOfSpeech: [],
         views: [],
         selectedViewName: '',
         selectedView: {},
@@ -85,12 +97,25 @@
       isVisible: function () {
         return this.data.visible
       },
-      selectedViewModel: {
+      partOfSpeechSelector: {
+        get: function () {
+          return this.selectedPartOfSpeech
+        },
+        set: function (newValue) {
+          console.log(`Part of speech changed to ${newValue}`)
+          this.selectedPartOfSpeech = newValue
+          this.views = this.viewSet.getViews(this.selectedPartOfSpeech)
+          this.selectedView = this.views[0]
+          this.selectedViewName = this.views[0].name
+          this.renderInflections().displayInflections()
+        }
+      },
+      viewSelector: {
         get: function () {
           return this.selectedViewName
         },
         set: function (newValue) {
-          console.log(`Selected view changed to ${newValue}`)
+          console.log(`View changed to ${newValue}`)
           this.selectedView = this.views.find(view => view.name === newValue)
           this.renderInflections().displayInflections()
           this.selectedViewName = newValue
@@ -124,13 +149,26 @@
 
     watch: {
       inflectionData: function (inflectionData) {
+        console.log(`Inflection data changed`)
         if (inflectionData) {
-          this.views = this.viewSet.getViews(inflectionData)
-          // Select a first view by default
+          this.viewSet = new ViewSet(inflectionData)
+
+          this.partsOfSpeech = this.viewSet.partsOfSpeech
+          if (this.partsOfSpeech.length > 0) {
+            this.selectedPartOfSpeech = this.partsOfSpeech[0]
+            this.views = this.viewSet.getViews(this.selectedPartOfSpeech)
+          } else {
+            this.selectedPartOfSpeech = []
+            this.views = []
+          }
+
           if (this.views.length > 0) {
             this.selectedViewName = this.views[0].name
             this.selectedView = this.views[0]
             this.renderInflections().displayInflections()
+          } else {
+            this.selectedViewName = ''
+            this.selectedView = ''
           }
         }
       },
@@ -259,7 +297,6 @@
     },
 
     created: function () {
-      this.viewSet = new ViewSet()
       this.l10n = new L10n(L10nMessages)
     },
 

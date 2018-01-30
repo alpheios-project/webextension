@@ -51,9 +51,8 @@ export default class LexicalQuery extends Query {
         this.homonym.lexemes.push(formLexeme)
       }
       this.ui.addMessage(`Morphological analyzer data is ready`)
-
     } else {
-      this.ui.addImportantMessage("Morphological data not found. Definition queries pending.")
+      this.ui.addImportantMessage('Morphological data not found. Definition queries pending.')
       this.homonym = new Homonym([formLexeme], this.selector.normalizedText)
     }
     this.ui.updateMorphology(this.homonym)
