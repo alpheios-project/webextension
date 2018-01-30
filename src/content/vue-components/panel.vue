@@ -1,7 +1,7 @@
 <template>
     <div class="alpheios-panel auk" :class="classes" :style="this.data.styles"
          data-component="alpheios-panel" data-resizable="true" v-show="data.isOpen"
-        :data-notification-visible="data.notification.isContentAvailable">
+        :data-notification-visible="data.notification.visible">
 
         <div class="alpheios-panel__header">
             <div class="alpheios-panel__header-title">
@@ -18,16 +18,12 @@
             </span>
         </div>
 
-        <div class="alpheios-panel__notifications uk-text-small" :class="notificationClasses">
-            <span @click="closeNotifications" class="alpheios-panel__notifications-close-btn">
-                <close-icon></close-icon>
-            </span>
-            <span v-html="data.notification.text"></span>
-            <setting :data="data.settings.preferredLanguage" :show-title="false"
-                     :classes="['alpheios-panel__notifications--lang-switcher']" @change="settingChanged"
-                     v-show="data.notification.showLanguageSwitcher"></setting>
-        </div>
         <div :id="navbarID" class="alpheios-panel__nav">
+            <div v-bind:class="{ active: data.tabs.info }" @click="changeTab('info')"
+                 class="alpheios-panel__nav-btn" title="Help">
+                <info-icon class="icon"></info-icon>
+            </div>
+
             <div :class="{ active: data.tabs.definitions }" @click="changeTab('definitions')"
                  class="alpheios-panel__nav-btn" title="Definitions">
                 <definitions-icon class="icon"></definitions-icon>
@@ -43,23 +39,20 @@
                 <grammar-icon class="icon"></grammar-icon>
             </div>
 
-            <div v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
-                 class="alpheios-panel__nav-btn" title="Status Messages">
-                <status-icon class="icon"></status-icon>
-            </div>
-
             <div v-bind:class="{ active: data.tabs.options }" @click="changeTab('options')"
                  class="alpheios-panel__nav-btn" title="Options">
                 <options-icon class="icon"></options-icon>
             </div>
 
-            <div v-bind:class="{ active: data.tabs.info }" @click="changeTab('info')"
-                 class="alpheios-panel__nav-btn" title="Help">
-                <info-icon class="icon"></info-icon>
+            <div v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
+                 class="alpheios-panel__nav-btn" title="Status Messages">
+                <status-icon class="icon"></status-icon>
             </div>
         </div>
         <div class="alpheios-panel__content">
             <div v-show="data.tabs.definitions" class="alpheios-panel__tab-panel">
+                <div v-show="data.shortDefinitions.length < 1 && data.fullDefinitions.length < 1">
+                  Lookup a word to show definitions...</div>
                 <div class="alpheios-panel__contentitem" v-for="definition in data.shortDefinitions">
                     <shortdef :definition="definition"></shortdef>
                 </div>
@@ -82,8 +75,6 @@
             <div v-show="data.tabs.options" class="alpheios-panel__tab-panel">
                 <setting :data="data.settings.preferredLanguage" @change="settingChanged"
                          :classes="['alpheios-panel__options-item']"></setting>
-                <setting :data="data.settings.locale" @change="settingChanged"
-                         :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="data.settings.panelPosition" @change="settingChanged"
                          :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="data.settings.uiType" @change="settingChanged"
@@ -96,6 +87,16 @@
             <div v-show="data.tabs.info" class="alpheios-panel__tab-panel">
                 <info></info>
             </div>
+        </div>
+        <div class="alpheios-panel__notifications uk-text-small" :class="notificationClasses"
+          v-show="data.notification.important">
+            <span @click="closeNotifications" class="alpheios-panel__notifications-close-btn">
+                <close-icon></close-icon>
+            </span>
+            <span v-html="data.notification.text"></span>
+            <setting :data="data.settings.preferredLanguage" :show-title="false"
+                     :classes="['alpheios-panel__notifications--lang-switcher']" @change="settingChanged"
+                     v-show="data.notification.showLanguageSwitcher"></setting>
         </div>
 
         <div class="alpheios-panel__status">
@@ -306,7 +307,7 @@
         direction: ltr;
         display: grid;
         grid-template-columns: auto 60px;
-        grid-template-rows: 60px 60px auto 60px;
+        grid-template-rows: 60px auto 60px 60px;
         grid-template-areas:
             "header header"
             "content sidebar"
@@ -317,8 +318,8 @@
     .alpheios-panel[data-notification-visible="true"] {
         grid-template-areas:
                 "header header"
-                "notifications sidebar"
                 "content sidebar"
+                "notifications sidebar"
                 "status sidebar"
     }
 
@@ -331,8 +332,8 @@
         grid-template-columns: 60px auto;
         grid-template-areas:
                 "header header"
-                "sidebar notifications "
                 "sidebar content"
+                "sidebar notifications "
                 "sidebar status"
 
     }

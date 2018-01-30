@@ -272,6 +272,7 @@ export default class ContentUIController {
       this.resourceOptions.load(() => {
         this.state.status = TabScript.statuses.script.ACTIVE
         console.log('Content script is activated')
+        this.panel.requestGrammar({ type: 'table-of-contents', value:'', languageID: LanguageModelFactory.getLanguageIdFromCode(this.options.items.preferredLanguage.currentValue)})
       })
     })
 
@@ -504,13 +505,11 @@ export default class ContentUIController {
 
   message (message) {
     this.panel.showMessage(message)
-    this.panel.showNotification(message)
     return this
   }
 
   addMessage (message) {
     this.panel.appendMessage(message)
-    this.panel.showNotification(message)
   }
 
   addImportantMessage (message) {

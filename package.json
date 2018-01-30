@@ -26,7 +26,7 @@
     "alpheios-experience": "github:alpheios-project/experience",
     "alpheios-inflection-tables": "github:alpheios-project/inflection-tables",
     "alpheios-lexicon-client": "github:alpheios-project/lexicon-client",
-    "alpheios-res-client": "github:alpheios-project/res-client",
+    "alpheios-res-client": "file:../res-client",
     "alpheios-tufts-adapter": "github:alpheios-project/tufts-adapter",
     "autoprefixer": "^7.2.5",
     "babel-core": "^6.26.0",

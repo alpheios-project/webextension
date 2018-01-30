@@ -70,7 +70,6 @@
       </div>
       <div class="alpheios-morph__inflections">
         <div class="alpheios-morph__inflset" v-for="inflset in lex.getGroupedInflections()">
-          <h5>Form(s):</h5>
           <div class="alpheios-morph__forms">
             <span class="alpheios-morph__formtext" v-if="inflset.groupingKey.prefix">{{inflset.groupingKey.prefix}} </span>
             <span class="alpheios-morph__formtext">{{inflset.groupingKey.stem}}</span>
@@ -252,6 +251,14 @@
 
   .alpheios-morph__formtext {
     font-weight: bold;
+  }
+
+  .alpheios-morph__dictentry .alpheios-morph__formtext {
+    font-size: larger;
+  }
+
+  .alpheios-morph__dictentry .alpheios-morph__forms .alpheios-morph__formtext {
+    font-size: inherit;
   }
 
   .alpheios-morph__source {
