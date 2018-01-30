@@ -1,7 +1,8 @@
 <template>
     <div>
-      <div v-show="! isContentAvailable">Lookup a word to show inflections...</div>
-      <div v-show="isContentAvailable">
+      <div v-show="! isEnabled">Inflection data is unavailable.</div>
+      <div v-show="isEnabled && ! isContentAvailable">Lookup a word to show inflections...</div>
+      <div v-show="isEnabled && isContentAvailable">
         <h3>{{selectedView.title}}</h3>
         <div class="alpheios-inflections__view-selector-cont uk-margin" v-if="views.length > 1">
             <label class="uk-form-label">View selector:</label>
@@ -78,6 +79,9 @@
     },
 
     computed: {
+      isEnabled: function() {
+        return this.data.enabled
+      },
       isContentAvailable: function () {
         return Boolean(this.data.inflectionData)
       },
@@ -126,6 +130,7 @@
     },
 
     watch: {
+
       inflectionData: function (inflectionData) {
         if (inflectionData) {
           this.views = this.viewSet.getViews(inflectionData)

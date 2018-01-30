@@ -11600,6 +11600,7 @@ class Query {
 //
 //
 //
+//
 
 
 
@@ -11648,6 +11649,9 @@ class Query {
   },
 
   computed: {
+    isEnabled: function () {
+      return this.data.enabled;
+    },
     isContentAvailable: function () {
       return Boolean(this.data.inflectionData);
     },
@@ -11696,6 +11700,7 @@ class Query {
   },
 
   watch: {
+
     inflectionData: function (inflectionData) {
       if (inflectionData) {
         this.views = this.viewSet.getViews(inflectionData);
@@ -19972,6 +19977,7 @@ class ContentProcess {
       let textSelector = __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.options.items.preferredLanguage.currentValue)
 
       if (!textSelector.isEmpty()) {
+        this.ui.updateLanguage(textSelector.languageCode)
         __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].track(
           __WEBPACK_IMPORTED_MODULE_13__queries_lexical_query__["a" /* default */].create(textSelector, {
             uiController: this.ui,
@@ -23800,6 +23806,7 @@ class ContentUIController {
           lexemes: [],
           inflectionComponentData: {
             visible: false,
+            enabled: false,
             inflectionData: false // If no inflection data present, it is set to false
           },
           shortDefinitions: [],
@@ -23970,6 +23977,10 @@ class ContentUIController {
           this.panelData.inflectionComponentData.inflectionData = inflectionData
         },
 
+        enableInflections: function (enabled) {
+          this.panelData.inflectionComponentData.enabled = enabled
+        },
+
         requestGrammar: function (feature) {
           __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["ObjectMonitor"].track(
             __WEBPACK_IMPORTED_MODULE_8__queries_resource_query__["a" /* default */].create(feature, {
@@ -23994,6 +24005,9 @@ class ContentUIController {
                 this.uiController.presenter.setLocale(this.options.items.locale.currentValue)
               }
               break
+            case 'preferredLanguage':
+              this.uiController.updateLanguage(this.options.items.preferredLanguage.currentValue)
+              break
           }
         },
         resourceSettingChange: function (name, value) {
@@ -24013,7 +24027,7 @@ class ContentUIController {
       this.resourceOptions.load(() => {
         this.state.status = __WEBPACK_IMPORTED_MODULE_4__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
         console.log('Content script is activated')
-        this.panel.requestGrammar({ type: 'table-of-contents', value:'', languageID: __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(this.options.items.preferredLanguage.currentValue)})
+        this.updateLanguage(this.options.items.preferredLanguage.currentValue)
       })
     })
 
@@ -24171,6 +24185,9 @@ class ContentUIController {
                 this.uiController.presenter.setLocale(this.options.items.locale.currentValue)
               }
               break
+            case 'preferredLanguage':
+              this.uiController.updateLanguage(this.options.items.preferredLanguage.currentValue)
+              break
           }
         }
       }
@@ -24307,7 +24324,7 @@ class ContentUIController {
     if (urls.length > 0) {
       this.panel.panelData.grammarRes = urls[0]
     } else {
-      console.log('Requested Grammar Resource Not Found')
+      this.panel.panelData.grammarRes = { provider: 'The requested grammar resource is not currently available' }
     }
     // todo show TOC or not found
   }
@@ -24346,7 +24363,15 @@ class ContentUIController {
     this.popup.popupData.defDataReady = hasFullDefs
   }
 
+  updateLanguage(currentLanguage) {
+    this.state.setItem('currentLanguage',currentLanguage)
+    this.panel.requestGrammar({ type: 'table-of-contents', value:'', languageID: __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(currentLanguage)})
+    this.panel.enableInflections(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageForCode(currentLanguage).canInflect())
+    console.log(`Current language is ${this.state.currentLanguage}`)
+  }
+
   updateInflections (inflectionData, homonym) {
+    this.panel.enableInflections(true)
     this.panel.updateInflections(inflectionData, homonym)
     this.popup.popupData.inflDataReady = inflectionData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].length > 0 // TODO should be a method on InflectionData
   }
@@ -35866,8 +35891,23 @@ var render = function() {
           {
             name: "show",
             rawName: "v-show",
-            value: !_vm.isContentAvailable,
-            expression: "! isContentAvailable"
+            value: !_vm.isEnabled,
+            expression: "! isEnabled"
+          }
+        ]
+      },
+      [_vm._v("Inflection data is unavailable.")]
+    ),
+    _vm._v(" "),
+    _c(
+      "div",
+      {
+        directives: [
+          {
+            name: "show",
+            rawName: "v-show",
+            value: _vm.isEnabled && !_vm.isContentAvailable,
+            expression: "isEnabled && ! isContentAvailable"
           }
         ]
       },
@@ -35881,8 +35921,8 @@ var render = function() {
           {
             name: "show",
             rawName: "v-show",
-            value: _vm.isContentAvailable,
-            expression: "isContentAvailable"
+            value: _vm.isEnabled && _vm.isContentAvailable,
+            expression: "isEnabled && isContentAvailable"
           }
         ]
       },
@@ -40225,6 +40265,11 @@ class ResourceQuery extends __WEBPACK_IMPORTED_MODULE_0__query_js__["a" /* defau
       }
     }
     ))
+    if (grammarRequests.length ==0) {
+      this.ui.updateGrammar([])
+      this.ui.addMessage('No grammar resources found.')
+      this.finalize()
+    }
     for (let q of grammarRequests) {
       q.res.then(
         url => {

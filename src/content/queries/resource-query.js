@@ -46,6 +46,11 @@ export default class ResourceQuery extends Query {
       }
     }
     ))
+    if (grammarRequests.length ==0) {
+      this.ui.updateGrammar([])
+      this.ui.addMessage('No grammar resources found.')
+      this.finalize()
+    }
     for (let q of grammarRequests) {
       q.res.then(
         url => {
