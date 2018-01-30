@@ -143,5 +143,9 @@ module.exports = {
         }
       }
     ]
+  },
+  zip: {
+      ff_filename: 'alpheios.xpi',
+      chrome_filename: 'alpheios.zip'
   }
 }
