@@ -505,13 +505,11 @@ export default class ContentUIController {
 
   message (message) {
     this.panel.showMessage(message)
-    this.panel.showNotification(message)
     return this
   }
 
   addMessage (message) {
     this.panel.appendMessage(message)
-    this.panel.showNotification(message)
   }
 
   addImportantMessage (message) {
