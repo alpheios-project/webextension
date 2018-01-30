@@ -535,10 +535,10 @@ export default class ContentUIController {
   }
 
   showLanguageInfo (homonym) {
-    let notFound = !homonym
-      || !homonym.lexemes
-      || homonym.lexemes.length < 1
-      || homonym.lexemes.filter((l) => l.isPopulated()).length < 1
+    let notFound = !homonym ||
+      !homonym.lexemes ||
+      homonym.lexemes.length < 1 ||
+      homonym.lexemes.filter((l) => l.isPopulated()).length < 1
     this.panel.showLanguageNotification(homonym, notFound)
     this.popup.showLanguageNotification(homonym, notFound)
   }
@@ -602,7 +602,7 @@ export default class ContentUIController {
         }
         this.panel.panelData.shortDefinitions.push(...lexeme.meaning.shortDefs)
       } else if (Object.entries(lexeme.lemma.features).size > 0) {
-        definitions[lexeme.lemma.key] = [new Definition("No definition found.", 'en-US', 'text/plain', lexeme.lemma.word)]
+        definitions[lexeme.lemma.key] = [new Definition('No definition found.', 'en-US', 'text/plain', lexeme.lemma.word)]
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {

@@ -11601,6 +11601,16 @@ class Query {
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 
@@ -11620,6 +11630,8 @@ class Query {
 
   data: function () {
     return {
+      partsOfSpeech: [],
+      selectedPartOfSpeech: [],
       views: [],
       selectedViewName: '',
       selectedView: {},
@@ -11662,12 +11674,25 @@ class Query {
     isVisible: function () {
       return this.data.visible;
     },
-    selectedViewModel: {
+    partOfSpeechSelector: {
+      get: function () {
+        return this.selectedPartOfSpeech;
+      },
+      set: function (newValue) {
+        console.log(`Part of speech changed to ${newValue}`);
+        this.selectedPartOfSpeech = newValue;
+        this.views = this.viewSet.getViews(this.selectedPartOfSpeech);
+        this.selectedView = this.views[0];
+        this.selectedViewName = this.views[0].name;
+        this.renderInflections().displayInflections();
+      }
+    },
+    viewSelector: {
       get: function () {
         return this.selectedViewName;
       },
       set: function (newValue) {
-        console.log(`Selected view changed to ${newValue}`);
+        console.log(`View changed to ${newValue}`);
         this.selectedView = this.views.find(view => view.name === newValue);
         this.renderInflections().displayInflections();
         this.selectedViewName = newValue;
@@ -11702,13 +11727,26 @@ class Query {
   watch: {
 
     inflectionData: function (inflectionData) {
+      console.log(`Inflection data changed`);
       if (inflectionData) {
-        this.views = this.viewSet.getViews(inflectionData);
-        // Select a first view by default
+        this.viewSet = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["d" /* ViewSet */](inflectionData);
+
+        this.partsOfSpeech = this.viewSet.partsOfSpeech;
+        if (this.partsOfSpeech.length > 0) {
+          this.selectedPartOfSpeech = this.partsOfSpeech[0];
+          this.views = this.viewSet.getViews(this.selectedPartOfSpeech);
+        } else {
+          this.selectedPartOfSpeech = [];
+          this.views = [];
+        }
+
         if (this.views.length > 0) {
           this.selectedViewName = this.views[0].name;
           this.selectedView = this.views[0];
           this.renderInflections().displayInflections();
+        } else {
+          this.selectedViewName = '';
+          this.selectedView = '';
         }
       }
     },
@@ -11838,7 +11876,6 @@ class Query {
   },
 
   created: function () {
-    this.viewSet = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["d" /* ViewSet */]();
     this.l10n = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* L10n */](__WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["b" /* L10nMessages */]);
   },
 
@@ -23602,13 +23639,13 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
   }
 
   * iterations () {
-    if (! this.canReset) {
+    if (!this.canReset) {
       // if we can't reset, proceed with full lookup sequence
       this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
       if (this.homonym) {
         this.ui.addMessage(`Morphological analyzer data is ready`)
       } else {
-        this.ui.addImportantMessage("Morphological data not found. Definition queries pending.")
+        this.ui.addImportantMessage(`Morphological data not found. Definition queries pending.`)
       }
     } else {
       // if we can reset then start with definitions of just the form first
@@ -23628,7 +23665,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
     let lexiconOpts =
       this.resourceOptions.items.lexicons.filter(
         (l) => this.resourceOptions.parseKey(l.name).language === this.selector.languageCode
-      ).map((l) => { return {allow:l.currentValue}}
+      ).map((l) => { return {allow: l.currentValue} }
       )
     if (lexiconOpts.length > 0) {
       lexiconOpts = lexiconOpts[0]
@@ -23638,7 +23675,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
 
     for (let lexeme of this.homonym.lexemes) {
       // Short definition requests
-      let requests = this.lexicons.fetchShortDefs(lexeme.lemma,lexiconOpts)
+      let requests = this.lexicons.fetchShortDefs(lexeme.lemma, lexiconOpts)
       definitionRequests = definitionRequests.concat(requests.map(request => {
         return {
           request: request,
@@ -23649,7 +23686,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
         }
       }))
       // Full definition requests
-      requests = this.lexicons.fetchFullDefs(lexeme.lemma,lexiconOpts)
+      requests = this.lexicons.fetchFullDefs(lexeme.lemma, lexiconOpts)
       definitionRequests = definitionRequests.concat(requests.map(request => {
         return {
           request: request,
@@ -23695,14 +23732,14 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
     if (this.active) {
       // if we can reset the query and we don't have ahy valid results yet
       // then reset and try again
-      if ( this.canReset &&
-        (!this.homonym
-        || !this.homonym.lexemes
-        || this.homonym.lexemes.length < 1
-        || this.homonym.lexemes.filter((l) => l.isPopulated()).length < 1)) {
-          this.canReset = false // only reset once
-          this.getData()
-          return
+      if (this.canReset &&
+        (!this.homonym ||
+        !this.homonym.lexemes ||
+        this.homonym.lexemes.length < 1 ||
+        this.homonym.lexemes.filter((l) => l.isPopulated()).length < 1)) {
+        this.canReset = false // only reset once
+        this.getData()
+        return
       }
       this.ui.addMessage(`All lexical queries complete.`)
       if (typeof result === 'object' && result instanceof Error) {
@@ -24282,10 +24319,10 @@ class ContentUIController {
   }
 
   showLanguageInfo (homonym) {
-    let notFound = !homonym
-      || !homonym.lexemes
-      || homonym.lexemes.length < 1
-      || homonym.lexemes.filter((l) => l.isPopulated()).length < 1
+    let notFound = !homonym ||
+      !homonym.lexemes ||
+      homonym.lexemes.length < 1 ||
+      homonym.lexemes.filter((l) => l.isPopulated()).length < 1
     this.panel.showLanguageNotification(homonym, notFound)
     this.popup.showLanguageNotification(homonym, notFound)
   }
@@ -24349,7 +24386,7 @@ class ContentUIController {
         }
         this.panel.panelData.shortDefinitions.push(...lexeme.meaning.shortDefs)
       } else if (Object.entries(lexeme.lemma.features).size > 0) {
-        definitions[lexeme.lemma.key] = [new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["c" /* Definition */]("No definition found.", 'en-US', 'text/plain', lexeme.lemma.word)]
+        definitions[lexeme.lemma.key] = [new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["c" /* Definition */]('No definition found.', 'en-US', 'text/plain', lexeme.lemma.word)]
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {
@@ -35929,16 +35966,25 @@ var render = function() {
       [
         _c("h3", [_vm._v(_vm._s(_vm.selectedView.title))]),
         _vm._v(" "),
-        _vm.views.length > 1
-          ? _c(
+        _c(
+          "div",
+          { staticClass: "alpheios-inflections__view-selector-cont uk-margin" },
+          [
+            _c(
               "div",
               {
-                staticClass:
-                  "alpheios-inflections__view-selector-cont uk-margin"
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: _vm.partsOfSpeech.length > 1,
+                    expression: "partsOfSpeech.length > 1"
+                  }
+                ]
               },
               [
                 _c("label", { staticClass: "uk-form-label" }, [
-                  _vm._v("View selector:")
+                  _vm._v("Part of speech:")
                 ]),
                 _vm._v(" "),
                 _c(
@@ -35948,8 +35994,8 @@ var render = function() {
                       {
                         name: "model",
                         rawName: "v-model",
-                        value: _vm.selectedViewModel,
-                        expression: "selectedViewModel"
+                        value: _vm.partOfSpeechSelector,
+                        expression: "partOfSpeechSelector"
                       }
                     ],
                     staticClass: "uk-select",
@@ -35963,7 +36009,59 @@ var render = function() {
                             var val = "_value" in o ? o._value : o.value
                             return val
                           })
-                        _vm.selectedViewModel = $event.target.multiple
+                        _vm.partOfSpeechSelector = $event.target.multiple
+                          ? $$selectedVal
+                          : $$selectedVal[0]
+                      }
+                    }
+                  },
+                  _vm._l(_vm.partsOfSpeech, function(partOfSpeech) {
+                    return _c("option", [_vm._v(_vm._s(partOfSpeech))])
+                  })
+                )
+              ]
+            ),
+            _vm._v(" "),
+            _c(
+              "div",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: _vm.views.length > 1,
+                    expression: "views.length > 1"
+                  }
+                ]
+              },
+              [
+                _c("label", { staticClass: "uk-form-label" }, [
+                  _vm._v("View:")
+                ]),
+                _vm._v(" "),
+                _c(
+                  "select",
+                  {
+                    directives: [
+                      {
+                        name: "model",
+                        rawName: "v-model",
+                        value: _vm.viewSelector,
+                        expression: "viewSelector"
+                      }
+                    ],
+                    staticClass: "uk-select",
+                    on: {
+                      change: function($event) {
+                        var $$selectedVal = Array.prototype.filter
+                          .call($event.target.options, function(o) {
+                            return o.selected
+                          })
+                          .map(function(o) {
+                            var val = "_value" in o ? o._value : o.value
+                            return val
+                          })
+                        _vm.viewSelector = $event.target.multiple
                           ? $$selectedVal
                           : $$selectedVal[0]
                       }
@@ -35975,7 +36073,8 @@ var render = function() {
                 )
               ]
             )
-          : _vm._e(),
+          ]
+        ),
         _vm._v(" "),
         _c(
           "div",
