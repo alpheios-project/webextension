@@ -12370,6 +12370,7 @@ if (false) {(function () {
 //
 //
 //
+//
 
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: 'Info',
@@ -37442,6 +37443,12 @@ var staticRenderFns = [
       _c("p", { staticClass: "uk-text-left uk-text-small alpheios-text" }, [
         _vm._v(
           "Use the arrow at the top of this panel to move it from the right to left of your browser window."
+        )
+      ]),
+      _vm._v(" "),
+      _c("p", { staticClass: "uk-text-left uk-text-small alpheios-text" }, [
+        _vm._v(
+          "You can reopen this panel at any time by selecting 'Info' from the Alpheios Reading Tools option in your browser's context menu."
         )
       ])
     ])
