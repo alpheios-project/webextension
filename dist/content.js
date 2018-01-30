@@ -23556,6 +23556,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
     this.langData = options.langData
     this.lexicons = options.lexicons
     this.langOpts = options.langOpts
+    this.resourceOptions = options.resourceOptions
     let langID = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(this.selector.languageCode)
     if (this.langOpts[langID] && this.langOpts[langID].lookupMorphLast) {
       this.canReset = true
@@ -23617,9 +23618,20 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
     this.ui.updateInflections(this.lexicalData, this.homonym)
 
     let definitionRequests = []
+    let lexiconOpts =
+      this.resourceOptions.items.lexicons.filter(
+        (l) => this.resourceOptions.parseKey(l.name).language === this.selector.languageCode
+      ).map((l) => { return {allow:l.currentValue}}
+      )
+    if (lexiconOpts.length > 0) {
+      lexiconOpts = lexiconOpts[0]
+    } else {
+      lexiconOpts = {}
+    }
+
     for (let lexeme of this.homonym.lexemes) {
       // Short definition requests
-      let requests = this.lexicons.fetchShortDefs(lexeme.lemma)
+      let requests = this.lexicons.fetchShortDefs(lexeme.lemma,lexiconOpts)
       definitionRequests = definitionRequests.concat(requests.map(request => {
         return {
           request: request,
@@ -23630,7 +23642,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
         }
       }))
       // Full definition requests
-      requests = this.lexicons.fetchFullDefs(lexeme.lemma)
+      requests = this.lexicons.fetchFullDefs(lexeme.lemma,lexiconOpts)
       definitionRequests = definitionRequests.concat(requests.map(request => {
         return {
           request: request,

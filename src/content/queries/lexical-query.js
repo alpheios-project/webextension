@@ -10,6 +10,7 @@ export default class LexicalQuery extends Query {
     this.langData = options.langData
     this.lexicons = options.lexicons
     this.langOpts = options.langOpts
+    this.resourceOptions = options.resourceOptions
     let langID = LMF.getLanguageIdFromCode(this.selector.languageCode)
     if (this.langOpts[langID] && this.langOpts[langID].lookupMorphLast) {
       this.canReset = true
@@ -71,9 +72,20 @@ export default class LexicalQuery extends Query {
     this.ui.updateInflections(this.lexicalData, this.homonym)
 
     let definitionRequests = []
+    let lexiconOpts =
+      this.resourceOptions.items.lexicons.filter(
+        (l) => this.resourceOptions.parseKey(l.name).language === this.selector.languageCode
+      ).map((l) => { return {allow:l.currentValue}}
+      )
+    if (lexiconOpts.length > 0) {
+      lexiconOpts = lexiconOpts[0]
+    } else {
+      lexiconOpts = {}
+    }
+
     for (let lexeme of this.homonym.lexemes) {
       // Short definition requests
-      let requests = this.lexicons.fetchShortDefs(lexeme.lemma)
+      let requests = this.lexicons.fetchShortDefs(lexeme.lemma,lexiconOpts)
       definitionRequests = definitionRequests.concat(requests.map(request => {
         return {
           request: request,
@@ -84,7 +96,7 @@ export default class LexicalQuery extends Query {
         }
       }))
       // Full definition requests
-      requests = this.lexicons.fetchFullDefs(lexeme.lemma)
+      requests = this.lexicons.fetchFullDefs(lexeme.lemma,lexiconOpts)
       definitionRequests = definitionRequests.concat(requests.map(request => {
         return {
           request: request,
