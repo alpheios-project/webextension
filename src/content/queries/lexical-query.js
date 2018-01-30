@@ -75,7 +75,7 @@ export default class LexicalQuery extends Query {
     let lexiconOpts =
       this.resourceOptions.items.lexicons.filter(
         (l) => this.resourceOptions.parseKey(l.name).language === this.selector.languageCode
-      ).map((l) => { return {allow:l.currentValue}}
+      ).map((l) => { return {allow: l.currentValue} }
       )
     if (lexiconOpts.length > 0) {
       lexiconOpts = lexiconOpts[0]
@@ -85,7 +85,7 @@ export default class LexicalQuery extends Query {
 
     for (let lexeme of this.homonym.lexemes) {
       // Short definition requests
-      let requests = this.lexicons.fetchShortDefs(lexeme.lemma,lexiconOpts)
+      let requests = this.lexicons.fetchShortDefs(lexeme.lemma, lexiconOpts)
       definitionRequests = definitionRequests.concat(requests.map(request => {
         return {
           request: request,
@@ -96,7 +96,7 @@ export default class LexicalQuery extends Query {
         }
       }))
       // Full definition requests
-      requests = this.lexicons.fetchFullDefs(lexeme.lemma,lexiconOpts)
+      requests = this.lexicons.fetchFullDefs(lexeme.lemma, lexiconOpts)
       definitionRequests = definitionRequests.concat(requests.map(request => {
         return {
           request: request,
@@ -142,14 +142,14 @@ export default class LexicalQuery extends Query {
     if (this.active) {
       // if we can reset the query and we don't have ahy valid results yet
       // then reset and try again
-      if ( this.canReset &&
-        (!this.homonym
-        || !this.homonym.lexemes
-        || this.homonym.lexemes.length < 1
-        || this.homonym.lexemes.filter((l) => l.isPopulated()).length < 1)) {
-          this.canReset = false // only reset once
-          this.getData()
-          return
+      if (this.canReset &&
+        (!this.homonym ||
+        !this.homonym.lexemes ||
+        this.homonym.lexemes.length < 1 ||
+        this.homonym.lexemes.filter((l) => l.isPopulated()).length < 1)) {
+        this.canReset = false // only reset once
+        this.getData()
+        return
       }
       this.ui.addMessage(`All lexical queries complete.`)
       if (typeof result === 'object' && result instanceof Error) {
