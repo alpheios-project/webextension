@@ -374,6 +374,9 @@
         font-weight: 700;
         text-transform: capitalize;
     }
+    .infl-cell--hdr .infl-cell__conj-stem {
+        text-transform: none;
+    }
 
     .infl-cell--fw {
         grid-column: 1 / -1;
