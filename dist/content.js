@@ -1472,7 +1472,7 @@ class GreekLanguageModel extends LanguageModel {
    * for the current node
    */
   canInflect (node) {
-    return true
+    return false
   }
   /**
    * @override LanguageModel#grammarFeatures
@@ -24453,9 +24453,10 @@ class ContentUIController {
   }
 
   updateInflections (inflectionData, homonym) {
-    this.panel.enableInflections(true)
+    let enabled = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageForCode(homonym.language).canInflect()
+    this.panel.enableInflections(enabled)
     this.panel.updateInflections(inflectionData, homonym)
-    this.popup.popupData.inflDataReady = inflectionData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].length > 0 // TODO should be a method on InflectionData
+    this.popup.popupData.inflDataReady = enabled && inflectionData[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].length > 0 // TODO should be a method on InflectionData
   }
 
   clear () {
