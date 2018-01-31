@@ -410,14 +410,8 @@ export default class ContentUIController {
           return this
         },
 
-        showDefinitionsPanelTab: function () {
-          this.panel.changeTab('definitions')
-          this.panel.open()
-          return this
-        },
-
-        showInflectionsPanelTab: function () {
-          this.panel.changeTab('inflections')
+        showPanelTab: function (tabName) {
+          this.panel.changeTab(tabName)
           this.panel.open()
           return this
         },
