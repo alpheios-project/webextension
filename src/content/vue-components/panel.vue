@@ -64,7 +64,8 @@
                              @contentwidth="setContentWidth">
                 </inflections>
             </div>
-            <div v-show="data.tabs.grammar" class="alpheios-panel__tab-panel alpheios-panel__tab-panel--no-padding">
+            <div v-show="data.tabs.grammar" class="alpheios-panel__tab-panel
+            alpheios-panel__tab-panel--no-padding alpheios-panel__tab-panel--fw">
                   <grammar :res="data.grammarRes"></grammar>
               </div>
             <div v-show="data.tabs.status" class="alpheios-panel__tab-panel">
@@ -79,7 +80,7 @@
                          :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="data.settings.uiType" @change="settingChanged"
                          :classes="['alpheios-panel__options-item']"></setting>
-                <setting :data="languageSetting" @change="resourceSettingChanged"
+                <setting :data="languageSetting" @change="resourceSettingChanged" :classes="['alpheios-panel__options-item']"
                   :key="languageSetting.name"
                   v-if="languageSetting.values.length > 1"
                   v-for="languageSetting in data.resourceSettings.lexicons"></setting>
@@ -461,6 +462,10 @@
         padding: 20px;
     }
 
+    .alpheios-panel__tab-panel--fw {
+        width: 100%;
+    }
+
     .alpheios-panel__tab-panel--no-padding {
         padding: 0;
     }
@@ -471,6 +476,7 @@
 
     .alpheios-panel__options-item {
         margin-bottom: 0.5rem;
+        max-width: 300px;
     }
 
     .alpheios-panel__status {
