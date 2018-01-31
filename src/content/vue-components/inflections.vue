@@ -399,6 +399,10 @@
         background: lightgray;
     }
 
+    .infl-cell__conj-stem {
+        text-transform: none;
+    }
+
     .infl-suff {
         cursor: pointer;
     }
