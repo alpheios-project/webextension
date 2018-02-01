@@ -1,44 +1,50 @@
 <template>
     <div>
-      <div v-show="! isEnabled">Inflection data is unavailable.</div>
-      <div v-show="isEnabled && ! isContentAvailable">Lookup a word to show inflections...</div>
-      <div v-show="isContentAvailable">
-        <h3>{{selectedView.title}}</h3>
-        <div class="alpheios-inflections__view-selector-cont uk-margin">
-            <div v-show="partsOfSpeech.length > 1">
-                <label class="uk-form-label">Part of speech:</label>
-                <select v-model="partOfSpeechSelector" class="uk-select">
-                    <option v-for="partOfSpeech in partsOfSpeech">{{partOfSpeech}}</option>
-                </select>
+        <div v-show="! isEnabled">Inflection data is unavailable.</div>
+        <div v-show="isEnabled && ! isContentAvailable">Lookup a word to show inflections...</div>
+        <div v-show="isContentAvailable">
+            <h3 class="alpheios-inflections__title">{{selectedView.title}}</h3>
+            <div class="alpheios-inflections__view-selector-cont">
+                <div v-show="partsOfSpeech.length > 1">
+                    <label class="uk-form-label">Part of speech:</label>
+                    <select v-model="partOfSpeechSelector" class="uk-select alpheios-inflections__view-selector">
+                        <option v-for="partOfSpeech in partsOfSpeech">{{partOfSpeech}}</option>
+                    </select>
+                </div>
+
+                <div v-show="views.length > 1">
+                    <label class="uk-form-label">View:</label>
+                    <select v-model="viewSelector" class="uk-select alpheios-inflections__view-selector">
+                        <option v-for="view in views">{{view.name}}</option>
+                    </select>
+                </div>
+
+            </div>
+            <div class="alpheios-inflections__control-btn-cont uk-button-group">
+                <button v-show="false"
+                        class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
+                        @click="hideEmptyColsClick">
+                    {{buttons.hideEmptyCols.text}}
+                </button>
+                <button v-if="canCollapse"
+                        class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
+                        @click="hideNoSuffixGroupsClick">
+                    {{buttons.hideNoSuffixGroups.text}}
+                </button>
             </div>
 
-            <div v-show="views.length > 1">
-                <label class="uk-form-label">View:</label>
-                <select v-model="viewSelector" class="uk-select">
-                    <option v-for="view in views">{{view.name}}</option>
-                </select>
+            <div class="alpheios-inflections__forms-cont">
+                <div class="alpheios-inflections__form" v-for="form in forms">{{form}}</div>
             </div>
 
+            <div :id="elementIDs.wideView" class=""></div>
+            <div :id="elementIDs.footnotes" class="alpheios-inflections__footnotes">
+                <template v-for="footnote in footnotes">
+                    <dt>{{footnote.index}}</dt>
+                    <dd>{{footnote.text}}</dd>
+                </template>
+            </div>
         </div>
-        <div class="alpheios-inflections__control-btn-cont uk-button-group uk-margin">
-            <button v-show="false" class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
-                    @click="hideEmptyColsClick">
-                {{buttons.hideEmptyCols.text}}
-            </button>
-            <button v-if="canCollapse" class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
-                    @click="hideNoSuffixGroupsClick">
-                {{buttons.hideNoSuffixGroups.text}}
-            </button>
-        </div>
-        <div class="alpheios-inflections__forms uk-margin" v-for="form in forms">{{form}}</div>
-        <div :id="elementIDs.wideView" class="uk-margin"></div>
-        <div :id="elementIDs.footnotes" class="alpheios-inflections__footnotes uk-margin uk-text-small">
-            <template v-for="footnote in footnotes">
-                <dt>{{footnote.index}}</dt>
-                <dd>{{footnote.text}}</dd>
-            </template>
-        </div>
-      </div>
     </div>
 </template>
 <script>
@@ -91,11 +97,11 @@
     },
 
     computed: {
-      isEnabled: function() {
+      isEnabled: function () {
         return this.data.enabled
       },
       isContentAvailable: function () {
-        console.log("Checking if content is available")
+        console.log('Checking if content is available')
         console.log(this.data.enabled && Boolean(this.data.inflectionData))
         return this.data.enabled && Boolean(this.data.inflectionData)
       },
@@ -140,14 +146,14 @@
         }
         return footnotes
       },
-      forms: function() {
+      forms: function () {
         let forms = []
         if (this.selectedView && this.selectedView.forms) {
           forms = Array.from(this.selectedView.forms.values())
         }
         return forms
       },
-      canCollapse: function() {
+      canCollapse: function () {
         if (this.data.inflectionData && this.selectedView && this.selectedView.table) {
           return this.selectedView.table.canCollapse
         } else {
@@ -318,16 +324,39 @@
 <style lang="scss">
     @import "../styles/alpheios";
 
+    h3.alpheios-inflections__title {
+        font-size: 1.2rem;
+        line-height: 1;
+        margin: 0 0 0.6rem 0;
+        font-weight: 700;
+    }
+
     .alpheios-inflections__view-selector-cont {
         max-width: 280px;
     }
 
+    .#{$alpheios-uikit-namespace} .alpheios-inflections__view-selector-cont .uk-select.alpheios-inflections__view-selector {
+        height: 1.6rem;
+        margin-bottom: 0.6rem;
+        font-size: 0.875rem;
+    }
+
     .alpheios-inflections__control-btn-cont {
         max-width: 280px;
+        margin-bottom: 0.6rem;
     }
 
     .auk .uk-button-small.alpheios-inflections__control-btn {
         line-height: 1.5;
+    }
+
+    .alpheios-inflections__forms-cont {
+        margin-bottom: 0.6rem;
+    }
+
+    .alpheios-inflections__form {
+        font-weight: bold;
+        line-height: 1.2;
     }
 
     // region Tables
@@ -335,7 +364,7 @@
         display: grid;
         border-left: 1px solid #111;
         border-bottom: 1px solid #111;
-        margin-bottom: 50px;
+        margin-bottom: 1rem;
     }
 
     .infl-table--wide {
@@ -374,6 +403,7 @@
         font-weight: 700;
         text-transform: capitalize;
     }
+
     .infl-cell--hdr .infl-cell__conj-stem {
         text-transform: none;
     }
@@ -422,14 +452,15 @@
         background-color: rgb(255, 238, 119);
         font-weight: 700;
     }
+
     // endregion Tables
 
     // region Footnotes
     .alpheios-inflections__footnotes {
         display: grid;
-        grid-template-columns: 40px 1fr;
-        grid-row-gap: 2px;
-        max-width: 280px;
+        grid-template-columns: 1.6rem 1fr;
+        font-size: 0.875rem;
+        line-height: 1.2;
 
         dt {
             font-weight: 700;
@@ -487,9 +518,6 @@
         fill: $alpheios-link-hover-color;
         stroke: $alpheios-link-hover-color;
     }
-    // endregion Footnotes
 
-    .alpheios-inflections__forms {
-      font-weight: bold;
-    }
+    // endregion Footnotes
 </style>
