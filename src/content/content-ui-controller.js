@@ -56,7 +56,12 @@ export default class ContentUIController {
             info: true
           },
           grammarRes: {},
-          inflectionData: false, // If no inflection data present, it is set to false
+          lexemes: [],
+          inflectionComponentData: {
+            visible: false,
+            enabled: false,
+            inflectionData: false // If no inflection data present, it is set to false
+          },
           shortDefinitions: [],
           fullDefinitions: '',
           inflections: {
@@ -172,7 +177,12 @@ export default class ContentUIController {
 
         showLanguageNotification: function (homonym, notFound = false) {
           this.panelData.notification.visible = true
-          let languageName = ContentUIController.getLanguageName(homonym.languageID)
+          let languageName
+          if (homonym) {
+            languageName = ContentUIController.getLanguageName(homonym.languageID)
+          } else {
+            languageName = 'unknown' // TODO this wil be unnecessary when the morphological adapter returns a consistent response for erors
+          }
           if (notFound) {
             this.panelData.notification.important = true
             this.panelData.notification.showLanguageSwitcher = true
@@ -217,7 +227,11 @@ export default class ContentUIController {
         },
 
         updateInflections: function (inflectionData) {
-          this.panelData.inflectionData = inflectionData
+          this.panelData.inflectionComponentData.inflectionData = inflectionData
+        },
+
+        enableInflections: function (enabled) {
+          this.panelData.inflectionComponentData.enabled = enabled
         },
 
         requestGrammar: function (feature) {
@@ -244,6 +258,9 @@ export default class ContentUIController {
                 this.uiController.presenter.setLocale(this.options.items.locale.currentValue)
               }
               break
+            case 'preferredLanguage':
+              this.uiController.updateLanguage(this.options.items.preferredLanguage.currentValue)
+              break
           }
         },
         resourceSettingChange: function (name, value) {
@@ -263,6 +280,7 @@ export default class ContentUIController {
       this.resourceOptions.load(() => {
         this.state.status = TabScript.statuses.script.ACTIVE
         console.log('Content script is activated')
+        this.updateLanguage(this.options.items.preferredLanguage.currentValue)
       })
     })
 
@@ -331,7 +349,12 @@ export default class ContentUIController {
 
         showLanguageNotification: function (homonym, notFound = false) {
           this.popupData.notification.visible = true
-          let languageName = ContentUIController.getLanguageName(homonym.languageID)
+          let languageName
+          if (homonym) {
+            languageName = ContentUIController.getLanguageName(homonym.languageID)
+          } else {
+            languageName = 'unknown' // TODO this wil be unnecessary when the morphological adapter returns a consistent response for erors
+          }
           if (notFound) {
             this.popupData.notification.important = true
             this.popupData.notification.showLanguageSwitcher = true
@@ -387,22 +410,13 @@ export default class ContentUIController {
           return this
         },
 
-        showDefinitionsPanelTab: function () {
-          this.visible = false
-          this.panel.changeTab('definitions')
-          this.panel.open()
-          return this
-        },
-
-        showInflectionsPanelTab: function () {
-          this.visible = false
-          this.panel.changeTab('inflections')
+        showPanelTab: function (tabName) {
+          this.panel.changeTab(tabName)
           this.panel.open()
           return this
         },
 
         sendFeature: function (feature) {
-          this.visible = false
           this.panel.requestGrammar(feature)
           this.panel.changeTab('grammar')
           this.panel.open()
@@ -417,6 +431,9 @@ export default class ContentUIController {
               if (this.uiController.presenter) {
                 this.uiController.presenter.setLocale(this.options.items.locale.currentValue)
               }
+              break
+            case 'preferredLanguage':
+              this.uiController.updateLanguage(this.options.items.preferredLanguage.currentValue)
               break
           }
         }
@@ -493,17 +510,18 @@ export default class ContentUIController {
 
   message (message) {
     this.panel.showMessage(message)
-    this.popup.showMessage(message)
-    this.panel.showNotification(message)
-    this.popup.showNotification(message)
     return this
   }
 
   addMessage (message) {
     this.panel.appendMessage(message)
+  }
+
+  addImportantMessage (message) {
+    this.panel.appendMessage(message)
     this.popup.appendMessage(message)
-    this.panel.showNotification(message)
-    this.popup.showNotification(message)
+    this.panel.showImportantNotification(message)
+    this.popup.showImportantNotification(message)
   }
 
   static getLanguageName (languageID) {
@@ -511,9 +529,10 @@ export default class ContentUIController {
   }
 
   showLanguageInfo (homonym) {
-    let notFound = !homonym.lexemes
-      || homonym.lexemes.length < 1
-      || homonym.lexemes.filter((l) => l.isPopulated()).length < 1
+    let notFound = !homonym ||
+      !homonym.lexemes ||
+      homonym.lexemes.length < 1 ||
+      homonym.lexemes.filter((l) => l.isPopulated()).length < 1
     this.panel.showLanguageNotification(homonym, notFound)
     this.popup.showLanguageNotification(homonym, notFound)
   }
@@ -545,13 +564,14 @@ export default class ContentUIController {
       this.popup.linkedFeatures = LanguageModelFactory.getLanguageForCode(homonym.lexemes[0].lemma.language).grammarFeatures()
     }
     this.popup.popupData.morphDataReady = true
+    this.panel.panelData.lexemes = homonym.lexemes
   }
 
   updateGrammar (urls) {
     if (urls.length > 0) {
       this.panel.panelData.grammarRes = urls[0]
     } else {
-      console.log('Requested Grammar Resource Not Found')
+      this.panel.panelData.grammarRes = { provider: 'The requested grammar resource is not currently available' }
     }
     // todo show TOC or not found
   }
@@ -576,7 +596,7 @@ export default class ContentUIController {
         }
         this.panel.panelData.shortDefinitions.push(...lexeme.meaning.shortDefs)
       } else if (Object.entries(lexeme.lemma.features).size > 0) {
-        definitions[lexeme.lemma.key] = [new Definition("No definition found.", 'en-US', 'text/plain', lexeme.lemma.word)]
+        definitions[lexeme.lemma.key] = [new Definition('No definition found.', 'en-US', 'text/plain', lexeme.lemma.word)]
       }
 
       if (lexeme.meaning.fullDefs.length > 0) {
@@ -590,9 +610,18 @@ export default class ContentUIController {
     this.popup.popupData.defDataReady = hasFullDefs
   }
 
+  updateLanguage(currentLanguage) {
+    this.state.setItem('currentLanguage',currentLanguage)
+    this.panel.requestGrammar({ type: 'table-of-contents', value:'', languageID: LanguageModelFactory.getLanguageIdFromCode(currentLanguage)})
+    this.panel.enableInflections(LanguageModelFactory.getLanguageForCode(currentLanguage).canInflect())
+    console.log(`Current language is ${this.state.currentLanguage}`)
+  }
+
   updateInflections (inflectionData, homonym) {
+    let enabled = LanguageModelFactory.getLanguageForCode(homonym.language).canInflect()
+    this.panel.enableInflections(enabled)
     this.panel.updateInflections(inflectionData, homonym)
-    this.popup.popupData.inflDataReady = inflectionData[Feature.types.part].length > 0 // TODO should be a method on InflectionData
+    this.popup.popupData.inflDataReady = enabled && inflectionData[Feature.types.part].length > 0 // TODO should be a method on InflectionData
   }
 
   clear () {

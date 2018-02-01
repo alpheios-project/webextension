@@ -105,6 +105,7 @@ export default class ContentProcess {
       let textSelector = HTMLSelector.getSelector(event.target, this.options.items.preferredLanguage.currentValue)
 
       if (!textSelector.isEmpty()) {
+        this.ui.updateLanguage(textSelector.languageCode)
         ExpObjMon.track(
           LexicalQuery.create(textSelector, {
             uiController: this.ui,
@@ -112,7 +113,7 @@ export default class ContentProcess {
             langData: this.langData,
             lexicons: Lexicons,
             resourceOptions: this.resourceOptions,
-            langOpts: { [Constants.LANG_PERSIAN]: { lookupForm: true } } // TODO this should be externalized
+            langOpts: { [Constants.LANG_PERSIAN]: { lookupMorphLast: true } } // TODO this should be externalized
           }),
           {
             experience: 'Get word data',

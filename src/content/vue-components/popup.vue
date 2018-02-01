@@ -2,19 +2,13 @@
     <div ref="popup" class="alpheios-popup auk" v-bind:class="data.classes"
          v-show="visible" :data-notification-visible="data.notification.visible">
         <div class="alpheios-popup__header">
-            <img class="alpheios-popup__header-logo" src="../images/logo.png">
+            <div class="alpheios-popup__header-text">
+                <span v-show="data.status.selectedText" class="alpheios-popup__header-selection">{{data.status.selectedText}}</span>
+                <span v-show="data.status.languageName" class="alpheios-popup__header-word">({{data.status.languageName}})</span>
+            </div>
             <span class="alpheios-popup__close-btn" @click="closePopup">
                 <close-icon></close-icon>
             </span>
-        </div>
-        <div class="alpheios-popup__notifications uk-text-small" :class="notificationClasses">
-            <span @click="closeNotifications" class="alpheios-popup__notifications-close-btn">
-                <close-icon></close-icon>
-            </span>
-            <span v-html="data.notification.text"></span>
-            <setting :data="data.settings.preferredLanguage" :show-title="false"
-                     :classes="['alpheios-popup__notifications--lang-switcher']" @change="settingChanged"
-                     v-show="data.notification.showLanguageSwitcher"></setting>
         </div>
         <div v-show="!data.morphDataReady"
              class="alpheios-popup__definitions alpheios-popup__definitions--placeholder uk-text-small">
@@ -24,16 +18,25 @@
             <morph :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures"></morph>
         </div>
         <div class="alpheios-popup__button-area">
+            <img class="alpheios-popup__logo" src="../images/icon.png">
             <div class="uk-button-group">
-                <button @click="showInflectionsPanelTab" v-show="data.inflDataReady"
+                <button @click="showPanelTab('inflections')" v-show="data.inflDataReady"
                         class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Inflect</button>
-                <button @click="showDefinitionsPanelTab" v-show="data.defDataReady"
+                <button @click="showPanelTab('definitions')" v-show="data.defDataReady"
                         class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Define</button>
+                <button @click="showPanelTab('options')"
+                        class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Options</button>
             </div>
         </div>
-        <div class="alpheios-popup__status uk-text-small">
-            <span v-show="data.status.selectedText">Selected text: {{data.status.selectedText}}</span><br>
-            <span v-show="data.status.languageName">Language: {{data.status.languageName}}</span>
+        <div class="alpheios-popup__notifications uk-text-small" :class="notificationClasses"
+             v-show="data.notification.important">
+            <span @click="closeNotifications" class="alpheios-popup__notifications-close-btn">
+                <close-icon></close-icon>
+            </span>
+            <span v-html="data.notification.text"></span>
+            <setting :data="data.settings.preferredLanguage" :show-title="false"
+                     :classes="['alpheios-popup__notifications--lang-switcher']" @change="settingChanged"
+                     v-show="data.notification.showLanguageSwitcher"></setting>
         </div>
     </div>
 </template>
@@ -108,12 +111,8 @@
         this.$emit('closepopupnotifications')
       },
 
-      showDefinitionsPanelTab () {
-        this.$emit('showdefspaneltab')
-      },
-
-      showInflectionsPanelTab () {
-        this.$emit('showinflpaneltab')
+      showPanelTab (tabName) {
+        this.$emit('showpaneltab', tabName)
       },
 
       settingChanged: function (name, value) {
@@ -209,17 +208,28 @@
     .alpheios-popup__header {
         position: relative;
         box-sizing: border-box;
-        background-color: $alpheios-toolbar-color;
         width: 100%;
         flex: 0 0 50px;
+        padding: 10px 20px;
     }
 
-    img.alpheios-popup__header-logo {
-        position: absolute;
-        height: 30px;
-        width: auto;
-        left: 10px;
-        top: 9px;
+    .alpheios-popup__header-text {
+        position: relative;
+        top: 20px;
+        left: 3px;
+        line-height: 1;
+    }
+
+    .alpheios-popup__header-selection {
+        font-size: 16px;
+        font-weight: 700;
+        color: $alpheios-toolbar-color;
+    }
+
+    .alpheios-popup__header-word {
+        font-size: 14px;
+        position: relative;
+        top: -1px;
     }
 
     .alpheios-popup__close-btn {
@@ -304,24 +314,22 @@
 
     .alpheios-popup__button-area {
         flex: 0 1 auto;
-        padding: 10px 20px 10px 10px;
+        padding: 10px 20px;
         text-align: right;
         box-sizing: border-box;
+        position: relative;
+    }
+
+    img.alpheios-popup__logo {
+        height: 35px;
+        width: auto;
+        position: absolute;
+        top: 6px;
+        left: 20px;
     }
 
     .alpheios-popup__more-btn {
         float: right;
         margin-bottom: 10px;
     }
-
-    .alpheios-popup__status,
-    .#{$alpheios-uikit-namespace} .alpheios-popup__status {
-        flex: 0 1 50px;
-        padding: 5px 20px;
-        background: $alpheios-toolbar-color;
-        color: #FFF;
-        box-sizing: border-box;
-        line-height: 1.3;
-    }
-
 </style>

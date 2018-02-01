@@ -63,12 +63,13 @@
         <span class="alpheios-morph__attr"
           v-for="note in lex.lemma.features.note" v-if="lex.lemma.features.note">[{{source.note}}]</span>
       </div>
-      <div v-for="definition in definitions[lex.lemma.key]" class="alpheios-morph__definition">
-        <shortdef :definition="definition"></shortdef>
+      <div v-if="definitions">
+        <div v-for="definition in definitions[lex.lemma.key]" class="alpheios-morph__definition">
+          <shortdef :definition="definition"></shortdef>
+        </div>
       </div>
       <div class="alpheios-morph__inflections">
         <div class="alpheios-morph__inflset" v-for="inflset in lex.getGroupedInflections()">
-          <h5>Form(s):</h5>
           <div class="alpheios-morph__forms">
             <span class="alpheios-morph__formtext" v-if="inflset.groupingKey.prefix">{{inflset.groupingKey.prefix}} </span>
             <span class="alpheios-morph__formtext">{{inflset.groupingKey.stem}}</span>
@@ -180,11 +181,13 @@
         },
         definitions: {
           type: Object,
-          required: true
+          required: false,
+          default: () => {}
         },
         linkedfeatures: {
           type: Array,
-          required: true
+          required: false,
+          default: () => []
         }
     },
     created: function () {
@@ -248,6 +251,14 @@
 
   .alpheios-morph__formtext {
     font-weight: bold;
+  }
+
+  .alpheios-morph__dictentry .alpheios-morph__formtext {
+    font-size: larger;
+  }
+
+  .alpheios-morph__dictentry .alpheios-morph__forms .alpheios-morph__formtext {
+    font-size: inherit;
   }
 
   .alpheios-morph__source {
@@ -356,6 +367,10 @@
 
    div.alpheios-morph__block {
        display: block;
+   }
+
+   .alpheios-panel__tab-panel #alpheios-morph__lexemes {
+    font-size: 12px;
    }
 
 </style>

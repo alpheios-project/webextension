@@ -18,58 +18,54 @@
             </span>
         </div>
 
-        <div class="alpheios-panel__notifications uk-text-small" :class="notificationClasses">
-            <span @click="closeNotifications" class="alpheios-panel__notifications-close-btn">
-                <close-icon></close-icon>
-            </span>
-            <span v-html="data.notification.text"></span>
-            <setting :data="data.settings.preferredLanguage" :show-title="false"
-                     :classes="['alpheios-panel__notifications--lang-switcher']" @change="settingChanged"
-                     v-show="data.notification.showLanguageSwitcher"></setting>
-        </div>
-        <div id="alpheios-panel__nav" class="alpheios-panel__nav">
+        <div :id="navbarID" class="alpheios-panel__nav">
+            <div v-bind:class="{ active: data.tabs.info }" @click="changeTab('info')"
+                 class="alpheios-panel__nav-btn" title="Help">
+                <info-icon class="icon"></info-icon>
+            </div>
+
             <div :class="{ active: data.tabs.definitions }" @click="changeTab('definitions')"
-                 class="alpheios-panel__nav-btn">
+                 class="alpheios-panel__nav-btn" title="Definitions">
                 <definitions-icon class="icon"></definitions-icon>
             </div>
 
             <div v-bind:class="{ active: data.tabs.inflections }" @click="changeTab('inflections')"
-                 class="alpheios-panel__nav-btn">
+                 class="alpheios-panel__nav-btn" title="Inflection Tables">
                 <inflections-icon class="icon"></inflections-icon>
             </div>
 
             <div v-bind:class="{ active: data.tabs.grammar }" @click="changeTab('grammar')"
-              class="alpheios-panel__nav-btn">
+              class="alpheios-panel__nav-btn" title="Grammar">
                 <grammar-icon class="icon"></grammar-icon>
             </div>
 
-            <div v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
-                 class="alpheios-panel__nav-btn">
-                <status-icon class="icon"></status-icon>
-            </div>
-
             <div v-bind:class="{ active: data.tabs.options }" @click="changeTab('options')"
-                 class="alpheios-panel__nav-btn">
+                 class="alpheios-panel__nav-btn" title="Options">
                 <options-icon class="icon"></options-icon>
             </div>
 
-            <div v-bind:class="{ active: data.tabs.info }" @click="changeTab('info')"
-                 class="alpheios-panel__nav-btn">
-                <info-icon class="icon"></info-icon>
+            <div v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
+                 class="alpheios-panel__nav-btn" title="Status Messages">
+                <status-icon class="icon"></status-icon>
             </div>
         </div>
         <div class="alpheios-panel__content">
             <div v-show="data.tabs.definitions" class="alpheios-panel__tab-panel">
+                <div v-show="data.shortDefinitions.length < 1 && data.fullDefinitions.length < 1">
+                  Lookup a word to show definitions...</div>
                 <div class="alpheios-panel__contentitem" v-for="definition in data.shortDefinitions">
                     <shortdef :definition="definition"></shortdef>
                 </div>
                 <div class="alpheios-panel__contentitem" v-html="data.fullDefinitions"></div>
             </div>
-            <div v-show="data.tabs.inflections" class="alpheios-panel__tab-panel">
+            <div v-show="inflectionsTabVisible" :id="inflectionsPanelID" class="alpheios-panel__tab-panel">
                 <inflections class="alpheios-panel-inflections"
-                             :infldata="data.inflectionData" :locale="data.settings.locale.currentValue"></inflections>
+                             :data="data.inflectionComponentData" :locale="data.settings.locale.currentValue"
+                             @contentwidth="setContentWidth">
+                </inflections>
             </div>
-            <div v-show="data.tabs.grammar" class="alpheios-panel__tab-panel alpheios-panel__tab-panel--no-padding">
+            <div v-show="data.tabs.grammar" class="alpheios-panel__tab-panel
+            alpheios-panel__tab-panel--no-padding alpheios-panel__tab-panel--fw">
                   <grammar :res="data.grammarRes"></grammar>
               </div>
             <div v-show="data.tabs.status" class="alpheios-panel__tab-panel">
@@ -80,13 +76,11 @@
             <div v-show="data.tabs.options" class="alpheios-panel__tab-panel">
                 <setting :data="data.settings.preferredLanguage" @change="settingChanged"
                          :classes="['alpheios-panel__options-item']"></setting>
-                <setting :data="data.settings.locale" @change="settingChanged"
-                         :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="data.settings.panelPosition" @change="settingChanged"
                          :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="data.settings.uiType" @change="settingChanged"
                          :classes="['alpheios-panel__options-item']"></setting>
-                <setting :data="languageSetting" @change="resourceSettingChanged"
+                <setting :data="languageSetting" @change="resourceSettingChanged" :classes="['alpheios-panel__options-item']"
                   :key="languageSetting.name"
                   v-if="languageSetting.values.length > 1"
                   v-for="languageSetting in data.resourceSettings.lexicons"></setting>
@@ -94,6 +88,16 @@
             <div v-show="data.tabs.info" class="alpheios-panel__tab-panel">
                 <info></info>
             </div>
+        </div>
+        <div class="alpheios-panel__notifications uk-text-small" :class="notificationClasses"
+          v-show="data.notification.important">
+            <span @click="closeNotifications" class="alpheios-panel__notifications-close-btn">
+                <close-icon></close-icon>
+            </span>
+            <span v-html="data.notification.text"></span>
+            <setting :data="data.settings.preferredLanguage" :show-title="false"
+                     :classes="['alpheios-panel__notifications--lang-switcher']" @change="settingChanged"
+                     v-show="data.notification.showLanguageSwitcher"></setting>
         </div>
 
         <div class="alpheios-panel__status">
@@ -106,6 +110,7 @@
   import Inflections from './inflections.vue'
   import Setting from './setting.vue'
   import ShortDef from './shortdef.vue'
+  import Morph from './morph.vue'
   import Grammar from './grammar.vue'
   import Info from './info.vue'
   import interact from 'interactjs'
@@ -128,6 +133,7 @@
       inflections: Inflections,
       setting: Setting,
       shortdef: ShortDef,
+      morph: Morph,
       info: Info,
       grammar: Grammar,
       attachLeftIcon: AttachLeftIcon,
@@ -139,6 +145,12 @@
       optionsIcon: OptionsIcon,
       infoIcon: InfoIcon,
       grammarIcon: GrammarIcon
+    },
+    data: function () {
+      return {
+        navbarID: 'alpheios-panel__nav',
+        inflectionsPanelID: 'alpheios-panel__inflections-panel'
+      }
     },
     props: {
       data: {
@@ -168,6 +180,13 @@
       attachToRightVisible: function () {
         return this.data.settings.panelPosition.currentValue === 'left'
       },
+
+      // Need this to watch when inflections tab becomes active and adjust panel width to fully fit an inflection table in
+      inflectionsTabVisible: function () {
+        // Inform an inflection component about its visibility state change
+        this.data.inflectionComponentData.visible = this.data.tabs.inflections
+        return this.data.tabs.inflections
+      }
     },
     methods: {
       updateZIndex: function (zIndexMax) {
@@ -223,8 +242,29 @@
       resourceSettingChanged: function (name, value) {
         this.$emit('resourcesettingchange', name, value) // Re-emit for a Vue instance
       },
+
+      setContentWidth: function (width) {
+        let widthDelta = parseInt(this.navbarWidth, 10)
+          + parseInt(this.inflPanelLeftPadding, 10)
+          + parseInt(this.inflPanelRightPadding, 10)
+        if (width > this.data.minWidth + widthDelta) {
+          let adjustedWidth = width + widthDelta
+          // Max viewport width less some space to display page content
+          let maxWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0) - 20
+          if (adjustedWidth > maxWidth) { adjustedWidth = maxWidth }
+          this.$el.style.width = `${adjustedWidth}px`
+        }
+      }
     },
+
     mounted: function () {
+      // Determine paddings and sidebar width for calculation of a panel width to fit content
+      let navbar = this.$el.querySelector(`#${this.navbarID}`)
+      let inflectionsPanel = this.$el.querySelector(`#${this.inflectionsPanelID}`)
+      this.navbarWidth = navbar ? window.getComputedStyle(navbar).getPropertyValue('width').match(/\d+/)[0] : 0
+      this.inflPanelLeftPadding = inflectionsPanel ? window.getComputedStyle(inflectionsPanel).getPropertyValue('padding-left').match(/\d+/)[0] : 0
+      this.inflPanelRightPadding = inflectionsPanel ? window.getComputedStyle(inflectionsPanel).getPropertyValue('padding-right').match(/\d+/)[0] : 0
+
       // Initialize Interact.js: make panel resizable
       interact(this.$el)
         .resizable({
@@ -268,7 +308,7 @@
         direction: ltr;
         display: grid;
         grid-template-columns: auto 60px;
-        grid-template-rows: 60px 60px auto 60px;
+        grid-template-rows: 60px auto 60px 60px;
         grid-template-areas:
             "header header"
             "content sidebar"
@@ -279,8 +319,8 @@
     .alpheios-panel[data-notification-visible="true"] {
         grid-template-areas:
                 "header header"
-                "notifications sidebar"
                 "content sidebar"
+                "notifications sidebar"
                 "status sidebar"
     }
 
@@ -293,8 +333,8 @@
         grid-template-columns: 60px auto;
         grid-template-areas:
                 "header header"
-                "sidebar notifications "
                 "sidebar content"
+                "sidebar notifications "
                 "sidebar status"
 
     }
@@ -422,6 +462,10 @@
         padding: 20px;
     }
 
+    .alpheios-panel__tab-panel--fw {
+        width: 100%;
+    }
+
     .alpheios-panel__tab-panel--no-padding {
         padding: 0;
     }
@@ -432,6 +476,7 @@
 
     .alpheios-panel__options-item {
         margin-bottom: 0.5rem;
+        max-width: 300px;
     }
 
     .alpheios-panel__status {

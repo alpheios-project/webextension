@@ -1,23 +1,36 @@
 <template>
-    <div v-show="visible">
+    <div>
+      <div v-show="! isEnabled">Inflection data is unavailable.</div>
+      <div v-show="isEnabled && ! isContentAvailable">Lookup a word to show inflections...</div>
+      <div v-show="isContentAvailable">
         <h3>{{selectedView.title}}</h3>
         <div class="alpheios-inflections__view-selector-cont uk-margin">
-            <label class="uk-form-label">View selector:</label>
-            <select v-model="selectedViewModel" class="uk-select">
-                <option v-for="view in views">{{view.name}}</option>
-            </select>
+            <div v-show="partsOfSpeech.length > 1">
+                <label class="uk-form-label">Part of speech:</label>
+                <select v-model="partOfSpeechSelector" class="uk-select">
+                    <option v-for="partOfSpeech in partsOfSpeech">{{partOfSpeech}}</option>
+                </select>
+            </div>
+
+            <div v-show="views.length > 1">
+                <label class="uk-form-label">View:</label>
+                <select v-model="viewSelector" class="uk-select">
+                    <option v-for="view in views">{{view.name}}</option>
+                </select>
+            </div>
+
         </div>
         <div class="alpheios-inflections__control-btn-cont uk-button-group uk-margin">
-            <button class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
+            <button v-show="false" class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
                     @click="hideEmptyColsClick">
                 {{buttons.hideEmptyCols.text}}
             </button>
-            <button class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
+            <button v-if="canCollapse" class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
                     @click="hideNoSuffixGroupsClick">
                 {{buttons.hideNoSuffixGroups.text}}
             </button>
         </div>
-        <p class="uk-margin">Hover over the suffix to see its grammar features</p>
+        <div class="alpheios-inflections__forms uk-margin" v-for="form in forms">{{form}}</div>
         <div :id="elementIDs.wideView" class="uk-margin"></div>
         <div :id="elementIDs.footnotes" class="alpheios-inflections__footnotes uk-margin uk-text-small">
             <template v-for="footnote in footnotes">
@@ -25,6 +38,7 @@
                 <dd>{{footnote.text}}</dd>
             </template>
         </div>
+      </div>
     </div>
 </template>
 <script>
@@ -34,7 +48,7 @@
     name: 'Inflections',
     props: {
       // This will be an InflectionData object
-      infldata: {
+      data: {
         type: [Object, Boolean],
         required: true
       },
@@ -46,7 +60,8 @@
 
     data: function () {
       return {
-        visible: false,
+        partsOfSpeech: [],
+        selectedPartOfSpeech: [],
         views: [],
         selectedViewName: '',
         selectedView: {},
@@ -60,28 +75,56 @@
         },
         buttons: {
           hideEmptyCols: {
-            contentHidden: false,
+            contentHidden: true,
             text: '',
             shownText: 'Hide empty columns',
             hiddenText: 'Show empty columns'
           },
           hideNoSuffixGroups: {
-            noSuffMatchHidden: false,
+            noSuffMatchHidden: true,
             text: '',
-            shownText: 'Hide groups with no suffix matching',
-            hiddenText: 'Show groups with no suffix matching'
+            shownText: 'Collapse',
+            hiddenText: 'Show Full Table'
           }
         }
       }
     },
 
     computed: {
-      selectedViewModel: {
+      isEnabled: function() {
+        return this.data.enabled
+      },
+      isContentAvailable: function () {
+        console.log("Checking if content is available")
+        console.log(this.data.enabled && Boolean(this.data.inflectionData))
+        return this.data.enabled && Boolean(this.data.inflectionData)
+      },
+      inflectionData: function () {
+        return this.data.inflectionData
+      },
+      // Need this for a watcher that will monitor a parent container visibility state
+      isVisible: function () {
+        return this.data.visible
+      },
+      partOfSpeechSelector: {
+        get: function () {
+          return this.selectedPartOfSpeech
+        },
+        set: function (newValue) {
+          console.log(`Part of speech changed to ${newValue}`)
+          this.selectedPartOfSpeech = newValue
+          this.views = this.viewSet.getViews(this.selectedPartOfSpeech)
+          this.selectedView = this.views[0]
+          this.selectedViewName = this.views[0].name
+          this.renderInflections().displayInflections()
+        }
+      },
+      viewSelector: {
         get: function () {
           return this.selectedViewName
         },
         set: function (newValue) {
-          console.log(`Selected view changed to ${newValue}`)
+          console.log(`View changed to ${newValue}`)
           this.selectedView = this.views.find(view => view.name === newValue)
           this.renderInflections().displayInflections()
           this.selectedViewName = newValue
@@ -96,30 +139,70 @@
           footnotes = Array.from(this.selectedView.footnotes.values())
         }
         return footnotes
+      },
+      forms: function() {
+        let forms = []
+        if (this.selectedView && this.selectedView.forms) {
+          forms = Array.from(this.selectedView.forms.values())
+        }
+        return forms
+      },
+      canCollapse: function() {
+        if (this.data.inflectionData && this.selectedView && this.selectedView.table) {
+          return this.selectedView.table.canCollapse
+        } else {
+          return true
+        }
       }
     },
 
     watch: {
-      infldata: function (inflectionData) {
-        console.log('Inflection data changed')
+
+      inflectionData: function (inflectionData) {
+        console.log(`Inflection data changed`)
         if (inflectionData) {
-          this.views = this.viewSet.getViews(inflectionData)
-          // Select a first view by default
+          this.viewSet = new ViewSet(inflectionData)
+
+          this.partsOfSpeech = this.viewSet.partsOfSpeech
+          if (this.partsOfSpeech.length > 0) {
+            this.selectedPartOfSpeech = this.partsOfSpeech[0]
+            this.views = this.viewSet.getViews(this.selectedPartOfSpeech)
+          } else {
+            this.selectedPartOfSpeech = []
+            this.views = []
+          }
+
           if (this.views.length > 0) {
             this.selectedViewName = this.views[0].name
             this.selectedView = this.views[0]
             this.renderInflections().displayInflections()
-            this.visible = true
+          } else {
+            this.selectedViewName = ''
+            this.selectedView = ''
           }
+        }
+      },
+      /*
+      An inflection component needs to notify its parent of how wide an inflection table content is. Parent will
+      use this information to adjust a width of a container that displays an inflection component. However, a width
+      of an inflection table within an invisible parent container will always be zero. Because of that, we can determine
+      an inflection table width and notify a parent component only when a parent container is visible.
+      A parent component will notify us of that by setting a `visible` property. A change of that property state
+      will be monitored here with the help of a `isVisible` computed property. Computed property alone will not work
+      as it won't be used by anything and thus will not be calculated by Vue.
+       */
+      isVisible: function (visibility) {
+        if (visibility) {
+          // If container is become visible, update parent with its width
+          this.$emit('contentwidth', this.htmlElements.wideView.offsetWidth)
         }
       },
       locale: function (locale) {
         console.log(`locale changed to ${locale}`)
-        if (this.infldata) {
+        if (this.data.inflectionData) {
           this.renderInflections().displayInflections() // Re-render inflections for a different locale
         }
       }
-
     },
 
     methods: {
@@ -132,7 +215,7 @@
         this.clearInflections().setDefaults()
         // Hide empty columns by default
         // TODO: change inflection library to take that as an option
-        this.selectedView.render(this.infldata, this.l10n.messages(this.locale)).hideEmptyColumns()
+        this.selectedView.render(this.data.inflectionData, this.l10n.messages(this.locale)).hideEmptyColumns().hideNoSuffixGroups()
         return this
       },
 
@@ -193,8 +276,8 @@
       setDefaults () {
         this.buttons.hideEmptyCols.contentHidden = true
         this.buttons.hideEmptyCols.text = this.buttons.hideEmptyCols.hiddenText
-        this.buttons.hideNoSuffixGroups.contentHidden = false
-        this.buttons.hideNoSuffixGroups.text = this.buttons.hideNoSuffixGroups.shownText
+        this.buttons.hideNoSuffixGroups.contentHidden = true
+        this.buttons.hideNoSuffixGroups.text = this.buttons.hideNoSuffixGroups.hiddenText
         return this
       },
 
@@ -224,7 +307,6 @@
     },
 
     created: function () {
-      this.viewSet = new ViewSet()
       this.l10n = new L10n(L10nMessages)
     },
 
@@ -279,7 +361,7 @@
 
     .infl-cell {
         font-size: 12px;
-        padding: 2px 5px;
+        padding: 0 1px 0 2px;
         border-right: 1px solid #111;
         border-top: 1px solid #111;
     }
@@ -290,10 +372,16 @@
 
     .infl-cell--hdr {
         font-weight: 700;
+        text-transform: capitalize;
+    }
+    .infl-cell--hdr .infl-cell__conj-stem {
+        text-transform: none;
     }
 
     .infl-cell--fw {
         grid-column: 1 / -1;
+        font-style: italic;
+        text-transform: capitalize;
     }
 
     .infl-cell.infl-cell--sep {
@@ -312,6 +400,10 @@
 
     .infl-cell--hl {
         background: lightgray;
+    }
+
+    .infl-cell__conj-stem {
+        text-transform: none;
     }
 
     .infl-suff {
@@ -353,8 +445,8 @@
         display: grid;
         grid-template-columns: 20px 1fr;
         grid-row-gap: 2px;
-        background: $alpheios-toolbar-color;
-        color: #FFF;
+        background: #FFF;
+        color: $alpheios-headers-color;
         position: absolute;
         padding: 30px 15px 15px;
         left: 0;
@@ -362,6 +454,7 @@
         transform: translateX(-50%);
         z-index: 10;
         min-width: 200px;
+        border: 1px solid $alpheios-toolbar-color;
     }
 
     .alpheios-inflections__footnote-popup.hidden {
@@ -385,8 +478,8 @@
         height: 20px;
         margin: 0;
         cursor: pointer;
-        fill: #FFF;
-        stroke: #FFF;
+        fill: $alpheios-toolbar-color;
+        stroke: $alpheios-toolbar-color;
     }
 
     .alpheios-inflections__footnote-popup-close-btn:hover,
@@ -395,4 +488,8 @@
         stroke: $alpheios-link-hover-color;
     }
     // endregion Footnotes
+
+    .alpheios-inflections__forms {
+      font-weight: bold;
+    }
 </style>
