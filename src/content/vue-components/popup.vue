@@ -192,8 +192,6 @@
         flex-direction: column;
         background: #FFF;
         border: 1px solid lightgray;
-        width: 400px;
-        height: 500px;
         z-index: 1000;
         position: fixed;
         left: 200px;
@@ -301,7 +299,7 @@
     .alpheios-popup__definitions {
         flex: 1 1 260px;
         box-sizing: border-box;
-        margin: 10px 20px 0;
+        margin: 10px 10px 0;
         overflow: auto;
         padding: 10px;
         border: 1px solid $alpheios-sidebar-header-border-color;
