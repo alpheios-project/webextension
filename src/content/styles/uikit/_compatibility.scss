@@ -14,6 +14,9 @@
     direction: ltr;
     text-align: left;
 }
+.auk * + .uk-margin {
+  margin-top: 10px !important;
+}
 
 .#{$alpheios-uikit-namespace}.#{$alpheios-irregular-base-font-class} .uk-form-label {
     font-size: 0.875*$alpheios-base-font-size;
@@ -33,5 +36,16 @@
 
 .#{$alpheios-uikit-namespace}.#{$alpheios-irregular-base-font-class} h3,
 .#{$alpheios-uikit-namespace}.#{$alpheios-irregular-base-font-class} .uk-h3 {
-    font-size: 1.5*$alpheios-base-font-size;
+    font-size: 1.25*$alpheios-base-font-size;
+}
+
+
+.#{$alpheios-uikit-namespace} * + .uk-margin {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.#{$alpheios-uikit-namespace} .uk-margin {
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
