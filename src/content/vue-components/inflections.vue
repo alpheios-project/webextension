@@ -361,7 +361,7 @@
 
     .infl-cell {
         font-size: 12px;
-        padding: 2px 5px;
+        padding: 0 1px 0 2px;
         border-right: 1px solid #111;
         border-top: 1px solid #111;
     }
