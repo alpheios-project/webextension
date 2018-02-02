@@ -20301,6 +20301,44 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
       return {
         'alpheios-popup__notifications--important': this.data.notification.important
       };
+    },
+    dimensions: function () {
+      let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+
+      let top = this.data.top;
+      let left = this.data.left;
+      let width = this.data.width;
+      let height = this.data.height;
+
+      if (width > viewportWidth) {
+        left = this.data.minMargin;
+        width = viewportWidth - 2 * this.data.minMargin;
+      } else if (left + width > viewportWidth) {
+        left = viewportWidth - width - this.data.minMargin;
+      }
+
+      if (height > viewportHeight) {
+        top = this.data.minMargin;
+        height = viewportHeight - 2 * this.data.minMargin;
+      } else if (top + height > viewportHeight) {
+        top = viewportHeight - height - this.data.minMargin;
+      }
+
+      return {
+        top: top,
+        left: left,
+        width: width,
+        height: height
+      };
+    },
+    dimensionsPx: function () {
+      let dimensions = this.dimensions;
+      let result = {};
+      for (let [key, value] of Object.entries(dimensions)) {
+        result[key] = `${value}px`;
+      }
+      return result;
     }
   },
 
@@ -20369,7 +20407,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
       preserveAspectRatio: false,
       edges: { left: true, right: true, bottom: true, top: true },
       restrictSize: {
-        min: { width: this.data.minWidth, height: this.data.minHeight }
+        min: { width: this.dimensions.width, height: this.dimensions.height }
       },
       restrictEdges: {
         outer: document.body,
@@ -24666,8 +24704,14 @@ class ContentUIController {
         linkedFeatures: [],
         visible: false,
         popupData: {
-          minWidth: 400,
-          minHeight: 200,
+          // Default popup position and dimensions, in pixels. These values will override CSS rules.
+          // Can be scaled down on small screens automatically.
+          top: 100,
+          left: 100,
+          width: 400,
+          height: 400,
+          // A minimal margin between a popup and a viewport border, in pixels. In effect when popup is scaled down.
+          minMargin: 20,
           settings: this.options.items,
           defDataReady: false,
           inflDataReady: false,
@@ -38877,7 +38921,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n  display: flex;\n  flex-direction: column;\n  background: #FFF;\n  border: 1px solid lightgray;\n  min-height: 200px;\n  width: 400px;\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  top: 100px;\n  box-sizing: border-box;\n  /* Required for Interact.js to take element size with paddings and work correctly */\n  overflow: auto;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 16px;\n  color: #666666;\n}\n.alpheios-popup__header {\n  position: relative;\n  box-sizing: border-box;\n  width: 100%;\n  flex: 0 0 50px;\n  padding: 10px 20px;\n}\n.alpheios-popup__header-text {\n  position: relative;\n  top: 20px;\n  left: 3px;\n  line-height: 1;\n}\n.alpheios-popup__header-selection {\n  font-size: 16px;\n  font-weight: 700;\n  color: #4E6476;\n}\n.alpheios-popup__header-word {\n  font-size: 14px;\n  position: relative;\n  top: -1px;\n}\n.alpheios-popup__close-btn {\n  display: block;\n  position: absolute;\n  width: 30px;\n  right: 5px;\n  top: 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__close-btn:hover,\n.alpheios-popup__close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-popup__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  flex: 0 0 60px;\n  box-sizing: border-box;\n  overflow: hidden;\n}\n.alpheios-popup__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__notifications-close-btn:hover,\n.alpheios-popup__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n[data-notification-visible=\"true\"] .alpheios-popup__notifications {\n  display: block;\n}\n.alpheios-popup__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-popup__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-popup__notifications--important {\n  background: #73CDDE;\n}\n.alpheios-popup__definitions {\n  flex: 1 1 260px;\n  box-sizing: border-box;\n  margin: 10px 10px 0;\n  overflow: auto;\n  padding: 10px;\n  border: 1px solid #B8B7B5;\n}\n.alpheios-popup__definitions--placeholder {\n  border: 0 none;\n  padding: 10px 0 0;\n}\n.alpheios-popup__button-area {\n  flex: 0 1 auto;\n  padding: 10px 20px;\n  text-align: right;\n  box-sizing: border-box;\n  position: relative;\n}\nimg.alpheios-popup__logo {\n  height: 35px;\n  width: auto;\n  position: absolute;\n  top: 6px;\n  left: 20px;\n}\n.alpheios-popup__more-btn {\n  float: right;\n  margin-bottom: 10px;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-popup {\n  display: flex;\n  flex-direction: column;\n  background: #FFF;\n  border: 1px solid lightgray;\n  width: 400px;\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  top: 100px;\n  box-sizing: border-box;\n  /* Required for Interact.js to take element size with paddings and work correctly */\n  overflow: auto;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 16px;\n  color: #666666;\n}\n.alpheios-popup__header {\n  position: relative;\n  box-sizing: border-box;\n  width: 100%;\n  flex: 0 0 50px;\n  padding: 10px 20px;\n}\n.alpheios-popup__header-text {\n  position: relative;\n  top: 20px;\n  left: 3px;\n  line-height: 1;\n}\n.alpheios-popup__header-selection {\n  font-size: 16px;\n  font-weight: 700;\n  color: #4E6476;\n}\n.alpheios-popup__header-word {\n  font-size: 14px;\n  position: relative;\n  top: -1px;\n}\n.alpheios-popup__close-btn {\n  display: block;\n  position: absolute;\n  width: 30px;\n  right: 5px;\n  top: 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__close-btn:hover,\n.alpheios-popup__close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-popup__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  flex: 0 0 60px;\n  box-sizing: border-box;\n  overflow: hidden;\n}\n.alpheios-popup__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__notifications-close-btn:hover,\n.alpheios-popup__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n[data-notification-visible=\"true\"] .alpheios-popup__notifications {\n  display: block;\n}\n.alpheios-popup__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-popup__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-popup__notifications--important {\n  background: #73CDDE;\n}\n.alpheios-popup__definitions {\n  flex: 1 1 260px;\n  box-sizing: border-box;\n  margin: 10px 10px 0;\n  overflow: auto;\n  padding: 10px;\n  border: 1px solid #B8B7B5;\n}\n.alpheios-popup__definitions--placeholder {\n  border: 0 none;\n  padding: 10px 0 0;\n}\n.alpheios-popup__button-area {\n  flex: 0 1 auto;\n  padding: 10px 20px;\n  text-align: right;\n  box-sizing: border-box;\n  position: relative;\n}\nimg.alpheios-popup__logo {\n  height: 35px;\n  width: auto;\n  position: absolute;\n  top: 6px;\n  left: 20px;\n}\n.alpheios-popup__more-btn {\n  float: right;\n  margin-bottom: 10px;\n}\n", ""]);
 
 // exports
 
@@ -38905,6 +38949,7 @@ var render = function() {
       ref: "popup",
       staticClass: "alpheios-popup auk",
       class: _vm.data.classes,
+      style: _vm.dimensionsPx,
       attrs: { "data-notification-visible": _vm.data.notification.visible }
     },
     [
