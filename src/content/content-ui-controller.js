@@ -188,6 +188,7 @@ export default class ContentUIController {
             this.panelData.notification.showLanguageSwitcher = true
             this.panelData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
           } else {
+            this.panelData.notification.visible = true
             this.panelData.notification.important = false
             this.panelData.notification.showLanguageSwitcher = false
           }
@@ -610,9 +611,9 @@ export default class ContentUIController {
     this.popup.popupData.defDataReady = hasFullDefs
   }
 
-  updateLanguage(currentLanguage) {
-    this.state.setItem('currentLanguage',currentLanguage)
-    this.panel.requestGrammar({ type: 'table-of-contents', value:'', languageID: LanguageModelFactory.getLanguageIdFromCode(currentLanguage)})
+  updateLanguage (currentLanguage) {
+    this.state.setItem('currentLanguage', currentLanguage)
+    this.panel.requestGrammar({ type: 'table-of-contents', value: '', languageID: LanguageModelFactory.getLanguageIdFromCode(currentLanguage)})
     this.panel.enableInflections(LanguageModelFactory.getLanguageForCode(currentLanguage).canInflect())
     console.log(`Current language is ${this.state.currentLanguage}`)
   }

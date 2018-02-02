@@ -461,6 +461,7 @@
         grid-template-columns: 1.6rem 1fr;
         font-size: 0.875rem;
         line-height: 1.2;
+        margin-bottom: 2rem;
 
         dt {
             font-weight: 700;

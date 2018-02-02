@@ -1,16 +1,24 @@
 <template>
     <div class="alpheios-panel auk" :class="classes" :style="this.data.styles"
          data-component="alpheios-panel" data-resizable="true" v-show="data.isOpen"
-        :data-notification-visible="data.notification.visible">
+        :data-notification-visible="data.notification.important"> <!-- Show only important notifications for now -->
 
         <div class="alpheios-panel__header">
-            <div class="alpheios-panel__header-title">
-                <img class="alpheios-panel__header-logo" src="../images/logo.png">
+            <div class="alpheios-panel__header-logo">
+                <img class="alpheios-panel__header-logo-img" src="../images/icon.png">
             </div>
-            <span @click="setPosition('left')" v-show="attachToLeftVisible" class="alpheios-panel__header-action-btn">
+            <div class="alpheios-panel__header-title">
+                <span class="alpheios-panel__header-selection"
+                      v-show="data.status.selectedText">{{data.status.selectedText}}</span>
+                <span class="alpheios-panel__header-text"
+                      v-show="data.status.languageName">({{data.status.languageName}})</span>
+            </div>
+            <span @click="setPosition('left')" v-show="attachToLeftVisible"
+                  class="alpheios-panel__header-action-btn alpheios-panel__header-action-btn--narrow">
                 <attach-left-icon></attach-left-icon>
             </span>
-            <span @click="setPosition('right')" v-show="attachToRightVisible" class="alpheios-panel__header-action-btn">
+            <span @click="setPosition('right')" v-show="attachToRightVisible"
+                  class="alpheios-panel__header-action-btn alpheios-panel__header-action-btn--narrow">
                 <attach-right-icon></attach-right-icon>
             </span>
             <span @click="close" class="alpheios-panel__header-action-btn">
@@ -35,7 +43,7 @@
             </div>
 
             <div v-bind:class="{ active: data.tabs.grammar }" @click="changeTab('grammar')"
-              class="alpheios-panel__nav-btn" title="Grammar">
+              class="alpheios-panel__nav-btn alpheios-panel__nav-btn--short" title="Grammar">
                 <grammar-icon class="icon"></grammar-icon>
             </div>
 
@@ -98,11 +106,6 @@
             <setting :data="data.settings.preferredLanguage" :show-title="false"
                      :classes="['alpheios-panel__notifications--lang-switcher']" @change="settingChanged"
                      v-show="data.notification.showLanguageSwitcher"></setting>
-        </div>
-
-        <div class="alpheios-panel__status">
-            <span v-show="data.status.selectedText">Selected text: {{data.status.selectedText}}</span><br>
-            <span v-show="data.status.languageName">Language: {{data.status.languageName}}</span>
         </div>
     </div>
 </template>
@@ -261,7 +264,11 @@
       // Determine paddings and sidebar width for calculation of a panel width to fit content
       let navbar = this.$el.querySelector(`#${this.navbarID}`)
       let inflectionsPanel = this.$el.querySelector(`#${this.inflectionsPanelID}`)
-      this.navbarWidth = navbar ? window.getComputedStyle(navbar).getPropertyValue('width').match(/\d+/)[0] : 0
+      this.navbarWidth = 0
+      if (navbar) {
+        let width = window.getComputedStyle(navbar).getPropertyValue('width').match(/\d+/)
+        if (width && Array.isArray(width) && width.length > 0) { this.navbarWidth = width[0] }
+      }
       this.inflPanelLeftPadding = inflectionsPanel ? window.getComputedStyle(inflectionsPanel).getPropertyValue('padding-left').match(/\d+/)[0] : 0
       this.inflPanelRightPadding = inflectionsPanel ? window.getComputedStyle(inflectionsPanel).getPropertyValue('padding-right').match(/\d+/)[0] : 0
 
@@ -294,7 +301,8 @@
 </script>
 <style lang="scss">
     @import "../styles/alpheios";
-    $alpheios-panel-header-height: 60px;
+    $alpheios-panel-header-height: 40px;
+    $alpheios-panel-sidebar-width: 50px;
 
     .alpheios-panel {
         width: 400px; // Initial width
@@ -307,13 +315,12 @@
         opacity: 0.95;
         direction: ltr;
         display: grid;
-        grid-template-columns: auto 60px;
-        grid-template-rows: 60px auto 60px 60px;
+        grid-template-columns: auto #{$alpheios-panel-sidebar-width};
+        grid-template-rows: #{$alpheios-panel-header-height} auto 60px;
         grid-template-areas:
             "header header"
             "content sidebar"
             "content sidebar"
-            "status sidebar"
     }
 
     .alpheios-panel[data-notification-visible="true"] {
@@ -321,21 +328,29 @@
                 "header header"
                 "content sidebar"
                 "notifications sidebar"
-                "status sidebar"
     }
 
     .alpheios-panel.alpheios-panel-left {
         left: 0;
+        border-right: 1px solid $alpheios-link-color-dark-bg;
     }
 
     .alpheios-panel.alpheios-panel-right {
         right: 0;
-        grid-template-columns: 60px auto;
+        border-left: 1px solid $alpheios-link-color-dark-bg;
+        grid-template-columns: #{$alpheios-panel-sidebar-width} auto;
         grid-template-areas:
                 "header header"
                 "sidebar content"
-                "sidebar notifications "
-                "sidebar status"
+                "sidebar content"
+
+    }
+
+    .alpheios-panel.alpheios-panel-right[data-notification-visible="true"] {
+        grid-template-areas:
+                "header header"
+                "sidebar content"
+                "sidebar notifications"
 
     }
 
@@ -343,29 +358,48 @@
         position: relative;
         display: flex;
         flex-wrap: nowrap;
-        padding: 10px;
         box-sizing: border-box;
-        background-color: $alpheios-toolbar-color;
         grid-area: header;
+        border-bottom: 1px solid $alpheios-link-color-dark-bg;
     }
 
-    .alpheios-panel-right .alpheios-panel__header {
+    .alpheios-panel-left .alpheios-panel__header {
         direction: ltr;
-        padding: 10px 0 10px 20px;
+        padding: 0 0 0 10px;
     }
 
     .alpheios-panel-right .alpheios-panel__header {
         direction: rtl;
-        padding: 10px 20px 10px 0;
-    }
-
-
-    .alpheios-panel__header-title {
-        flex-grow: 1;
+        padding: 0 10px 0 0;
     }
 
     .alpheios-panel__header-logo {
-        margin-top: -1px;
+        flex-grow: 0;
+    }
+
+    .alpheios-panel__header-title {
+        flex-grow: 1;
+        text-align: center;
+        padding: 10px 20px;
+        direction: ltr;
+    }
+
+    .alpheios-panel__header-selection {
+        font-size: 16px;
+        font-weight: 700;
+        color: $alpheios-toolbar-color;
+    }
+
+    .alpheios-panel__header-word {
+        font-size: 14px;
+        position: relative;
+        top: -1px;
+    }
+
+    .#{$alpheios-uikit-namespace} .alpheios-panel__header-logo-img {
+        width: auto;
+        height: 30px;
+        margin-top: 4px;
     }
 
     .alpheios-panel__header-action-btn,
@@ -374,7 +408,7 @@
         display: block;
         width: 40px;
         height: 40px;
-        margin: 0 10px;
+        margin: 0 5px;
         cursor: pointer;
         fill: $alpheios-link-color-dark-bg;
         stroke: $alpheios-link-color-dark-bg;
@@ -385,6 +419,10 @@
     .alpheios-panel__header-action-btn.active {
         fill: $alpheios-link-hover-color;
         stroke: $alpheios-link-hover-color;
+    }
+
+    .alpheios-panel__header-action-btn.alpheios-panel__header-action-btn--narrow {
+        margin: 0;
     }
 
     .alpheios-panel__body {
@@ -479,32 +517,39 @@
         max-width: 300px;
     }
 
-    .alpheios-panel__status {
-        padding: 10px 20px;
-        background: $alpheios-toolbar-color;
-        color: #FFF;
-        grid-area: status;
-    }
-
     .alpheios-panel__contentitem {
         margin-bottom: 1em;
     }
 
     .alpheios-panel__nav {
-        width: 60px;
-        background: $alpheios-toolbar-active-color;
+        width: #{$alpheios-panel-sidebar-width}; /* Required for calculation of required inflection table width*/
         grid-area: sidebar;
+    }
+
+    .alpheios-panel-left .alpheios-panel__nav {
+        border-left: 1px solid $alpheios-link-color-dark-bg;
+    }
+
+    .alpheios-panel-right .alpheios-panel__nav {
+        border-right: 1px solid $alpheios-link-color-dark-bg;
+    }
+
+    .alpheios-panel__nav-btn {
+        cursor: pointer;
+        margin: 20px 5px 20px;
+        width: 40px;
+        height: 40px;
+        background: transparent no-repeat center center;
+        background-size: contain;
+    }
+
+    .alpheios-panel__nav-btn.alpheios-panel__nav-btn--short {
+        margin: -10px 5px 20px;
     }
 
     .alpheios-panel__nav-btn,
     .alpheios-panel__nav-btn.active:hover,
     .alpheios-panel__nav-btn.active:focus {
-        cursor: pointer;
-        margin: 20px 10px;
-        width: 40px;
-        height: 40px;
-        background: transparent no-repeat center center;
-        background-size: contain;
         fill: $alpheios-link-color-dark-bg;
         stroke: $alpheios-link-color-dark-bg;
     }
