@@ -296,8 +296,14 @@ export default class ContentUIController {
         linkedFeatures: [],
         visible: false,
         popupData: {
-          minWidth: 400,
-          minHeight: 200,
+          // Default popup position and dimensions, in pixels. These values will override CSS rules.
+          // Can be scaled down on small screens automatically.
+          top: 100,
+          left: 100,
+          width: 400,
+          height: 400,
+          // A minimal margin between a popup and a viewport border, in pixels. In effect when popup is scaled down.
+          minMargin: 20,
           settings: this.options.items,
           defDataReady: false,
           inflDataReady: false,

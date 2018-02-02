@@ -1,5 +1,5 @@
 <template>
-    <div ref="popup" class="alpheios-popup auk" v-bind:class="data.classes"
+    <div ref="popup" class="alpheios-popup auk" v-bind:class="data.classes" :style="dimensionsPx"
          v-show="visible" :data-notification-visible="data.notification.visible">
         <div class="alpheios-popup__header">
             <div class="alpheios-popup__header-text">
@@ -46,7 +46,7 @@
   import interact from 'interactjs'
 
   // Embeddable SVG icons
-  import CloseIcon from '../images/inline-icons/close.svg';
+  import CloseIcon from '../images/inline-icons/close.svg'
 
   export default {
     name: 'Popup',
@@ -58,7 +58,7 @@
     data: function () {
       return {
         resizable: true,
-        draggable: true,
+        draggable: true
       }
     },
     props: {
@@ -93,6 +93,44 @@
         return {
           'alpheios-popup__notifications--important': this.data.notification.important
         }
+      },
+      dimensions: function () {
+        let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+        let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+
+        let top = this.data.top
+        let left = this.data.left
+        let width = this.data.width
+        let height = this.data.height
+
+        if (width > viewportWidth) {
+          left = this.data.minMargin
+          width = viewportWidth - 2*this.data.minMargin
+        } else if ( (left + width) > viewportWidth) {
+          left = viewportWidth - width - this.data.minMargin
+        }
+
+        if (height > viewportHeight) {
+          top = this.data.minMargin
+          height = viewportHeight - 2*this.data.minMargin
+        } else if ( (top + height) > viewportHeight) {
+          top = viewportHeight - height - this.data.minMargin
+        }
+
+        return {
+          top: top,
+          left: left,
+          width: width,
+          height: height
+        }
+      },
+      dimensionsPx: function () {
+        let dimensions = this.dimensions
+        let result = {}
+        for (let [key, value] of (Object.entries(dimensions))) {
+          result[key] = `${value}px`
+        }
+        return result
       }
     },
 
@@ -161,7 +199,7 @@
         preserveAspectRatio: false,
         edges: { left: true, right: true, bottom: true, top: true },
         restrictSize: {
-          min: { width: this.data.minWidth, height: this.data.minHeight }
+          min: { width: this.dimensions.width, height: this.dimensions.height }
         },
         restrictEdges: {
           outer: document.body,
@@ -192,7 +230,6 @@
         flex-direction: column;
         background: #FFF;
         border: 1px solid lightgray;
-        min-height: 200px;
         width: 400px;
         z-index: 1000;
         position: fixed;
