@@ -379,7 +379,6 @@
 
     .alpheios-panel__header-title {
         flex-grow: 1;
-        text-align: center;
         padding: 10px 20px;
         direction: ltr;
     }

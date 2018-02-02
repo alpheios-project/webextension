@@ -20,21 +20,20 @@
                 </div>
 
             </div>
-            <div class="alpheios-inflections__control-btn-cont uk-button-group">
-                <button v-show="false"
+            <div class="alpheios-inflections__forms-cont">
+                <div class="alpheios-inflections__form" v-for="form in forms">{{form}}</div>
+                <div class="alpheios-inflections__control-btn-cont uk-button-group">
+                  <button v-show="false"
                         class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
                         @click="hideEmptyColsClick">
                     {{buttons.hideEmptyCols.text}}
-                </button>
-                <button v-if="canCollapse"
+                  </button>
+                  <button v-if="canCollapse"
                         class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
                         @click="hideNoSuffixGroupsClick">
                     {{buttons.hideNoSuffixGroups.text}}
-                </button>
-            </div>
-
-            <div class="alpheios-inflections__forms-cont">
-                <div class="alpheios-inflections__form" v-for="form in forms">{{form}}</div>
+                  </button>
+                </div>
             </div>
 
             <div :id="elementIDs.wideView" class=""></div>
@@ -329,6 +328,7 @@
         line-height: 1;
         margin: 0 0 0.6rem 0;
         font-weight: 700;
+        text-align: center;
     }
 
     .alpheios-inflections__view-selector-cont {
@@ -351,7 +351,9 @@
     }
 
     .alpheios-inflections__forms-cont {
-        margin-bottom: 0.6rem;
+        display: grid;
+        grid-template-columns: auto 180px;
+        grid-auto-flow: row;
     }
 
     .alpheios-inflections__form {
@@ -457,7 +459,7 @@
 
     // region Footnotes
     .alpheios-inflections__footnotes {
-        display: grid;
+        display: none;
         grid-template-columns: 1.6rem 1fr;
         font-size: 0.875rem;
         line-height: 1.2;
