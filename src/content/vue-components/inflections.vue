@@ -85,7 +85,7 @@
             noSuffMatchHidden: true,
             text: '',
             shownText: 'Collapse',
-            hiddenText: 'Show Full Table'
+            hiddenText: 'Full Table'
           }
         }
       }
@@ -330,10 +330,12 @@
     .#{$alpheios-uikit-namespace} .uk-select.alpheios-inflections__view-selector {
         height: auto !important;
         max-width: 220px;
+        font-size: .625rem !important;
     }
 
     .auk .uk-button-small.alpheios-inflections__control-btn {
         line-height: 1.5;
+        font-size: .625rem;
     }
 
     .alpheios-inflections__actions {
@@ -381,7 +383,7 @@
 
     .infl-cell {
         font-size: 12px;
-        padding: 0 2px 0 2px;
+        padding: 0 2px 0 5px;
         border-right: 1px solid #111;
         border-top: 1px solid #111;
     }
@@ -393,6 +395,7 @@
     .infl-cell--hdr {
         font-weight: 700;
         text-transform: capitalize;
+        text-align: center;
     }
 
     .infl-cell--hdr .infl-cell__conj-stem {
