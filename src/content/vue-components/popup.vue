@@ -192,6 +192,8 @@
         flex-direction: column;
         background: #FFF;
         border: 1px solid lightgray;
+        min-height: 200px;  
+        min-width: 400px;
         z-index: 1000;
         position: fixed;
         left: 200px;

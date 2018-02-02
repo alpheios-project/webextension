@@ -297,7 +297,7 @@ export default class ContentUIController {
         visible: false,
         popupData: {
           minWidth: 400,
-          minHeight: 400,
+          minHeight: 200,
           settings: this.options.items,
           defDataReady: false,
           inflDataReady: false,
