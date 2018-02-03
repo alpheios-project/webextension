@@ -95,6 +95,7 @@
         }
       },
       dimensions: function () {
+        console.log(`Target rect`, this.data.targetRect)
         let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
         let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
 

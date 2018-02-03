@@ -6,6 +6,13 @@ import MediaSelector from './media-selector'
 export default class HTMLSelector extends MediaSelector {
   constructor (target, defaultLanguageCode) {
     super(target)
+    let rect = target.getBoundingClientRect()
+    this.targetRect = {
+      top: Math.round(rect.top),
+      left: Math.round(rect.left),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    }
     this.defaultLanguageCode = defaultLanguageCode
 
     this.wordSeparator = new Map()

@@ -304,6 +304,10 @@ export default class ContentUIController {
           height: 400,
           // A minimal margin between a popup and a viewport border, in pixels. In effect when popup is scaled down.
           minMargin: 20,
+
+          // Size and position of a word selection
+          targetRect: {},
+
           settings: this.options.items,
           defDataReady: false,
           inflDataReady: false,
@@ -326,6 +330,10 @@ export default class ContentUIController {
         options: this.options
       },
       methods: {
+        setTargetRect: function (targetRect) {
+          this.popupData.targetRect = targetRect
+        },
+
         showMessage: function (message) {
           this.messages = [message]
           return this
@@ -561,6 +569,10 @@ export default class ContentUIController {
   changeTab (tabName) {
     this.panel.changeTab(tabName)
     return this
+  }
+
+  setTargetRect (targetRect) {
+    this.popup.setTargetRect(targetRect)
   }
 
   updateMorphology (homonym) {

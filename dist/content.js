@@ -20332,6 +20332,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
       };
     },
     dimensions: function () {
+      console.log(`Target rect`, this.data.targetRect);
       let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
       let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
@@ -20638,19 +20639,26 @@ class ContentProcess {
   sendStateToBackground () {
     this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
       (error) => {
-        console.error('Unable to send a response to activation request',error)
+        console.error('Unable to send a response to activation request', error)
       }
     )
   }
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.options.items.preferredLanguage.currentValue)
+      /*
+      TextSelector conveys text selection information. It is more generic of the two.
+      HTMLSelector conveys page-specific information, such as location of a selection on a page.
+      It's probably better to keep them separated in order to follow a more abstract model.
+       */
+      let htmlSelector = new __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */](event.target, this.options.items.preferredLanguage.currentValue)
+      let textSelector = htmlSelector.createTextSelector()
 
       if (!textSelector.isEmpty()) {
         this.ui.updateLanguage(textSelector.languageCode)
         __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].track(
           __WEBPACK_IMPORTED_MODULE_13__queries_lexical_query__["a" /* default */].create(textSelector, {
+            htmlSelector: htmlSelector,
             uiController: this.ui,
             maAdapter: this.maAdapter,
             langData: this.langData,
@@ -23864,6 +23872,13 @@ class ResourceOptions {
 class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* default */] {
   constructor (target, defaultLanguageCode) {
     super(target)
+    let rect = target.getBoundingClientRect()
+    this.targetRect = {
+      top: Math.round(rect.top),
+      left: Math.round(rect.left),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    }
     this.defaultLanguageCode = defaultLanguageCode
 
     this.wordSeparator = new Map()
@@ -24248,6 +24263,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
   constructor (name, selector, options) {
     super(name)
     this.selector = selector
+    this.htmlSelector = options.htmlSelector
     this.ui = options.uiController
     this.maAdapter = options.maAdapter
     this.langData = options.langData
@@ -24268,6 +24284,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
 
   async getData () {
     this.languageID = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(this.selector.languageCode)
+    this.ui.setTargetRect(this.htmlSelector.targetRect)
     this.ui.clear().open().changeTab('definitions').message(`Please wait while data is retrieved ...`)
     this.ui.showStatusInfo(this.selector.normalizedText, this.languageID)
     let iterator = this.iterations()
@@ -24741,6 +24758,10 @@ class ContentUIController {
           height: 400,
           // A minimal margin between a popup and a viewport border, in pixels. In effect when popup is scaled down.
           minMargin: 20,
+
+          // Size and position of a word selection
+          targetRect: {},
+
           settings: this.options.items,
           defDataReady: false,
           inflDataReady: false,
@@ -24763,6 +24784,10 @@ class ContentUIController {
         options: this.options
       },
       methods: {
+        setTargetRect: function (targetRect) {
+          this.popupData.targetRect = targetRect
+        },
+
         showMessage: function (message) {
           this.messages = [message]
           return this
@@ -24998,6 +25023,10 @@ class ContentUIController {
   changeTab (tabName) {
     this.panel.changeTab(tabName)
     return this
+  }
+
+  setTargetRect (targetRect) {
+    this.popup.setTargetRect(targetRect)
   }
 
   updateMorphology (homonym) {
