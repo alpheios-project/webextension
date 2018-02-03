@@ -1,5 +1,5 @@
 <template>
-    <div ref="popup" class="alpheios-popup auk" v-bind:class="data.classes" :style="dimensionsPx"
+    <div ref="popup" class="alpheios-popup auk" v-bind:class="data.classes" :style="pixelDimensions"
          v-show="visible" :data-notification-visible="data.notification.visible">
         <div class="alpheios-popup__header">
             <div class="alpheios-popup__header-text">
@@ -10,12 +10,14 @@
                 <close-icon></close-icon>
             </span>
         </div>
-        <div v-show="!data.morphDataReady"
-             class="alpheios-popup__definitions alpheios-popup__definitions--placeholder uk-text-small">
+        <div v-show="!morphDataReady"
+             class="alpheios-popup__morph-cont alpheios-popup__definitions--placeholder uk-text-small">
             No lexical data is available yet
         </div>
-        <div v-show="data.morphDataReady" class="alpheios-popup__definitions uk-text-small">
-            <morph :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures"></morph>
+        <div v-show="morphDataReady" class="alpheios-popup__morph-cont uk-text-small">
+            <morph :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures"
+            @heightchange="morphHeightChangeListener">
+            </morph>
         </div>
         <div class="alpheios-popup__button-area">
             <img class="alpheios-popup__logo" src="../images/icon.png">
@@ -58,7 +60,11 @@
     data: function () {
       return {
         resizable: true,
-        draggable: true
+        draggable: true,
+        contentHeight: 0,
+        minResizableWidth: 0,
+        minResizableHeight: 0,
+        interactInstance: undefined
       }
     },
     props: {
@@ -89,20 +95,27 @@
     },
 
     computed: {
+      morphDataReady: function () {
+        return this.data.morphDataReady
+      },
       notificationClasses: function () {
         return {
           'alpheios-popup__notifications--important': this.data.notification.important
         }
       },
       dimensions: function () {
-        console.log(`Target rect`, this.data.targetRect)
+        console.log(`Dimensions calc property, target rect is`, this.data.targetRect)
         let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
         let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
 
         let top = this.data.top
         let left = this.data.left
         let width = this.data.width
-        let height = this.data.height
+        let height = this.data.heightMin
+        if (this.contentHeight > this.data.contentHeightLimit) {
+          // Increase popup height if content data is taller than the placeholder available
+          height = this.data.heightMax
+        }
 
         if (width > viewportWidth) {
           left = this.data.minMargin
@@ -118,6 +131,13 @@
           top = viewportHeight - height - this.data.minMargin
         }
 
+        if (this.interactInstance && this.minResizableWidth !== width && this.minResizableHeight !== height) {
+          // If component is mounted and interact.js instance is created, update its resizable properties
+          this.minResizableWidth = width
+          this.minResizableHeight = height
+          this.interactInstance.resizable(this.resizableSettings(this.minResizableWidth, height))
+        }
+
         return {
           top: top,
           left: left,
@@ -125,7 +145,7 @@
           height: height
         }
       },
-      dimensionsPx: function () {
+      pixelDimensions: function () {
         let dimensions = this.dimensions
         let result = {}
         for (let [key, value] of (Object.entries(dimensions))) {
@@ -158,7 +178,35 @@
         this.$emit('settingchange', name, value) // Re-emit for a Vue instance
       },
 
-      resizeListener(event) {
+      // Interact.js resizable settings
+      resizableSettings: function () {
+        return {
+          preserveAspectRatio: false,
+          edges: { left: true, right: true, bottom: true, top: true },
+          restrictSize: {
+            min: { width: this.minResizableWidth, height: this.minResizableHeight }
+          },
+          restrictEdges: {
+            outer: document.body,
+            endOnly: true,
+          }
+        }
+      },
+
+      // Interact.js draggable settings
+      draggableSettings: function () {
+        return {
+          inertia: true,
+          autoScroll: false,
+          restrict: {
+            restriction: document.body,
+            elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+          },
+          onmove: this.dragMoveListener
+        }
+      },
+
+      resizeListener (event) {
         if (this.resizable) {
           const target = event.target
           let x = (parseFloat(target.getAttribute('data-x')) || 0)
@@ -179,7 +227,7 @@
         }
       },
 
-      dragMoveListener(event) {
+      dragMoveListener (event) {
         if (this.draggable) {
           const target = event.target;
           const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
@@ -191,35 +239,20 @@
           target.setAttribute('data-x', x);
           target.setAttribute('data-y', y);
         }
-      }
+      },
 
+      morphHeightChangeListener (height) {
+        console.log(`Height changed to ${height}`)
+        this.contentHeight = height
+      }
     },
+
     mounted () {
       console.log('mounted')
-      const resizableSettings = {
-        preserveAspectRatio: false,
-        edges: { left: true, right: true, bottom: true, top: true },
-        restrictSize: {
-          min: { width: this.dimensions.width, height: this.dimensions.height }
-        },
-        restrictEdges: {
-          outer: document.body,
-          endOnly: true,
-        }
-      };
-      const draggableSettings = {
-        inertia: true,
-        autoScroll: false,
-        restrict: {
-          restriction: document.body,
-          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
-        },
-        onmove: this.dragMoveListener
-      };
-      interact(this.$el)
-        .resizable(resizableSettings)
-        .draggable(draggableSettings)
-        .on('resizemove', this.resizeListener);
+      this.interactInstance = interact(this.$el)
+        .resizable(this.resizableSettings())
+        .draggable(this.draggableSettings())
+        .on('resizemove', this.resizeListener)
     }
   }
 </script>
@@ -336,7 +369,7 @@
         background: $alpheios-icon-color;
     }
 
-    .alpheios-popup__definitions {
+    .alpheios-popup__morph-cont {
         flex: 1 1 260px;
         box-sizing: border-box;
         margin: 10px 10px 0;
