@@ -75,7 +75,7 @@ export default class HTMLSelector extends MediaSelector {
     let anchorText = anchor.data
     let ro
     let invalidAnchor = false
-    if (!anchorText.match(this._escapeRegExp(focus.data))) {
+    if (focus.data && !anchorText.match(this._escapeRegExp(focus.data))) {
       anchorText = this.target.textContent
       ro = 0
       invalidAnchor = true
@@ -163,7 +163,7 @@ export default class HTMLSelector extends MediaSelector {
         let range = document.createRange()
         range.selectNode(anchor)
         selection.addRange(range)
-      } else {
+      } else if (focus.data) {
         selection.setBaseAndExtent(anchor, wordStart, focus, wordEnd)
       }
     }

@@ -4,24 +4,21 @@
         <div v-show="isEnabled && ! isContentAvailable">Lookup a word to show inflections...</div>
         <div v-show="isContentAvailable">
             <h3 class="alpheios-inflections__title">{{selectedView.title}}</h3>
-            <div class="alpheios-inflections__view-selector-cont">
-                <div v-show="partsOfSpeech.length > 1">
-                    <label class="uk-form-label">Part of speech:</label>
-                    <select v-model="partOfSpeechSelector" class="uk-select alpheios-inflections__view-selector">
-                        <option v-for="partOfSpeech in partsOfSpeech">{{partOfSpeech}}</option>
-                    </select>
+            <div v-show="partsOfSpeech.length > 1">
+              <label class="uk-form-label">Part of speech:</label>
+              <select v-model="partOfSpeechSelector" class="uk-select alpheios-inflections__view-selector">
+                <option v-for="partOfSpeech in partsOfSpeech">{{partOfSpeech}}</option>
+              </select>
+            </div>
+              <div class="alpheios-inflections__actions">
+                <div class="alpheios-inflections__forms-cont">
+                    <div class="alpheios-inflections__form" v-for="form in forms">{{form}}</div>
                 </div>
-
                 <div v-show="views.length > 1">
-                    <label class="uk-form-label">View:</label>
                     <select v-model="viewSelector" class="uk-select alpheios-inflections__view-selector">
                         <option v-for="view in views">{{view.name}}</option>
                     </select>
                 </div>
-
-            </div>
-            <div class="alpheios-inflections__forms-cont">
-                <div class="alpheios-inflections__form" v-for="form in forms">{{form}}</div>
                 <div class="alpheios-inflections__control-btn-cont uk-button-group">
                   <button v-show="false"
                         class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
@@ -35,7 +32,6 @@
                   </button>
                 </div>
             </div>
-
             <div :id="elementIDs.wideView" class=""></div>
             <div :id="elementIDs.footnotes" class="alpheios-inflections__footnotes">
                 <template v-for="footnote in footnotes">
@@ -89,7 +85,7 @@
             noSuffMatchHidden: true,
             text: '',
             shownText: 'Collapse',
-            hiddenText: 'Show Full Table'
+            hiddenText: 'Full Table'
           }
         }
       }
@@ -331,34 +327,29 @@
         text-align: center;
     }
 
-    .alpheios-inflections__view-selector-cont {
-        max-width: 280px;
-    }
-
-    .#{$alpheios-uikit-namespace} .alpheios-inflections__view-selector-cont .uk-select.alpheios-inflections__view-selector {
-        height: 1.6rem;
-        margin-bottom: 0.6rem;
-        font-size: 0.875rem;
-    }
-
-    .alpheios-inflections__control-btn-cont {
-        max-width: 280px;
-        margin-bottom: 0.6rem;
+    .#{$alpheios-uikit-namespace} .uk-select.alpheios-inflections__view-selector {
+        height: auto !important;
+        max-width: 220px;
+        font-size: .625rem !important;
     }
 
     .auk .uk-button-small.alpheios-inflections__control-btn {
         line-height: 1.5;
+        font-size: .625rem;
     }
 
-    .alpheios-inflections__forms-cont {
-        display: grid;
-        grid-template-columns: auto 180px;
-        grid-auto-flow: row;
+    .alpheios-inflections__actions {
+        display:flex;
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 0.6rem;
     }
 
     .alpheios-inflections__form {
         font-weight: bold;
         line-height: 1.2;
+        justify-content: flex-start;
     }
 
     // region Tables
@@ -392,7 +383,7 @@
 
     .infl-cell {
         font-size: 12px;
-        padding: 0 2px 0 2px;
+        padding: 0 2px 0 5px;
         border-right: 1px solid #111;
         border-top: 1px solid #111;
     }
@@ -404,6 +395,7 @@
     .infl-cell--hdr {
         font-weight: 700;
         text-transform: capitalize;
+        text-align: center;
     }
 
     .infl-cell--hdr .infl-cell__conj-stem {
