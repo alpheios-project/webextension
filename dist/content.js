@@ -23897,7 +23897,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
     let anchorText = anchor.data
     let ro
     let invalidAnchor = false
-    if (!anchorText.match(this._escapeRegExp(focus.data))) {
+    if (focus.data && !anchorText.match(this._escapeRegExp(focus.data))) {
       anchorText = this.target.textContent
       ro = 0
       invalidAnchor = true
@@ -23985,7 +23985,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
         let range = document.createRange()
         range.selectNode(anchor)
         selection.addRange(range)
-      } else {
+      } else if (focus.data) {
         selection.setBaseAndExtent(anchor, wordStart, focus, wordEnd)
       }
     }
