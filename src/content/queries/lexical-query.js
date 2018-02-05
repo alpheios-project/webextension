@@ -49,6 +49,7 @@ export default class LexicalQuery extends Query {
   }
 
   * iterations () {
+    let formLexeme = new Lexeme(new Lemma(this.selector.normalizedText, this.selector.languageCode), [])
     if (!this.canReset) {
       // if we can't reset, proceed with full lookup sequence
       this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
@@ -56,12 +57,13 @@ export default class LexicalQuery extends Query {
         this.ui.addMessage(`Morphological analyzer data is ready`)
       } else {
         this.ui.addImportantMessage(`Morphological data not found. Definition queries pending.`)
+        this.homonym = new Homonym([formLexeme], this.selector.normalizedText)
       }
     } else {
       // if we can reset then start with definitions of just the form first
-      let formLexeme = new Lexeme(new Lemma(this.selector.normalizedText, this.selector.languageCode), [])
       this.homonym = new Homonym([formLexeme], this.selector.normalizedText)
     }
+
     this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
     // Update status info with data from a morphological analyzer

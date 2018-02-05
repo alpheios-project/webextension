@@ -21209,8 +21209,9 @@ class TuftsAdapter extends BaseAdapter {
         }
       }
       for (let lex of lexemeSet) {
-        // we are going to skip lexemes if their lemma has no part of speech identified
-        if (lex.lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part]) {
+        // only process if we have a lemma that differs from the target
+        // word or if we have at least a part of speech
+        if ((lex.lemma.word !== targetWord) || (lex.lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part])) {
           lex.inflections = inflections;
           lexemes.push(lex);
         }
@@ -24263,6 +24264,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
   }
 
   * iterations () {
+    let formLexeme = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["n" /* Lexeme */](new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["m" /* Lemma */](this.selector.normalizedText, this.selector.languageCode), [])
     if (!this.canReset) {
       // if we can't reset, proceed with full lookup sequence
       this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
@@ -24270,12 +24272,13 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
         this.ui.addMessage(`Morphological analyzer data is ready`)
       } else {
         this.ui.addImportantMessage(`Morphological data not found. Definition queries pending.`)
+        this.homonym = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["i" /* Homonym */]([formLexeme], this.selector.normalizedText)
       }
     } else {
       // if we can reset then start with definitions of just the form first
-      let formLexeme = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["n" /* Lexeme */](new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["m" /* Lemma */](this.selector.normalizedText, this.selector.languageCode), [])
       this.homonym = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["i" /* Homonym */]([formLexeme], this.selector.normalizedText)
     }
+
     this.ui.updateMorphology(this.homonym)
     this.ui.updateDefinitions(this.homonym)
     // Update status info with data from a morphological analyzer
