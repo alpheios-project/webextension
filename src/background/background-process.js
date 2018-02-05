@@ -56,6 +56,7 @@ export default class BackgroundProcess {
     // browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
     browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
     browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
+    browser.runtime.onUpdateAvailable.addListener(this.updateAvailableListener.bind(this))
 
     this.menuItems = {
       activate: new ContextMenuItem(BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
@@ -210,6 +211,14 @@ export default class BackgroundProcess {
         console.error(`Cannot load content script for a tab with an ID of ${details.tabId}`)
       }
     }
+  }
+
+  /**
+   * Listen to extension updates. Need to define to prevent the browser
+   * from applying updates and reloading while the extension is activated
+   */
+  updateAvailableListener (details) {
+    console.log(`Update pending to version ${details.version} pending.`)
   }
 
   tabRemovalListener (tabID, removeInfo) {
