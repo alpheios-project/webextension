@@ -1,6 +1,6 @@
 <template>
   <div id="alpheios-morph__lexemes">
-    <div class="alpheios-morph__dictentry" v-for="lex in lexemes" v-show="showLexeme(lex)">
+    <div class="alpheios-morph__dictentry" v-for="lex in lexemesData" v-show="showLexeme(lex)">
       <span class="alpheios-morph__formtext"
         v-if="! lex.lemma.principalParts.includes(lex.lemma.word)"
         :lang="lex.lemma.language">{{ lex.lemma.word }}</span>
@@ -248,9 +248,17 @@
         return lex.isPopulated()
       }
     },
-    mounted () {
-      console.log('Morph is mounted')
-    },
+    computed: {
+      lexemesData: function() {
+        // Check for height change every time lexeme data changes and notify a parent component
+        this.$nextTick(() => {
+          // What for the next tick to get height after DOM update
+          let height = (this.$el && this.$el.clientHeight) ? this.$el.clientHeight : 0
+          this.$emit('heightchange', height)
+        })
+        return this.lexemes
+      }
+    }
   }
 </script>
 <style lang="scss">

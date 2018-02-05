@@ -95,19 +95,26 @@ export default class ContentProcess {
   sendStateToBackground () {
     this.messagingService.sendMessageToBg(new StateMessage(this.state)).catch(
       (error) => {
-        console.error('Unable to send a response to activation request',error)
+        console.error('Unable to send a response to activation request', error)
       }
     )
   }
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = HTMLSelector.getSelector(event.target, this.options.items.preferredLanguage.currentValue)
+      /*
+      TextSelector conveys text selection information. It is more generic of the two.
+      HTMLSelector conveys page-specific information, such as location of a selection on a page.
+      It's probably better to keep them separated in order to follow a more abstract model.
+       */
+      let htmlSelector = new HTMLSelector(event.target, this.options.items.preferredLanguage.currentValue)
+      let textSelector = htmlSelector.createTextSelector()
 
       if (!textSelector.isEmpty()) {
         this.ui.updateLanguage(textSelector.languageCode)
         ExpObjMon.track(
           LexicalQuery.create(textSelector, {
+            htmlSelector: htmlSelector,
             uiController: this.ui,
             maAdapter: this.maAdapter,
             langData: this.langData,

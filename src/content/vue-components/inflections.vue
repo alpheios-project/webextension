@@ -96,8 +96,6 @@
         return this.data.enabled
       },
       isContentAvailable: function () {
-        console.log('Checking if content is available')
-        console.log(this.data.enabled && Boolean(this.data.inflectionData))
         return this.data.enabled && Boolean(this.data.inflectionData)
       },
       inflectionData: function () {

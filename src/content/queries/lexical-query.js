@@ -5,6 +5,7 @@ export default class LexicalQuery extends Query {
   constructor (name, selector, options) {
     super(name)
     this.selector = selector
+    this.htmlSelector = options.htmlSelector
     this.ui = options.uiController
     this.maAdapter = options.maAdapter
     this.langData = options.langData
@@ -25,6 +26,7 @@ export default class LexicalQuery extends Query {
 
   async getData () {
     this.languageID = LMF.getLanguageIdFromCode(this.selector.languageCode)
+    this.ui.setTargetRect(this.htmlSelector.targetRect)
     this.ui.clear().open().changeTab('definitions').message(`Please wait while data is retrieved ...`)
     this.ui.showStatusInfo(this.selector.normalizedText, this.languageID)
     let iterator = this.iterations()

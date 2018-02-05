@@ -1,5 +1,5 @@
 <template>
-    <div ref="popup" class="alpheios-popup auk" v-bind:class="data.classes" :style="dimensionsPx"
+    <div ref="popup" class="alpheios-popup auk" v-bind:class="data.classes" :style="dimensions"
          v-show="visible" :data-notification-visible="data.notification.visible">
         <div class="alpheios-popup__header">
             <div class="alpheios-popup__header-text">
@@ -10,12 +10,14 @@
                 <close-icon></close-icon>
             </span>
         </div>
-        <div v-show="!data.morphDataReady"
-             class="alpheios-popup__definitions alpheios-popup__definitions--placeholder uk-text-small">
+        <div v-show="!morphDataReady"
+             class="alpheios-popup__morph-cont alpheios-popup__definitions--placeholder uk-text-small">
             No lexical data is available yet
         </div>
-        <div v-show="data.morphDataReady" class="alpheios-popup__definitions uk-text-small">
-            <morph :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures"></morph>
+        <div v-show="morphDataReady" class="alpheios-popup__morph-cont uk-text-small">
+            <morph :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures"
+            @heightchange="morphHeightChangeListener">
+            </morph>
         </div>
         <div class="alpheios-popup__button-area">
             <img class="alpheios-popup__logo" src="../images/icon.png">
@@ -58,7 +60,11 @@
     data: function () {
       return {
         resizable: true,
-        draggable: true
+        draggable: true,
+        contentHeight: 0, // Morphological content height (updated with `heightchange` event emitted by a morph component)
+        minResizableWidth: 0, // Resizable's min width (for Interact.js)
+        minResizableHeight: 0, // Resizable's min height (for Interact.js)
+        interactInstance: undefined
       }
     },
     props: {
@@ -89,49 +95,96 @@
     },
 
     computed: {
+      morphDataReady: function () {
+        return this.data.morphDataReady
+      },
       notificationClasses: function () {
         return {
           'alpheios-popup__notifications--important': this.data.notification.important
         }
       },
+      // Returns popup dimensions and positions styles with `px` units
       dimensions: function () {
+        console.log(`Dimensions calc property, target rect is`, this.data.targetRect)
         let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
         let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
 
         let top = this.data.top
         let left = this.data.left
         let width = this.data.width
-        let height = this.data.height
-
-        if (width > viewportWidth) {
-          left = this.data.minMargin
-          width = viewportWidth - 2*this.data.minMargin
-        } else if ( (left + width) > viewportWidth) {
-          left = viewportWidth - width - this.data.minMargin
+        let height = this.data.heightMin
+        if (this.contentHeight > this.data.contentHeightLimit) {
+          // Increase popup height if content data is taller than the placeholder available
+          height = this.data.heightMax
         }
 
-        if (height > viewportHeight) {
-          top = this.data.minMargin
-          height = viewportHeight - 2*this.data.minMargin
-        } else if ( (top + height) > viewportHeight) {
-          top = viewportHeight - height - this.data.minMargin
+        let scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+        console.log(`Scrollbar width is ${scrollbarWidth}`)
+        let viewportMargins = 2*this.data.viewportMargin + scrollbarWidth
+
+        /*
+        Horizontal positioning:
+        1. If there is enough space, align a center of the popup with the center of a selection.
+        2. If there is not enough space for that at the left, shift popup to the right.
+        3. If there is not enough space at the right, shift popup to the left.
+        4. Else, place it at the horizontal center of a viewport.
+        Vertical positioning:
+        1. If there is enough space below a selection, place popup there.
+        2. Otherwise, place it above, if there is enough space there.
+        3. Else, place it at the vertical center of a viewport.
+         */
+        let wordCenter = this.data.targetRect.left + Math.floor(this.data.targetRect.width/2)
+
+        if (width + 2*this.data.viewportMargin > viewportWidth) {
+          console.log(`Shrinking horizontally`)
+          left = this.data.viewportMargin
+          width = viewportWidth - viewportMargins
+        } else if (wordCenter + width/2 + this.data.viewportMargin + scrollbarWidth < viewportWidth
+                   && wordCenter - width/2 - this.data.viewportMargin > 0) {
+          console.log(`Aligning horizontally to middle of the word`)
+          left = wordCenter - Math.floor(width / 2)
+        } else if (wordCenter - width/2 - this.data.viewportMargin <= 0) {
+          // There is not enough space at the left
+          console.log(`Shifting horizontally to the right`)
+          left = this.data.viewportMargin
+        } else if (wordCenter + width/2 + this.data.viewportMargin >= viewportWidth) {
+          // There is not enough space at the right
+          console.log(`Shifting horizontally to the left`)
+          left = viewportWidth - this.data.viewportMargin - scrollbarWidth - width
+        } else {
+          console.log(`Placing horizontally to the middle`)
+          left = Math.round((viewportWidth - width)/2)
+        }
+
+        if (height + 2*this.data.viewportMargin > viewportHeight) {
+          console.log(`Shrinking vertically`)
+          top = this.data.viewportMargin
+          height = viewportHeight - 2*this.data.viewportMargin
+        } else if (this.data.targetRect.top + this.data.targetRect.height + this.data.placementMargin + height < viewportHeight) {
+          console.log(`Placing vertically to the bottom`)
+          top = this.data.targetRect.top + this.data.targetRect.height + this.data.placementMargin
+        } else if (height + this.data.placementMargin < this.data.targetRect.top) {
+          console.log(`Placing vertically to the top`)
+          top = this.data.targetRect.top - this.data.placementMargin - height
+        } else {
+          console.log(`Placing vertically to the middle`)
+          top = Math.ceil((viewportHeight - height)/2)
+        }
+
+        if (this.interactInstance && this.minResizableWidth !== width && this.minResizableHeight !== height) {
+          // If component is mounted and interact.js instance is created, update its resizable properties
+          this.minResizableWidth = width
+          this.minResizableHeight = height
+          this.interactInstance.resizable(this.resizableSettings())
         }
 
         return {
-          top: top,
-          left: left,
-          width: width,
-          height: height
+          top: `${top}px`,
+          left: `${left}px`,
+          width: `${width}px`,
+          height: `${height}px`
         }
       },
-      dimensionsPx: function () {
-        let dimensions = this.dimensions
-        let result = {}
-        for (let [key, value] of (Object.entries(dimensions))) {
-          result[key] = `${value}px`
-        }
-        return result
-      }
     },
 
     methods: {
@@ -157,7 +210,35 @@
         this.$emit('settingchange', name, value) // Re-emit for a Vue instance
       },
 
-      resizeListener(event) {
+      // Interact.js resizable settings
+      resizableSettings: function () {
+        return {
+          preserveAspectRatio: false,
+          edges: { left: true, right: true, bottom: true, top: true },
+          restrictSize: {
+            min: { width: this.minResizableWidth, height: this.minResizableHeight }
+          },
+          restrictEdges: {
+            outer: document.body,
+            endOnly: true,
+          }
+        }
+      },
+
+      // Interact.js draggable settings
+      draggableSettings: function () {
+        return {
+          inertia: true,
+          autoScroll: false,
+          restrict: {
+            restriction: document.body,
+            elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+          },
+          onmove: this.dragMoveListener
+        }
+      },
+
+      resizeListener (event) {
         if (this.resizable) {
           const target = event.target
           let x = (parseFloat(target.getAttribute('data-x')) || 0)
@@ -178,7 +259,7 @@
         }
       },
 
-      dragMoveListener(event) {
+      dragMoveListener (event) {
         if (this.draggable) {
           const target = event.target;
           const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
@@ -190,35 +271,19 @@
           target.setAttribute('data-x', x);
           target.setAttribute('data-y', y);
         }
-      }
+      },
 
+      morphHeightChangeListener (height) {
+        this.contentHeight = height
+      }
     },
+
     mounted () {
       console.log('mounted')
-      const resizableSettings = {
-        preserveAspectRatio: false,
-        edges: { left: true, right: true, bottom: true, top: true },
-        restrictSize: {
-          min: { width: this.dimensions.width, height: this.dimensions.height }
-        },
-        restrictEdges: {
-          outer: document.body,
-          endOnly: true,
-        }
-      };
-      const draggableSettings = {
-        inertia: true,
-        autoScroll: false,
-        restrict: {
-          restriction: document.body,
-          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
-        },
-        onmove: this.dragMoveListener
-      };
-      interact(this.$el)
-        .resizable(resizableSettings)
-        .draggable(draggableSettings)
-        .on('resizemove', this.resizeListener);
+      this.interactInstance = interact(this.$el)
+        .resizable(this.resizableSettings())
+        .draggable(this.draggableSettings())
+        .on('resizemove', this.resizeListener)
     }
   }
 </script>
@@ -335,7 +400,7 @@
         background: $alpheios-icon-color;
     }
 
-    .alpheios-popup__definitions {
+    .alpheios-popup__morph-cont {
         flex: 1 1 260px;
         box-sizing: border-box;
         margin: 10px 10px 0;

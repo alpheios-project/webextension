@@ -301,9 +301,17 @@ export default class ContentUIController {
           top: 100,
           left: 100,
           width: 400,
-          height: 400,
+          contentHeightLimit: 110,
+          heightMin: 250, // Initially, popup height will be set to this value
+          heightMax: 400, // If a morphological content height is greater than `contentHeightLimit`, a popup height will be increased to this value
+          // A margin between a popup and a selection
+          placementMargin: 7,
           // A minimal margin between a popup and a viewport border, in pixels. In effect when popup is scaled down.
-          minMargin: 20,
+          viewportMargin: 5,
+
+          // Size and position of a word selection
+          targetRect: {},
+
           settings: this.options.items,
           defDataReady: false,
           inflDataReady: false,
@@ -326,6 +334,10 @@ export default class ContentUIController {
         options: this.options
       },
       methods: {
+        setTargetRect: function (targetRect) {
+          this.popupData.targetRect = targetRect
+        },
+
         showMessage: function (message) {
           this.messages = [message]
           return this
@@ -561,6 +573,10 @@ export default class ContentUIController {
   changeTab (tabName) {
     this.panel.changeTab(tabName)
     return this
+  }
+
+  setTargetRect (targetRect) {
+    this.popup.setTargetRect(targetRect)
   }
 
   updateMorphology (homonym) {

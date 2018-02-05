@@ -12216,8 +12216,6 @@ class Query {
       return this.data.enabled;
     },
     isContentAvailable: function () {
-      console.log('Checking if content is available');
-      console.log(this.data.enabled && Boolean(this.data.inflectionData));
       return this.data.enabled && Boolean(this.data.inflectionData);
     },
     inflectionData: function () {
@@ -12932,8 +12930,16 @@ if (false) {(function () {
       return lex.isPopulated();
     }
   },
-  mounted() {
-    console.log('Morph is mounted');
+  computed: {
+    lexemesData: function () {
+      // Check for height change every time lexeme data changes and notify a parent component
+      this.$nextTick(() => {
+        // What for the next tick to get height after DOM update
+        let height = this.$el && this.$el.clientHeight ? this.$el.clientHeight : 0;
+        this.$emit('heightchange', height);
+      });
+      return this.lexemes;
+    }
   }
 });
 
@@ -20248,6 +20254,8 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
 //
 //
 //
+//
+//
 
 
 
@@ -20266,7 +20274,11 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
   data: function () {
     return {
       resizable: true,
-      draggable: true
+      draggable: true,
+      contentHeight: 0, // Morphological content height (updated with `heightchange` event emitted by a morph component)
+      minResizableWidth: 0, // Resizable's min width (for Interact.js)
+      minResizableHeight: 0, // Resizable's min height (for Interact.js)
+      interactInstance: undefined
     };
   },
   props: {
@@ -20297,48 +20309,94 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
   },
 
   computed: {
+    morphDataReady: function () {
+      return this.data.morphDataReady;
+    },
     notificationClasses: function () {
       return {
         'alpheios-popup__notifications--important': this.data.notification.important
       };
     },
+    // Returns popup dimensions and positions styles with `px` units
     dimensions: function () {
+      console.log(`Dimensions calc property, target rect is`, this.data.targetRect);
       let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
       let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 
       let top = this.data.top;
       let left = this.data.left;
       let width = this.data.width;
-      let height = this.data.height;
-
-      if (width > viewportWidth) {
-        left = this.data.minMargin;
-        width = viewportWidth - 2 * this.data.minMargin;
-      } else if (left + width > viewportWidth) {
-        left = viewportWidth - width - this.data.minMargin;
+      let height = this.data.heightMin;
+      if (this.contentHeight > this.data.contentHeightLimit) {
+        // Increase popup height if content data is taller than the placeholder available
+        height = this.data.heightMax;
       }
 
-      if (height > viewportHeight) {
-        top = this.data.minMargin;
-        height = viewportHeight - 2 * this.data.minMargin;
-      } else if (top + height > viewportHeight) {
-        top = viewportHeight - height - this.data.minMargin;
+      let scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      console.log(`Scrollbar width is ${scrollbarWidth}`);
+      let viewportMargins = 2 * this.data.viewportMargin + scrollbarWidth;
+
+      /*
+      Horizontal positioning:
+      1. If there is enough space, align a center of the popup with the center of a selection.
+      2. If there is not enough space for that at the left, shift popup to the right.
+      3. If there is not enough space at the right, shift popup to the left.
+      4. Else, place it at the horizontal center of a viewport.
+      Vertical positioning:
+      1. If there is enough space below a selection, place popup there.
+      2. Otherwise, place it above, if there is enough space there.
+      3. Else, place it at the vertical center of a viewport.
+       */
+      let wordCenter = this.data.targetRect.left + Math.floor(this.data.targetRect.width / 2);
+
+      if (width + 2 * this.data.viewportMargin > viewportWidth) {
+        console.log(`Shrinking horizontally`);
+        left = this.data.viewportMargin;
+        width = viewportWidth - viewportMargins;
+      } else if (wordCenter + width / 2 + this.data.viewportMargin + scrollbarWidth < viewportWidth && wordCenter - width / 2 - this.data.viewportMargin > 0) {
+        console.log(`Aligning horizontally to middle of the word`);
+        left = wordCenter - Math.floor(width / 2);
+      } else if (wordCenter - width / 2 - this.data.viewportMargin <= 0) {
+        // There is not enough space at the left
+        console.log(`Shifting horizontally to the right`);
+        left = this.data.viewportMargin;
+      } else if (wordCenter + width / 2 + this.data.viewportMargin >= viewportWidth) {
+        // There is not enough space at the right
+        console.log(`Shifting horizontally to the left`);
+        left = viewportWidth - this.data.viewportMargin - scrollbarWidth - width;
+      } else {
+        console.log(`Placing horizontally to the middle`);
+        left = Math.round((viewportWidth - width) / 2);
+      }
+
+      if (height + 2 * this.data.viewportMargin > viewportHeight) {
+        console.log(`Shrinking vertically`);
+        top = this.data.viewportMargin;
+        height = viewportHeight - 2 * this.data.viewportMargin;
+      } else if (this.data.targetRect.top + this.data.targetRect.height + this.data.placementMargin + height < viewportHeight) {
+        console.log(`Placing vertically to the bottom`);
+        top = this.data.targetRect.top + this.data.targetRect.height + this.data.placementMargin;
+      } else if (height + this.data.placementMargin < this.data.targetRect.top) {
+        console.log(`Placing vertically to the top`);
+        top = this.data.targetRect.top - this.data.placementMargin - height;
+      } else {
+        console.log(`Placing vertically to the middle`);
+        top = Math.ceil((viewportHeight - height) / 2);
+      }
+
+      if (this.interactInstance && this.minResizableWidth !== width && this.minResizableHeight !== height) {
+        // If component is mounted and interact.js instance is created, update its resizable properties
+        this.minResizableWidth = width;
+        this.minResizableHeight = height;
+        this.interactInstance.resizable(this.resizableSettings());
       }
 
       return {
-        top: top,
-        left: left,
-        width: width,
-        height: height
+        top: `${top}px`,
+        left: `${left}px`,
+        width: `${width}px`,
+        height: `${height}px`
       };
-    },
-    dimensionsPx: function () {
-      let dimensions = this.dimensions;
-      let result = {};
-      for (let [key, value] of Object.entries(dimensions)) {
-        result[key] = `${value}px`;
-      }
-      return result;
     }
   },
 
@@ -20363,6 +20421,34 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
 
     settingChanged: function (name, value) {
       this.$emit('settingchange', name, value); // Re-emit for a Vue instance
+    },
+
+    // Interact.js resizable settings
+    resizableSettings: function () {
+      return {
+        preserveAspectRatio: false,
+        edges: { left: true, right: true, bottom: true, top: true },
+        restrictSize: {
+          min: { width: this.minResizableWidth, height: this.minResizableHeight }
+        },
+        restrictEdges: {
+          outer: document.body,
+          endOnly: true
+        }
+      };
+    },
+
+    // Interact.js draggable settings
+    draggableSettings: function () {
+      return {
+        inertia: true,
+        autoScroll: false,
+        restrict: {
+          restriction: document.body,
+          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+        },
+        onmove: this.dragMoveListener
+      };
     },
 
     resizeListener(event) {
@@ -20398,32 +20484,16 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         target.setAttribute('data-x', x);
         target.setAttribute('data-y', y);
       }
-    }
+    },
 
+    morphHeightChangeListener(height) {
+      this.contentHeight = height;
+    }
   },
+
   mounted() {
     console.log('mounted');
-    const resizableSettings = {
-      preserveAspectRatio: false,
-      edges: { left: true, right: true, bottom: true, top: true },
-      restrictSize: {
-        min: { width: this.dimensions.width, height: this.dimensions.height }
-      },
-      restrictEdges: {
-        outer: document.body,
-        endOnly: true
-      }
-    };
-    const draggableSettings = {
-      inertia: true,
-      autoScroll: false,
-      restrict: {
-        restriction: document.body,
-        elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
-      },
-      onmove: this.dragMoveListener
-    };
-    __WEBPACK_IMPORTED_MODULE_2_interactjs___default()(this.$el).resizable(resizableSettings).draggable(draggableSettings).on('resizemove', this.resizeListener);
+    this.interactInstance = __WEBPACK_IMPORTED_MODULE_2_interactjs___default()(this.$el).resizable(this.resizableSettings()).draggable(this.draggableSettings()).on('resizemove', this.resizeListener);
   }
 });
 
@@ -20609,19 +20679,26 @@ class ContentProcess {
   sendStateToBackground () {
     this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
       (error) => {
-        console.error('Unable to send a response to activation request',error)
+        console.error('Unable to send a response to activation request', error)
       }
     )
   }
 
   getSelectedText (event) {
     if (this.isActive) {
-      let textSelector = __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */].getSelector(event.target, this.options.items.preferredLanguage.currentValue)
+      /*
+      TextSelector conveys text selection information. It is more generic of the two.
+      HTMLSelector conveys page-specific information, such as location of a selection on a page.
+      It's probably better to keep them separated in order to follow a more abstract model.
+       */
+      let htmlSelector = new __WEBPACK_IMPORTED_MODULE_12__lib_selection_media_html_selector__["a" /* default */](event.target, this.options.items.preferredLanguage.currentValue)
+      let textSelector = htmlSelector.createTextSelector()
 
       if (!textSelector.isEmpty()) {
         this.ui.updateLanguage(textSelector.languageCode)
         __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__["ObjectMonitor"].track(
           __WEBPACK_IMPORTED_MODULE_13__queries_lexical_query__["a" /* default */].create(textSelector, {
+            htmlSelector: htmlSelector,
             uiController: this.ui,
             maAdapter: this.maAdapter,
             langData: this.langData,
@@ -21209,9 +21286,8 @@ class TuftsAdapter extends BaseAdapter {
         }
       }
       for (let lex of lexemeSet) {
-        // only process if we have a lemma that differs from the target
-        // word or if we have at least a part of speech
-        if ((lex.lemma.word !== targetWord) || (lex.lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part])) {
+        // we are going to skip lexemes if their lemma has no part of speech identified
+        if (lex.lemma.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part]) {
           lex.inflections = inflections;
           lexemes.push(lex);
         }
@@ -23836,6 +23912,13 @@ class ResourceOptions {
 class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* default */] {
   constructor (target, defaultLanguageCode) {
     super(target)
+    let rect = target.getBoundingClientRect()
+    this.targetRect = {
+      top: Math.round(rect.top),
+      left: Math.round(rect.left),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height)
+    }
     this.defaultLanguageCode = defaultLanguageCode
 
     this.wordSeparator = new Map()
@@ -24220,6 +24303,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
   constructor (name, selector, options) {
     super(name)
     this.selector = selector
+    this.htmlSelector = options.htmlSelector
     this.ui = options.uiController
     this.maAdapter = options.maAdapter
     this.langData = options.langData
@@ -24240,6 +24324,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
 
   async getData () {
     this.languageID = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(this.selector.languageCode)
+    this.ui.setTargetRect(this.htmlSelector.targetRect)
     this.ui.clear().open().changeTab('definitions').message(`Please wait while data is retrieved ...`)
     this.ui.showStatusInfo(this.selector.normalizedText, this.languageID)
     let iterator = this.iterations()
@@ -24712,9 +24797,17 @@ class ContentUIController {
           top: 100,
           left: 100,
           width: 400,
-          height: 400,
+          contentHeightLimit: 110,
+          heightMin: 250, // Initially, popup height will be set to this value
+          heightMax: 400, // If a morphological content height is greater than `contentHeightLimit`, a popup height will be increased to this value
+          // A margin between a popup and a selection
+          placementMargin: 7,
           // A minimal margin between a popup and a viewport border, in pixels. In effect when popup is scaled down.
-          minMargin: 20,
+          viewportMargin: 5,
+
+          // Size and position of a word selection
+          targetRect: {},
+
           settings: this.options.items,
           defDataReady: false,
           inflDataReady: false,
@@ -24737,6 +24830,10 @@ class ContentUIController {
         options: this.options
       },
       methods: {
+        setTargetRect: function (targetRect) {
+          this.popupData.targetRect = targetRect
+        },
+
         showMessage: function (message) {
           this.messages = [message]
           return this
@@ -24972,6 +25069,10 @@ class ContentUIController {
   changeTab (tabName) {
     this.panel.changeTab(tabName)
     return this
+  }
+
+  setTargetRect (targetRect) {
+    this.popup.setTargetRect(targetRect)
   }
 
   updateMorphology (homonym) {
@@ -37071,7 +37172,7 @@ var render = function() {
   return _c(
     "div",
     { attrs: { id: "alpheios-morph__lexemes" } },
-    _vm._l(_vm.lexemes, function(lex) {
+    _vm._l(_vm.lexemesData, function(lex) {
       return _c(
         "div",
         {
@@ -38924,7 +39025,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n  display: flex;\n  flex-direction: column;\n  background: #FFF;\n  border: 1px solid lightgray;\n  width: 400px;\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  top: 100px;\n  box-sizing: border-box;\n  /* Required for Interact.js to take element size with paddings and work correctly */\n  overflow: auto;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 16px;\n  color: #666666;\n}\n.alpheios-popup__header {\n  position: relative;\n  box-sizing: border-box;\n  width: 100%;\n  flex: 0 0 50px;\n  padding: 10px 20px;\n}\n.alpheios-popup__header-text {\n  position: relative;\n  top: 20px;\n  left: 3px;\n  line-height: 1;\n}\n.alpheios-popup__header-selection {\n  font-size: 16px;\n  font-weight: 700;\n  color: #4E6476;\n}\n.alpheios-popup__header-word {\n  font-size: 14px;\n  position: relative;\n  top: -1px;\n}\n.alpheios-popup__close-btn {\n  display: block;\n  position: absolute;\n  width: 30px;\n  right: 5px;\n  top: 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__close-btn:hover,\n.alpheios-popup__close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-popup__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  flex: 0 0 60px;\n  box-sizing: border-box;\n  overflow: hidden;\n}\n.alpheios-popup__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__notifications-close-btn:hover,\n.alpheios-popup__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n[data-notification-visible=\"true\"] .alpheios-popup__notifications {\n  display: block;\n}\n.alpheios-popup__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-popup__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-popup__notifications--important {\n  background: #73CDDE;\n}\n.alpheios-popup__definitions {\n  flex: 1 1 260px;\n  box-sizing: border-box;\n  margin: 10px 10px 0;\n  overflow: auto;\n  padding: 10px;\n  border: 1px solid #B8B7B5;\n}\n.alpheios-popup__definitions--placeholder {\n  border: 0 none;\n  padding: 10px 0 0;\n}\n.alpheios-popup__button-area {\n  flex: 0 1 auto;\n  padding: 10px 20px;\n  text-align: right;\n  box-sizing: border-box;\n  position: relative;\n}\nimg.alpheios-popup__logo {\n  height: 35px;\n  width: auto;\n  position: absolute;\n  top: 6px;\n  left: 20px;\n}\n.alpheios-popup__more-btn {\n  float: right;\n  margin-bottom: 10px;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-popup {\n  display: flex;\n  flex-direction: column;\n  background: #FFF;\n  border: 1px solid lightgray;\n  width: 400px;\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  top: 100px;\n  box-sizing: border-box;\n  /* Required for Interact.js to take element size with paddings and work correctly */\n  overflow: auto;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 16px;\n  color: #666666;\n}\n.alpheios-popup__header {\n  position: relative;\n  box-sizing: border-box;\n  width: 100%;\n  flex: 0 0 50px;\n  padding: 10px 20px;\n}\n.alpheios-popup__header-text {\n  position: relative;\n  top: 20px;\n  left: 3px;\n  line-height: 1;\n}\n.alpheios-popup__header-selection {\n  font-size: 16px;\n  font-weight: 700;\n  color: #4E6476;\n}\n.alpheios-popup__header-word {\n  font-size: 14px;\n  position: relative;\n  top: -1px;\n}\n.alpheios-popup__close-btn {\n  display: block;\n  position: absolute;\n  width: 30px;\n  right: 5px;\n  top: 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__close-btn:hover,\n.alpheios-popup__close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-popup__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  flex: 0 0 60px;\n  box-sizing: border-box;\n  overflow: hidden;\n}\n.alpheios-popup__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__notifications-close-btn:hover,\n.alpheios-popup__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n[data-notification-visible=\"true\"] .alpheios-popup__notifications {\n  display: block;\n}\n.alpheios-popup__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-popup__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-popup__notifications--important {\n  background: #73CDDE;\n}\n.alpheios-popup__morph-cont {\n  flex: 1 1 260px;\n  box-sizing: border-box;\n  margin: 10px 10px 0;\n  overflow: auto;\n  padding: 10px;\n  border: 1px solid #B8B7B5;\n}\n.alpheios-popup__definitions--placeholder {\n  border: 0 none;\n  padding: 10px 0 0;\n}\n.alpheios-popup__button-area {\n  flex: 0 1 auto;\n  padding: 10px 20px;\n  text-align: right;\n  box-sizing: border-box;\n  position: relative;\n}\nimg.alpheios-popup__logo {\n  height: 35px;\n  width: auto;\n  position: absolute;\n  top: 6px;\n  left: 20px;\n}\n.alpheios-popup__more-btn {\n  float: right;\n  margin-bottom: 10px;\n}\n", ""]);
 
 // exports
 
@@ -38952,7 +39053,7 @@ var render = function() {
       ref: "popup",
       staticClass: "alpheios-popup auk",
       class: _vm.data.classes,
-      style: _vm.dimensionsPx,
+      style: _vm.dimensions,
       attrs: { "data-notification-visible": _vm.data.notification.visible }
     },
     [
@@ -39009,12 +39110,12 @@ var render = function() {
             {
               name: "show",
               rawName: "v-show",
-              value: !_vm.data.morphDataReady,
-              expression: "!data.morphDataReady"
+              value: !_vm.morphDataReady,
+              expression: "!morphDataReady"
             }
           ],
           staticClass:
-            "alpheios-popup__definitions alpheios-popup__definitions--placeholder uk-text-small"
+            "alpheios-popup__morph-cont alpheios-popup__definitions--placeholder uk-text-small"
         },
         [_vm._v("\n        No lexical data is available yet\n    ")]
       ),
@@ -39026,11 +39127,11 @@ var render = function() {
             {
               name: "show",
               rawName: "v-show",
-              value: _vm.data.morphDataReady,
-              expression: "data.morphDataReady"
+              value: _vm.morphDataReady,
+              expression: "morphDataReady"
             }
           ],
-          staticClass: "alpheios-popup__definitions uk-text-small"
+          staticClass: "alpheios-popup__morph-cont uk-text-small"
         },
         [
           _c("morph", {
@@ -39038,7 +39139,8 @@ var render = function() {
               lexemes: _vm.lexemes,
               definitions: _vm.definitions,
               linkedfeatures: _vm.linkedfeatures
-            }
+            },
+            on: { heightchange: _vm.morphHeightChangeListener }
           })
         ],
         1
