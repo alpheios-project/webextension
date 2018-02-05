@@ -15,8 +15,7 @@
             No lexical data is available yet
         </div>
         <div v-show="morphDataReady" class="alpheios-popup__morph-cont uk-text-small">
-            <morph :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures"
-            @heightchange="morphHeightChangeListener">
+            <morph :id="morphComponentID" :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures">
             </morph>
         </div>
         <div class="alpheios-popup__button-area">
@@ -64,7 +63,8 @@
         contentHeight: 0, // Morphological content height (updated with `heightchange` event emitted by a morph component)
         minResizableWidth: 0, // Resizable's min width (for Interact.js)
         minResizableHeight: 0, // Resizable's min height (for Interact.js)
-        interactInstance: undefined
+        interactInstance: undefined,
+        morphComponentID: 'alpheios-morph-component'
       }
     },
     props: {
@@ -271,10 +271,6 @@
           target.setAttribute('data-x', x);
           target.setAttribute('data-y', y);
         }
-      },
-
-      morphHeightChangeListener (height) {
-        this.contentHeight = height
       }
     },
 
@@ -284,6 +280,14 @@
         .resizable(this.resizableSettings())
         .draggable(this.draggableSettings())
         .on('resizemove', this.resizeListener)
+    },
+
+    updated: function () {
+      // What for the next tick so that DOMs of all child components will be updated too
+      this.$nextTick(() => {
+        let morphComponent = this.$el.querySelector(`#${this.morphComponentID}`) // TODO: Avoid repetitive selector queries
+        this.contentHeight = (morphComponent && morphComponent.clientHeight) ? morphComponent.clientHeight : 0
+      })
     }
   }
 </script>

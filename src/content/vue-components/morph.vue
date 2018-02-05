@@ -1,6 +1,6 @@
 <template>
-  <div id="alpheios-morph__lexemes">
-    <div class="alpheios-morph__dictentry" v-for="lex in lexemesData" v-show="showLexeme(lex)">
+  <div class="alpheios-morph__lexemes">
+    <div class="alpheios-morph__dictentry" v-for="lex in lexemes" v-show="showLexeme(lex)">
       <span class="alpheios-morph__formtext"
         v-if="! lex.lemma.principalParts.includes(lex.lemma.word)"
         :lang="lex.lemma.language">{{ lex.lemma.word }}</span>
@@ -247,24 +247,13 @@
       showLexeme(lex) {
         return lex.isPopulated()
       }
-    },
-    computed: {
-      lexemesData: function() {
-        // Check for height change every time lexeme data changes and notify a parent component
-        this.$nextTick(() => {
-          // What for the next tick to get height after DOM update
-          let height = (this.$el && this.$el.clientHeight) ? this.$el.clientHeight : 0
-          this.$emit('heightchange', height)
-        })
-        return this.lexemes
-      }
     }
   }
 </script>
 <style lang="scss">
   @import "../styles/alpheios";
 
-  #alpheios-morph__lexemes {
+  .alpheios-morph__lexemes {
     color: $alpheios-tools-color;
   }
   .alpheios-morph__dictentry {
@@ -340,7 +329,7 @@
   }
 
 
-  .alpheios-morph__provider-source, #alpheios-morph__lexemes .alpheios-definition__provider {
+  .alpheios-morph__provider-source, .alpheios-morph__lexemes .alpheios-definition__provider {
     font-size: smaller;
     font-weight: normal;
     color: $alpheios-toolbar-color;
@@ -381,7 +370,7 @@
      display: none;
    }
 
-   #alpheios-morph__lexemes .alpheios-definition__lemma {
+   .alpheios-morph__lexemes .alpheios-definition__lemma {
        display: none;
    }
 
@@ -393,7 +382,7 @@
        display: block;
    }
 
-   .alpheios-panel__tab-panel #alpheios-morph__lexemes {
+   .alpheios-panel__tab-panel .alpheios-morph__lexemes {
     font-size: 12px;
    }
 
