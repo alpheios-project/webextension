@@ -250,18 +250,15 @@
     },
     computed: {
       lexemesData: function() {
-        // Check for height change every time lexeme data changes
+        // Check for height change every time lexeme data changes and notify a parent component
         this.$nextTick(() => {
           // What for the next tick to get height after DOM update
           let height = (this.$el && this.$el.clientHeight) ? this.$el.clientHeight : 0
-          this.$emit('heightchange', this.$el.clientHeight)
+          this.$emit('heightchange', height)
         })
         return this.lexemes
       }
-    },
-    mounted () {
-      console.log('Morph is mounted')
-    },
+    }
   }
 </script>
 <style lang="scss">

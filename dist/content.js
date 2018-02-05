@@ -12241,8 +12241,6 @@ class Query {
       return this.data.enabled;
     },
     isContentAvailable: function () {
-      console.log('Checking if content is available');
-      console.log(this.data.enabled && Boolean(this.data.inflectionData));
       return this.data.enabled && Boolean(this.data.inflectionData);
     },
     inflectionData: function () {
@@ -12963,13 +12961,10 @@ if (false) {(function () {
       this.$nextTick(() => {
         // What for the next tick to get height after DOM update
         let height = this.$el && this.$el.clientHeight ? this.$el.clientHeight : 0;
-        this.$emit('heightchange', this.$el.clientHeight);
+        this.$emit('heightchange', height);
       });
       return this.lexemes;
     }
-  },
-  mounted() {
-    console.log('Morph is mounted');
   }
 });
 
@@ -20305,9 +20300,9 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
     return {
       resizable: true,
       draggable: true,
-      contentHeight: 0,
-      minResizableWidth: 0,
-      minResizableHeight: 0,
+      contentHeight: 0, // Morphological content height (updated with `heightchange` event emitted by a morph component)
+      minResizableWidth: 0, // Resizable's min width (for Interact.js)
+      minResizableHeight: 0, // Resizable's min height (for Interact.js)
       interactInstance: undefined
     };
   },
@@ -20347,6 +20342,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         'alpheios-popup__notifications--important': this.data.notification.important
       };
     },
+    // Returns popup dimensions and positions styles with `px` units
     dimensions: function () {
       console.log(`Dimensions calc property, target rect is`, this.data.targetRect);
       let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
@@ -20361,42 +20357,71 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         height = this.data.heightMax;
       }
 
-      if (width > viewportWidth) {
-        left = this.data.minMargin;
-        width = viewportWidth - 2 * this.data.minMargin;
-      } else if (left + width > viewportWidth) {
-        left = viewportWidth - width - this.data.minMargin;
+      let scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      console.log(`Scrollbar width is ${scrollbarWidth}`);
+      let viewportMargins = 2 * this.data.viewportMargin + scrollbarWidth;
+
+      /*
+      Horizontal positioning:
+      1. If there is enough space, align a center of the popup with the center of a selection.
+      2. If there is not enough space for that at the left, shift popup to the right.
+      3. If there is not enough space at the right, shift popup to the left.
+      4. Else, place it at the horizontal center of a viewport.
+      Vertical positioning:
+      1. If there is enough space below a selection, place popup there.
+      2. Otherwise, place it above, if there is enough space there.
+      3. Else, place it at the vertical center of a viewport.
+       */
+      let wordCenter = this.data.targetRect.left + Math.floor(this.data.targetRect.width / 2);
+
+      if (width + 2 * this.data.viewportMargin > viewportWidth) {
+        console.log(`Shrinking horizontally`);
+        left = this.data.viewportMargin;
+        width = viewportWidth - viewportMargins;
+      } else if (wordCenter + width / 2 + this.data.viewportMargin + scrollbarWidth < viewportWidth && wordCenter - width / 2 - this.data.viewportMargin > 0) {
+        console.log(`Aligning horizontally to middle of the word`);
+        left = wordCenter - Math.floor(width / 2);
+      } else if (wordCenter - width / 2 - this.data.viewportMargin <= 0) {
+        // There is not enough space at the left
+        console.log(`Shifting horizontally to the right`);
+        left = this.data.viewportMargin;
+      } else if (wordCenter + width / 2 + this.data.viewportMargin >= viewportWidth) {
+        // There is not enough space at the right
+        console.log(`Shifting horizontally to the left`);
+        left = viewportWidth - this.data.viewportMargin - scrollbarWidth - width;
+      } else {
+        console.log(`Placing horizontally to the middle`);
+        left = Math.round((viewportWidth - width) / 2);
       }
 
-      if (height > viewportHeight) {
-        top = this.data.minMargin;
-        height = viewportHeight - 2 * this.data.minMargin;
-      } else if (top + height > viewportHeight) {
-        top = viewportHeight - height - this.data.minMargin;
+      if (height + 2 * this.data.viewportMargin > viewportHeight) {
+        console.log(`Shrinking vertically`);
+        top = this.data.viewportMargin;
+        height = viewportHeight - 2 * this.data.viewportMargin;
+      } else if (this.data.targetRect.top + this.data.targetRect.height + this.data.placementMargin + height < viewportHeight) {
+        console.log(`Placing vertically to the bottom`);
+        top = this.data.targetRect.top + this.data.targetRect.height + this.data.placementMargin;
+      } else if (height + this.data.placementMargin < this.data.targetRect.top) {
+        console.log(`Placing vertically to the top`);
+        top = this.data.targetRect.top - this.data.placementMargin - height;
+      } else {
+        console.log(`Placing vertically to the middle`);
+        top = Math.ceil((viewportHeight - height) / 2);
       }
 
       if (this.interactInstance && this.minResizableWidth !== width && this.minResizableHeight !== height) {
         // If component is mounted and interact.js instance is created, update its resizable properties
         this.minResizableWidth = width;
         this.minResizableHeight = height;
-        this.interactInstance.resizable(this.resizableSettings(this.minResizableWidth, height));
-        console.log(`Resizable settings updated`);
+        this.interactInstance.resizable(this.resizableSettings());
       }
 
       return {
-        top: top,
-        left: left,
-        width: width,
-        height: height
+        top: `${top}px`,
+        left: `${left}px`,
+        width: `${width}px`,
+        height: `${height}px`
       };
-    },
-    pixelDimensions: function () {
-      let dimensions = this.dimensions;
-      let result = {};
-      for (let [key, value] of Object.entries(dimensions)) {
-        result[key] = `${value}px`;
-      }
-      return result;
     }
   },
 
@@ -20487,7 +20512,6 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
     },
 
     morphHeightChangeListener(height) {
-      console.log(`Height changed to ${height}`);
       this.contentHeight = height;
     }
   },
@@ -24799,8 +24823,10 @@ class ContentUIController {
           contentHeightLimit: 110,
           heightMin: 250, // Initially, popup height will be set to this value
           heightMax: 400, // If a morphological content height is greater than `contentHeightLimit`, a popup height will be increased to this value
+          // A margin between a popup and a selection
+          placementMargin: 7,
           // A minimal margin between a popup and a viewport border, in pixels. In effect when popup is scaled down.
-          minMargin: 20,
+          viewportMargin: 5,
 
           // Size and position of a word selection
           targetRect: {},
@@ -39050,7 +39076,7 @@ var render = function() {
       ref: "popup",
       staticClass: "alpheios-popup auk",
       class: _vm.data.classes,
-      style: _vm.pixelDimensions,
+      style: _vm.dimensions,
       attrs: { "data-notification-visible": _vm.data.notification.visible }
     },
     [
