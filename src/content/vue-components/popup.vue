@@ -18,6 +18,14 @@
             <morph :id="morphComponentID" :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures">
             </morph>
         </div>
+        <div class="alpheios-popup__providers" v-if="providers.length > 0">
+          <a class="alpheios-popup__providers-link" v-on:click="showProviders = ! showProviders">Credits</a>
+          <div class="alpheios-popup__providers-popup" v-if="showProviders">
+            <div class="alpheios-popup__providers-source" v-for="p in providers">
+              {{ p.toString() }}
+            </div>
+          </div>
+        </div>
         <div class="alpheios-popup__button-area">
             <img class="alpheios-popup__logo" src="../images/icon.png">
             <div class="uk-button-group">
@@ -64,7 +72,8 @@
         minResizableWidth: 0, // Resizable's min width (for Interact.js)
         minResizableHeight: 0, // Resizable's min height (for Interact.js)
         interactInstance: undefined,
-        morphComponentID: 'alpheios-morph-component'
+        morphComponentID: 'alpheios-morph-component',
+        showProviders: false,
       }
     },
     props: {
@@ -102,6 +111,9 @@
         return {
           'alpheios-popup__notifications--important': this.data.notification.important
         }
+      },
+      providers: function () {
+        return this.data.providers
       },
       // Returns popup dimensions and positions styles with `px` units
       dimensions: function () {
@@ -437,5 +449,20 @@
     .alpheios-popup__more-btn {
         float: right;
         margin-bottom: 10px;
+    }
+    .alpheios-popup__providers-source {
+      font-size: smaller;
+      font-weight: normal;
+      color: $alpheios-toolbar-color;
+      font-style: italic;
+      margin-left: .5em;
+      margin-top: .5em;
+    }
+
+    .alpheios-popup__providers {
+      margin-left: 20px;
+    }
+    .alpheios-popup__providers-link {
+      font-size: .675rem;
     }
 </style>

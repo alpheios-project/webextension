@@ -161,19 +161,6 @@
           </div>
         </div>
       </div>
-      <div class="alpheios-morph__provider" v-if="lex.provider">
-        <a class="alpheios-morph__provider-link" v-on:click="showSource = true">Credits</a>
-        <div class="alpheios-morph__provider-popup" v-if="showSource">
-          <div class="alpheios-morph__provider-popup-close-btn" v-on:click="showSource = false">
-            <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path fill="none" stroke-width="1.06" d="M16 16L4 4M16 4L4 16"></path>
-            </svg>
-          </div>
-          <div class="alpheios-morph__provider-source">
-            {{ lex.provider.toString() }}
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -328,24 +315,6 @@
     margin-left: .5em;
   }
 
-
-  .alpheios-morph__provider-source, .alpheios-morph__lexemes .alpheios-definition__provider {
-    font-size: smaller;
-    font-weight: normal;
-    color: $alpheios-toolbar-color;
-    font-style: italic;
-    margin-left: .5em;
-    margin-top: .5em;
-  }
-
-  .alpheios-morph__provider {
-    display:none;
-    margin-top: 1em;
-  }
-  .alpheios-morph__dictentry:last-child .alpheios-morph__provider {
-    display:block;
-  }
-
   .alpheios-morph__listitem:after {
       content: ", ";
    }
@@ -385,33 +354,4 @@
    .alpheios-panel__tab-panel .alpheios-morph__lexemes {
     font-size: .75rem;
    }
-
-  .alpheios-morph__provider-popup-close-btn {
-      position: absolute;
-      right: 5px;
-      top: 5px;
-      display: block;
-      width: 20px;
-      height: 20px;
-      margin: 0;
-      cursor: pointer;
-      fill: $alpheios-toolbar-color;
-      stroke: $alpheios-toolbar-color;
-  }
-  .alpheios-morph__provider-popup {
-      display: block;
-      background: #FFF;
-      color: $alpheios-headers-color;
-      position: absolute;
-      padding: 30px 15px 15px;
-      left: 0;
-      bottom: 10px;
-      z-index: 10;
-      min-width: 200px;
-      border: 1px solid $alpheios-toolbar-color;
-  }
-  .alpheios-morph__provider-link {
-    font-size: .5rem;
-  }
-
 </style>

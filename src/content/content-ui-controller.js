@@ -328,6 +328,7 @@ export default class ContentUIController {
             showLanguageSwitcher: false,
             text: ''
           },
+          providers: [],
           status: {
             selectedText: '',
             languageName: ''
@@ -591,6 +592,18 @@ export default class ContentUIController {
     }
     this.popup.popupData.morphDataReady = true
     this.panel.panelData.lexemes = homonym.lexemes
+    this.updateProviders(homonym)
+  }
+
+  updateProviders (homonym) {
+    let providers = new Map()
+    homonym.lexemes.forEach((l) => {
+      providers.set(l.provider,1)
+      l.meaning.shortDefs.forEach((d) => {
+        providers.set(d.provider,1)
+      })
+    })
+    this.popup.popupData.providers = Array.from(providers.keys())
   }
 
   updateGrammar (urls) {
@@ -621,6 +634,7 @@ export default class ContentUIController {
           }
         }
         this.panel.panelData.shortDefinitions.push(...lexeme.meaning.shortDefs)
+        this.updateProviders(homonym)
       } else if (Object.entries(lexeme.lemma.features).size > 0) {
         definitions[lexeme.lemma.key] = [new Definition('No definition found.', 'en-US', 'text/plain', lexeme.lemma.word)]
       }
