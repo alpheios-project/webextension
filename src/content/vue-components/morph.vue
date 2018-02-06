@@ -383,7 +383,7 @@
    }
 
    .alpheios-panel__tab-panel .alpheios-morph__lexemes {
-    font-size: 12px;
+    font-size: .75rem;
    }
 
   .alpheios-morph__provider-popup-close-btn {
@@ -409,6 +409,9 @@
       z-index: 10;
       min-width: 200px;
       border: 1px solid $alpheios-toolbar-color;
+  }
+  .alpheios-morph__provider-link {
+    font-size: .5rem;
   }
 
 </style>

@@ -12977,15 +12977,17 @@ if (false) {(function () {
 //
 //
 //
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: 'Info',
   props: {
-    // Temporary commented out to avoid warnings
-    /*data: {
+    data: {
       type: Object,
       required: true
-    }*/
+    }
   }
 });
 
@@ -20624,6 +20626,7 @@ class ContentProcess {
 
   deactivate () {
     console.log('Content has been deactivated.')
+    this.ui.popup.close()
     this.ui.panel.close()
     this.state.status = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.DEACTIVATED
   }
@@ -24563,6 +24566,9 @@ class ContentUIController {
             localeSwitcher: 'alpheios-panel-content-infl-table-locale-switcher',
             viewSelector: 'alpheios-panel-content-infl-table-view-selector',
             tableBody: 'alpheios-panel-content-infl-table-body'
+          },
+          infoComponentData: {
+            manifest: browser.runtime.getManifest()
           },
           messages: [],
           notification: {
@@ -37149,7 +37155,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-morph__lexemes {\n  color: #0E2233;\n}\n.alpheios-morph__dictentry {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__formtext {\n  font-weight: bold;\n}\n.alpheios-morph__dictentry .alpheios-morph__formtext {\n  font-size: larger;\n}\n.alpheios-morph__dictentry .alpheios-morph__forms .alpheios-morph__formtext {\n  font-size: inherit;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476;\n  font-style: italic;\n}\n.alpheios-morph__dial {\n  font-size: smaller;\n}\n.alpheios-morph__attr {\n  font-weight: normal;\n  padding-right: .25em;\n}\n.alpheios-morph__linkedattr {\n  color: #3E8D9C;\n  font-weight: bold;\n  cursor: pointer;\n  padding-right: .25em;\n}\n.alpheios-morph__linkedattr:hover {\n  color: #5BC8DC !important;\n}\n.alpheios-morph__pofs span:last-child:after {\n  content: \";\";\n}\n.alpheios-morph__inflset {\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-morph__inflset h5 {\n  display: none;\n  font-size: 16px;\n  line-height: 1;\n  margin-bottom: .5em;\n}\n.alpheios-morph__inflset:first-child h5 {\n  color: #4E6476;\n  display: block;\n}\n.alpheios-morph__morphdata {\n  display: inline;\n}\n.alpheios-morph__inflections, .alpheios-morph__definition, .alpheios-morph__forms {\n  margin-left: .5em;\n}\n.alpheios-morph__provider-source, .alpheios-morph__lexemes .alpheios-definition__provider {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-morph__provider {\n  display: none;\n  margin-top: 1em;\n}\n.alpheios-morph__dictentry:last-child .alpheios-morph__provider {\n  display: block;\n}\n.alpheios-morph__listitem:after {\n  content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n  content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n  content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n  content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n  display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n  display: none;\n}\n.alpheios-morph__lexemes .alpheios-definition__lemma {\n  display: none;\n}\ndiv.alpheios-morph__inline {\n  display: inline;\n}\ndiv.alpheios-morph__block {\n  display: block;\n}\n.alpheios-panel__tab-panel .alpheios-morph__lexemes {\n  font-size: 12px;\n}\n.alpheios-morph__provider-popup-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #4E6476;\n  stroke: #4E6476;\n}\n.alpheios-morph__provider-popup {\n  display: block;\n  background: #FFF;\n  color: #333333;\n  position: absolute;\n  padding: 30px 15px 15px;\n  left: 0;\n  bottom: 10px;\n  z-index: 10;\n  min-width: 200px;\n  border: 1px solid #4E6476;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-morph__lexemes {\n  color: #0E2233;\n}\n.alpheios-morph__dictentry {\n  margin-bottom: .5em;\n  clear: both;\n}\n.alpheios-morph__formtext {\n  font-weight: bold;\n}\n.alpheios-morph__dictentry .alpheios-morph__formtext {\n  font-size: larger;\n}\n.alpheios-morph__dictentry .alpheios-morph__forms .alpheios-morph__formtext {\n  font-size: inherit;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476;\n  font-style: italic;\n}\n.alpheios-morph__dial {\n  font-size: smaller;\n}\n.alpheios-morph__attr {\n  font-weight: normal;\n  padding-right: .25em;\n}\n.alpheios-morph__linkedattr {\n  color: #3E8D9C;\n  font-weight: bold;\n  cursor: pointer;\n  padding-right: .25em;\n}\n.alpheios-morph__linkedattr:hover {\n  color: #5BC8DC !important;\n}\n.alpheios-morph__pofs span:last-child:after {\n  content: \";\";\n}\n.alpheios-morph__inflset {\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-morph__inflset h5 {\n  display: none;\n  font-size: 16px;\n  line-height: 1;\n  margin-bottom: .5em;\n}\n.alpheios-morph__inflset:first-child h5 {\n  color: #4E6476;\n  display: block;\n}\n.alpheios-morph__morphdata {\n  display: inline;\n}\n.alpheios-morph__inflections, .alpheios-morph__definition, .alpheios-morph__forms {\n  margin-left: .5em;\n}\n.alpheios-morph__provider-source, .alpheios-morph__lexemes .alpheios-definition__provider {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-morph__provider {\n  display: none;\n  margin-top: 1em;\n}\n.alpheios-morph__dictentry:last-child .alpheios-morph__provider {\n  display: block;\n}\n.alpheios-morph__listitem:after {\n  content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n  content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n  content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n  content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n  display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n  display: none;\n}\n.alpheios-morph__lexemes .alpheios-definition__lemma {\n  display: none;\n}\ndiv.alpheios-morph__inline {\n  display: inline;\n}\ndiv.alpheios-morph__block {\n  display: block;\n}\n.alpheios-panel__tab-panel .alpheios-morph__lexemes {\n  font-size: .75rem;\n}\n.alpheios-morph__provider-popup-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #4E6476;\n  stroke: #4E6476;\n}\n.alpheios-morph__provider-popup {\n  display: block;\n  background: #FFF;\n  color: #333333;\n  position: absolute;\n  padding: 30px 15px 15px;\n  left: 0;\n  bottom: 10px;\n  z-index: 10;\n  min-width: 200px;\n  border: 1px solid #4E6476;\n}\n.alpheios-morph__provider-link {\n  font-size: .5rem;\n}\n", ""]);
 
 // exports
 
@@ -38308,7 +38314,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-text {\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  color: #666666;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-info {\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif !important;\n  font-size: 16px !important;\n  color: #666666 !important;\n}\n.alpheios-info .alpheios-info__helptext p {\n  font-size: .875rem;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif !important;\n  font-size: 16px !important;\n  color: #666666 !important;\n}\n.alpheios-info .alpheios-info__versiontext {\n  font-size: .675rem;\n  margin-bottom: 1em;\n}\n", ""]);
 
 // exports
 
@@ -38322,55 +38328,61 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
+  return _c("div", { staticClass: "alpheios-info uk-margin" }, [
+    _c("div", { staticClass: "alpheios-info__versiontext" }, [
+      _vm._v(
+        _vm._s(_vm.data.manifest.name) + " " + _vm._s(_vm.data.manifest.version)
+      )
+    ]),
+    _vm._v(" "),
+    _vm._m(0)
+  ])
 }
 var staticRenderFns = [
   function() {
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "uk-margin" }, [
-      _c("p", { staticClass: "uk-text-lead alpheios-text" }, [
-        _vm._v("Getting Started")
-      ]),
+    return _c("div", { staticClass: "alpheios-info__helptext" }, [
+      _c("h3", [_vm._v("Getting Started")]),
       _vm._v(" "),
-      _c("p", { staticClass: "uk-text-left uk-text-small alpheios-text" }, [
+      _c("p", [
         _vm._v(
           "Activate on a page with Latin, Ancient Greek, Arabic or Persian text."
         )
       ]),
       _vm._v(" "),
-      _c("p", { staticClass: "uk-text-left uk-text-small alpheios-text" }, [
+      _c("p", [
         _vm._v(
           "Double-click on a word to retrieve morphology and short definitions."
         )
       ]),
       _vm._v(" "),
-      _c("p", { staticClass: "uk-text-left uk-text-small alpheios-text" }, [
+      _c("p", [
         _vm._v(
           "Alpheios will try to detect the language of the word from the page. If it cannot it will use the default language. "
         )
       ]),
       _vm._v(" "),
-      _c("p", { staticClass: "uk-text-left uk-text-small alpheios-text" }, [
+      _c("p", [
         _vm._v(
           "Click the Settings wheel to change the default language, default dictionaries or to disable the popup (set UI Type to 'panel')."
         )
       ]),
       _vm._v(" "),
-      _c("p", { staticClass: "uk-text-left uk-text-small alpheios-text" }, [
+      _c("p", [
         _vm._v(
           "Use the arrow at the top of this panel to move it from the right to left of your browser window."
         )
       ]),
       _vm._v(" "),
-      _c("p", { staticClass: "uk-text-left uk-text-small alpheios-text" }, [
+      _c("p", [
         _vm._v(
           "You can reopen this panel at any time by selecting 'Info' from the Alpheios Reading Tools option in your browser's context menu."
         )
       ]),
       _vm._v(" "),
-      _c("p", { staticClass: "uk-text-left uk-text-small alpheios-text" }, [
+      _c("p", [
         _vm._v(
           "Deactivate Alpheios by clicking the toolbar icon or choosing 'Deactivate' from the Alpheios Reading Tools option in your browser's context menu."
         )
@@ -38849,7 +38861,7 @@ var render = function() {
             ],
             staticClass: "alpheios-panel__tab-panel"
           },
-          [_c("info")],
+          [_c("info", { attrs: { data: _vm.data.infoComponentData } })],
           1
         )
       ]),
@@ -39019,7 +39031,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n  display: flex;\n  flex-direction: column;\n  background: #FFF;\n  border: 1px solid lightgray;\n  width: 400px;\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  top: 100px;\n  box-sizing: border-box;\n  /* Required for Interact.js to take element size with paddings and work correctly */\n  overflow: auto;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 16px;\n  color: #666666;\n}\n.alpheios-popup__header {\n  position: relative;\n  box-sizing: border-box;\n  width: 100%;\n  flex: 0 0 50px;\n  padding: 10px 20px;\n}\n.alpheios-popup__header-text {\n  position: relative;\n  top: 20px;\n  left: 3px;\n  line-height: 1;\n}\n.alpheios-popup__header-selection {\n  font-size: 16px;\n  font-weight: 700;\n  color: #4E6476;\n}\n.alpheios-popup__header-word {\n  font-size: 14px;\n  position: relative;\n  top: -1px;\n}\n.alpheios-popup__close-btn {\n  display: block;\n  position: absolute;\n  width: 30px;\n  right: 5px;\n  top: 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__close-btn:hover,\n.alpheios-popup__close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-popup__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  flex: 0 0 60px;\n  box-sizing: border-box;\n  overflow: hidden;\n}\n.alpheios-popup__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__notifications-close-btn:hover,\n.alpheios-popup__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n[data-notification-visible=\"true\"] .alpheios-popup__notifications {\n  display: block;\n}\n.alpheios-popup__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-popup__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-popup__notifications--important {\n  background: #73CDDE;\n}\n.alpheios-popup__morph-cont {\n  flex: 1 1 260px;\n  box-sizing: border-box;\n  margin: 10px 10px 0;\n  overflow: auto;\n  padding: 10px;\n  border: 1px solid #B8B7B5;\n}\n.alpheios-popup__definitions--placeholder {\n  border: 0 none;\n  padding: 10px 0 0;\n}\n.alpheios-popup__button-area {\n  flex: 0 1 auto;\n  padding: 10px 20px;\n  text-align: right;\n  box-sizing: border-box;\n  position: relative;\n}\nimg.alpheios-popup__logo {\n  height: 35px;\n  width: auto;\n  position: absolute;\n  top: 6px;\n  left: 20px;\n}\n.alpheios-popup__more-btn {\n  float: right;\n  margin-bottom: 10px;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-popup {\n  display: flex;\n  flex-direction: column;\n  background: #FFF;\n  border: 1px solid lightgray;\n  width: 400px;\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  top: 100px;\n  box-sizing: border-box;\n  /* Required for Interact.js to take element size with paddings and work correctly */\n  overflow: auto;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 16px;\n  color: #666666;\n}\n.alpheios-popup__header {\n  position: relative;\n  box-sizing: border-box;\n  width: 100%;\n  flex: 0 0 50px;\n  padding: 10px 20px;\n}\n.alpheios-popup__header-text {\n  position: relative;\n  top: 20px;\n  left: 3px;\n  line-height: 1;\n}\n.alpheios-popup__header-selection {\n  font-size: 16px;\n  font-weight: 700;\n  color: #4E6476;\n}\n.alpheios-popup__header-word {\n  font-size: .75rem;\n  position: relative;\n  top: -1px;\n}\n.alpheios-popup__close-btn {\n  display: block;\n  position: absolute;\n  width: 30px;\n  right: 5px;\n  top: 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__close-btn:hover,\n.alpheios-popup__close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-popup__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  flex: 0 0 60px;\n  box-sizing: border-box;\n  overflow: hidden;\n}\n.alpheios-popup__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__notifications-close-btn:hover,\n.alpheios-popup__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n[data-notification-visible=\"true\"] .alpheios-popup__notifications {\n  display: block;\n}\n.alpheios-popup__notifications--lang-switcher {\n  font-size: .75rem;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-popup__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-popup__notifications--important {\n  background: #73CDDE;\n}\n.alpheios-popup__morph-cont {\n  flex: 1 1 260px;\n  box-sizing: border-box;\n  margin: 10px 10px 0;\n  overflow: auto;\n  padding: 10px;\n  border: 1px solid #B8B7B5;\n}\n.alpheios-popup__definitions--placeholder {\n  border: 0 none;\n  padding: 10px 0 0;\n}\n.alpheios-popup__button-area {\n  flex: 0 1 auto;\n  padding: 10px 20px;\n  text-align: right;\n  box-sizing: border-box;\n  position: relative;\n}\nimg.alpheios-popup__logo {\n  height: 35px;\n  width: auto;\n  position: absolute;\n  top: 6px;\n  left: 20px;\n}\n.alpheios-popup__more-btn {\n  float: right;\n  margin-bottom: 10px;\n}\n", ""]);
 
 // exports
 

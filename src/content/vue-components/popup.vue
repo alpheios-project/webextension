@@ -327,13 +327,13 @@
     }
 
     .alpheios-popup__header-selection {
-        font-size: 16px;
+        font-size: $alpheios-base-font-size;
         font-weight: 700;
         color: $alpheios-toolbar-color;
     }
 
     .alpheios-popup__header-word {
-        font-size: 14px;
+        font-size: .75rem;
         position: relative;
         top: -1px;
     }
@@ -389,7 +389,7 @@
     }
 
     .alpheios-popup__notifications--lang-switcher {
-        font-size: 12px;
+        font-size: .75rem;
         float: right;
         margin: -20px 10px 0 0;
         display: inline-block;

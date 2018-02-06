@@ -74,6 +74,9 @@ export default class ContentUIController {
             viewSelector: 'alpheios-panel-content-infl-table-view-selector',
             tableBody: 'alpheios-panel-content-infl-table-body'
           },
+          infoComponentData: {
+            manifest: browser.runtime.getManifest()
+          },
           messages: [],
           notification: {
             visible: false,

@@ -47,6 +47,7 @@ export default class ContentProcess {
 
   deactivate () {
     console.log('Content has been deactivated.')
+    this.ui.popup.close()
     this.ui.panel.close()
     this.state.status = TabScript.statuses.script.DEACTIVATED
   }

@@ -94,7 +94,7 @@
                   v-for="languageSetting in data.resourceSettings.lexicons"></setting>
             </div>
             <div v-show="data.tabs.info" class="alpheios-panel__tab-panel">
-                <info></info>
+                <info :data="data.infoComponentData"></info>
             </div>
         </div>
         <div class="alpheios-panel__notifications uk-text-small" :class="notificationClasses"
