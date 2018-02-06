@@ -1079,6 +1079,7 @@ class BackgroundProcess {
     browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
     browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
     browser.runtime.onUpdateAvailable.addListener(this.updateAvailableListener.bind(this))
+    browser.runtime.onInstalled.addListener(this.handleOnInstalled.bind(this))
 
     this.menuItems = {
       activate: new __WEBPACK_IMPORTED_MODULE_3__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
@@ -1094,6 +1095,31 @@ class BackgroundProcess {
 
     this.transporter = new __WEBPACK_IMPORTED_MODULE_6_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_6_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_6_alpheios_experience__["TestAdapter"],
       BackgroundProcess.defaults.experienceStorageThreshold, BackgroundProcess.defaults.experienceStorageCheckInterval)
+  }
+
+  /**
+   * handler for the runtime.onInstalled event
+   */
+  handleOnInstalled(details) {
+    // if this is an update versus a fresh install we need to trigger reloads
+    // of the previously loaded content scripts. Only tabs with Alpheios loaded
+    // will respond to this event. Messaging between the new background script and the
+    // old content scripts is broken so we just send a custom event on the body of
+    // the page.
+    if (details.previousVersion) {
+      browser.tabs.query({}).then((tabs) => {
+        tabs.forEach((t) => {
+          try {
+            browser.tabs.executeScript(t.id, {
+              code: "document.body.dispatchEvent(new Event('Alpheios_Reload'))"
+            })
+          } catch (e) {
+            // just quietly fail here
+          }
+        })
+      })
+    }
+
   }
 
   async activateContent (tabID) {

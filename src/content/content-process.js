@@ -36,13 +36,21 @@ export default class ContentProcess {
     // Adds message listeners
     this.messagingService.addHandler(Message.types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
-
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
+    document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
     this.reactivate()
   }
 
   get isActive () {
     return this.state.status === TabScript.statuses.script.ACTIVE
+  }
+
+  handleReload() {
+    console.log("Alpheios reload event caught.")
+    if (this.isActive) {
+      this.deactivate();
+    }
+    window.location.reload()
   }
 
   deactivate () {
@@ -77,6 +85,7 @@ export default class ContentProcess {
       } else {
         this.state.deactivate()
         this.ui.panel.close()
+        this.ui.popup.close()
         console.log('Content has been deactivated')
       }
     }
