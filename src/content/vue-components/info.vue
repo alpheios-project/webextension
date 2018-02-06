@@ -34,14 +34,14 @@
   }
 
   .alpheios-info .alpheios-info__helptext p {
-    font-size: .875rem;
+    font-size: 0.875*$alpheios-base-font-size;
     font-family: $alpheios-font-family !important;
     font-size: $alpheios-base-font-size !important;
     color: $alpheios-copy-color !important;
   }
 
   .alpheios-info .alpheios-info__versiontext {
-    font-size: .675rem;
+    font-size: 0.675*$alpheios-base-font-size;
     margin-bottom: 1em;
   }
 

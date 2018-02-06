@@ -463,6 +463,6 @@
       margin-left: 20px;
     }
     .alpheios-popup__providers-link {
-      font-size: .675rem;
+      font-size: 0.675*$alpheios-base-font-size;
     }
 </style>

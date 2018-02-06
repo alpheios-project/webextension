@@ -245,6 +245,7 @@
   }
   .alpheios-morph__dictentry {
     margin-bottom: .5em;
+    padding-bottom: 5px;
     clear: both;
   }
 
