@@ -20263,8 +20263,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
       minResizableWidth: 0, // Resizable's min width (for Interact.js)
       minResizableHeight: 0, // Resizable's min height (for Interact.js)
       interactInstance: undefined,
-      morphComponentID: 'alpheios-morph-component',
-      showProviders: false
+      morphComponentID: 'alpheios-morph-component'
     };
   },
   props: {
@@ -20303,8 +20302,11 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         'alpheios-popup__notifications--important': this.data.notification.important
       };
     },
-    providers: function () {
-      return this.data.providers;
+    providersLinkText: function () {
+      return this.data.showProviders ? 'Hide Credits' : 'Show Credits';
+    },
+    showProviders: function () {
+      return this.data.showProviders;
     },
     // Returns popup dimensions and positions styles with `px` units
     dimensions: function () {
@@ -22966,7 +22968,7 @@ var papaparse = createCommonjsModule(function (module, exports) {
 }));
 });
 
-var DefaultConfig = "{\n  \"https://github.com/alpheios-project/lsj\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lsj&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\",\n    \"rights\": \"From \\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\"\n  },\n  \"https://github.com/alpheios-project/aut\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/aut/dat/grc-aut-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/aut//dat/grc-aut-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=aut&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\",\n    \"rights\": \"From \\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\"\n  },\n  \"https://github.com/alpheios-project/ml\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ml&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Middle Liddell\\\"\",\n    \"rights\": \"From \\\"An Intermediate Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\"\n  },\n  \"https://github.com/alpheios-project/as\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/as/dat/grc-as-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/as/dat/grc-as-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=as&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Manual Greek Lexicon of the New Testament\\\"\",\n    \"rights\": \"From \\\"A Manual Greek Lexicon of the New Testament\\\" (G. Abbott-Smith). Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=dod&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"From \\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/ls\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/ls/dat/lat-ls-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ls&lg=lat&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"lat\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\",\n    \"rights\": \"From \\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\"\n  },\n  \"https://github.com/alpheios-project/lan\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/lan/dat/ara-lan-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lan&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane)\",\n    \"rights\": \"From \\\"The Arabic-English Lexicon\\\" (Edward Lane)\"\n  },\n  \"https://github.com/alpheios-project/sal\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/sal/dat/ara-sal-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=sal&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\",\n    \"rights\": \"From \\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\"\n  },\n  \"https://github.com/alpheios-project/stg\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-ids.dat\",\n      \"full\": null\n    },\n    \"langs\": {\n      \"source\": \"per\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\",\n    \"rights\": \"From \\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass). Provided by the Center for Advanced Study of Language (CASL) at the University of Maryland, College Park.\"\n  }\n}\n";
+var DefaultConfig = "{\n  \"https://github.com/alpheios-project/lsj\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lsj&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\",\n    \"rights\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/aut\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/aut/dat/grc-aut-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/aut//dat/grc-aut-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=aut&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\",\n    \"rights\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth). Provided by the Perseus Digital Library at Tufts University\"\n  },\n  \"https://github.com/alpheios-project/ml\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ml&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Middle Liddell\\\"\",\n    \"rights\": \"\\\"An Intermediate Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott). Provided by the Perseus Digital Library at Tufts University\"\n  },\n  \"https://github.com/alpheios-project/as\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/as/dat/grc-as-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/as/dat/grc-as-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=as&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Manual Greek Lexicon of the New Testament\\\"\",\n    \"rights\": \"\\\"A Manual Greek Lexicon of the New Testament\\\" (G. Abbott-Smith). Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=dod&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"\\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/ls\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/ls/dat/lat-ls-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ls&lg=lat&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"lat\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\",\n    \"rights\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/lan\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/lan/dat/ara-lan-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lan&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane)\",\n    \"rights\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/sal\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/sal/dat/ara-sal-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=sal&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\",\n    \"rights\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/stg\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-ids.dat\",\n      \"full\": null\n    },\n    \"langs\": {\n      \"source\": \"per\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\",\n    \"rights\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass). Provided by the Center for Advanced Study of Language (CASL) at the University of Maryland, College Park.\"\n  }\n}\n";
 
 class AlpheiosLexAdapter extends BaseLexiconAdapter {
   /**
@@ -24833,6 +24835,7 @@ class ContentUIController {
           defDataReady: false,
           inflDataReady: false,
           morphDataReady: false,
+          showProviders: false,
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
           },
@@ -24917,9 +24920,11 @@ class ContentUIController {
         clearContent: function () {
           this.definitions = {}
           this.lexemes = []
+          this.popupData.providers = []
           this.popupData.defDataReady = false
           this.popupData.inflDataReady = false
           this.popupData.morphDataReady = false
+          this.popupData.showProviders = false
           this.clearNotifications()
           this.clearStatus()
           return this
@@ -25112,9 +25117,13 @@ class ContentUIController {
   updateProviders (homonym) {
     let providers = new Map()
     homonym.lexemes.forEach((l) => {
-      providers.set(l.provider,1)
+      if (l.provider) {
+        providers.set(l.provider,1)
+      }
       l.meaning.shortDefs.forEach((d) => {
-        providers.set(d.provider,1)
+        if (d.provider) {
+          providers.set(d.provider,1)
+        }
       })
     })
     this.popup.popupData.providers = Array.from(providers.keys())
@@ -39111,7 +39120,7 @@ var render = function() {
         1
       ),
       _vm._v(" "),
-      _vm.providers.length > 0
+      _vm.data.providers.length > 0
         ? _c("div", { staticClass: "alpheios-popup__providers" }, [
             _c(
               "a",
@@ -39119,18 +39128,18 @@ var render = function() {
                 staticClass: "alpheios-popup__providers-link",
                 on: {
                   click: function($event) {
-                    _vm.showProviders = !_vm.showProviders
+                    _vm.data.showProviders = !_vm.data.showProviders
                   }
                 }
               },
-              [_vm._v("Credits")]
+              [_vm._v(_vm._s(_vm.providersLinkText))]
             ),
             _vm._v(" "),
             _vm.showProviders
               ? _c(
                   "div",
                   { staticClass: "alpheios-popup__providers-popup" },
-                  _vm._l(_vm.providers, function(p) {
+                  _vm._l(_vm.data.providers, function(p) {
                     return _c(
                       "div",
                       { staticClass: "alpheios-popup__providers-source" },

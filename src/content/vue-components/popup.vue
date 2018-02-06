@@ -18,10 +18,10 @@
             <morph :id="morphComponentID" :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures">
             </morph>
         </div>
-        <div class="alpheios-popup__providers" v-if="providers.length > 0">
-          <a class="alpheios-popup__providers-link" v-on:click="showProviders = ! showProviders">Credits</a>
+        <div class="alpheios-popup__providers" v-if="data.providers.length > 0">
+          <a class="alpheios-popup__providers-link" v-on:click="data.showProviders = ! data.showProviders">{{providersLinkText}}</a>
           <div class="alpheios-popup__providers-popup" v-if="showProviders">
-            <div class="alpheios-popup__providers-source" v-for="p in providers">
+            <div class="alpheios-popup__providers-source" v-for="p in data.providers">
               {{ p.toString() }}
             </div>
           </div>
@@ -72,8 +72,7 @@
         minResizableWidth: 0, // Resizable's min width (for Interact.js)
         minResizableHeight: 0, // Resizable's min height (for Interact.js)
         interactInstance: undefined,
-        morphComponentID: 'alpheios-morph-component',
-        showProviders: false,
+        morphComponentID: 'alpheios-morph-component'
       }
     },
     props: {
@@ -112,8 +111,11 @@
           'alpheios-popup__notifications--important': this.data.notification.important
         }
       },
-      providers: function () {
-        return this.data.providers
+      providersLinkText: function() {
+        return this.data.showProviders ? 'Hide Credits' : 'Show Credits'
+      },
+      showProviders: function() {
+        return this.data.showProviders
       },
       // Returns popup dimensions and positions styles with `px` units
       dimensions: function () {

@@ -319,6 +319,7 @@ export default class ContentUIController {
           defDataReady: false,
           inflDataReady: false,
           morphDataReady: false,
+          showProviders: false,
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
           },
@@ -403,9 +404,11 @@ export default class ContentUIController {
         clearContent: function () {
           this.definitions = {}
           this.lexemes = []
+          this.popupData.providers = []
           this.popupData.defDataReady = false
           this.popupData.inflDataReady = false
           this.popupData.morphDataReady = false
+          this.popupData.showProviders = false
           this.clearNotifications()
           this.clearStatus()
           return this
@@ -598,9 +601,13 @@ export default class ContentUIController {
   updateProviders (homonym) {
     let providers = new Map()
     homonym.lexemes.forEach((l) => {
-      providers.set(l.provider,1)
+      if (l.provider) {
+        providers.set(l.provider,1)
+      }
       l.meaning.shortDefs.forEach((d) => {
-        providers.set(d.provider,1)
+        if (d.provider) {
+          providers.set(d.provider,1)
+        }
       })
     })
     this.popup.popupData.providers = Array.from(providers.keys())
