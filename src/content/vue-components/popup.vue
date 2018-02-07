@@ -14,17 +14,19 @@
              class="alpheios-popup__morph-cont alpheios-popup__definitions--placeholder uk-text-small">
             No lexical data is available yet
         </div>
-        <div v-show="morphDataReady" class="alpheios-popup__morph-cont uk-text-small">
+        <div v-show="morphDataReady" :id="lexicalDataContainerID" class="alpheios-popup__morph-cont uk-text-small">
             <morph :id="morphComponentID" :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures">
             </morph>
+
+            <div class="alpheios-popup__morph-cont-providers" v-if="showProviders">
+                <div class="alpheios-popup__morph-cont-providers-header">Credits:</div>
+                <div class="alpheios-popup__morph-cont-providers-source" v-for="p in data.providers">
+                    {{ p.toString() }}
+                </div>
+            </div>
         </div>
         <div class="alpheios-popup__providers" v-if="data.providers.length > 0">
-          <a class="alpheios-popup__providers-link" v-on:click="data.showProviders = ! data.showProviders">{{providersLinkText}}</a>
-          <div class="alpheios-popup__providers-popup" v-if="showProviders">
-            <div class="alpheios-popup__providers-source" v-for="p in data.providers">
-              {{ p.toString() }}
-            </div>
-          </div>
+          <a class="alpheios-popup__providers-link" v-on:click="switchProviders">{{providersLinkText}}</a>
         </div>
         <div class="alpheios-popup__button-area">
             <img class="alpheios-popup__logo" src="../images/icon.png">
@@ -72,6 +74,7 @@
         minResizableWidth: 0, // Resizable's min width (for Interact.js)
         minResizableHeight: 0, // Resizable's min height (for Interact.js)
         interactInstance: undefined,
+        lexicalDataContainerID: 'alpheios-lexical-data-container',
         morphComponentID: 'alpheios-morph-component'
       }
     },
@@ -199,7 +202,7 @@
           top: `${top}px`,
           left: `${left}px`
         }
-      },
+      }
     },
 
     methods: {
@@ -223,6 +226,19 @@
 
       settingChanged: function (name, value) {
         this.$emit('settingchange', name, value) // Re-emit for a Vue instance
+      },
+
+      switchProviders: function () {
+        this.data.showProviders = ! this.data.showProviders
+        if (this.data.showProviders) {
+          // Show credits info
+          this.$nextTick(() => {
+            let container = this.$el.querySelector(`#${this.lexicalDataContainerID}`)
+            if (container) {
+              container.scrollTop = container.scrollHeight // Will make it scroll all the way to the bottom
+            }
+          })
+        }
       },
 
       // Interact.js resizable settings
@@ -350,7 +366,7 @@
     }
 
     .alpheios-popup__header-word {
-        font-size: .75rem;
+        font-size: 0.75*$alpheios-base-font-size;
         position: relative;
         top: -1px;
     }
@@ -406,7 +422,7 @@
     }
 
     .alpheios-popup__notifications--lang-switcher {
-        font-size: .75rem;
+        font-size: 0.75*$alpheios-base-font-size;
         float: right;
         margin: -20px 10px 0 0;
         display: inline-block;
@@ -428,6 +444,14 @@
         overflow: auto;
         padding: 10px;
         border: 1px solid $alpheios-sidebar-header-border-color;
+    }
+
+    .alpheios-popup__morph-cont-providers-header {
+        display: inline-block;
+        color: $alpheios-link-color;
+        font-size: 0.75*$alpheios-base-font-size;
+        font-weight: 700;
+        margin-top: 2px;
     }
 
     .alpheios-popup__definitions--placeholder {
@@ -455,7 +479,7 @@
         float: right;
         margin-bottom: 10px;
     }
-    .alpheios-popup__providers-source {
+    .alpheios-popup__morph-cont-providers-source {
       font-size: smaller;
       font-weight: normal;
       color: $alpheios-toolbar-color;
