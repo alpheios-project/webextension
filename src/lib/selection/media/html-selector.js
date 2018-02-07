@@ -7,8 +7,6 @@ export default class HTMLSelector extends MediaSelector {
   constructor (event, defaultLanguageCode) {
     super(event)
     let rect = event.target.getBoundingClientRect()
-    console.log(`event rectangle top is ${rect.top}`)
-    console.log(`event screenY is ${event.screenY}`)
     this.targetRect = {
       top: event.screenY,
       left: event.screenX,
