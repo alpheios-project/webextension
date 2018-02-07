@@ -11,7 +11,7 @@
                 <span class="alpheios-panel__header-selection"
                       v-show="data.status.selectedText">{{data.status.selectedText}}</span>
                 <span class="alpheios-panel__header-text"
-                      v-show="data.status.languageName">({{data.status.languageName}})</span>
+                      v-show="data.status.languageName && data.verboseMode">({{data.status.languageName}})</span>
             </div>
             <span @click="setPosition('left')" v-show="attachToLeftVisible" title="Move Panel to Left"
                   class="alpheios-panel__header-action-btn alpheios-panel__header-action-btn--narrow">

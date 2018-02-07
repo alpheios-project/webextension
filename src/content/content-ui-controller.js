@@ -1,4 +1,4 @@
-/* global Node */
+/* global Node, browser */
 import {Lexeme, Feature, Definition, LanguageModelFactory, Constants} from 'alpheios-data-models'
 import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
@@ -28,6 +28,7 @@ export default class ContentUIController {
     this.settings = ContentUIController.settingValues
     this.irregularBaseFontSizeClassName = 'alpheios-irregular-base-font-size'
     this.irregularBaseFontSize = !ContentUIController.hasRegularBaseFontSize()
+    this.verboseMode = false
 
     this.zIndex = this.getZIndexMax()
 
@@ -55,6 +56,7 @@ export default class ContentUIController {
             options: false,
             info: true
           },
+          verboseMode: this.verboseMode,
           grammarRes: {},
           lexemes: [],
           inflectionComponentData: {
@@ -316,6 +318,7 @@ export default class ContentUIController {
           targetRect: {},
 
           settings: this.options.items,
+          verboseMode: this.verboseMode,
           defDataReady: false,
           inflDataReady: false,
           morphDataReady: false,
@@ -604,11 +607,11 @@ export default class ContentUIController {
     let providers = new Map()
     homonym.lexemes.forEach((l) => {
       if (l.provider) {
-        providers.set(l.provider,1)
+        providers.set(l.provider, 1)
       }
       l.meaning.shortDefs.forEach((d) => {
         if (d.provider) {
-          providers.set(d.provider,1)
+          providers.set(d.provider, 1)
         }
       })
     })
@@ -628,7 +631,7 @@ export default class ContentUIController {
     this.panel.panelData.fullDefinitions = ''
     this.panel.panelData.shortDefinitions = []
     let definitions = {}
-    let defsList = []
+    // let defsList = []
     let hasFullDefs = false
     for (let lexeme of homonym.lexemes) {
       if (lexeme.meaning.shortDefs.length > 0) {
@@ -662,7 +665,7 @@ export default class ContentUIController {
 
   updateLanguage (currentLanguage) {
     this.state.setItem('currentLanguage', currentLanguage)
-    this.panel.requestGrammar({ type: 'table-of-contents', value: '', languageID: LanguageModelFactory.getLanguageIdFromCode(currentLanguage)})
+    this.panel.requestGrammar({ type: 'table-of-contents', value: '', languageID: LanguageModelFactory.getLanguageIdFromCode(currentLanguage) })
     this.panel.enableInflections(LanguageModelFactory.getLanguageForCode(currentLanguage).canInflect())
     console.log(`Current language is ${this.state.currentLanguage}`)
   }

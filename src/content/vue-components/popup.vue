@@ -4,7 +4,7 @@
         <div class="alpheios-popup__header">
             <div class="alpheios-popup__header-text">
                 <span v-show="data.status.selectedText" class="alpheios-popup__header-selection">{{data.status.selectedText}}</span>
-                <span v-show="data.status.languageName" class="alpheios-popup__header-word">({{data.status.languageName}})</span>
+                <span v-show="data.status.languageName && data.verboseMode" class="alpheios-popup__header-word">({{data.status.languageName}})</span>
             </div>
             <span class="alpheios-popup__close-btn" @click="closePopup">
                 <close-icon></close-icon>
