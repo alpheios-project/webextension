@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "default_locale": "en",
   "description": "__MSG_extensionDescription__",
   "icons": {
@@ -19,8 +19,7 @@
     "activeTab",
     "contextMenus",
     "storage",
-    "webNavigation",
-    "management"
+    "webNavigation"
   ],
   "browser_action": {
     "default_icon": "icons/alpheios_32.png",
