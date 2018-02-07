@@ -13,15 +13,15 @@
                 <span class="alpheios-panel__header-text"
                       v-show="data.status.languageName">({{data.status.languageName}})</span>
             </div>
-            <span @click="setPosition('left')" v-show="attachToLeftVisible"
+            <span @click="setPosition('left')" v-show="attachToLeftVisible" title="Move Panel to Left"
                   class="alpheios-panel__header-action-btn alpheios-panel__header-action-btn--narrow">
                 <attach-left-icon></attach-left-icon>
             </span>
-            <span @click="setPosition('right')" v-show="attachToRightVisible"
+            <span @click="setPosition('right')" v-show="attachToRightVisible" title="Move Panel to Right"
                   class="alpheios-panel__header-action-btn alpheios-panel__header-action-btn--narrow">
                 <attach-right-icon></attach-right-icon>
             </span>
-            <span @click="close" class="alpheios-panel__header-action-btn">
+            <span @click="close" class="alpheios-panel__header-action-btn" title="Close Panel">
                 <close-icon></close-icon>
             </span>
         </div>

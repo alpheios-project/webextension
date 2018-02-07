@@ -38504,6 +38504,7 @@ var render = function() {
             ],
             staticClass:
               "alpheios-panel__header-action-btn alpheios-panel__header-action-btn--narrow",
+            attrs: { title: "Move Panel to Left" },
             on: {
               click: function($event) {
                 _vm.setPosition("left")
@@ -38527,6 +38528,7 @@ var render = function() {
             ],
             staticClass:
               "alpheios-panel__header-action-btn alpheios-panel__header-action-btn--narrow",
+            attrs: { title: "Move Panel to Right" },
             on: {
               click: function($event) {
                 _vm.setPosition("right")
@@ -38541,6 +38543,7 @@ var render = function() {
           "span",
           {
             staticClass: "alpheios-panel__header-action-btn",
+            attrs: { title: "Close Panel" },
             on: { click: _vm.close }
           },
           [_c("close-icon")],
