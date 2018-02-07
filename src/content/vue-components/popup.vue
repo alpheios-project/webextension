@@ -129,10 +129,10 @@
         let top = this.data.top
         let left = this.data.left
         let width = this.data.width
-        let height = this.data.heightMin
-        if (this.contentHeight > this.data.contentHeightLimit) {
+        let height = this.contentHeight
+        if (this.contentHeight > this.data.contentHeightLimit && this.contentHeight > this.data.heightMax) {
           // Increase popup height if content data is taller than the placeholder available
-          height = this.data.heightMax
+            height = this.data.heightMax
         }
 
         let scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
@@ -188,7 +188,7 @@
           top = Math.ceil((viewportHeight - height)/2)
         }
 
-        if (this.interactInstance && this.minResizableWidth !== width && this.minResizableHeight !== height) {
+        if (this.interactInstance && (this.minResizableWidth !== width || this.minResizableHeight !== height)) {
           // If component is mounted and interact.js instance is created, update its resizable properties
           this.minResizableWidth = width
           this.minResizableHeight = height
@@ -197,9 +197,7 @@
 
         return {
           top: `${top}px`,
-          left: `${left}px`,
-          width: `${width}px`,
-          height: `${height}px`
+          left: `${left}px`
         }
       },
     },
@@ -424,7 +422,7 @@
     }
 
     .alpheios-popup__morph-cont {
-        flex: 1 1 260px;
+        flex: 1 1;
         box-sizing: border-box;
         margin: 10px 10px 0;
         overflow: auto;

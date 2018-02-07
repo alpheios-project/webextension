@@ -307,10 +307,10 @@ export default class ContentUIController {
           left: 100,
           width: 400,
           contentHeightLimit: 110,
-          heightMin: 250, // Initially, popup height will be set to this value
+          heightMin: 200, // Initially, popup height will be set to this value
           heightMax: 400, // If a morphological content height is greater than `contentHeightLimit`, a popup height will be increased to this value
           // A margin between a popup and a selection
-          placementMargin: 7,
+          placementMargin: 2,
           // A minimal margin between a popup and a viewport border, in pixels. In effect when popup is scaled down.
           viewportMargin: 5,
 

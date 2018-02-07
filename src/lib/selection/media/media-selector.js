@@ -1,8 +1,8 @@
 import { LanguageModelFactory } from 'alpheios-data-models'
 
 export default class MediaSelector {
-  constructor (target) {
-    this.target = target // A selected text area in a document
+  constructor (event) {
+    this.target = event.target // A selected text area in a document
   }
 
   /**

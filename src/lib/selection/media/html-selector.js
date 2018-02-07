@@ -4,14 +4,16 @@ import TextSelector from '../text-selector'
 import MediaSelector from './media-selector'
 
 export default class HTMLSelector extends MediaSelector {
-  constructor (target, defaultLanguageCode) {
-    super(target)
-    let rect = target.getBoundingClientRect()
+  constructor (event, defaultLanguageCode) {
+    super(event)
+    let rect = event.target.getBoundingClientRect()
+    console.log(`event rectangle top is ${rect.top}`)
+    console.log(`event screenY is ${event.screenY}`)
     this.targetRect = {
-      top: Math.round(rect.top),
-      left: Math.round(rect.left),
-      width: Math.round(rect.width),
-      height: Math.round(rect.height)
+      top: event.screenY,
+      left: event.screenX,
+      width: 10,
+      height: 10
     }
     this.defaultLanguageCode = defaultLanguageCode
 
