@@ -117,6 +117,9 @@
       showProviders: function() {
         return this.data.showProviders
       },
+      updates: function() {
+        return this.data.updates
+      },
       // Returns popup dimensions and positions styles with `px` units
       dimensions: function () {
         console.log(`Dimensions calc property, target rect is`, this.data.targetRect)
@@ -296,12 +299,14 @@
         .on('resizemove', this.resizeListener)
     },
 
-    updated: function () {
-      // What for the next tick so that DOMs of all child components will be updated too
-      this.$nextTick(() => {
-        let morphComponent = this.$el.querySelector(`#${this.morphComponentID}`) // TODO: Avoid repetitive selector queries
-        this.contentHeight = (morphComponent && morphComponent.clientHeight) ? morphComponent.clientHeight : 0
-      })
+    watch: {
+      updates: function(updates) {
+        console.log("updating content height")
+        this.$nextTick(() => {
+          let morphComponent = this.$el.querySelector(`#${this.morphComponentID}`) // TODO: Avoid repetitive selector queries
+          this.contentHeight = (morphComponent && morphComponent.clientHeight) ? morphComponent.clientHeight : 0
+        })
+      },
     }
   }
 </script>

@@ -20308,6 +20308,9 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
     showProviders: function () {
       return this.data.showProviders;
     },
+    updates: function () {
+      return this.data.updates;
+    },
     // Returns popup dimensions and positions styles with `px` units
     dimensions: function () {
       console.log(`Dimensions calc property, target rect is`, this.data.targetRect);
@@ -20483,12 +20486,14 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
     this.interactInstance = __WEBPACK_IMPORTED_MODULE_2_interactjs___default()(this.$el).resizable(this.resizableSettings()).draggable(this.draggableSettings()).on('resizemove', this.resizeListener);
   },
 
-  updated: function () {
-    // What for the next tick so that DOMs of all child components will be updated too
-    this.$nextTick(() => {
-      let morphComponent = this.$el.querySelector(`#${this.morphComponentID}`); // TODO: Avoid repetitive selector queries
-      this.contentHeight = morphComponent && morphComponent.clientHeight ? morphComponent.clientHeight : 0;
-    });
+  watch: {
+    updates: function (updates) {
+      console.log("updating content height");
+      this.$nextTick(() => {
+        let morphComponent = this.$el.querySelector(`#${this.morphComponentID}`); // TODO: Avoid repetitive selector queries
+        this.contentHeight = morphComponent && morphComponent.clientHeight ? morphComponent.clientHeight : 0;
+      });
+    }
   }
 });
 
@@ -24836,6 +24841,7 @@ class ContentUIController {
           inflDataReady: false,
           morphDataReady: false,
           showProviders: false,
+          updates: 0,
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
           },
@@ -25111,6 +25117,7 @@ class ContentUIController {
     }
     this.popup.popupData.morphDataReady = true
     this.panel.panelData.lexemes = homonym.lexemes
+    this.popup.popupData.updates = this.popup.popupData.updates + 1
     this.updateProviders(homonym)
   }
 
@@ -25171,6 +25178,7 @@ class ContentUIController {
     // Populate a popup
     this.popup.definitions = definitions
     this.popup.popupData.defDataReady = hasFullDefs
+    this.popup.popupData.updates = this.popup.popupData.updates + 1
   }
 
   updateLanguage (currentLanguage) {

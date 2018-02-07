@@ -320,6 +320,7 @@ export default class ContentUIController {
           inflDataReady: false,
           morphDataReady: false,
           showProviders: false,
+          updates: 0,
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
           },
@@ -595,6 +596,7 @@ export default class ContentUIController {
     }
     this.popup.popupData.morphDataReady = true
     this.panel.panelData.lexemes = homonym.lexemes
+    this.popup.popupData.updates = this.popup.popupData.updates + 1
     this.updateProviders(homonym)
   }
 
@@ -655,6 +657,7 @@ export default class ContentUIController {
     // Populate a popup
     this.popup.definitions = definitions
     this.popup.popupData.defDataReady = hasFullDefs
+    this.popup.popupData.updates = this.popup.popupData.updates + 1
   }
 
   updateLanguage (currentLanguage) {
