@@ -93,7 +93,7 @@
                   v-if="languageSetting.values.length > 1"
                   v-for="languageSetting in data.resourceSettings.lexicons"></setting>
             </div>
-            <div v-show="data.tabs.info && data.verboseMode" class="alpheios-panel__tab-panel">
+            <div v-show="data.tabs.info" class="alpheios-panel__tab-panel">
                 <info :data="data.infoComponentData"></info>
             </div>
         </div>
