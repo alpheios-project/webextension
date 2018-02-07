@@ -52,7 +52,7 @@
                 <options-icon class="icon"></options-icon>
             </div>
 
-            <div v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
+            <div v-show="data.verboseMode" v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
                  class="alpheios-panel__nav-btn" title="Status Messages">
                 <status-icon class="icon"></status-icon>
             </div>
@@ -93,7 +93,7 @@
                   v-if="languageSetting.values.length > 1"
                   v-for="languageSetting in data.resourceSettings.lexicons"></setting>
             </div>
-            <div v-show="data.tabs.info" class="alpheios-panel__tab-panel">
+            <div v-show="data.tabs.info && data.verboseMode" class="alpheios-panel__tab-panel">
                 <info :data="data.infoComponentData"></info>
             </div>
         </div>

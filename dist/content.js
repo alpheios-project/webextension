@@ -38667,6 +38667,14 @@ var render = function() {
           _c(
             "div",
             {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: _vm.data.verboseMode,
+                  expression: "data.verboseMode"
+                }
+              ],
               staticClass: "alpheios-panel__nav-btn",
               class: { active: _vm.data.tabs.status },
               attrs: { title: "Status Messages" },
@@ -38862,8 +38870,8 @@ var render = function() {
               {
                 name: "show",
                 rawName: "v-show",
-                value: _vm.data.tabs.info,
-                expression: "data.tabs.info"
+                value: _vm.data.tabs.info && _vm.data.verboseMode,
+                expression: "data.tabs.info && data.verboseMode"
               }
             ],
             staticClass: "alpheios-panel__tab-panel"
