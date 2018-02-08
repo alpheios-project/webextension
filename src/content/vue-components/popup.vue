@@ -125,21 +125,35 @@
       },
       // Returns popup dimensions and positions styles with `px` units
       dimensions: function () {
-        console.log(`Dimensions calc property, target rect is`, this.data.targetRect)
+        if (!this.visible) {
+          // Don't do any calculations if popup is invisible
+          console.log(`DCALC: popup is hidden, resetting a content height`)
+          this.contentHeight = 0
+          return {top: `0px`, left: `0px`, width: `0px`, height: `0px`}
+        }
+
         let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
         let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+        console.log(`DCALC: selection is at [${this.data.targetRect.left}px, ${this.data.targetRect.top}px], viewport dimensions are [${viewportWidth}px, ${viewportHeight}px]`)
 
         let top = this.data.top
         let left = this.data.left
         let width = this.data.width
-        let height = this.contentHeight
-        if (this.contentHeight > this.data.contentHeightLimit && this.contentHeight > this.data.heightMax) {
+        let height = this.data.heightMin
+        // A popup should expand if content height exceeds the value below
+        // TODO: calculate how much content is longer than a target
+        let contentHeightLimit = this.data.heightMin - this.data.fixedElementsHeight
+        console.log(`DCALC: expected content height is ${this.contentHeight}px, expansion threshold is ${contentHeightLimit}px`)
+        if (this.contentHeight > contentHeightLimit) {
           // Increase popup height if content data is taller than the placeholder available
-            height = this.data.heightMax
+          height = this.data.heightMin + (this.contentHeight - contentHeightLimit)
+          console.log(`DCALC: expanding popup height to ${height}`)
+        } else {
+          console.log(`DCALC: popup height will not be increased`)
         }
 
         let scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
-        console.log(`Scrollbar width is ${scrollbarWidth}`)
+        console.log(`DCALC: scrollbar width is ${scrollbarWidth}`)
         let viewportMargins = 2*this.data.viewportMargin + scrollbarWidth
 
         /*
@@ -153,54 +167,81 @@
         2. Otherwise, place it above, if there is enough space there.
         3. Else, place it at the vertical center of a viewport.
          */
-        let wordCenter = this.data.targetRect.left + Math.floor(this.data.targetRect.width/2)
+        let placementTargetX = this.data.targetRect.left
+        let placementTargetY = this.data.targetRect.top
+        console.log(`DCALC: placement target is [${placementTargetX}px, ${placementTargetY}px]`)
 
         if (width + 2*this.data.viewportMargin > viewportWidth) {
-          console.log(`Shrinking horizontally`)
+          console.log(`DCALC: Shrinking horizontally`)
           left = this.data.viewportMargin
           width = viewportWidth - viewportMargins
-        } else if (wordCenter + width/2 + this.data.viewportMargin + scrollbarWidth < viewportWidth
-                   && wordCenter - width/2 - this.data.viewportMargin > 0) {
-          console.log(`Aligning horizontally to middle of the word`)
-          left = wordCenter - Math.floor(width / 2)
-        } else if (wordCenter - width/2 - this.data.viewportMargin <= 0) {
+        } else if (placementTargetX + width/2 + this.data.viewportMargin + scrollbarWidth < viewportWidth
+                   && placementTargetX - width/2 - this.data.viewportMargin > 0) {
+          console.log(`DCALC: Aligning horizontally to middle of the word`)
+          left = placementTargetX - Math.floor(width / 2)
+        } else if (placementTargetX - width/2 - this.data.viewportMargin <= 0) {
           // There is not enough space at the left
-          console.log(`Shifting horizontally to the right`)
+          console.log(`DCALC: Shifting horizontally to the right`)
           left = this.data.viewportMargin
-        } else if (wordCenter + width/2 + this.data.viewportMargin >= viewportWidth) {
+        } else if (placementTargetX + width/2 + this.data.viewportMargin >= viewportWidth) {
           // There is not enough space at the right
-          console.log(`Shifting horizontally to the left`)
+          console.log(`DCALC: Shifting horizontally to the left`)
           left = viewportWidth - this.data.viewportMargin - scrollbarWidth - width
         } else {
-          console.log(`Placing horizontally to the middle`)
+          console.log(`DCALC: Placing horizontally to the middle`)
           left = Math.round((viewportWidth - width)/2)
         }
 
         if (height + 2*this.data.viewportMargin > viewportHeight) {
-          console.log(`Shrinking vertically`)
+          console.log(`DCALC: Shrinking vertically`)
           top = this.data.viewportMargin
           height = viewportHeight - 2*this.data.viewportMargin
-        } else if (this.data.targetRect.top + this.data.targetRect.height + this.data.placementMargin + height < viewportHeight) {
-          console.log(`Placing vertically to the bottom`)
-          top = this.data.targetRect.top + this.data.targetRect.height + this.data.placementMargin
-        } else if (height + this.data.placementMargin < this.data.targetRect.top) {
-          console.log(`Placing vertically to the top`)
-          top = this.data.targetRect.top - this.data.placementMargin - height
+        } else if (placementTargetY + this.data.placementMargin + height < viewportHeight) {
+          console.log(`DCALC: Placing vertically to the bottom`)
+          top = placementTargetY + this.data.placementMargin
+        } else if (height + this.data.placementMargin < placementTargetY) {
+          console.log(`DCALC: Placing vertically to the top`)
+          top = placementTargetY - this.data.placementMargin - height
         } else {
-          console.log(`Placing vertically to the middle`)
+          console.log(`DCALC: Placing vertically to the middle`)
           top = Math.ceil((viewportHeight - height)/2)
         }
 
-        if (this.interactInstance && (this.minResizableWidth !== width || this.minResizableHeight !== height)) {
+        console.log(`DCALC: final popup dimensions are [${width}px, ${height}px],
+        popup will be placed at [${left}px, ${top}px]`)
+
+        if (this.interactInstance && this.minResizableWidth !== width && this.minResizableHeight !== height) {
           // If component is mounted and interact.js instance is created, update its resizable properties
           this.minResizableWidth = width
           this.minResizableHeight = height
           this.interactInstance.resizable(this.resizableSettings())
         }
 
+        this.$nextTick(() => {
+
+          let width = this.$el.offsetWidth
+          let height = this.$el.offsetHeight
+          let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+          let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+          console.log(`DCALC: nextTick, popup dimensions are [${width}px, ${height}px],
+            viewport dimensions are [${viewportWidth}px, ${viewportHeight}px]`)
+          if (width >= viewportWidth) {
+            console.log(`DCALC: limiting a popup width`)
+            width = viewportWidth - 2*this.data.viewportMargin - scrollbarWidth
+            this.$el.style.width = `${width}px`
+          }
+            if (height >= viewportHeight) {
+                console.log(`DCALC: limiting a popup height`)
+                height = viewportHeight - 2*this.data.viewportMargin
+              this.$el.style.height = `${height}px`
+            }
+        })
+
         return {
           top: `${top}px`,
-          left: `${left}px`
+          left: `${left}px`,
+          width: `auto`,
+          height: `auto`
         }
       }
     },
@@ -332,7 +373,8 @@
         flex-direction: column;
         background: #FFF;
         border: 1px solid lightgray;
-        width: 400px;
+        min-width: 210px;
+        min-height: 150px;
         z-index: 1000;
         position: fixed;
         left: 200px;

@@ -305,16 +305,21 @@ export default class ContentUIController {
           // Can be scaled down on small screens automatically.
           top: 100,
           left: 100,
-          width: 400,
-          contentHeightLimit: 110,
-          heightMin: 200, // Initially, popup height will be set to this value
+          width: 210,
+          /*
+          `fixedElementsHeight` is a sum of heights of all elements of a popup, including a top bar, a button area,
+          and a bottom bar. A height of all variable elements (i.e. morphological data container) will be
+          a height of a popup less this value.
+           */
+          fixedElementsHeight: 120,
+          heightMin: 150, // Initially, popup height will be set to this value
           heightMax: 400, // If a morphological content height is greater than `contentHeightLimit`, a popup height will be increased to this value
           // A margin between a popup and a selection
-          placementMargin: 2,
+          placementMargin: 15,
           // A minimal margin between a popup and a viewport border, in pixels. In effect when popup is scaled down.
           viewportMargin: 5,
 
-          // Size and position of a word selection
+          // A position of a word selection
           targetRect: {},
 
           settings: this.options.items,
@@ -340,7 +345,8 @@ export default class ContentUIController {
           }
         },
         panel: this.panel,
-        options: this.options
+        options: this.options,
+        uiController: this
       },
       methods: {
         setTargetRect: function (targetRect) {

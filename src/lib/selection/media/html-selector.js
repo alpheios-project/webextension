@@ -6,12 +6,9 @@ import MediaSelector from './media-selector'
 export default class HTMLSelector extends MediaSelector {
   constructor (event, defaultLanguageCode) {
     super(event)
-    let rect = event.target.getBoundingClientRect()
     this.targetRect = {
-      top: event.screenY,
-      left: event.screenX,
-      width: 10,
-      height: 10
+      top: event.clientY,
+      left: event.clientX
     }
     this.defaultLanguageCode = defaultLanguageCode
 
