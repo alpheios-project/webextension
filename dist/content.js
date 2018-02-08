@@ -20366,7 +20366,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
       if (width + 2 * this.data.viewportMargin > viewportWidth) {
         console.log(`DCALC: Shrinking horizontally`);
         left = this.data.viewportMargin;
-        width = 'auto';
+        width = viewportWidth - viewportMargins;
       } else if (placementTargetX + width / 2 + this.data.viewportMargin + verticalScrollbarWidth < viewportWidth && placementTargetX - width / 2 - this.data.viewportMargin > 0) {
         console.log(`DCALC: Aligning horizontally to middle of the word`);
         left = placementTargetX - Math.floor(width / 2);
@@ -20380,14 +20380,13 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         left = viewportWidth - this.data.viewportMargin - verticalScrollbarWidth - width;
       } else {
         console.log(`DCALC: Placing horizontally to the middle`);
-        left = this.data.viewportMargin;
-        width = 'auto';
+        left = Math.round((viewportWidth - width) / 2);
       }
 
       if (height + 2 * this.data.viewportMargin > viewportHeight) {
         console.log(`DCALC: Shrinking vertically`);
         top = this.data.viewportMargin;
-        height = 'auto';
+        height = viewportHeight - 2 * this.data.viewportMargin;
       } else if (placementTargetY + this.data.placementMargin + height < viewportHeight) {
         console.log(`DCALC: Placing vertically to the bottom`);
         top = placementTargetY + this.data.placementMargin;
@@ -20396,8 +20395,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         top = placementTargetY - this.data.placementMargin - height;
       } else {
         console.log(`DCALC: Placing vertically to the middle`);
-        top = this.data.viewportMargin;
-        height = 'auto';
+        top = Math.ceil((viewportHeight - height) / 2);
       }
 
       console.log(`DCALC: final popup dimensions are [${width}px, ${height}px],
@@ -20435,18 +20433,11 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         }
       });
 
-      if (width !== 'auto') {
-        width = `${width}px`;
-      }
-      if (height !== 'auto') {
-        height = `${height}px`;
-      }
-
       return {
         top: `${top}px`,
         left: `${left}px`,
-        width: width,
-        height: height
+        width: 'auto',
+        height: 'auto'
       };
     }
   },
@@ -24896,7 +24887,7 @@ class ContentUIController {
           // Can be scaled down on small screens automatically.
           top: 100,
           left: 100,
-          width: 400,
+          width: 210,
           /*
           `fixedElementsHeight` is a sum of heights of all elements of a popup, including a top bar, a button area,
           and a bottom bar. A height of all variable elements (i.e. morphological data container) will be

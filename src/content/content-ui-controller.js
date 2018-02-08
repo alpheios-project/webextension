@@ -305,7 +305,7 @@ export default class ContentUIController {
           // Can be scaled down on small screens automatically.
           top: 100,
           left: 100,
-          width: 400,
+          width: 210,
           /*
           `fixedElementsHeight` is a sum of heights of all elements of a popup, including a top bar, a button area,
           and a bottom bar. A height of all variable elements (i.e. morphological data container) will be
