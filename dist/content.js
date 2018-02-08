@@ -20368,9 +20368,10 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         console.log(`DCALC: popup height will not be increased`);
       }
 
-      let scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      console.log(`DCALC: scrollbar width is ${scrollbarWidth}`);
-      let viewportMargins = 2 * this.data.viewportMargin + scrollbarWidth;
+      let horizontalScrollbarWidth = window.innerHeight - document.documentElement.clientHeight;
+      let verticalScrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      console.log(`DCALC: scrollbar widths are ${horizontalScrollbarWidth}px horizontal, ${verticalScrollbarWidth}px vertical`);
+      let viewportMargins = 2 * this.data.viewportMargin + verticalScrollbarWidth;
 
       /*
       Horizontal positioning:
@@ -20391,7 +20392,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         console.log(`DCALC: Shrinking horizontally`);
         left = this.data.viewportMargin;
         width = viewportWidth - viewportMargins;
-      } else if (placementTargetX + width / 2 + this.data.viewportMargin + scrollbarWidth < viewportWidth && placementTargetX - width / 2 - this.data.viewportMargin > 0) {
+      } else if (placementTargetX + width / 2 + this.data.viewportMargin + verticalScrollbarWidth < viewportWidth && placementTargetX - width / 2 - this.data.viewportMargin > 0) {
         console.log(`DCALC: Aligning horizontally to middle of the word`);
         left = placementTargetX - Math.floor(width / 2);
       } else if (placementTargetX - width / 2 - this.data.viewportMargin <= 0) {
@@ -20401,7 +20402,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
       } else if (placementTargetX + width / 2 + this.data.viewportMargin >= viewportWidth) {
         // There is not enough space at the right
         console.log(`DCALC: Shifting horizontally to the left`);
-        left = viewportWidth - this.data.viewportMargin - scrollbarWidth - width;
+        left = viewportWidth - this.data.viewportMargin - verticalScrollbarWidth - width;
       } else {
         console.log(`DCALC: Placing horizontally to the middle`);
         left = Math.round((viewportWidth - width) / 2);
@@ -20441,14 +20442,19 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         console.log(`DCALC: nextTick, popup dimensions are [${width}px, ${height}px],
           viewport dimensions are [${viewportWidth}px, ${viewportHeight}px]`);
         if (width >= viewportWidth) {
-          console.log(`DCALC: limiting a popup width`);
-          width = viewportWidth - 2 * this.data.viewportMargin - scrollbarWidth;
+          width = viewportWidth - 2 * this.data.viewportMargin - verticalScrollbarWidth;
+          // TODO: Do not set style properties directly
           this.$el.style.width = `${width}px`;
+          this.$el.style.left = `${this.data.viewportMargin}px`;
+          console.log(`DCALC: limiting a popup width to ${width}px`);
         }
         if (height >= viewportHeight) {
-          console.log(`DCALC: limiting a popup height`);
-          height = viewportHeight - 2 * this.data.viewportMargin;
+
+          height = viewportHeight - 2 * this.data.viewportMargin - horizontalScrollbarWidth;
+          // TODO: Do not set style properties directly
           this.$el.style.height = `${height}px`;
+          this.$el.style.top = `${this.data.viewportMargin}px`;
+          console.log(`DCALC: limiting a popup height to ${height}px`);
         }
       });
 
