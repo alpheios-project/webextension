@@ -175,7 +175,7 @@
         if (width + 2*this.data.viewportMargin > viewportWidth) {
           console.log(`DCALC: Shrinking horizontally`)
           left = this.data.viewportMargin
-          width = viewportWidth - viewportMargins
+          width = 'auto'
         } else if (placementTargetX + width/2 + this.data.viewportMargin + verticalScrollbarWidth < viewportWidth
                    && placementTargetX - width/2 - this.data.viewportMargin > 0) {
           console.log(`DCALC: Aligning horizontally to middle of the word`)
@@ -190,13 +190,14 @@
           left = viewportWidth - this.data.viewportMargin - verticalScrollbarWidth - width
         } else {
           console.log(`DCALC: Placing horizontally to the middle`)
-          left = Math.round((viewportWidth - width)/2)
+          left = this.data.viewportMargin
+          width = 'auto'
         }
 
         if (height + 2*this.data.viewportMargin > viewportHeight) {
           console.log(`DCALC: Shrinking vertically`)
           top = this.data.viewportMargin
-          height = viewportHeight - 2*this.data.viewportMargin
+          height = 'auto'
         } else if (placementTargetY + this.data.placementMargin + height < viewportHeight) {
           console.log(`DCALC: Placing vertically to the bottom`)
           top = placementTargetY + this.data.placementMargin
@@ -205,7 +206,8 @@
           top = placementTargetY - this.data.placementMargin - height
         } else {
           console.log(`DCALC: Placing vertically to the middle`)
-          top = Math.ceil((viewportHeight - height)/2)
+          top = this.data.viewportMargin
+          height = 'auto'
         }
 
         console.log(`DCALC: final popup dimensions are [${width}px, ${height}px],
@@ -243,11 +245,14 @@
           }
         })
 
+        if (width !== 'auto') { width = `${width}px` }
+        if (height !== 'auto') { height = `${height}px` }
+
         return {
           top: `${top}px`,
           left: `${left}px`,
-          width: `auto`,
-          height: `auto`
+          width: width,
+          height: height
         }
       }
     },
