@@ -134,7 +134,7 @@
                         {{ infl.groupingKey[types.number].toString() }}
                     </span>
 
-                    <span @click="sendFeature(infl.gorupingKey[types.tense])"
+                    <span @click="sendFeature(infl.groupingKey[types.tense])"
                       :class="attributeClass(types.tense)"
                       v-if="infl.groupingKey[types.tense] && ! group.groupingKey.isCaseInflectionSet" >
                       {{ infl.groupingKey[types.tense].toString() }}
