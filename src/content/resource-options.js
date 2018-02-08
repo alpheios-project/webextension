@@ -33,7 +33,7 @@ export default class ResourceOptions {
               {value: 'https://github.com/alpheios-project/lsj', text: 'Liddell, Scott, Jones'},
               {value: 'https://github.com/alpheios-project/aut', text: 'Autenrieth Homeric Lexicon'},
               {value: 'https://github.com/alpheios-project/dod', text: 'Dodson'},
-              {value: 'https://github.com/alpheios-project/dod', text: 'Abbott-Smith'}
+              {value: 'https://github.com/alpheios-project/as', text: 'Abbott-Smith'}
             ]
           },
           [codes.latin]: {
