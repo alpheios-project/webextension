@@ -6,6 +6,16 @@
                 <span v-show="data.status.selectedText" class="alpheios-popup__header-selection">{{data.status.selectedText}}</span>
                 <span v-show="data.status.languageName && data.verboseMode" class="alpheios-popup__header-word">({{data.status.languageName}})</span>
             </div>
+            <div class="alpheios-popup__button-area">
+                <div class="uk-button-group">
+                    <button @click="showPanelTab('inflections')" v-show="data.inflDataReady"
+                            class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Inflect</button>
+                    <button @click="showPanelTab('definitions')" v-show="data.defDataReady"
+                            class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Define</button>
+                    <button @click="showPanelTab('options')"
+                            class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Options</button>
+                </div>
+            </div>
             <span class="alpheios-popup__close-btn" @click="closePopup">
                 <close-icon></close-icon>
             </span>
@@ -25,19 +35,9 @@
                 </div>
             </div>
         </div>
-        <div class="alpheios-popup__providers" v-if="data.providers.length > 0">
+        <div class="alpheios-popup__providers">
+          <img class="alpheios-popup__logo" src="../images/icon.png">
           <a class="alpheios-popup__providers-link" v-on:click="switchProviders">{{providersLinkText}}</a>
-        </div>
-        <div class="alpheios-popup__button-area">
-            <img class="alpheios-popup__logo" src="../images/icon.png">
-            <div class="uk-button-group">
-                <button @click="showPanelTab('inflections')" v-show="data.inflDataReady"
-                        class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Inflect</button>
-                <button @click="showPanelTab('definitions')" v-show="data.defDataReady"
-                        class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Define</button>
-                <button @click="showPanelTab('options')"
-                        class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Options</button>
-            </div>
         </div>
         <div class="alpheios-popup__notifications uk-text-small" :class="notificationClasses"
              v-show="data.notification.important">
@@ -422,9 +422,9 @@
     .alpheios-popup__close-btn {
         display: block;
         position: absolute;
-        width: 30px;
+        width: 20px;
         right: 5px;
-        top: 10px;
+        top: 5px;
         cursor: pointer;
         fill: $alpheios-link-color-dark-bg;
         stroke: $alpheios-link-color-dark-bg;
@@ -508,24 +508,22 @@
     }
 
     .alpheios-popup__button-area {
-        flex: 0 1 auto;
-        padding: 10px 20px;
+        float: right;
+        padding-left: 5px;
+        padding-right: 5px;
         text-align: right;
         box-sizing: border-box;
-        position: relative;
     }
 
     img.alpheios-popup__logo {
-        height: 35px;
+        height: 16px;
         width: auto;
-        position: absolute;
-        top: 6px;
-        left: 20px;
     }
 
     .alpheios-popup__more-btn {
         float: right;
         margin-bottom: 10px;
+        font-size: 0.675 * $alpheios-base-font-size !important;
     }
     .alpheios-popup__morph-cont-providers-source {
       font-size: smaller;

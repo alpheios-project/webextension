@@ -23037,7 +23037,7 @@ var papaparse = createCommonjsModule(function (module, exports) {
 }));
 });
 
-var DefaultConfig = "{\n  \"https://github.com/alpheios-project/lsj\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lsj&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\",\n    \"rights\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/aut\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/aut/dat/grc-aut-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/aut//dat/grc-aut-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=aut&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\",\n    \"rights\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth). Provided by the Perseus Digital Library at Tufts University\"\n  },\n  \"https://github.com/alpheios-project/ml\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ml&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Middle Liddell\\\"\",\n    \"rights\": \"\\\"An Intermediate Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott). Provided by the Perseus Digital Library at Tufts University\"\n  },\n  \"https://github.com/alpheios-project/as\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/as/dat/grc-as-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/as/dat/grc-as-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=as&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Manual Greek Lexicon of the New Testament\\\"\",\n    \"rights\": \"\\\"A Manual Greek Lexicon of the New Testament\\\" (G. Abbott-Smith). Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=dod&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"\\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/ls\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/ls/dat/lat-ls-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ls&lg=lat&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"lat\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\",\n    \"rights\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/lan\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/lan/dat/ara-lan-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lan&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane)\",\n    \"rights\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/sal\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/sal/dat/ara-sal-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=sal&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\",\n    \"rights\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/stg\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-ids.dat\",\n      \"full\": null\n    },\n    \"langs\": {\n      \"source\": \"per\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\",\n    \"rights\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass). Provided by the Center for Advanced Study of Language (CASL) at the University of Maryland, College Park.\"\n  }\n}\n";
+var DefaultConfig = "{\n  \"https://github.com/alpheios-project/lsj\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lsj&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\",\n    \"rights\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/aut\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/aut/dat/grc-aut-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/aut//dat/grc-aut-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=aut&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\",\n    \"rights\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth). Provided by the Perseus Digital Library at Tufts University\"\n  },\n  \"https://github.com/alpheios-project/ml\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ml&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Middle Liddell\\\"\",\n    \"rights\": \"\\\"An Intermediate Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott). Provided by the Perseus Digital Library at Tufts University\"\n  },\n  \"https://github.com/alpheios-project/as\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/as/dat/grc-as-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/as/dat/grc-as-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=as&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Manual Greek Lexicon of the New Testament\\\"\",\n    \"rights\": \"\\\"A Manual Greek Lexicon of the New Testament\\\" (G. Abbott-Smith). Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-ids.dat\",\n      \"full\": null\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"\\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/ls\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/ls/dat/lat-ls-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ls&lg=lat&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"lat\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\",\n    \"rights\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/lan\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/lan/dat/ara-lan-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lan&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane)\",\n    \"rights\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/sal\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/sal/dat/ara-sal-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=sal&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\",\n    \"rights\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/stg\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-ids.dat\",\n      \"full\": null\n    },\n    \"langs\": {\n      \"source\": \"per\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\",\n    \"rights\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass). Provided by the Center for Advanced Study of Language (CASL) at the University of Maryland, College Park.\"\n  }\n}\n";
 
 class AlpheiosLexAdapter extends BaseLexiconAdapter {
   /**
@@ -23853,7 +23853,7 @@ class ResourceOptions {
               {value: 'https://github.com/alpheios-project/lsj', text: 'Liddell, Scott, Jones'},
               {value: 'https://github.com/alpheios-project/aut', text: 'Autenrieth Homeric Lexicon'},
               {value: 'https://github.com/alpheios-project/dod', text: 'Dodson'},
-              {value: 'https://github.com/alpheios-project/dod', text: 'Abbott-Smith'}
+              {value: 'https://github.com/alpheios-project/as', text: 'Abbott-Smith'}
             ]
           },
           [codes.latin]: {
@@ -39088,7 +39088,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n  display: flex;\n  flex-direction: column;\n  background: #FFF;\n  border: 1px solid lightgray;\n  min-width: 210px;\n  min-height: 150px;\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  top: 100px;\n  box-sizing: border-box;\n  /* Required for Interact.js to take element size with paddings and work correctly */\n  overflow: auto;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 16px;\n  color: #666666;\n}\n.alpheios-popup__header {\n  position: relative;\n  box-sizing: border-box;\n  width: 100%;\n  flex: 0 0 50px;\n  padding: 10px 20px;\n}\n.alpheios-popup__header-text {\n  position: relative;\n  top: 20px;\n  left: 3px;\n  line-height: 1;\n}\n.alpheios-popup__header-selection {\n  font-size: 16px;\n  font-weight: 700;\n  color: #4E6476;\n}\n.alpheios-popup__header-word {\n  font-size: 12px;\n  position: relative;\n  top: -1px;\n}\n.alpheios-popup__close-btn {\n  display: block;\n  position: absolute;\n  width: 30px;\n  right: 5px;\n  top: 10px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__close-btn:hover,\n.alpheios-popup__close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-popup__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  flex: 0 0 60px;\n  box-sizing: border-box;\n  overflow: hidden;\n}\n.alpheios-popup__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__notifications-close-btn:hover,\n.alpheios-popup__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n[data-notification-visible=\"true\"] .alpheios-popup__notifications {\n  display: block;\n}\n.alpheios-popup__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-popup__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-popup__notifications--important {\n  background: #73CDDE;\n}\n.alpheios-popup__morph-cont {\n  flex: 1 1;\n  box-sizing: border-box;\n  margin: 10px 10px 0;\n  overflow: auto;\n  padding: 10px;\n  border: 1px solid #B8B7B5;\n}\n.alpheios-popup__morph-cont-providers-header {\n  display: inline-block;\n  color: #3E8D9C;\n  font-size: 12px;\n  font-weight: 700;\n  margin-top: 2px;\n}\n.alpheios-popup__definitions--placeholder {\n  border: 0 none;\n  padding: 10px 0 0;\n}\n.alpheios-popup__button-area {\n  flex: 0 1 auto;\n  padding: 10px 20px;\n  text-align: right;\n  box-sizing: border-box;\n  position: relative;\n}\nimg.alpheios-popup__logo {\n  height: 35px;\n  width: auto;\n  position: absolute;\n  top: 6px;\n  left: 20px;\n}\n.alpheios-popup__more-btn {\n  float: right;\n  margin-bottom: 10px;\n}\n.alpheios-popup__morph-cont-providers-source {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-popup__providers {\n  margin-left: 20px;\n}\n.alpheios-popup__providers-link {\n  font-size: 10.8px;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-popup {\n  display: flex;\n  flex-direction: column;\n  background: #FFF;\n  border: 1px solid lightgray;\n  min-width: 210px;\n  min-height: 150px;\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  top: 100px;\n  box-sizing: border-box;\n  /* Required for Interact.js to take element size with paddings and work correctly */\n  overflow: auto;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 16px;\n  color: #666666;\n}\n.alpheios-popup__header {\n  position: relative;\n  box-sizing: border-box;\n  width: 100%;\n  flex: 0 0 50px;\n  padding: 10px 20px;\n}\n.alpheios-popup__header-text {\n  position: relative;\n  top: 20px;\n  left: 3px;\n  line-height: 1;\n}\n.alpheios-popup__header-selection {\n  font-size: 16px;\n  font-weight: 700;\n  color: #4E6476;\n}\n.alpheios-popup__header-word {\n  font-size: 12px;\n  position: relative;\n  top: -1px;\n}\n.alpheios-popup__close-btn {\n  display: block;\n  position: absolute;\n  width: 20px;\n  right: 5px;\n  top: 5px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__close-btn:hover,\n.alpheios-popup__close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-popup__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  flex: 0 0 60px;\n  box-sizing: border-box;\n  overflow: hidden;\n}\n.alpheios-popup__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__notifications-close-btn:hover,\n.alpheios-popup__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n[data-notification-visible=\"true\"] .alpheios-popup__notifications {\n  display: block;\n}\n.alpheios-popup__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-popup__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-popup__notifications--important {\n  background: #73CDDE;\n}\n.alpheios-popup__morph-cont {\n  flex: 1 1;\n  box-sizing: border-box;\n  margin: 10px 10px 0;\n  overflow: auto;\n  padding: 10px;\n  border: 1px solid #B8B7B5;\n}\n.alpheios-popup__morph-cont-providers-header {\n  display: inline-block;\n  color: #3E8D9C;\n  font-size: 12px;\n  font-weight: 700;\n  margin-top: 2px;\n}\n.alpheios-popup__definitions--placeholder {\n  border: 0 none;\n  padding: 10px 0 0;\n}\n.alpheios-popup__button-area {\n  float: right;\n  padding-left: 5px;\n  padding-right: 5px;\n  text-align: right;\n  box-sizing: border-box;\n}\nimg.alpheios-popup__logo {\n  height: 16px;\n  width: auto;\n}\n.alpheios-popup__more-btn {\n  float: right;\n  margin-bottom: 10px;\n  font-size: 10.8px !important;\n}\n.alpheios-popup__morph-cont-providers-source {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-popup__providers {\n  margin-left: 20px;\n}\n.alpheios-popup__providers-link {\n  font-size: 10.8px;\n}\n", ""]);
 
 // exports
 
@@ -39153,6 +39153,68 @@ var render = function() {
             },
             [_vm._v("(" + _vm._s(_vm.data.status.languageName) + ")")]
           )
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "alpheios-popup__button-area" }, [
+          _c("div", { staticClass: "uk-button-group" }, [
+            _c(
+              "button",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: _vm.data.inflDataReady,
+                    expression: "data.inflDataReady"
+                  }
+                ],
+                staticClass:
+                  "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
+                on: {
+                  click: function($event) {
+                    _vm.showPanelTab("inflections")
+                  }
+                }
+              },
+              [_vm._v("Inflect")]
+            ),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: _vm.data.defDataReady,
+                    expression: "data.defDataReady"
+                  }
+                ],
+                staticClass:
+                  "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
+                on: {
+                  click: function($event) {
+                    _vm.showPanelTab("definitions")
+                  }
+                }
+              },
+              [_vm._v("Define")]
+            ),
+            _vm._v(" "),
+            _c(
+              "button",
+              {
+                staticClass:
+                  "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
+                on: {
+                  click: function($event) {
+                    _vm.showPanelTab("options")
+                  }
+                }
+              },
+              [_vm._v("Options")]
+            )
+          ])
         ]),
         _vm._v(" "),
         _c(
@@ -39244,84 +39306,20 @@ var render = function() {
         1
       ),
       _vm._v(" "),
-      _vm.data.providers.length > 0
-        ? _c("div", { staticClass: "alpheios-popup__providers" }, [
-            _c(
-              "a",
-              {
-                staticClass: "alpheios-popup__providers-link",
-                on: { click: _vm.switchProviders }
-              },
-              [_vm._v(_vm._s(_vm.providersLinkText))]
-            )
-          ])
-        : _vm._e(),
-      _vm._v(" "),
-      _c("div", { staticClass: "alpheios-popup__button-area" }, [
+      _c("div", { staticClass: "alpheios-popup__providers" }, [
         _c("img", {
           staticClass: "alpheios-popup__logo",
           attrs: { src: __webpack_require__(25) }
         }),
         _vm._v(" "),
-        _c("div", { staticClass: "uk-button-group" }, [
-          _c(
-            "button",
-            {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.inflDataReady,
-                  expression: "data.inflDataReady"
-                }
-              ],
-              staticClass:
-                "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
-              on: {
-                click: function($event) {
-                  _vm.showPanelTab("inflections")
-                }
-              }
-            },
-            [_vm._v("Inflect")]
-          ),
-          _vm._v(" "),
-          _c(
-            "button",
-            {
-              directives: [
-                {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.data.defDataReady,
-                  expression: "data.defDataReady"
-                }
-              ],
-              staticClass:
-                "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
-              on: {
-                click: function($event) {
-                  _vm.showPanelTab("definitions")
-                }
-              }
-            },
-            [_vm._v("Define")]
-          ),
-          _vm._v(" "),
-          _c(
-            "button",
-            {
-              staticClass:
-                "uk-button uk-button-primary uk-button-small alpheios-popup__more-btn",
-              on: {
-                click: function($event) {
-                  _vm.showPanelTab("options")
-                }
-              }
-            },
-            [_vm._v("Options")]
-          )
-        ])
+        _c(
+          "a",
+          {
+            staticClass: "alpheios-popup__providers-link",
+            on: { click: _vm.switchProviders }
+          },
+          [_vm._v(_vm._s(_vm.providersLinkText))]
+        )
       ]),
       _vm._v(" "),
       _c(
