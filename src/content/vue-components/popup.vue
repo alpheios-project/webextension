@@ -115,7 +115,7 @@
         }
       },
       providersLinkText: function() {
-        return this.data.showProviders ? 'Hide Credits' : 'Show Credits'
+        return this.data.showProviders ? 'Hide Credits' : 'Credits'
       },
       showProviders: function() {
         return this.data.showProviders

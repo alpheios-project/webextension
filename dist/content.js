@@ -20306,7 +20306,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
       };
     },
     providersLinkText: function () {
-      return this.data.showProviders ? 'Hide Credits' : 'Show Credits';
+      return this.data.showProviders ? 'Hide Credits' : 'Credits';
     },
     showProviders: function () {
       return this.data.showProviders;
