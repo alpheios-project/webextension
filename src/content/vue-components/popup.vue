@@ -1,31 +1,33 @@
 <template>
     <div ref="popup" class="alpheios-popup auk" v-bind:class="data.classes" :style="dimensions"
          v-show="visible" :data-notification-visible="data.notification.visible">
+        <span class="alpheios-popup__close-btn" @click="closePopup">
+            <close-icon></close-icon>
+        </span>
         <div class="alpheios-popup__header">
             <div class="alpheios-popup__header-text">
                 <span v-show="data.status.selectedText" class="alpheios-popup__header-selection">{{data.status.selectedText}}</span>
                 <span v-show="data.status.languageName && data.verboseMode" class="alpheios-popup__header-word">({{data.status.languageName}})</span>
             </div>
-            <div class="alpheios-popup__button-area">
-                <div class="uk-button-group">
-                    <button @click="showPanelTab('inflections')" v-show="data.inflDataReady"
-                            class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Inflect</button>
-                    <button @click="showPanelTab('definitions')" v-show="data.defDataReady"
-                            class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Define</button>
-                    <button @click="showPanelTab('options')"
-                            class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Options</button>
-                </div>
+            <div class="uk-button-group alpheios-popup__button-area">
+                <button @click="showPanelTab('inflections')" v-show="data.inflDataReady"
+                        class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Inflect
+                </button>
+                <button @click="showPanelTab('definitions')" v-show="data.defDataReady"
+                        class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Define
+                </button>
+                <button @click="showPanelTab('options')"
+                        class="uk-button uk-button-primary uk-button-small alpheios-popup__more-btn">Options
+                </button>
             </div>
-            <span class="alpheios-popup__close-btn" @click="closePopup">
-                <close-icon></close-icon>
-            </span>
         </div>
         <div v-show="!morphDataReady"
              class="alpheios-popup__morph-cont alpheios-popup__definitions--placeholder uk-text-small">
             No lexical data is available yet
         </div>
         <div v-show="morphDataReady" :id="lexicalDataContainerID" class="alpheios-popup__morph-cont uk-text-small">
-            <morph :id="morphComponentID" :lexemes="lexemes" :definitions="definitions" :linkedfeatures="linkedfeatures">
+            <morph :id="morphComponentID" :lexemes="lexemes" :definitions="definitions"
+                   :linkedfeatures="linkedfeatures">
             </morph>
 
             <div class="alpheios-popup__morph-cont-providers" v-if="showProviders">
@@ -396,15 +398,18 @@
         position: relative;
         box-sizing: border-box;
         width: 100%;
-        flex: 0 0 50px;
-        padding: 10px 20px;
+        flex: 0 0;
+        padding: 10px 10px 0;
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
     }
 
     .alpheios-popup__header-text {
-        position: relative;
-        top: 20px;
-        left: 3px;
         line-height: 1;
+        align-items: flex-start;
+        padding: 7px 20px 0 0;
     }
 
     .alpheios-popup__header-selection {
@@ -424,7 +429,7 @@
         position: absolute;
         width: 20px;
         right: 5px;
-        top: 5px;
+        top: 0;
         cursor: pointer;
         fill: $alpheios-link-color-dark-bg;
         stroke: $alpheios-link-color-dark-bg;
@@ -488,7 +493,7 @@
     .alpheios-popup__morph-cont {
         flex: 1 1;
         box-sizing: border-box;
-        margin: 10px 10px 0;
+        margin: 5px 10px 0;
         overflow: auto;
         padding: 10px;
         border: 1px solid $alpheios-sidebar-header-border-color;
@@ -505,14 +510,6 @@
     .alpheios-popup__definitions--placeholder {
         border: 0 none;
         padding: 10px 0 0;
-    }
-
-    .alpheios-popup__button-area {
-        float: right;
-        padding-left: 5px;
-        padding-right: 5px;
-        text-align: right;
-        box-sizing: border-box;
     }
 
     img.alpheios-popup__logo {
@@ -535,7 +532,7 @@
     }
 
     .alpheios-popup__providers {
-      margin-left: 20px;
+      margin: 0 0 5px 10px;
     }
     .alpheios-popup__providers-link {
       font-size: 0.675*$alpheios-base-font-size;
