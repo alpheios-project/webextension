@@ -20301,7 +20301,10 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
       widthValue: 0,
       heightValue: 0,
       exactWidth: 0,
-      exactHeight: 0
+      exactHeight: 0,
+      resizeDelta: 10, // Changes in size below this value (in pixels) will be ignored to avoid minor dimension updates
+      resizeCount: 0, // Should not exceed `resizeCountMax`
+      resizeCountMax: 100 // Max number of resize iteration
     };
   },
   props: {
@@ -20574,22 +20577,33 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
      */
     updatePopupDimensions() {
       let time = new Date().getTime();
-      // Update dimensions only if there was a change in a popup size
-      if (this.$el.offsetWidth !== this.exactWidth) {
+
+      if (this.resizeCount >= this.resizeCountMax) {
+        // Skip resizing if maximum number reached to avoid infinite loops
+        return;
+      }
+
+      // Update dimensions only if there was any significant change in a popup size
+      if (this.$el.offsetWidth >= this.exactWidth + this.resizeDelta || this.$el.offsetWidth <= this.exactWidth - this.resizeDelta) {
+        console.log(`${time}: dimensions update, offsetWidth is ${this.$el.offsetWidth}, previous exactWidth is ${this.exactWidth}`);
         this.exactWidth = this.$el.offsetWidth;
         this.widthDm = this.$el.offsetWidth;
-        console.log(`${time}: dimensions update, offsetWidth is ${this.$el.offsetWidth}`);
+        this.resizeCount++;
+        console.log(`Resize counter value is ${this.resizeCount}`);
       }
-      if (this.$el.offsetHeight !== this.exactHeight) {
+      if (this.$el.offsetHeight >= this.exactHeight + this.resizeDelta || this.$el.offsetHeight <= this.exactHeight - this.resizeDelta) {
+        console.log(`${time}: dimensions update, offsetHeight is ${this.$el.offsetHeight}, previous exactHeight is ${this.exactHeight}`);
         this.exactHeight = this.$el.offsetHeight;
         this.heightDm = this.$el.offsetHeight;
-        console.log(`${time}: dimensions update, offsetHeight is ${this.$el.offsetHeight}`);
+        this.resizeCount++;
+        console.log(`Resize counter value is ${this.resizeCount}`);
       }
     },
 
     resetPopupDimensions() {
       console.log('Resetting popup dimensions');
       // this.contentHeight = 0
+      this.resizeCount = 0;
       this.widthValue = 0;
       this.heightValue = 0;
       this.exactWidth = 0;
@@ -24755,7 +24769,8 @@ class ContentUIController {
             tableBody: 'alpheios-panel-content-infl-table-body'
           },
           infoComponentData: {
-            manifest: browser.runtime.getManifest()
+            manifest: browser.runtime.getManifest(),
+            languageName: ContentUIController.getLanguageName(this.state.currentLanguage)
           },
           messages: [],
           notification: {
@@ -25366,8 +25381,10 @@ class ContentUIController {
 
   updateLanguage (currentLanguage) {
     this.state.setItem('currentLanguage', currentLanguage)
-    this.panel.requestGrammar({ type: 'table-of-contents', value: '', languageID: __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(currentLanguage) })
+    let languageID = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(currentLanguage)
+    this.panel.requestGrammar({ type: 'table-of-contents', value: '', languageID: languageID })
     this.panel.enableInflections(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageForCode(currentLanguage).canInflect())
+    this.panel.panelData.infoComponentData.languageName = ContentUIController.getLanguageName(languageID)
     console.log(`Current language is ${this.state.currentLanguage}`)
   }
 
@@ -38494,15 +38511,7 @@ var render = function() {
       )
     ]),
     _vm._v(" "),
-    _vm._m(0)
-  ])
-}
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "alpheios-info__helptext" }, [
+    _c("div", { staticClass: "alpheios-info__helptext" }, [
       _c("h3", [_vm._v("Getting Started")]),
       _vm._v(" "),
       _c("p", [
@@ -38519,8 +38528,10 @@ var staticRenderFns = [
       _vm._v(" "),
       _c("p", [
         _vm._v(
-          "Alpheios will try to detect the language of the word from the page. If it cannot it will use the default language. "
-        )
+          "Alpheios will try to detect the language of the word from the page markup. If it cannot it will use the default language (currently using "
+        ),
+        _c("b", [_vm._v(_vm._s(_vm.data.languageName))]),
+        _vm._v("). ")
       ]),
       _vm._v(" "),
       _c("p", [
@@ -38547,8 +38558,9 @@ var staticRenderFns = [
         )
       ])
     ])
-  }
-]
+  ])
+}
+var staticRenderFns = []
 render._withStripped = true
 var esExports = { render: render, staticRenderFns: staticRenderFns }
 /* harmony default export */ __webpack_exports__["a"] = (esExports);
