@@ -77,7 +77,8 @@ export default class ContentUIController {
             tableBody: 'alpheios-panel-content-infl-table-body'
           },
           infoComponentData: {
-            manifest: browser.runtime.getManifest()
+            manifest: browser.runtime.getManifest(),
+            languageName: ContentUIController.getLanguageName(this.state.currentLanguage)
           },
           messages: [],
           notification: {
@@ -671,8 +672,10 @@ export default class ContentUIController {
 
   updateLanguage (currentLanguage) {
     this.state.setItem('currentLanguage', currentLanguage)
-    this.panel.requestGrammar({ type: 'table-of-contents', value: '', languageID: LanguageModelFactory.getLanguageIdFromCode(currentLanguage) })
+    let languageID = LanguageModelFactory.getLanguageIdFromCode(currentLanguage)
+    this.panel.requestGrammar({ type: 'table-of-contents', value: '', languageID: languageID })
     this.panel.enableInflections(LanguageModelFactory.getLanguageForCode(currentLanguage).canInflect())
+    this.panel.panelData.infoComponentData.languageName = ContentUIController.getLanguageName(languageID)
     console.log(`Current language is ${this.state.currentLanguage}`)
   }
 
