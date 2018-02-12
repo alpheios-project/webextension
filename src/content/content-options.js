@@ -24,7 +24,7 @@ export default class ContentOptions {
         ]
       },
       popupPosition: {
-        defaultValue: 'flexible',
+        defaultValue: 'fixed',
         labelText: 'Popup position:',
         values: [
           {value: 'flexible', text: 'Flexible'},
