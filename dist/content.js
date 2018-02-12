@@ -11945,6 +11945,8 @@ class Query {
 //
 //
 //
+//
+//
 
 
 
@@ -20369,6 +20371,10 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         return '0px';
       }
 
+      if (this.data.settings.popupPosition.currentValue === 'fixed') {
+        return this.data.left;
+      }
+
       let left = this.positionLeftValue;
       let placementTargetX = this.data.targetRect.left;
       let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
@@ -20397,6 +20403,11 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         // Reset if popup is invisible
         return '0px';
       }
+
+      if (this.data.settings.popupPosition.currentValue === 'fixed') {
+        return this.data.top;
+      }
+
       let time = new Date().getTime();
       console.log(`${time}: position top calculation, offsetHeight is ${this.exactHeight}`);
       let top = this.positionTopValue;
@@ -20646,6 +20657,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
 
     requestStartTime() {
       console.log(`Request start time has been updated`);
+      console.log(`Popup position is ${this.data.settings.popupPosition.currentValue}`);
       // There is a new request coming in, reset popup dimensions
       this.resetPopupDimensions();
     }
@@ -20804,10 +20816,10 @@ class ContentProcess {
     return this.state.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
   }
 
-  handleReload() {
-    console.log("Alpheios reload event caught.")
+  handleReload () {
+    console.log('Alpheios reload event caught.')
     if (this.isActive) {
-      this.deactivate();
+      this.deactivate()
     }
     window.location.reload()
   }
@@ -23827,6 +23839,14 @@ class ContentOptions {
           {value: 'right', text: 'Right'}
         ]
       },
+      popupPosition: {
+        defaultValue: 'flexible',
+        labelText: 'Popup position:',
+        values: [
+          {value: 'flexible', text: 'Flexible'},
+          {value: 'fixed', text: 'Fixed'}
+        ]
+      },
       uiType: {
         defaultValue: 'popup',
         labelText: 'UI type:',
@@ -24994,10 +25014,13 @@ class ContentUIController {
         linkedFeatures: [],
         visible: false,
         popupData: {
-          // Default popup position and dimensions, in pixels. These values will override CSS rules.
+          fixedPosition: true, // Whether to put popup into a fixed position or calculate that position dynamically
+          // Default popup position, with units
+          top: '10vh',
+          left: '10vw',
+
+          // Default popup dimensions, in pixels, without units. These values will override CSS rules.
           // Can be scaled down on small screens automatically.
-          top: 0,
-          left: 0,
           width: 210,
           /*
           `fixedElementsHeight` is a sum of heights of all elements of a popup, including a top bar, a button area,
@@ -38999,6 +39022,14 @@ var render = function() {
             _c("setting", {
               attrs: {
                 data: _vm.data.settings.panelPosition,
+                classes: ["alpheios-panel__options-item"]
+              },
+              on: { change: _vm.settingChanged }
+            }),
+            _vm._v(" "),
+            _c("setting", {
+              attrs: {
+                data: _vm.data.settings.popupPosition,
                 classes: ["alpheios-panel__options-item"]
               },
               on: { change: _vm.settingChanged }

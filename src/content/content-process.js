@@ -45,10 +45,10 @@ export default class ContentProcess {
     return this.state.status === TabScript.statuses.script.ACTIVE
   }
 
-  handleReload() {
-    console.log("Alpheios reload event caught.")
+  handleReload () {
+    console.log('Alpheios reload event caught.')
     if (this.isActive) {
-      this.deactivate();
+      this.deactivate()
     }
     window.location.reload()
   }

@@ -86,6 +86,8 @@
                          :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="data.settings.panelPosition" @change="settingChanged"
                          :classes="['alpheios-panel__options-item']"></setting>
+                <setting :data="data.settings.popupPosition" @change="settingChanged"
+                         :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="data.settings.uiType" @change="settingChanged"
                          :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="languageSetting" @change="resourceSettingChanged" :classes="['alpheios-panel__options-item']"

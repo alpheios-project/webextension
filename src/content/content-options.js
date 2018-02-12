@@ -23,6 +23,14 @@ export default class ContentOptions {
           {value: 'right', text: 'Right'}
         ]
       },
+      popupPosition: {
+        defaultValue: 'flexible',
+        labelText: 'Popup position:',
+        values: [
+          {value: 'flexible', text: 'Flexible'},
+          {value: 'fixed', text: 'Fixed'}
+        ]
+      },
       uiType: {
         defaultValue: 'popup',
         labelText: 'UI type:',

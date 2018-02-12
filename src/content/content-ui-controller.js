@@ -302,10 +302,13 @@ export default class ContentUIController {
         linkedFeatures: [],
         visible: false,
         popupData: {
-          // Default popup position and dimensions, in pixels. These values will override CSS rules.
+          fixedPosition: true, // Whether to put popup into a fixed position or calculate that position dynamically
+          // Default popup position, with units
+          top: '10vh',
+          left: '10vw',
+
+          // Default popup dimensions, in pixels, without units. These values will override CSS rules.
           // Can be scaled down on small screens automatically.
-          top: 0,
-          left: 0,
           width: 210,
           /*
           `fixedElementsHeight` is a sum of heights of all elements of a popup, including a top bar, a button area,

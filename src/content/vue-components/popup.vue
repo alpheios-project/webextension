@@ -153,6 +153,10 @@
           return '0px'
         }
 
+        if (this.data.settings.popupPosition.currentValue === 'fixed') {
+          return this.data.left
+        }
+
         let left = this.positionLeftValue
         let placementTargetX = this.data.targetRect.left
         let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
@@ -182,6 +186,11 @@
           // Reset if popup is invisible
           return '0px'
         }
+
+        if (this.data.settings.popupPosition.currentValue === 'fixed') {
+          return this.data.top
+        }
+
         let time = new Date().getTime()
         console.log(`${time}: position top calculation, offsetHeight is ${this.exactHeight}`)
         let top = this.positionTopValue
@@ -436,6 +445,7 @@
 
       requestStartTime () {
         console.log(`Request start time has been updated`)
+        console.log(`Popup position is ${this.data.settings.popupPosition.currentValue}`)
         // There is a new request coming in, reset popup dimensions
         this.resetPopupDimensions()
       }
