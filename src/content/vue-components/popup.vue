@@ -116,6 +116,10 @@
     },
 
     computed: {
+      requestStartTime: function () {
+        return this.data.requestStartTime
+      },
+
       inflDataReady: function () {
         return this.data.inflDataReady
       },
@@ -413,6 +417,12 @@
           this.resetPopupDimensions()
         }
       },
+
+      requestStartTime () {
+        console.log(`Request start time has been updated`)
+        // There is a new request coming in, reset popup dimensions
+        this.resetPopupDimensions()
+      }
 
       /*inflDataReady: function() {
         let time = new Date().getTime()

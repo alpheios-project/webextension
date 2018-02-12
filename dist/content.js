@@ -20332,6 +20332,10 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
   },
 
   computed: {
+    requestStartTime: function () {
+      return this.data.requestStartTime;
+    },
+
     inflDataReady: function () {
       return this.data.inflDataReady;
     },
@@ -20624,6 +20628,12 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         // A popup became invisible
         this.resetPopupDimensions();
       }
+    },
+
+    requestStartTime() {
+      console.log(`Request start time has been updated`);
+      // There is a new request coming in, reset popup dimensions
+      this.resetPopupDimensions();
     }
 
     /*inflDataReady: function() {
@@ -24497,8 +24507,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
 
   async getData () {
     this.languageID = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(this.selector.languageCode)
-    this.ui.setTargetRect(this.htmlSelector.targetRect)
-    this.ui.clear().open().changeTab('definitions').message(`Please wait while data is retrieved ...`)
+    this.ui.setTargetRect(this.htmlSelector.targetRect).newLexicalRequest().message(`Please wait while data is retrieved ...`)
     this.ui.showStatusInfo(this.selector.normalizedText, this.languageID)
     let iterator = this.iterations()
 
@@ -24991,6 +25000,11 @@ class ContentUIController {
           // A position of a word selection
           targetRect: {},
 
+          /*
+          A date and time when a new request was started, in milliseconds since 1970-01-01. It is used within a
+          component to identify a new request coming in and to distinguish it from data updates of the current request.
+           */
+          requestStartTime: 0,
           settings: this.options.items,
           verboseMode: this.verboseMode,
           defDataReady: false,
@@ -25078,6 +25092,11 @@ class ContentUIController {
           this.popupData.notification.important = true
           this.popupData.notification.showLanguageSwitcher = false
           this.popupData.notification.text = errorText
+        },
+
+        newLexicalRequest: function () {
+          console.log('Starting a new lexical request within a popup')
+          this.popupData.requestStartTime = new Date().getTime()
         },
 
         clearContent: function () {
@@ -25263,6 +25282,13 @@ class ContentUIController {
 
   setTargetRect (targetRect) {
     this.popup.setTargetRect(targetRect)
+    return this
+  }
+
+  newLexicalRequest () {
+    this.popup.newLexicalRequest()
+    this.clear().open().changeTab('definitions')
+    return this
   }
 
   updateMorphology (homonym) {

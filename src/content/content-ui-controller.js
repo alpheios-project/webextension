@@ -322,6 +322,11 @@ export default class ContentUIController {
           // A position of a word selection
           targetRect: {},
 
+          /*
+          A date and time when a new request was started, in milliseconds since 1970-01-01. It is used within a
+          component to identify a new request coming in and to distinguish it from data updates of the current request.
+           */
+          requestStartTime: 0,
           settings: this.options.items,
           verboseMode: this.verboseMode,
           defDataReady: false,
@@ -409,6 +414,11 @@ export default class ContentUIController {
           this.popupData.notification.important = true
           this.popupData.notification.showLanguageSwitcher = false
           this.popupData.notification.text = errorText
+        },
+
+        newLexicalRequest: function () {
+          console.log('Starting a new lexical request within a popup')
+          this.popupData.requestStartTime = new Date().getTime()
         },
 
         clearContent: function () {
@@ -594,6 +604,13 @@ export default class ContentUIController {
 
   setTargetRect (targetRect) {
     this.popup.setTargetRect(targetRect)
+    return this
+  }
+
+  newLexicalRequest () {
+    this.popup.newLexicalRequest()
+    this.clear().open().changeTab('definitions')
+    return this
   }
 
   updateMorphology (homonym) {
