@@ -20288,12 +20288,20 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
     return {
       resizable: true,
       draggable: true,
-      contentHeight: 0, // Morphological content height (updated with `heightchange` event emitted by a morph component)
+      // contentHeight: 0, // Morphological content height (updated with `heightchange` event emitted by a morph component)
       minResizableWidth: 0, // Resizable's min width (for Interact.js)
       minResizableHeight: 0, // Resizable's min height (for Interact.js)
       interactInstance: undefined,
       lexicalDataContainerID: 'alpheios-lexical-data-container',
-      morphComponentID: 'alpheios-morph-component'
+      morphComponentID: 'alpheios-morph-component',
+
+      // Current positions and sizes of a popup
+      positionTopValue: 0,
+      positionLeftValue: 0,
+      widthValue: 0,
+      heightValue: 0,
+      exactWidth: 0,
+      exactHeight: 0
     };
   },
   props: {
@@ -20324,6 +20332,12 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
   },
 
   computed: {
+    inflDataReady: function () {
+      return this.data.inflDataReady;
+    },
+    defDataReady: function () {
+      return this.data.defDataReady;
+    },
     morphDataReady: function () {
       return this.data.morphDataReady;
     },
@@ -20341,131 +20355,110 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
     updates: function () {
       return this.data.updates;
     },
-    // Returns popup dimensions and positions styles with `px` units
-    dimensions: function () {
+
+    positionLeftDm: function () {
       if (!this.visible) {
-        // Don't do any calculations if popup is invisible
-        console.log(`DCALC: popup is hidden, resetting a content height`);
-        this.contentHeight = 0;
-        return { top: `0px`, left: `0px`, width: `0px`, height: `0px` };
+        // Reset if popup is invisible
+        return '0px';
       }
 
-      let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
-      let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-      console.log(`DCALC: selection is at [${this.data.targetRect.left}px, ${this.data.targetRect.top}px], viewport dimensions are [${viewportWidth}px, ${viewportHeight}px]`);
-
-      let top = this.data.top;
-      let left = this.data.left;
-      let width = this.data.width;
-      let height = this.data.heightMin;
-      // A popup should expand if content height exceeds the value below
-      // TODO: calculate how much content is longer than a target
-      let contentHeightLimit = this.data.heightMin - this.data.fixedElementsHeight;
-      console.log(`DCALC: expected content height is ${this.contentHeight}px, expansion threshold is ${contentHeightLimit}px`);
-      if (this.contentHeight > contentHeightLimit) {
-        // Increase popup height if content data is taller than the placeholder available
-        height = this.data.heightMin + (this.contentHeight - contentHeightLimit);
-        console.log(`DCALC: expanding popup height to ${height}`);
-      } else {
-        console.log(`DCALC: popup height will not be increased`);
-      }
-
-      let horizontalScrollbarWidth = window.innerHeight - document.documentElement.clientHeight;
-      let verticalScrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-      console.log(`DCALC: scrollbar widths are ${horizontalScrollbarWidth}px horizontal, ${verticalScrollbarWidth}px vertical`);
-      let viewportMargins = 2 * this.data.viewportMargin + verticalScrollbarWidth;
-
-      /*
-      Horizontal positioning:
-      1. If there is enough space, align a center of the popup with the center of a selection.
-      2. If there is not enough space for that at the left, shift popup to the right.
-      3. If there is not enough space at the right, shift popup to the left.
-      4. Else, place it at the horizontal center of a viewport.
-      Vertical positioning:
-      1. If there is enough space below a selection, place popup there.
-      2. Otherwise, place it above, if there is enough space there.
-      3. Else, place it at the vertical center of a viewport.
-       */
+      let left = this.positionLeftValue;
       let placementTargetX = this.data.targetRect.left;
+      let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+      let verticalScrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      let leftSide = placementTargetX - this.exactWidth / 2;
+      let rightSide = placementTargetX + this.exactWidth / 2;
+      if (this.widthDm !== 'auto') {
+        // Popup is too wide and was restricted in height
+        console.log(`Setting position left for a set width`);
+        left = this.data.viewportMargin;
+      } else if (rightSide < viewportWidth - verticalScrollbarWidth - this.data.viewportMargin && leftSide > this.data.viewportMargin) {
+        // We can center it with the target
+        left = placementTargetX - Math.floor(this.exactWidth / 2);
+      } else if (leftSide > this.data.viewportMargin) {
+        // There is space at the left, move it there
+        left = viewportWidth - verticalScrollbarWidth - this.data.viewportMargin - this.exactWidth;
+      } else if (rightSide < viewportWidth - verticalScrollbarWidth - this.data.viewportMargin) {
+        // There is space at the right, move it there
+        left = this.data.viewportMargin;
+      }
+      return `${left}px`;
+    },
+
+    positionTopDm: function () {
+      if (!this.visible) {
+        // Reset if popup is invisible
+        return '0px';
+      }
+      let time = new Date().getTime();
+      console.log(`${time}: position top calculation, offsetHeight is ${this.exactHeight}`);
+      let top = this.positionTopValue;
       let placementTargetY = this.data.targetRect.top;
-      console.log(`DCALC: placement target is [${placementTargetX}px, ${placementTargetY}px]`);
-
-      if (width + 2 * this.data.viewportMargin > viewportWidth) {
-        console.log(`DCALC: Shrinking horizontally`);
-        left = this.data.viewportMargin;
-        width = viewportWidth - viewportMargins;
-      } else if (placementTargetX + width / 2 + this.data.viewportMargin + verticalScrollbarWidth < viewportWidth && placementTargetX - width / 2 - this.data.viewportMargin > 0) {
-        console.log(`DCALC: Aligning horizontally to middle of the word`);
-        left = placementTargetX - Math.floor(width / 2);
-      } else if (placementTargetX - width / 2 - this.data.viewportMargin <= 0) {
-        // There is not enough space at the left
-        console.log(`DCALC: Shifting horizontally to the right`);
-        left = this.data.viewportMargin;
-      } else if (placementTargetX + width / 2 + this.data.viewportMargin >= viewportWidth) {
-        // There is not enough space at the right
-        console.log(`DCALC: Shifting horizontally to the left`);
-        left = viewportWidth - this.data.viewportMargin - verticalScrollbarWidth - width;
-      } else {
-        console.log(`DCALC: Placing horizontally to the middle`);
-        left = Math.round((viewportWidth - width) / 2);
-      }
-
-      if (height + 2 * this.data.viewportMargin > viewportHeight) {
-        console.log(`DCALC: Shrinking vertically`);
+      let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+      let horizontalScrollbarWidth = window.innerHeight - document.documentElement.clientHeight;
+      if (this.heightDm !== 'auto') {
+        // Popup is too wide and was restricted in height
+        console.log(`Setting position top for a set height`);
         top = this.data.viewportMargin;
-        height = viewportHeight - 2 * this.data.viewportMargin;
-      } else if (placementTargetY + this.data.placementMargin + height < viewportHeight) {
-        console.log(`DCALC: Placing vertically to the bottom`);
+      } else if (placementTargetY + this.data.placementMargin + this.exactHeight < viewportHeight - this.data.viewportMargin - horizontalScrollbarWidth) {
+        // Place it below a selection
         top = placementTargetY + this.data.placementMargin;
-      } else if (height + this.data.placementMargin < placementTargetY) {
-        console.log(`DCALC: Placing vertically to the top`);
-        top = placementTargetY - this.data.placementMargin - height;
+      } else if (placementTargetY - this.data.placementMargin - this.exactHeight > this.data.viewportMargin) {
+        // Place it above a selection
+        top = placementTargetY - this.data.placementMargin - this.exactHeight;
+      } else if (placementTargetY < viewportHeight - horizontalScrollbarWidth - placementTargetY) {
+        // There is no space neither above nor below. Word is shifted to the top. Place a popup at the bottom.
+        top = viewportHeight - horizontalScrollbarWidth - this.data.viewportMargin - this.exactHeight;
+      } else if (placementTargetY > viewportHeight - horizontalScrollbarWidth - placementTargetY) {
+        // There is no space neither above nor below. Word is shifted to the bottom. Place a popup at the top.
+        top = this.data.viewportMargin;
       } else {
-        console.log(`DCALC: Placing vertically to the middle`);
-        top = Math.ceil((viewportHeight - height) / 2);
+        // There is no space neither above nor below. Center it vertically.
+        top = Math.round((viewportHeight - horizontalScrollbarWidth - this.exactHeight) / 2);
       }
+      time = new Date().getTime();
+      console.log(`${time}: position top getter, return value is ${top}, offsetHeight is ${this.exactHeight}`);
+      return `${top}px`;
+    },
 
-      console.log(`DCALC: final popup dimensions are [${width}px, ${height}px],
-      popup will be placed at [${left}px, ${top}px]`);
-
-      if (this.interactInstance && this.minResizableWidth !== width && this.minResizableHeight !== height) {
-        // If component is mounted and interact.js instance is created, update its resizable properties
-        this.minResizableWidth = width;
-        this.minResizableHeight = height;
-        this.interactInstance.resizable(this.resizableSettings());
-      }
-
-      this.$nextTick(() => {
-
-        let width = this.$el.offsetWidth;
-        let height = this.$el.offsetHeight;
+    widthDm: {
+      get: function () {
+        return this.widthValue === 'auto' ? 'auto' : `${this.widthValue}px`;
+      },
+      set: function (newWidth) {
         let viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        let verticalScrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        let maxWidth = viewportWidth - 2 * this.data.viewportMargin - verticalScrollbarWidth;
+        if (newWidth >= maxWidth) {
+          console.log(`Popup is too wide, limiting its width to ${maxWidth}px`);
+          this.widthValue = maxWidth;
+          this.exactWidth = this.widthValue;
+        } else {
+          this.widthValue = 'auto';
+        }
+      }
+    },
+
+    heightDm: {
+      get: function () {
+        let time = new Date().getTime();
+        console.log(`${time}: height getter, return value is ${this.heightValue}`);
+        return this.heightValue === 'auto' ? 'auto' : `${this.heightValue}px`;
+      },
+      set: function (newHeight) {
+        let time = new Date().getTime();
+        console.log(`${time}: height setter, offsetHeight is ${newHeight}`);
         let viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-        console.log(`DCALC: nextTick, popup dimensions are [${width}px, ${height}px],
-          viewport dimensions are [${viewportWidth}px, ${viewportHeight}px]`);
-        if (width >= viewportWidth) {
-          width = viewportWidth - 2 * this.data.viewportMargin - verticalScrollbarWidth;
-          // TODO: Do not set style properties directly
-          this.$el.style.width = `${width}px`;
-          this.$el.style.left = `${this.data.viewportMargin}px`;
-          console.log(`DCALC: limiting a popup width to ${width}px`);
+        let horizontalScrollbarWidth = window.innerHeight - document.documentElement.clientHeight;
+        let maxHeight = viewportHeight - 2 * this.data.viewportMargin - horizontalScrollbarWidth;
+        if (newHeight >= maxHeight) {
+          console.log(`Popup is too tall, limiting its height to ${maxHeight}px`);
+          this.heightValue = maxHeight;
+          this.exactHeight = this.heightValue;
+        } else {
+          this.heightValue = 'auto';
         }
-        if (height >= viewportHeight) {
-
-          height = viewportHeight - 2 * this.data.viewportMargin - horizontalScrollbarWidth;
-          // TODO: Do not set style properties directly
-          this.$el.style.height = `${height}px`;
-          this.$el.style.top = `${this.data.viewportMargin}px`;
-          console.log(`DCALC: limiting a popup height to ${height}px`);
-        }
-      });
-
-      return {
-        top: `${top}px`,
-        left: `${left}px`,
-        width: 'auto',
-        height: 'auto'
-      };
+      }
     }
   },
 
@@ -20477,6 +20470,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
     },
 
     closePopup() {
+      console.log(`Closing a popup and resetting its dimensions`);
       this.$emit('close');
     },
 
@@ -20527,7 +20521,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         autoScroll: false,
         restrict: {
           restriction: document.body,
-          elementRect: { top: 0, left: 0, bottom: 1, right: 1 }
+          elementRect: { top: 0.5, left: 0.5, bottom: 0.5, right: 0.5 }
         },
         onmove: this.dragMoveListener
       };
@@ -20566,6 +20560,42 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
         target.setAttribute('data-x', x);
         target.setAttribute('data-y', y);
       }
+    },
+
+    /**
+     * This function is called from an `updated()` callback. Because of this, it should never use a `nextTick()`
+     * as it might result in an infinite loop of updates: nextTick() causes a popup to be updated, updated()
+     * callback is called, that, in turn, calls nextTick() and so on.
+     * It seems that calling it even without `nextTick()` is enough for updating a popup dimensions.
+     */
+    updatePopupDimensions() {
+      let time = new Date().getTime();
+      // Update dimensions only if there was a change in a popup size
+      if (this.$el.offsetWidth !== this.exactWidth) {
+        this.exactWidth = this.$el.offsetWidth;
+        this.widthDm = this.$el.offsetWidth;
+        console.log(`${time}: dimensions update, offsetWidth is ${this.$el.offsetWidth}`);
+      }
+      if (this.$el.offsetHeight !== this.exactHeight) {
+        this.exactHeight = this.$el.offsetHeight;
+        this.heightDm = this.$el.offsetHeight;
+        console.log(`${time}: dimensions update, offsetHeight is ${this.$el.offsetHeight}`);
+      }
+    },
+
+    resetPopupDimensions() {
+      console.log('Resetting popup dimensions');
+      // this.contentHeight = 0
+      this.widthValue = 0;
+      this.heightValue = 0;
+      this.exactWidth = 0;
+      this.exactHeight = 0;
+      if (this.$el) {
+        this.$el.style.webkitTransform = `translate(0px, $0px)`;
+        this.$el.style.transform = `translate(0px, 0px)`;
+        this.$el.setAttribute('data-x', '0');
+        this.$el.setAttribute('data-y', '0');
+      }
     }
   },
 
@@ -20574,14 +20604,47 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
     this.interactInstance = __WEBPACK_IMPORTED_MODULE_2_interactjs___default()(this.$el).resizable(this.resizableSettings()).draggable(this.draggableSettings()).on('resizemove', this.resizeListener);
   },
 
-  watch: {
-    updates: function (updates) {
-      console.log("updating content height");
-      this.$nextTick(() => {
-        let morphComponent = this.$el.querySelector(`#${this.morphComponentID}`); // TODO: Avoid repetitive selector queries
-        this.contentHeight = morphComponent && morphComponent.clientHeight ? morphComponent.clientHeight : 0;
-      });
+  /**
+   *
+   */
+  updated() {
+    if (this.visible) {
+      let time = new Date().getTime();
+      console.log(`${time}: component is updated`);
+      this.updatePopupDimensions();
     }
+  },
+
+  watch: {
+    visible: function (value) {
+      if (value) {
+        // A popup became visible
+        this.updatePopupDimensions();
+      } else {
+        // A popup became invisible
+        this.resetPopupDimensions();
+      }
+    }
+
+    /*inflDataReady: function() {
+      let time = new Date().getTime()
+      console.log(`${time}: inflection data became available`)
+    },
+     defDataReady: function() {
+      let time = new Date().getTime()
+      console.log(`${time}: definition data became available`)
+    },*/
+
+    // It still does not catch all popup data changes. That makes a popup resizing jerky.
+    // Its safer to use an `updated()` callback instead.
+    /*updates: function() {
+      console.log(`Content height updated, visibility is ${this.visible}`)
+      if (this.visible) {
+        let time = new Date().getTime()
+        console.log(`${time}: content height updated, offsetHeight is ${this.$el.offsetHeight}`)
+        this.updatePopupDimensions()
+      }
+    },*/
   }
 });
 
@@ -24909,8 +24972,8 @@ class ContentUIController {
         popupData: {
           // Default popup position and dimensions, in pixels. These values will override CSS rules.
           // Can be scaled down on small screens automatically.
-          top: 100,
-          left: 100,
+          top: 0,
+          left: 0,
           width: 210,
           /*
           `fixedElementsHeight` is a sum of heights of all elements of a popup, including a top bar, a button area,
@@ -39112,7 +39175,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-popup {\n  display: flex;\n  flex-direction: column;\n  background: #FFF;\n  border: 1px solid lightgray;\n  min-width: 210px;\n  min-height: 150px;\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  top: 100px;\n  box-sizing: border-box;\n  /* Required for Interact.js to take element size with paddings and work correctly */\n  overflow: auto;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 16px;\n  color: #666666;\n}\n.alpheios-popup__header {\n  position: relative;\n  box-sizing: border-box;\n  width: 100%;\n  flex: 0 0;\n  padding: 10px 10px 0;\n  margin-top: 20px;\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-start;\n}\n.alpheios-popup__header-text {\n  line-height: 1;\n  align-items: flex-start;\n  padding: 7px 20px 0 0;\n}\n.alpheios-popup__header-selection {\n  font-size: 16px;\n  font-weight: 700;\n  color: #4E6476;\n}\n.alpheios-popup__header-word {\n  font-size: 12px;\n  position: relative;\n  top: -1px;\n}\n.alpheios-popup__close-btn {\n  display: block;\n  position: absolute;\n  width: 20px;\n  right: 5px;\n  top: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__close-btn:hover,\n.alpheios-popup__close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-popup__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  flex: 0 0 60px;\n  box-sizing: border-box;\n  overflow: hidden;\n}\n.alpheios-popup__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__notifications-close-btn:hover,\n.alpheios-popup__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n[data-notification-visible=\"true\"] .alpheios-popup__notifications {\n  display: block;\n}\n.alpheios-popup__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-popup__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-popup__notifications--important {\n  background: #73CDDE;\n}\n.alpheios-popup__morph-cont {\n  flex: 1 1;\n  box-sizing: border-box;\n  margin: 5px 10px 0;\n  overflow: auto;\n  padding: 10px;\n  border: 1px solid #B8B7B5;\n}\n.alpheios-popup__morph-cont-providers-header {\n  display: inline-block;\n  color: #3E8D9C;\n  font-size: 12px;\n  font-weight: 700;\n  margin-top: 2px;\n}\n.alpheios-popup__definitions--placeholder {\n  border: 0 none;\n  padding: 10px 0 0;\n}\nimg.alpheios-popup__logo {\n  height: 16px;\n  width: auto;\n}\n.alpheios-popup__more-btn {\n  float: right;\n  margin-bottom: 10px;\n  font-size: 10.8px !important;\n}\n.alpheios-popup__morph-cont-providers-source {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-popup__providers {\n  margin: 0 0 5px 10px;\n}\n.alpheios-popup__providers-link {\n  font-size: 10.8px;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-popup {\n  display: flex;\n  flex-direction: column;\n  background: #FFF;\n  border: 1px solid lightgray;\n  min-width: 210px;\n  min-height: 150px;\n  z-index: 1000;\n  position: fixed;\n  left: 200px;\n  top: 100px;\n  box-sizing: border-box;\n  /* Required for Interact.js to take element size with paddings and work correctly */\n  overflow: auto;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif;\n  font-size: 16px;\n  color: #666666;\n}\n.alpheios-popup__header {\n  position: relative;\n  box-sizing: border-box;\n  width: 100%;\n  flex: 0 0 45px;\n  padding: 10px 10px 0;\n  margin-top: 20px;\n  display: flex;\n  justify-content: space-between;\n  align-items: flex-start;\n}\n.alpheios-popup__header-text {\n  line-height: 1;\n  align-items: flex-start;\n  padding: 7px 20px 0 0;\n}\n.alpheios-popup__header-selection {\n  font-size: 16px;\n  font-weight: 700;\n  color: #4E6476;\n}\n.alpheios-popup__header-word {\n  font-size: 12px;\n  position: relative;\n  top: -1px;\n}\n.alpheios-popup__close-btn {\n  display: block;\n  position: absolute;\n  width: 20px;\n  right: 5px;\n  top: 2px;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__close-btn:hover,\n.alpheios-popup__close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n.alpheios-popup__notifications {\n  display: none;\n  position: relative;\n  padding: 10px 20px;\n  background: #BCE5F0;\n  flex: 0 0 60px;\n  box-sizing: border-box;\n  overflow: hidden;\n}\n.alpheios-popup__notifications-close-btn {\n  position: absolute;\n  right: 5px;\n  top: 5px;\n  display: block;\n  width: 20px;\n  height: 20px;\n  margin: 0;\n  cursor: pointer;\n  fill: #D1D1D0;\n  stroke: #D1D1D0;\n}\n.alpheios-popup__notifications-close-btn:hover,\n.alpheios-popup__notifications-close-btn:focus {\n  fill: #5BC8DC;\n  stroke: #5BC8DC;\n}\n[data-notification-visible=\"true\"] .alpheios-popup__notifications {\n  display: block;\n}\n.alpheios-popup__notifications--lang-switcher {\n  font-size: 12px;\n  float: right;\n  margin: -20px 10px 0 0;\n  display: inline-block;\n}\n.alpheios-popup__notifications--lang-switcher .uk-select {\n  width: 120px;\n  height: 25px;\n}\n.alpheios-popup__notifications--important {\n  background: #73CDDE;\n}\n.alpheios-popup__morph-cont {\n  flex: 1 1;\n  box-sizing: border-box;\n  margin: 5px 10px 0;\n  overflow: auto;\n  padding: 10px;\n  border: 1px solid #B8B7B5;\n}\n.alpheios-popup__morph-cont-providers-header {\n  display: inline-block;\n  color: #3E8D9C;\n  font-size: 12px;\n  font-weight: 700;\n  margin-top: 2px;\n}\n.alpheios-popup__definitions--placeholder {\n  border: 0 none;\n  padding: 10px 0 0;\n}\nimg.alpheios-popup__logo {\n  height: 16px;\n  width: auto;\n}\n.alpheios-popup__more-btn {\n  float: right;\n  margin-bottom: 10px;\n  font-size: 10.8px !important;\n}\n.alpheios-popup__morph-cont-providers-source {\n  font-size: smaller;\n  font-weight: normal;\n  color: #4E6476;\n  font-style: italic;\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-popup__providers {\n  margin: 0 0 5px 10px;\n}\n.alpheios-popup__providers-link {\n  font-size: 10.8px;\n}\n", ""]);
 
 // exports
 
@@ -39140,7 +39203,12 @@ var render = function() {
       ref: "popup",
       staticClass: "alpheios-popup auk",
       class: _vm.data.classes,
-      style: _vm.dimensions,
+      style: {
+        left: _vm.positionLeftDm,
+        top: _vm.positionTopDm,
+        width: _vm.widthDm,
+        height: _vm.heightDm
+      },
       attrs: { "data-notification-visible": _vm.data.notification.visible }
     },
     [
