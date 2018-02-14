@@ -39,25 +39,7 @@
           :class="attributeClass(types.conjugation)"
           v-for="conj in lex.lemma.features[types.conjugation]"
           v-if="lex.lemma.features[types.conjugation]">{{conj.value}} conjugation</span>
-        <span class="alpheios-morph__parenthesized"
-          v-if="lex.lemma.features.age || lex.lemma.features.area || lex.lemma.features.geo || lex.lemma.features.frequency">
-          <span @click="sendFeature(age)"
-            :class="attributeClass(types.age,'alpheios-morph__listitem')"
-            v-for="age in lex.lemma.features.age"
-            v-if="lex.lemma.features.age">( {{age.value}} )</span>
-          <span @click="sendFeature(area)"
-            :class="attributeClass(types.area,'alpheios-morph__listitem')"
-            v-for="area in lex.lemma.features.area"
-            v-if="lex.lemma.features.area">{{area.value}} </span>
-          <span @click="sendFeature(geo)"
-            :class="attributeClass(types.geo,'alpheios-morph__listitem')"
-            v-for="geo in lex.lemma.features.geo"
-            v-if="lex.lemma.features.geo">{{geo.value}}</span>
-          <span @click="sendFeature(freq)"
-            :class="attributeClass(types.frequency,'alpheios-morph__listitem')"
-            v-for="freq in lex.lemma.features.frequency"
-            v-if="lex.lemma.features.frequency">{{freq.value}}</span>
-        </span>
+        <span>{{ featureList(lex.lemma,['age','area','geo','frequency']) }}</span>
         <span class="alpheios-morph__attr"
           v-for="source in lex.lemma.features.source" v-if="lex.lemma.features.source">[{{source.value}}]</span>
         <span class="alpheios-morph__attr"
@@ -75,13 +57,13 @@
             <span class="alpheios-morph__formtext">{{inflset.groupingKey.stem}}</span>
             <span class="alpheios-morph__formtext" v-if="inflset.groupingKey.suffix"> -{{inflset.groupingKey.suffix}}</span>
             <span @click="sendFeature(inflset.groupingKey[types.part])"
-              :class="attributeClass(types.part, 'alpheios-morph__parenthesized')"
+              :class="attributeClass(types.part)"
               v-if="! featureMatch(lex.lemma.features[types.part],inflset.groupingKey[types.part])">
-                {{inflset.groupingKey["part of speech"].toString()}}</span>
+                ({{inflset.groupingKey["part of speech"].toString()}})</span>
             <span @click="sendFeature(infset.groupingKey[types.declension])"
-              :class="attributeClass(types.declension,'alpheios-morph__parenthesized')"
+              :class="attributeClass(types.declension)"
               v-if="inflset.groupingKey.declension && inflset.groupingKey.declension !== lex.lemma.features.declension">
-                {{inflset.groupingKey.declension.toString()}}</span>
+                ({{inflset.groupingKey.declension.toString()}})</span>
             <div class="alpheios-morph__inflgroup" v-for="group in inflset.inflections">
               <span @click="sendFeature(group.groupingKey[types.number])"
                 :class="attributeClass(types.number)"
@@ -111,9 +93,9 @@
                       v-if="infl.groupingKey[types.grmCase]">
                       {{ infl.groupingKey[types.grmCase].toString() }}
                       <span @click="sendFeature(infl.groupingKey[types.gender])"
-                        :class="attributeClass(types.gender,'alpheios-morph__parenthesized')"
+                        :class="attributeClass(types.gender)"
                         v-if="infl.groupingKey[types.gender] && ! featureMatch(infl.groupingKey[types.gender],lex.lemma.features[types.gender]) ">
-                        {{ infl.groupingKey[types.gender].map((g) => g.toLocaleStringAbbr()).toString()}}
+                        ({{ infl.groupingKey[types.gender].map((g) => g.toLocaleStringAbbr()).toString()}})
                       </span>
                       <span @click="sendFeature(infl.groupingKey[types.comparison])"
                         :class="attributeClass(types.comparison)"
@@ -233,6 +215,12 @@
       },
       showLexeme(lex) {
         return lex.isPopulated()
+      },
+      featureList(lemma,features) {
+        let list = features.reduce((acc,cv,ci)=> {
+            return lemma.features[cv] ? [...acc,...lemma.features[cv]] : acc
+          },[])
+        return list.length > 0 ? `(${list.map((f)=>f.toString()).join(', ')})` : ''
       }
     }
   }
@@ -322,14 +310,6 @@
 
   .alpheios-morph__listitem:last-child:after {
       content: "";
-   }
-
-  .alpheios-morph__parenthesized:before {
-      content: "(";
-   }
-
-  .alpheios-morph__parenthesized:after {
-      content: ")";
    }
 
    .alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {

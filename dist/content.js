@@ -12830,24 +12830,6 @@ if (false) {(function () {
 //
 //
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 
 
@@ -12916,6 +12898,12 @@ if (false) {(function () {
     },
     showLexeme(lex) {
       return lex.isPopulated();
+    },
+    featureList(lemma, features) {
+      let list = features.reduce((acc, cv, ci) => {
+        return lemma.features[cv] ? [...acc, ...lemma.features[cv]] : acc;
+      }, []);
+      return list.length > 0 ? `(${list.map(f => f.toString()).join(', ')})` : '';
     }
   }
 });
@@ -37402,7 +37390,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-morph__lexemes {\n  color: #0E2233;\n}\n.alpheios-morph__dictentry {\n  margin-bottom: .5em;\n  padding-bottom: 5px;\n  clear: both;\n}\n.alpheios-morph__formtext {\n  font-weight: bold;\n}\n.alpheios-morph__dictentry .alpheios-morph__formtext {\n  font-size: larger;\n}\n.alpheios-morph__dictentry .alpheios-morph__forms .alpheios-morph__formtext {\n  font-size: inherit;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476;\n  font-style: italic;\n}\n.alpheios-morph__dial {\n  font-size: smaller;\n}\n.alpheios-morph__attr {\n  font-weight: normal;\n  padding-right: .25em;\n}\n.alpheios-morph__linkedattr {\n  color: #3E8D9C;\n  font-weight: bold;\n  cursor: pointer;\n  padding-right: .25em;\n}\n.alpheios-morph__linkedattr:hover {\n  color: #5BC8DC !important;\n}\n.alpheios-morph__pofs span:last-child:after {\n  content: \";\";\n}\n.alpheios-morph__inflset {\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-morph__inflset h5 {\n  display: none;\n  font-size: 16px;\n  line-height: 1;\n  margin-bottom: .5em;\n}\n.alpheios-morph__inflset:first-child h5 {\n  color: #4E6476;\n  display: block;\n}\n.alpheios-morph__morphdata {\n  display: inline;\n}\n.alpheios-morph__inflections, .alpheios-morph__definition, .alpheios-morph__forms {\n  margin-left: .5em;\n}\n.alpheios-morph__listitem:after {\n  content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n  content: \"\";\n}\n.alpheios-morph__parenthesized:before {\n  content: \"(\";\n}\n.alpheios-morph__parenthesized:after {\n  content: \")\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n  display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n  display: none;\n}\n.alpheios-morph__lexemes .alpheios-definition__lemma {\n  display: none;\n}\ndiv.alpheios-morph__inline {\n  display: inline;\n}\ndiv.alpheios-morph__block {\n  display: block;\n}\n.alpheios-panel__tab-panel .alpheios-morph__lexemes {\n  font-size: .75rem;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-morph__lexemes {\n  color: #0E2233;\n}\n.alpheios-morph__dictentry {\n  margin-bottom: .5em;\n  padding-bottom: 5px;\n  clear: both;\n}\n.alpheios-morph__formtext {\n  font-weight: bold;\n}\n.alpheios-morph__dictentry .alpheios-morph__formtext {\n  font-size: larger;\n}\n.alpheios-morph__dictentry .alpheios-morph__forms .alpheios-morph__formtext {\n  font-size: inherit;\n}\n.alpheios-morph__source {\n  font-size: smaller;\n  color: #4E6476;\n  font-style: italic;\n}\n.alpheios-morph__dial {\n  font-size: smaller;\n}\n.alpheios-morph__attr {\n  font-weight: normal;\n  padding-right: .25em;\n}\n.alpheios-morph__linkedattr {\n  color: #3E8D9C;\n  font-weight: bold;\n  cursor: pointer;\n  padding-right: .25em;\n}\n.alpheios-morph__linkedattr:hover {\n  color: #5BC8DC !important;\n}\n.alpheios-morph__pofs span:last-child:after {\n  content: \";\";\n}\n.alpheios-morph__inflset {\n  margin-left: .5em;\n  margin-top: .5em;\n}\n.alpheios-morph__inflset h5 {\n  display: none;\n  font-size: 16px;\n  line-height: 1;\n  margin-bottom: .5em;\n}\n.alpheios-morph__inflset:first-child h5 {\n  color: #4E6476;\n  display: block;\n}\n.alpheios-morph__morphdata {\n  display: inline;\n}\n.alpheios-morph__inflections, .alpheios-morph__definition, .alpheios-morph__forms {\n  margin-left: .5em;\n}\n.alpheios-morph__listitem:after {\n  content: \", \";\n}\n.alpheios-morph__listitem:last-child:after {\n  content: \"\";\n}\n.alpheios-morph__list .alpheios-morph__infl:first-child .alpheios-morph__showiffirst {\n  display: block;\n}\n.alpheios-morph__list .alpheios-morph__infl .alpheios-morph__showiffirst {\n  display: none;\n}\n.alpheios-morph__lexemes .alpheios-definition__lemma {\n  display: none;\n}\ndiv.alpheios-morph__inline {\n  display: inline;\n}\ndiv.alpheios-morph__block {\n  display: block;\n}\n.alpheios-panel__tab-panel .alpheios-morph__lexemes {\n  font-size: .75rem;\n}\n", ""]);
 
 // exports
 
@@ -37593,97 +37581,18 @@ var render = function() {
                   : _vm._e()
               }),
               _vm._v(" "),
-              lex.lemma.features.age ||
-              lex.lemma.features.area ||
-              lex.lemma.features.geo ||
-              lex.lemma.features.frequency
-                ? _c(
-                    "span",
-                    { staticClass: "alpheios-morph__parenthesized" },
-                    [
-                      _vm._l(lex.lemma.features.age, function(age) {
-                        return lex.lemma.features.age
-                          ? _c(
-                              "span",
-                              {
-                                class: _vm.attributeClass(
-                                  _vm.types.age,
-                                  "alpheios-morph__listitem"
-                                ),
-                                on: {
-                                  click: function($event) {
-                                    _vm.sendFeature(age)
-                                  }
-                                }
-                              },
-                              [_vm._v("( " + _vm._s(age.value) + " )")]
-                            )
-                          : _vm._e()
-                      }),
-                      _vm._v(" "),
-                      _vm._l(lex.lemma.features.area, function(area) {
-                        return lex.lemma.features.area
-                          ? _c(
-                              "span",
-                              {
-                                class: _vm.attributeClass(
-                                  _vm.types.area,
-                                  "alpheios-morph__listitem"
-                                ),
-                                on: {
-                                  click: function($event) {
-                                    _vm.sendFeature(area)
-                                  }
-                                }
-                              },
-                              [_vm._v(_vm._s(area.value) + " ")]
-                            )
-                          : _vm._e()
-                      }),
-                      _vm._v(" "),
-                      _vm._l(lex.lemma.features.geo, function(geo) {
-                        return lex.lemma.features.geo
-                          ? _c(
-                              "span",
-                              {
-                                class: _vm.attributeClass(
-                                  _vm.types.geo,
-                                  "alpheios-morph__listitem"
-                                ),
-                                on: {
-                                  click: function($event) {
-                                    _vm.sendFeature(geo)
-                                  }
-                                }
-                              },
-                              [_vm._v(_vm._s(geo.value))]
-                            )
-                          : _vm._e()
-                      }),
-                      _vm._v(" "),
-                      _vm._l(lex.lemma.features.frequency, function(freq) {
-                        return lex.lemma.features.frequency
-                          ? _c(
-                              "span",
-                              {
-                                class: _vm.attributeClass(
-                                  _vm.types.frequency,
-                                  "alpheios-morph__listitem"
-                                ),
-                                on: {
-                                  click: function($event) {
-                                    _vm.sendFeature(freq)
-                                  }
-                                }
-                              },
-                              [_vm._v(_vm._s(freq.value))]
-                            )
-                          : _vm._e()
-                      })
-                    ],
-                    2
+              _c("span", [
+                _vm._v(
+                  _vm._s(
+                    _vm.featureList(lex.lemma, [
+                      "age",
+                      "area",
+                      "geo",
+                      "frequency"
+                    ])
                   )
-                : _vm._e(),
+                )
+              ]),
               _vm._v(" "),
               _vm._l(lex.lemma.features.source, function(source) {
                 return lex.lemma.features.source
@@ -37754,10 +37663,7 @@ var render = function() {
                       ? _c(
                           "span",
                           {
-                            class: _vm.attributeClass(
-                              _vm.types.part,
-                              "alpheios-morph__parenthesized"
-                            ),
+                            class: _vm.attributeClass(_vm.types.part),
                             on: {
                               click: function($event) {
                                 _vm.sendFeature(
@@ -37768,12 +37674,13 @@ var render = function() {
                           },
                           [
                             _vm._v(
-                              "\n              " +
+                              "\n              (" +
                                 _vm._s(
                                   inflset.groupingKey[
                                     "part of speech"
                                   ].toString()
-                                )
+                                ) +
+                                ")"
                             )
                           ]
                         )
@@ -37785,10 +37692,7 @@ var render = function() {
                       ? _c(
                           "span",
                           {
-                            class: _vm.attributeClass(
-                              _vm.types.declension,
-                              "alpheios-morph__parenthesized"
-                            ),
+                            class: _vm.attributeClass(_vm.types.declension),
                             on: {
                               click: function($event) {
                                 _vm.sendFeature(
@@ -37799,10 +37703,11 @@ var render = function() {
                           },
                           [
                             _vm._v(
-                              "\n              " +
+                              "\n              (" +
                                 _vm._s(
                                   inflset.groupingKey.declension.toString()
-                                )
+                                ) +
+                                ")"
                             )
                           ]
                         )
@@ -37984,8 +37889,7 @@ var render = function() {
                                                     "span",
                                                     {
                                                       class: _vm.attributeClass(
-                                                        _vm.types.gender,
-                                                        "alpheios-morph__parenthesized"
+                                                        _vm.types.gender
                                                       ),
                                                       on: {
                                                         click: function(
@@ -38001,7 +37905,7 @@ var render = function() {
                                                     },
                                                     [
                                                       _vm._v(
-                                                        "\n                      " +
+                                                        "\n                      (" +
                                                           _vm._s(
                                                             infl.groupingKey[
                                                               _vm.types.gender
@@ -38011,7 +37915,7 @@ var render = function() {
                                                               })
                                                               .toString()
                                                           ) +
-                                                          "\n                    "
+                                                          ")\n                    "
                                                       )
                                                     ]
                                                   )
