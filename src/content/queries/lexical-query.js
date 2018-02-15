@@ -12,6 +12,7 @@ export default class LexicalQuery extends Query {
     this.lexicons = options.lexicons
     this.langOpts = options.langOpts
     this.resourceOptions = options.resourceOptions
+    this.l10n = options.l10n
     let langID = LMF.getLanguageIdFromCode(this.selector.languageCode)
     if (this.langOpts[langID] && this.langOpts[langID].lookupMorphLast) {
       this.canReset = true
@@ -55,9 +56,9 @@ export default class LexicalQuery extends Query {
       // if we can't reset, proceed with full lookup sequence
       this.homonym = yield this.maAdapter.getHomonym(this.selector.languageCode, this.selector.normalizedText)
       if (this.homonym) {
-        this.ui.addMessage(`Morphological analyzer data is ready`)
+        this.ui.addMessage(this.ui.l10n.messages.TEXT_NOTICE_MORPHDATA_READY)
       } else {
-        this.ui.addImportantMessage(`Morphological data not found. Definition queries pending.`)
+        this.ui.addImportantMessage(this.ui.l10n.messages.TEXT_NOTICE_MORPHDATA_NOTFOUND)
         this.homonym = new Homonym([formLexeme], this.selector.normalizedText)
       }
     } else {
@@ -71,7 +72,7 @@ export default class LexicalQuery extends Query {
     this.ui.showStatusInfo(this.homonym.targetWord, this.homonym.languageID)
 
     this.lexicalData = yield this.langData.getSuffixes(this.homonym)
-    this.ui.addMessage(`Inflection data is ready`)
+    this.ui.addMessage(this.ui.l10n.messages.TEXT_NOTICE_INFLDATA_READY)
     this.ui.updateInflections(this.lexicalData, this.homonym)
 
     let definitionRequests = []
@@ -119,7 +120,7 @@ export default class LexicalQuery extends Query {
           definitionRequest.lexeme.meaning[definitionRequest.appendFunction](definition)
           definitionRequest.complete = true
           if (this.active) {
-            this.ui.addMessage(`${definitionRequest.type} request is completed successfully. Lemma: "${definitionRequest.lexeme.lemma.word}"`)
+            this.ui.addMessage(this.ui.l10n.messages.TEXT_NOTICE_DEFSDATA_READY.get(definitionRequest.type,definitionRequest.lexeme.lemma.word))
             this.ui.updateDefinitions(this.homonym)
           }
           if (definitionRequests.every(request => request.complete)) {
@@ -130,7 +131,7 @@ export default class LexicalQuery extends Query {
           console.error(`${definitionRequest.type}(s) request failed: ${error}`)
           definitionRequest.complete = true
           if (this.active) {
-            this.ui.addMessage(`${definitionRequest.type} request cannot be completed. Lemma: "${definitionRequest.lexeme.lemma.word}"`)
+            this.ui.addMessage(this.ui.l10n.messages.TEXT_NOTICE_DEFSDATA_NOTFOUND.get(definitionRequest.type,definitionRequest.lexeme.lemma.word))
           }
           if (definitionRequests.every(request => request.complete)) {
             this.finalize(error)
@@ -154,7 +155,7 @@ export default class LexicalQuery extends Query {
         this.getData()
         return
       }
-      this.ui.addMessage(`All lexical queries complete.`)
+      this.ui.addMessage(this.ui.l10n.messages.TEXT_NOTICE_LEXQUERY_COMPLETE)
       if (typeof result === 'object' && result instanceof Error) {
         console.error(`LexicalQuery failed: ${result.message}`)
       } else {

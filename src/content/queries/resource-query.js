@@ -48,7 +48,7 @@ export default class ResourceQuery extends Query {
     ))
     if (grammarRequests.length ==0) {
       this.ui.updateGrammar([])
-      this.ui.addMessage('No grammar resources found.')
+      this.ui.addMessage(this.ui.l10n.messages.TEXT_NOTICE_GRAMMAR_NOTFOUND)
       this.finalize()
     }
     for (let q of grammarRequests) {
@@ -56,18 +56,18 @@ export default class ResourceQuery extends Query {
         url => {
           q.complete = true
           if (this.active) {
-            this.ui.addMessage(`Grammar resource retrieved`)
+            this.ui.addMessage(this.ui.l10n.messages.TEXT_NOTICE_GRAMMAR_READY)
             this.ui.updateGrammar(url)
           }
           if (grammarRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`All grammar resource data retrieved`) }
+            if (this.active) { this.ui.addMessage(this.ui.l10n.messages.TEXT_NOTICE_GRAMMAR_COMPLETE) }
             this.finalize()
           }
         },
         error => {
           console.log('Error retrieving Grammar resource', error)
           if (grammarRequests.every(request => request.complete)) {
-            if (this.active) { this.ui.addMessage(`All resource data retrieved`) }
+            if (this.active) { this.ui.addMessage(this.ui.l10n.messages.TEXT_NOTICE_RESQUERY_COMPLETE) }
             this.finalize()
           }
         }

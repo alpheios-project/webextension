@@ -184,5 +184,68 @@
     "message": "Hide Credits",
     "description": "label for hide credits link on popup",
     "component": "Popup"
+  },
+  "TEXT_NOTICE_CHANGE_LANGUAGE": {
+    "message": "Language: {languageName}<br>Wrong? Change to:",
+    "description": "language notification",
+    "component": "UI",
+    "params": ["languageName"]
+  },
+  "TEXT_NOTICE_LANGUAGE_UNKNOWN": {
+    "message": "unknown",
+    "description": "unknown language notification",
+    "component": "UI"
+  },
+  "TEXT_NOTICE_GRAMMAR_NOTFOUND": {
+    "message": "The requested grammar resource is not currently available",
+    "description": "grammar not found notification",
+    "component": "UI"
+  },
+  "TEXT_NOTICE_MORPHDATA_READY": {
+    "message": "Morphological analyzer data is ready",
+    "description": "morph data ready notice",
+    "component": "UI"
+  },
+  "TEXT_NOTICE_MORPHDATA_NOTFOUND": {
+    "message": "Morphological data not found. Definition queries pending.",
+    "description": "morph data not found notice",
+    "component": "UI"
+  },
+  "TEXT_NOTICE_INFLDATA_READY": {
+    "message": "Inflection data is ready",
+    "description": "inflection data ready notice",
+    "component": "UI"
+  },
+  "TEXT_NOTICE_DEFSDATA_READY": {
+    "message":"{requestType} request is completed successfully. Lemma: \"{lemma}\"",
+    "description": "definition request success notice",
+    "component": "UI",
+    "params": ["requestType","lemma"]
+  },
+  "TEXT_NOTICE_DEFSDATA_NOTFOUND": {
+    "message":"{requestType} request failed. Lemma not found for: \"{word}\"",
+    "description": "definition request success notice",
+    "component": "UI",
+    "params": ["requestType","word"]
+  },
+  "TEXT_NOTICE_LEXQUERY_COMPLETE": {
+    "message": "All lexical queries complete.",
+    "description": "lexical queries complete notice",
+    "component": "UI"
+  },
+  "TEXT_NOTICE_GRAMMAR_READY": {
+    "message": "Grammar resource retrieved",
+    "description": "grammar retrieved notice",
+    "component": "UI"
+  },
+  "TEXT_NOTICE_GRAMMAR_COMPLETE": {
+    "message": "All grammar resource data retrieved",
+    "description": "grammar retrieved notice",
+    "component": "UI"
+  },
+  "TEXT_NOTICE_RESQUERY_COMPLETE": {
+    "message": "All resource data retrieved",
+    "description": "resource query complete notice",
+    "component": "UI"
   }
 }

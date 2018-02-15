@@ -187,12 +187,12 @@ export default class ContentUIController {
           if (homonym) {
             languageName = ContentUIController.getLanguageName(homonym.languageID)
           } else {
-            languageName = 'unknown' // TODO this wil be unnecessary when the morphological adapter returns a consistent response for erors
+            languageName = this.panelData.l10n.messages.TEXT_NOTICE_LANGUAGE_UNKNOWN // TODO this wil be unnecessary when the morphological adapter returns a consistent response for erors
           }
           if (notFound) {
             this.panelData.notification.important = true
             this.panelData.notification.showLanguageSwitcher = true
-            this.panelData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
+            this.panelData.notification.text = this.panelData.l10n.messages.TEXT_NOTICE_CHANGE_LANGUAGE.get(languageName)
           } else {
             this.panelData.notification.visible = true
             this.panelData.notification.important = false
@@ -397,12 +397,12 @@ export default class ContentUIController {
           if (homonym) {
             languageName = ContentUIController.getLanguageName(homonym.languageID)
           } else {
-            languageName = 'unknown' // TODO this wil be unnecessary when the morphological adapter returns a consistent response for erors
+            languageName = this.popupData.l10n.messages.TEXT_NOTICE_LANGUAGE_UNKNOWN // TODO this wil be unnecessary when the morphological adapter returns a consistent response for erors
           }
           if (notFound) {
             this.popupData.notification.important = true
             this.popupData.notification.showLanguageSwitcher = true
-            this.popupData.notification.text = `Language: ${languageName}<br>Wrong? Change to:`
+            this.popupData.notification.text = this.popupData.l10n.messages.TEXT_NOTICE_CHANGE_LANGUAGE.get(languageName)
           } else {
             this.popupData.notification.important = false
             this.popupData.notification.showLanguageSwitcher = false
@@ -650,7 +650,7 @@ export default class ContentUIController {
     if (urls.length > 0) {
       this.panel.panelData.grammarRes = urls[0]
     } else {
-      this.panel.panelData.grammarRes = { provider: 'The requested grammar resource is not currently available' }
+      this.panel.panelData.grammarRes = { provider: this.l10n.messages.TEXT_NOTICE_GRAMMAR_NOTFOUND }
     }
     // todo show TOC or not found
   }
