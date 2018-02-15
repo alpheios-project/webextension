@@ -247,5 +247,30 @@
     "message": "All resource data retrieved",
     "description": "resource query complete notice",
     "component": "UI"
+  },
+  "LABEL_CTXTMENU_DEACTIVATE": {
+    "message": "Deactivate",
+    "description": "Deactivate context menu label",
+    "component": "UI"
+  },
+  "LABEL_CTXTMENU_ACTIVATE": {
+    "message": "Activate",
+    "description": "Activate context menu label",
+    "component": "UI"
+  },
+  "LABEL_CTXTMENU_OPENPANEL": {
+    "message": "Open Panel",
+    "description": "Open Panel context menu label",
+    "component": "UI"
+  },
+  "LABEL_CTXTMENU_INFO": {
+    "message": "Info",
+    "description": "Info context menu label",
+    "component": "UI"
+  },
+  "LABEL_CTXTMENU_SENDEXP": {
+    "message": "Send Experiences to remote server",
+    "description": "send exp data context menu label",
+    "component": "UI"
   }
 }

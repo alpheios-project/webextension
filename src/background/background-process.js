@@ -1,4 +1,8 @@
 /* global browser */
+import enUS from '../locales/en-us/messages.json'
+import enGB from '../locales/en-gb/messages'
+import Locales from '../locales/locales'
+import L10n from '../lib/l10n/l10n'
 import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
@@ -26,18 +30,22 @@ export default class BackgroundProcess {
   }
 
   static get defaults () {
+    let l10n = new L10n()
+      .addMessages(enUS, Locales.en_US)
+      .addMessages(enGB, Locales.en_GB)
+      .setLocale(Locales.en_US)
     return {
       activateMenuItemId: 'activate-alpheios-content',
-      activateMenuItemText: 'Activate',
+      activateMenuItemText: l10n.messages.LABEL_CTXTMENU_ACTIVATE,
       deactivateMenuItemId: 'deactivate-alpheios-content',
-      deactivateMenuItemText: 'Deactivate',
+      deactivateMenuItemText: l10n.messages.LABEL_CTXTMENU_DEACTIVATE,
       openPanelMenuItemId: 'open-alpheios-panel',
-      openPanelMenuItemText: 'Open Panel',
+      openPanelMenuItemText: l10n.messages.LABEL_CTXTMENU_OPENPANEL,
       infoMenuItemId: 'show-alpheios-panel-info',
-      infoMenuItemText: 'Info',
+      infoMenuItemText: l10n.messages.LABEL_CTXTMENU_INFO,
       separatorOneId: 'separator-one',
       sendExperiencesMenuItemId: 'send-experiences',
-      sendExperiencesMenuItemText: 'Send Experiences to a remote server',
+      sendExperiencesMenuItemText: l10n.messages.LABEL_CTXTMENU_SENDEXP,
       contentCSSFileName: 'styles/style.min.css',
       contentScriptFileName: 'content.js',
       browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
