@@ -37,6 +37,7 @@ export default class ContentProcess {
     this.messagingService.addHandler(Message.types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
+    document.body.addEventListener('keydown', this.handleEscapeKey.bind(this))
     document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
     this.reactivate()
   }
@@ -108,6 +109,17 @@ export default class ContentProcess {
         console.error('Unable to send a response to activation request', error)
       }
     )
+  }
+
+  handleEscapeKey (event) {
+    if (event.keyCode === 27 && this.isActive) {
+      if (this.state.isPanelOpen()) {
+        this.ui.panel.close()
+      } else if (this.ui.popup.visible) {
+        this.ui.popup.close()
+      }
+    }
+    return true
   }
 
   getSelectedText (event) {
