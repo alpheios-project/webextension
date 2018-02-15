@@ -1,15 +1,16 @@
 <template>
   <div class="alpheios-info uk-margin">
     <div class="alpheios-info__versiontext">{{ data.manifest.name }} {{ data.manifest.version }}</div>
+    <div class="alpheios-info__currentlanguage">{{ messages.LABEL_INFO_CURRENTLANGUAGE }} {{ data.languageName }}</div>
     <div class="alpheios-info__helptext">
-      <h3>Getting Started</h3>
-      <p>Activate on a page with Latin, Ancient Greek, Arabic or Persian text.</p>
-      <p>Double-click on a word to retrieve morphology and short definitions.</p>
-      <p>Alpheios will try to detect the language of the word from the page markup. If it cannot it will use the default language (currently using <b>{{ data.languageName }}</b>). </p>
-      <p>Click the Settings wheel to change the default language, default dictionaries or to disable the popup (set UI Type to 'panel').</p>
-      <p>Use the arrow at the top of this panel to move it from the right to left of your browser window.</p>
-      <p>You can reopen this panel at any time by selecting 'Info' from the Alpheios Reading Tools option in your browser's context menu.</p>
-      <p>Deactivate Alpheios by clicking the toolbar icon or choosing 'Deactivate' from the Alpheios Reading Tools option in your browser's context menu.</p>
+      <h3>{{ messages.TEXT_INFO_GETTINGSTARTED }}</h3>
+      <p>{{ messages.TEXT_INFO_ACTIVATE }}</p>
+      <p>{{ messages.TEXT_INFO_CLICK }}</p>
+      <p>{{ messages.TEXT_INFO_LANGDETECT }}</p>
+      <p>{{ messages.TEXT_INFO_SETTINGS }}</p>
+      <p>{{ messages.TEXT_INFO_ARROW }}</p>
+      <p>{{ messages.TEXT_INFO_REOPEN }}</p>
+      <p>{{ messages.TEXT_INFO_DEACTIVATE }}</p>
     </div>
   </div>
 </template>
@@ -18,6 +19,10 @@
     name: 'Info',
     props: {
       data: {
+        type: Object,
+        required: true
+      },
+      messages: {
         type: Object,
         required: true
       }
@@ -42,7 +47,15 @@
 
   .alpheios-info .alpheios-info__versiontext {
     font-size: 0.675*$alpheios-base-font-size;
-    margin-bottom: 1em;
+  }
+
+  .alpheios-info__currentlanguage {
+    font-size: 0.675*$alpheios-base-font-size;
+    font-weight: bold;
+  }
+
+  .alpheios-info__helptext {
+    margin-top: 1em;
   }
 
 </style>

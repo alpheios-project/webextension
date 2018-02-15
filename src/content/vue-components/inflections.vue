@@ -1,11 +1,11 @@
 <template>
     <div>
-        <div v-show="! isEnabled">Inflection data is unavailable.</div>
-        <div v-show="isEnabled && ! isContentAvailable">Lookup a word to show inflections...</div>
+        <div v-show="! isEnabled">{{messages.PLACEHOLDER_INFLECT_UNAVAILABLE}}</div>
+        <div v-show="isEnabled && ! isContentAvailable">{{messages.PLACEHOLDER_INFLECT}}</div>
         <div v-show="isContentAvailable">
             <h3 class="alpheios-inflections__title">{{selectedView.title}}</h3>
             <div v-show="partsOfSpeech.length > 1">
-              <label class="uk-form-label">Part of speech:</label>
+              <label class="uk-form-label">{{messages.LABEL_INFLECT_SELECT_POFS}}</label>
               <select v-model="partOfSpeechSelector" class="uk-select alpheios-inflections__view-selector">
                 <option v-for="partOfSpeech in partsOfSpeech">{{partOfSpeech}}</option>
               </select>
@@ -56,6 +56,10 @@
       locale: {
         type: String,
         required: true
+      },
+      messages: {
+        type: Object,
+        required: true
       }
     },
 
@@ -78,14 +82,14 @@
           hideEmptyCols: {
             contentHidden: true,
             text: '',
-            shownText: 'Hide empty columns',
-            hiddenText: 'Show empty columns'
+            shownText: this.messages.LABEL_INFLECT_HIDEEMPTY,
+            hiddenText: this.messages.LABEL_INFLECT_SHOWEMPTY
           },
           hideNoSuffixGroups: {
             noSuffMatchHidden: true,
             text: '',
-            shownText: 'Collapse',
-            hiddenText: 'Full Table'
+            shownText: this.messages.LABEL_INFLECT_COLLAPSE,
+            hiddenText: this.messages.LABEL_INFLECT_SHOWFULL
           }
         }
       }

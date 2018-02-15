@@ -13,54 +13,54 @@
                 <span class="alpheios-panel__header-text"
                       v-show="data.status.languageName && data.verboseMode">({{data.status.languageName}})</span>
             </div>
-            <span @click="setPosition('left')" v-show="attachToLeftVisible" title="Move Panel to Left"
+            <span @click="setPosition('left')" v-show="attachToLeftVisible" :title="data.l10n.messages.TOOLTIP_MOVE_PANEL_LEFT"
                   class="alpheios-panel__header-action-btn alpheios-panel__header-action-btn--narrow">
                 <attach-left-icon></attach-left-icon>
             </span>
-            <span @click="setPosition('right')" v-show="attachToRightVisible" title="Move Panel to Right"
+            <span @click="setPosition('right')" v-show="attachToRightVisible" :title="data.l10n.messages.TOOLTIP_MOVE_PANEL_RIGHT"
                   class="alpheios-panel__header-action-btn alpheios-panel__header-action-btn--narrow">
                 <attach-right-icon></attach-right-icon>
             </span>
-            <span @click="close" class="alpheios-panel__header-action-btn" title="Close Panel">
+            <span @click="close" class="alpheios-panel__header-action-btn" :title="data.l10n.messages.TOOLTIP_CLOSE_PANEL">
                 <close-icon></close-icon>
             </span>
         </div>
 
         <div :id="navbarID" class="alpheios-panel__nav">
             <div v-bind:class="{ active: data.tabs.info }" @click="changeTab('info')"
-                 class="alpheios-panel__nav-btn" title="Help">
+                 class="alpheios-panel__nav-btn" :title="data.l10n.messages.TOOLTIP_HELP">
                 <info-icon class="icon"></info-icon>
             </div>
 
             <div :class="{ active: data.tabs.definitions }" @click="changeTab('definitions')"
-                 class="alpheios-panel__nav-btn" title="Definitions">
+                 class="alpheios-panel__nav-btn" :title="data.l10n.messages.TOOLTIP_DEFINITIONS">
                 <definitions-icon class="icon"></definitions-icon>
             </div>
 
             <div v-bind:class="{ active: data.tabs.inflections }" @click="changeTab('inflections')"
-                 class="alpheios-panel__nav-btn" title="Inflection Tables">
+                 class="alpheios-panel__nav-btn" :title="data.l10n.messages.TOOLTIP_INFLECT">
                 <inflections-icon class="icon"></inflections-icon>
             </div>
 
             <div v-bind:class="{ active: data.tabs.grammar }" @click="changeTab('grammar')"
-              class="alpheios-panel__nav-btn alpheios-panel__nav-btn--short" title="Grammar">
+              class="alpheios-panel__nav-btn alpheios-panel__nav-btn--short" :title="data.l10n.messages.TOOLTIP_GRAMMAR">
                 <grammar-icon class="icon"></grammar-icon>
             </div>
 
             <div v-bind:class="{ active: data.tabs.options }" @click="changeTab('options')"
-                 class="alpheios-panel__nav-btn" title="Options">
+                 class="alpheios-panel__nav-btn" :title="data.l10n.messages.TOOLTIP_OPTIONS">
                 <options-icon class="icon"></options-icon>
             </div>
 
             <div v-show="data.verboseMode" v-bind:class="{ active: data.tabs.status }" @click="changeTab('status')"
-                 class="alpheios-panel__nav-btn" title="Status Messages">
+                 class="alpheios-panel__nav-btn" :title="data.l10n.messages.TOOLTIP_STATUS">
                 <status-icon class="icon"></status-icon>
             </div>
         </div>
         <div class="alpheios-panel__content">
             <div v-show="data.tabs.definitions" class="alpheios-panel__tab-panel">
                 <div v-show="data.shortDefinitions.length < 1 && data.fullDefinitions.length < 1">
-                  Lookup a word to show definitions...</div>
+                  {{data.l10n.messages.PLACEHOLDER_DEFINITIONS}}</div>
                 <div class="alpheios-panel__contentitem" v-for="definition in data.shortDefinitions">
                     <shortdef :definition="definition"></shortdef>
                 </div>
@@ -69,7 +69,7 @@
             <div v-show="inflectionsTabVisible" :id="inflectionsPanelID" class="alpheios-panel__tab-panel">
                 <inflections class="alpheios-panel-inflections"
                              :data="data.inflectionComponentData" :locale="data.settings.locale.currentValue"
-                             @contentwidth="setContentWidth">
+                             :messages="data.l10n.messages" @contentwidth="setContentWidth">
                 </inflections>
             </div>
             <div v-show="data.tabs.grammar" class="alpheios-panel__tab-panel
@@ -96,7 +96,7 @@
                   v-for="languageSetting in data.resourceSettings.lexicons"></setting>
             </div>
             <div v-show="data.tabs.info" class="alpheios-panel__tab-panel">
-                <info :data="data.infoComponentData"></info>
+                <info :data="data.infoComponentData" :messages="data.l10n.messages"></info>
             </div>
         </div>
         <div class="alpheios-panel__notifications uk-text-small" :class="notificationClasses"

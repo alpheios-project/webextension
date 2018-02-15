@@ -341,6 +341,7 @@ export default class ContentUIController {
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
           },
+          l10n: this.l10n,
           notification: {
             visible: false,
             important: false,

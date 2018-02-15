@@ -12178,6 +12178,10 @@ class Query {
     locale: {
       type: String,
       required: true
+    },
+    messages: {
+      type: Object,
+      required: true
     }
   },
 
@@ -12200,14 +12204,14 @@ class Query {
         hideEmptyCols: {
           contentHidden: true,
           text: '',
-          shownText: 'Hide empty columns',
-          hiddenText: 'Show empty columns'
+          shownText: this.messages.LABEL_INFLECT_HIDEEMPTY,
+          hiddenText: this.messages.LABEL_INFLECT_SHOWEMPTY
         },
         hideNoSuffixGroups: {
           noSuffMatchHidden: true,
           text: '',
-          shownText: 'Collapse',
-          hiddenText: 'Full Table'
+          shownText: this.messages.LABEL_INFLECT_COLLAPSE,
+          hiddenText: this.messages.LABEL_INFLECT_SHOWFULL
         }
       }
     };
@@ -12956,11 +12960,16 @@ if (false) {(function () {
 //
 //
 //
+//
 
 /* harmony default export */ __webpack_exports__["a"] = ({
   name: 'Info',
   props: {
     data: {
+      type: Object,
+      required: true
+    },
+    messages: {
       type: Object,
       required: true
     }
@@ -20319,7 +20328,7 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAD0AAAArCAYAAADL
       };
     },
     providersLinkText: function () {
-      return this.data.showProviders ? 'Hide Credits' : 'Credits';
+      return this.data.showProviders ? this.data.l10n.messages.LABEL_POPUP_HIDECREDITS : this.data.l10n.messages.LABEL_POPUP_SHOWCREDITS;
     },
     showProviders: function () {
       return this.data.showProviders;
@@ -25031,6 +25040,7 @@ class ContentUIController {
           classes: {
             [this.irregularBaseFontSizeClassName]: this.irregularBaseFontSize
           },
+          l10n: this.l10n,
           notification: {
             visible: false,
             important: false,
@@ -36916,7 +36926,7 @@ var render = function() {
           }
         ]
       },
-      [_vm._v("Inflection data is unavailable.")]
+      [_vm._v(_vm._s(_vm.messages.PLACEHOLDER_INFLECT_UNAVAILABLE))]
     ),
     _vm._v(" "),
     _c(
@@ -36931,7 +36941,7 @@ var render = function() {
           }
         ]
       },
-      [_vm._v("Lookup a word to show inflections...")]
+      [_vm._v(_vm._s(_vm.messages.PLACEHOLDER_INFLECT))]
     ),
     _vm._v(" "),
     _c(
@@ -36965,7 +36975,7 @@ var render = function() {
           },
           [
             _c("label", { staticClass: "uk-form-label" }, [
-              _vm._v("Part of speech:")
+              _vm._v(_vm._s(_vm.messages.LABEL_INFLECT_SELECT_POFS))
             ]),
             _vm._v(" "),
             _c(
@@ -38407,7 +38417,7 @@ exports = module.exports = __webpack_require__(1)(false);
 
 
 // module
-exports.push([module.i, "\n.alpheios-info {\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif !important;\n  font-size: 16px !important;\n  color: #666666 !important;\n}\n.alpheios-info .alpheios-info__helptext p {\n  font-size: 14px;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif !important;\n  font-size: 16px !important;\n  color: #666666 !important;\n}\n.alpheios-info .alpheios-info__versiontext {\n  font-size: 10.8px;\n  margin-bottom: 1em;\n}\n", ""]);
+exports.push([module.i, "\n.alpheios-info {\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif !important;\n  font-size: 16px !important;\n  color: #666666 !important;\n}\n.alpheios-info .alpheios-info__helptext p {\n  font-size: 14px;\n  font-family: Arial, \"Helvetica Neue\", Helvetica, sans-serif !important;\n  font-size: 16px !important;\n  color: #666666 !important;\n}\n.alpheios-info .alpheios-info__versiontext {\n  font-size: 10.8px;\n}\n.alpheios-info__currentlanguage {\n  font-size: 10.8px;\n  font-weight: bold;\n}\n.alpheios-info__helptext {\n  margin-top: 1em;\n}\n", ""]);
 
 // exports
 
@@ -38428,52 +38438,30 @@ var render = function() {
       )
     ]),
     _vm._v(" "),
+    _c("div", { staticClass: "alpheios-info__currentlanguage" }, [
+      _vm._v(
+        _vm._s(_vm.messages.LABEL_INFO_CURRENTLANGUAGE) +
+          " " +
+          _vm._s(_vm.data.languageName)
+      )
+    ]),
+    _vm._v(" "),
     _c("div", { staticClass: "alpheios-info__helptext" }, [
-      _c("h3", [_vm._v("Getting Started")]),
+      _c("h3", [_vm._v(_vm._s(_vm.messages.TEXT_INFO_GETTINGSTARTED))]),
       _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "Activate on a page with Latin, Ancient Greek, Arabic or Persian text."
-        )
-      ]),
+      _c("p", [_vm._v(_vm._s(_vm.messages.TEXT_INFO_ACTIVATE))]),
       _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "Double-click on a word to retrieve morphology and short definitions."
-        )
-      ]),
+      _c("p", [_vm._v(_vm._s(_vm.messages.TEXT_INFO_CLICK))]),
       _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "Alpheios will try to detect the language of the word from the page markup. If it cannot it will use the default language (currently using "
-        ),
-        _c("b", [_vm._v(_vm._s(_vm.data.languageName))]),
-        _vm._v("). ")
-      ]),
+      _c("p", [_vm._v(_vm._s(_vm.messages.TEXT_INFO_LANGDETECT))]),
       _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "Click the Settings wheel to change the default language, default dictionaries or to disable the popup (set UI Type to 'panel')."
-        )
-      ]),
+      _c("p", [_vm._v(_vm._s(_vm.messages.TEXT_INFO_SETTINGS))]),
       _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "Use the arrow at the top of this panel to move it from the right to left of your browser window."
-        )
-      ]),
+      _c("p", [_vm._v(_vm._s(_vm.messages.TEXT_INFO_ARROW))]),
       _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "You can reopen this panel at any time by selecting 'Info' from the Alpheios Reading Tools option in your browser's context menu."
-        )
-      ]),
+      _c("p", [_vm._v(_vm._s(_vm.messages.TEXT_INFO_REOPEN))]),
       _vm._v(" "),
-      _c("p", [
-        _vm._v(
-          "Deactivate Alpheios by clicking the toolbar icon or choosing 'Deactivate' from the Alpheios Reading Tools option in your browser's context menu."
-        )
-      ])
+      _c("p", [_vm._v(_vm._s(_vm.messages.TEXT_INFO_DEACTIVATE))])
     ])
   ])
 }
@@ -38616,7 +38604,7 @@ var render = function() {
             ],
             staticClass:
               "alpheios-panel__header-action-btn alpheios-panel__header-action-btn--narrow",
-            attrs: { title: "Move Panel to Left" },
+            attrs: { title: _vm.data.l10n.messages.TOOLTIP_MOVE_PANEL_LEFT },
             on: {
               click: function($event) {
                 _vm.setPosition("left")
@@ -38640,7 +38628,7 @@ var render = function() {
             ],
             staticClass:
               "alpheios-panel__header-action-btn alpheios-panel__header-action-btn--narrow",
-            attrs: { title: "Move Panel to Right" },
+            attrs: { title: _vm.data.l10n.messages.TOOLTIP_MOVE_PANEL_RIGHT },
             on: {
               click: function($event) {
                 _vm.setPosition("right")
@@ -38655,7 +38643,7 @@ var render = function() {
           "span",
           {
             staticClass: "alpheios-panel__header-action-btn",
-            attrs: { title: "Close Panel" },
+            attrs: { title: _vm.data.l10n.messages.TOOLTIP_CLOSE_PANEL },
             on: { click: _vm.close }
           },
           [_c("close-icon")],
@@ -38672,7 +38660,7 @@ var render = function() {
             {
               staticClass: "alpheios-panel__nav-btn",
               class: { active: _vm.data.tabs.info },
-              attrs: { title: "Help" },
+              attrs: { title: _vm.data.l10n.messages.TOOLTIP_HELP },
               on: {
                 click: function($event) {
                   _vm.changeTab("info")
@@ -38688,7 +38676,7 @@ var render = function() {
             {
               staticClass: "alpheios-panel__nav-btn",
               class: { active: _vm.data.tabs.definitions },
-              attrs: { title: "Definitions" },
+              attrs: { title: _vm.data.l10n.messages.TOOLTIP_DEFINITIONS },
               on: {
                 click: function($event) {
                   _vm.changeTab("definitions")
@@ -38704,7 +38692,7 @@ var render = function() {
             {
               staticClass: "alpheios-panel__nav-btn",
               class: { active: _vm.data.tabs.inflections },
-              attrs: { title: "Inflection Tables" },
+              attrs: { title: _vm.data.l10n.messages.TOOLTIP_INFLECT },
               on: {
                 click: function($event) {
                   _vm.changeTab("inflections")
@@ -38721,7 +38709,7 @@ var render = function() {
               staticClass:
                 "alpheios-panel__nav-btn alpheios-panel__nav-btn--short",
               class: { active: _vm.data.tabs.grammar },
-              attrs: { title: "Grammar" },
+              attrs: { title: _vm.data.l10n.messages.TOOLTIP_GRAMMAR },
               on: {
                 click: function($event) {
                   _vm.changeTab("grammar")
@@ -38737,7 +38725,7 @@ var render = function() {
             {
               staticClass: "alpheios-panel__nav-btn",
               class: { active: _vm.data.tabs.options },
-              attrs: { title: "Options" },
+              attrs: { title: _vm.data.l10n.messages.TOOLTIP_OPTIONS },
               on: {
                 click: function($event) {
                   _vm.changeTab("options")
@@ -38761,7 +38749,7 @@ var render = function() {
               ],
               staticClass: "alpheios-panel__nav-btn",
               class: { active: _vm.data.tabs.status },
-              attrs: { title: "Status Messages" },
+              attrs: { title: _vm.data.l10n.messages.TOOLTIP_STATUS },
               on: {
                 click: function($event) {
                   _vm.changeTab("status")
@@ -38804,7 +38792,12 @@ var render = function() {
                   }
                 ]
               },
-              [_vm._v("\n              Lookup a word to show definitions...")]
+              [
+                _vm._v(
+                  "\n              " +
+                    _vm._s(_vm.data.l10n.messages.PLACEHOLDER_DEFINITIONS)
+                )
+              ]
             ),
             _vm._v(" "),
             _vm._l(_vm.data.shortDefinitions, function(definition) {
@@ -38843,7 +38836,8 @@ var render = function() {
               staticClass: "alpheios-panel-inflections",
               attrs: {
                 data: _vm.data.inflectionComponentData,
-                locale: _vm.data.settings.locale.currentValue
+                locale: _vm.data.settings.locale.currentValue,
+                messages: _vm.data.l10n.messages
               },
               on: { contentwidth: _vm.setContentWidth }
             })
@@ -38968,7 +38962,14 @@ var render = function() {
             ],
             staticClass: "alpheios-panel__tab-panel"
           },
-          [_c("info", { attrs: { data: _vm.data.infoComponentData } })],
+          [
+            _c("info", {
+              attrs: {
+                data: _vm.data.infoComponentData,
+                messages: _vm.data.l10n.messages
+              }
+            })
+          ],
           1
         )
       ]),
@@ -39179,6 +39180,7 @@ var render = function() {
         "span",
         {
           staticClass: "alpheios-popup__close-btn",
+          attrs: { title: _vm.data.l10n.messages.TOOLTIP_POPUP_CLOSE },
           on: { click: _vm.closePopup }
         },
         [_c("close-icon")],
@@ -39243,7 +39245,12 @@ var render = function() {
                   }
                 }
               },
-              [_vm._v("Inflect\n            ")]
+              [
+                _vm._v(
+                  _vm._s(_vm.data.l10n.messages.LABEL_POPUP_INFLECT) +
+                    "\n            "
+                )
+              ]
             ),
             _vm._v(" "),
             _c(
@@ -39265,7 +39272,12 @@ var render = function() {
                   }
                 }
               },
-              [_vm._v("Define\n            ")]
+              [
+                _vm._v(
+                  _vm._s(_vm.data.l10n.messages.LABEL_POPUP_DEFINE) +
+                    "\n            "
+                )
+              ]
             ),
             _vm._v(" "),
             _c(
@@ -39279,7 +39291,12 @@ var render = function() {
                   }
                 }
               },
-              [_vm._v("Options\n            ")]
+              [
+                _vm._v(
+                  _vm._s(_vm.data.l10n.messages.LABEL_POPUP_OPTIONS) +
+                    "\n            "
+                )
+              ]
             )
           ]
         )
@@ -39299,7 +39316,13 @@ var render = function() {
           staticClass:
             "alpheios-popup__morph-cont alpheios-popup__definitions--placeholder uk-text-small"
         },
-        [_vm._v("\n        No lexical data is available yet\n    ")]
+        [
+          _vm._v(
+            "\n        " +
+              _vm._s(_vm.data.l10n.messages.PLACEHOLDER_POPUP_DATA) +
+              "\n    "
+          )
+        ]
       ),
       _vm._v(" "),
       _c(
@@ -39336,7 +39359,7 @@ var render = function() {
                     {
                       staticClass: "alpheios-popup__morph-cont-providers-header"
                     },
-                    [_vm._v("Credits:")]
+                    [_vm._v(_vm._s(_vm.data.l10n.messages.LABEL_POPUP_CREDITS))]
                   ),
                   _vm._v(" "),
                   _vm._l(_vm.data.providers, function(p) {
@@ -43568,7 +43591,7 @@ exports["default"] = {"locale":"en","pluralRuleFunction":function (n,ord){var s=
 /* 103 */
 /***/ (function(module, exports) {
 
-module.exports = "{\n  \"COOKIE_TEST_MESSAGE\": {\n    \"message\": \"This is a test message about a cookie.\",\n    \"description\": \"A test message that is shown in a panel\",\n    \"component\": \"Panel\"\n  },\n  \"NUM_LINES_TEST_MESSAGE\": {\n    \"message\": \"There {numLines, plural, =0 {are no lines} =1 {is one line} other {are # lines}}.\",\n    \"description\": \"A test message that is shown in a panel\",\n    \"component\": \"Panel\",\n    \"params\": [\"numLines\"]\n  }\n}"
+module.exports = "{\n  \"COOKIE_TEST_MESSAGE\": {\n    \"message\": \"This is a test message about a cookie.\",\n    \"description\": \"A test message that is shown in a panel\",\n    \"component\": \"Panel\"\n  },\n  \"NUM_LINES_TEST_MESSAGE\": {\n    \"message\": \"There {numLines, plural, =0 {are no lines} =1 {is one line} other {are # lines}}.\",\n    \"description\": \"A test message that is shown in a panel\",\n    \"component\": \"Panel\",\n    \"params\": [\"numLines\"]\n  },\n  \"TOOLTIP_MOVE_PANEL_LEFT\": {\n    \"message\": \"Move Panel to Left\",\n    \"description\": \"tooltip for moving the panel to the left\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_MOVE_PANEL_RIGHT\": {\n    \"message\": \"Move Panel to Right\",\n    \"description\": \"tooltip for moving the panel to the right\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_CLOSE_PANEL\": {\n    \"message\": \"Close Panel\",\n    \"description\": \"tooltip for closing the panel\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_HELP\": {\n    \"message\": \"Help\",\n    \"description\": \"tooltip for help tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_INFLECT\": {\n    \"message\": \"Inflection Tables\",\n    \"description\": \"tooltip for inflections tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_DEFINITIONS\": {\n    \"message\": \"Definitions\",\n    \"description\": \"tooltip for definitions tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_GRAMMAR\": {\n    \"message\": \"Grammar\",\n    \"description\": \"tooltip for grammar tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_OPTIONS\": {\n    \"message\": \"Options\",\n    \"description\": \"tooltip for settings tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_STATUS\": {\n    \"message\": \"Status Messages\",\n    \"description\": \"tooltip for status tab\",\n    \"component\": \"Panel\"\n  },\n  \"PLACEHOLDER_DEFINITIONS\":  {\n    \"message\": \"Lookup a word to show definitions...\",\n    \"description\": \"placeholder for definitions panel\",\n    \"component\": \"Panel\"\n  },\n  \"PLACEHOLDER_INFLECT\":  {\n    \"message\": \"Lookup a word to show inflections...\",\n    \"description\": \"placeholder for inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"PLACEHOLDER_INFLECT_UNAVAILABLE\":  {\n    \"message\": \"Inflection data is unavailable\",\n    \"description\": \"placeholder for inflections panel if unavailable\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_SELECT_POFS\":  {\n    \"message\": \"Part of speech:\",\n    \"description\": \"label for part of speech selector on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_SHOWFULL\": {\n    \"message\": \"Full Table\",\n    \"description\": \"label for show full table button on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_COLLAPSE\": {\n    \"message\": \"Collapse\",\n    \"description\": \"label for collapse table button on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_HIDEEMPTY\": {\n    \"message\": \"Hide empty columns\",\n    \"description\": \"label for hide empty columns button on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_SHOWEMPTY\": {\n    \"message\": \"Show empty columns\",\n    \"description\": \"label for show empty columns button on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_GETTINGSTARTED\": {\n    \"message\": \"Getting Started\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_GETTINGSTARTED\": {\n    \"message\": \"Getting Started\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_ACTIVATE\": {\n    \"message\": \"Activate on a page with Latin, Ancient Greek, Arabic or Persian text.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_CLICK\": {\n    \"message\": \"Double-click on a word to retrieve morphology and short definitions.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_LANGDETECT\": {\n    \"message\": \"Alpheios will try to detect the language of the word from the page markup. If it cannot it will use the default language.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFO_CURRENTLANGUAGE\": {\n    \"message\": \"Current language:\",\n    \"description\": \"label for current language in info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_SETTINGS\": {\n    \"message\": \"Click the Settings wheel to change the default language, default dictionaries or to disable the popup (set UI Type to 'panel').\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_ARROW\": {\n    \"message\": \"Use the arrow at the top of this panel to move it from the right to left of your browser window.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_REOPEN\": {\n    \"message\": \"You can reopen this panel at any time by selecting 'Info' from the Alpheios Reading Tools option in your browser's context menu.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_DEACTIVATE\": {\n    \"message\": \"Deactivate Alpheios by clicking the toolbar icon or choosing 'Deactivate' from the Alpheios Reading Tools option in your browser's context menu.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_POPUP_CLOSE\": {\n    \"message\": \"Close Popup\",\n    \"description\": \"tooltip for closing the popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_INFLECT\": {\n    \"message\": \"Inflect\",\n    \"description\": \"label for inflect button on popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_OPTIONS\": {\n    \"message\": \"Options\",\n    \"description\": \"label for options button on popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_DEFINE\": {\n    \"message\": \"Define\",\n    \"description\": \"label for define button on popup\",\n    \"component\": \"Popup\"\n  },\n  \"PLACEHOLDER_POPUP_DATA\": {\n    \"message\": \"No lexical data is available yet\",\n    \"description\": \"placeholder text for popup data\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_CREDITS\": {\n    \"message\": \"Credits:\",\n    \"description\": \"label for credits on popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_SHOWCREDITS\": {\n    \"message\": \"Credits\",\n    \"description\": \"label for show credits link on popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_HIDECREDITS\": {\n    \"message\": \"Hide Credits\",\n    \"description\": \"label for hide credits link on popup\",\n    \"component\": \"Popup\"\n  }\n}\n"
 
 /***/ }),
 /* 104 */
