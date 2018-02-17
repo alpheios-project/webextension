@@ -161,7 +161,7 @@
       inflectionData: function (inflectionData) {
         console.log(`Inflection data changed`)
         if (inflectionData) {
-          this.viewSet = new ViewSet(inflectionData)
+          this.viewSet = new ViewSet(inflectionData, this.l10n.messages(this.locale))
 
           this.partsOfSpeech = this.viewSet.partsOfSpeech
           if (this.partsOfSpeech.length > 0) {
@@ -200,6 +200,7 @@
       locale: function (locale) {
         console.log(`locale changed to ${locale}`)
         if (this.data.inflectionData) {
+          this.viewSet.updateMessages(this.l10n.messages(this.locale))
           this.renderInflections().displayInflections() // Re-render inflections for a different locale
         }
       }
@@ -215,7 +216,7 @@
         this.clearInflections().setDefaults()
         // Hide empty columns by default
         // TODO: change inflection library to take that as an option
-        this.selectedView.render(this.data.inflectionData, this.l10n.messages(this.locale)).hideEmptyColumns().hideNoSuffixGroups()
+        this.selectedView.render().hideEmptyColumns().hideNoSuffixGroups()
         return this
       },
 
@@ -243,12 +244,16 @@
 
             for (const index of indexes) {
               let footnote = this.selectedView.footnotes.get(index)
-              let dt = document.createElement('dt')
-              dt.innerHTML = footnote.index
-              popup.appendChild(dt)
-              let dd = document.createElement('dd')
-              dd.innerHTML = footnote.text
-              popup.appendChild(dd)
+              if (footnote) {
+                let dt = document.createElement('dt')
+                dt.innerHTML = footnote.index
+                popup.appendChild(dt)
+                let dd = document.createElement('dd')
+                dd.innerHTML = footnote.text
+                popup.appendChild(dd)
+              } else {
+                console.warn(`Footnote "${index}" is not found`)
+              }
             }
             let closeBtn = document.createElement('div')
             closeBtn.classList.add(closeBtnClassName)
