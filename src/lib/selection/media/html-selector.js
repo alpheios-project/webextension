@@ -20,6 +20,8 @@ export default class HTMLSelector extends MediaSelector {
   createTextSelector () {
     let textSelector = new TextSelector()
     textSelector.languageCode = this.getLanguageCode(this.defaultLanguageCode)
+    textSelector.languageID = Models.LanguageModelFactory.getLanguageIdFromCode(textSelector.languageCode)
+    textSelector.model = Models.LanguageModelFactory.getLanguageModel(this.languageID)
     textSelector.language = TextSelector.getLanguage(textSelector.languageCode)
 
     if (this.wordSeparator.has(textSelector.language.baseUnit)) {

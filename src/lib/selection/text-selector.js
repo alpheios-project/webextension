@@ -12,6 +12,8 @@ export default class TextSelector {
   constructor () {
     this.text = '' // Calculated?
     this.languageCode = ''
+    this.languageID = undefined
+    this.model = undefined
     this.language = undefined
 
     this.start = 0
@@ -58,7 +60,7 @@ export default class TextSelector {
   }
 
   get normalizedText () {
-    return this.language.normalizeWord(this.text)
+    return this.model.normalizeWord(this.text)
   }
 
   /**
