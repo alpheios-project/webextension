@@ -22,9 +22,9 @@
   },
   "homepage": "https://github.com/alpheios-project/webextension#readme",
   "devDependencies": {
-    "alpheios-data-models": "file:../data-models",
+    "alpheios-data-models": "github:alpheios-project/data-models#pronouns",
     "alpheios-experience": "github:alpheios-project/experience",
-    "alpheios-inflection-tables": "file:../inflection-tables",
+    "alpheios-inflection-tables": "github:alpheios-project/inflection-tables#pronouns",
     "alpheios-lexicon-client": "github:alpheios-project/lexicon-client",
     "alpheios-res-client": "github:alpheios-project/res-client",
     "alpheios-tufts-adapter": "github:alpheios-project/tufts-adapter",
