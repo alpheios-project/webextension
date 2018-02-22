@@ -4710,14 +4710,27 @@ class LanguageDataset {
     this.footnotes.push(footnote);
   }
 
+  /**
+   * Should be redefined in child classes
+   * @return {Array}
+   */
   getObligatoryMatches () {
     return []
   }
 
+  /**
+   * Should be redefined in child classes
+   * @return {Array}
+   */
   getOptionalMatches (inflection) {
     return []
   }
 
+  /**
+   * Sets inflection grammar properties based on inflection data
+   * @param {Inflection} inflection - An inflection data object
+   * @return {Inflection} A modified inflection data object
+   */
   setInflectionGrammar (inflection) {
     inflection.grm.obligatoryMatches = this.getObligatoryMatches(inflection);
     inflection.grm.optionalMatches = this.getOptionalMatches(inflection);
@@ -7124,6 +7137,12 @@ class GreekLanguageDataset extends LanguageDataset {
     return this
   }
 
+  /**
+   * Returns a feature type with lemmas that are used to group values within inflection tables,
+   * such as for demonstrative pronouns
+   * @param {string} grammarClass - A name of a pronoun class
+   * @return {FeatureType} An object with lemma values
+   */
   getPronounGroupingLemmas (grammarClass) {
     let values = this.pronounGroupingLemmas.has(grammarClass) ? this.pronounGroupingLemmas.get(grammarClass) : [];
     return new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.word, values, this.languageID)
@@ -7264,9 +7283,9 @@ class GreekLanguageDataset extends LanguageDataset {
  */
 class LanguageDataList {
   /**
-   * Combines several language datasets for different languages. Allows to abstract away language data.
+   * Combines several language datasets representing supported languages. Allows to abstract away language data.
    * This function is chainable.
-   * @param {LanguageDataset[]} languageData - Language datasets of different languages.
+   * @param {Constructor[]} languageData - Language datasets of different languages.
    */
   constructor (languageData = [LatinLanguageDataset, GreekLanguageDataset]) {
     this.sets = new Map();
@@ -7286,7 +7305,7 @@ class LanguageDataList {
         dataset.loadData();
       }
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
     return this
   }
@@ -7297,7 +7316,6 @@ class LanguageDataList {
    * @return {InflectionData} A return value of an inflection query.
    */
   getSuffixes (homonym) {
-    console.log(`getSuffixes`);
     if (this.sets.has(homonym.languageID)) {
       let dataset = this.sets.get(homonym.languageID);
       for (let inflection of homonym.inflections) {
@@ -13017,6 +13035,11 @@ class LatinLanguageModel$1 extends LanguageModel {
     return STR_LANG_CODE_LAT
   }
 
+  /**
+   * Sets inflection grammar properties based on its characteristics
+   * @param {Inflection} inflection - An inflection object
+   * @return {Object} Inflection properties
+   */
   static getInflectionGrammar (inflection) {
     let grammar = {
       fullFormBased: false,
@@ -13328,6 +13351,11 @@ class GreekLanguageModel$1 extends LanguageModel {
     return '.,;:!?\'"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r'
   }
 
+  /**
+   * Sets inflection grammar properties based on its characteristics
+   * @param {Inflection} inflection - An inflection object
+   * @return {Object} Inflection properties
+   */
   static getInflectionGrammar (inflection) {
     let grammar = {
       fullFormBased: false,
