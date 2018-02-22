@@ -1830,8 +1830,12 @@ class GreekLanguageModel extends LanguageModel {
   }
 
   /**
-   * Determine a class of a given word (a pronoun).
-   * Finds grammar class(es) in a pronoun source data that match(es) a provided pronoun.
+   * Determines a class of a given word (pronoun) by finding a matching word entry(ies)
+   * in a pronoun source info (`forms`) and getting a single or multiple classes of those entries.
+   * Some morphological analyzers provide class information that is unreliable or do not
+   * provide class information at all. However, class information is essential in
+   * deciding in what table should pronouns be grouped. For this, we have to
+   * determine pronoun classes using this method.
    * @param {Form[]} forms - An array of known forms of pronouns.
    * @param {string} word - A word we need to find a matching class for.
    * @param {boolean} normalize - Whether normalized forms of words shall be used for comparison.
@@ -2475,8 +2479,10 @@ class Inflection {
 
     // A grammatical data object
     this.grm = {
-      fullFormBased: false, // True this inflection stores and requires to use a full form of a word
-      suffixBased: false    // True if only suffix is enough to identify this inflection
+      fullFormBased: false,  // True this inflection stores and requires to use a full form of a word
+      suffixBased: false,    // True if only suffix is enough to identify this inflection
+      obligatoryMatches: [], // Names of features that should be matched in order to include a form or suffix to an inflection table
+      optionalMatches: []    // Names of features that will be recorded but are not important for inclusion of a form or suffix to an inflection table
     };
 
     // Suffix may not be present in every word. If missing, it will be set to null.
@@ -2509,8 +2515,10 @@ class Inflection {
    * Sets grammar properties based on inflection info
    */
   setGrammar () {
-    let grammarData = this.model.getInflectionGrammar(this);
-    this.grm = Object.assign(this.grm, grammarData);
+    if (this.model.hasOwnProperty('getInflectionGrammar')) {
+      let grammarData = this.model.getInflectionGrammar(this);
+      this.grm = Object.assign(this.grm, grammarData);
+    }
   }
 
   compareWithWord (word, normalize = true) {
@@ -2557,6 +2565,17 @@ class Inflection {
 
       this[type].push(element);
     }
+  }
+
+  hasFeatureValue (featureName, featureValue) {
+    if (this.hasOwnProperty(featureName) && Array.isArray(this[featureName]) && this[featureName].length > 0) {
+      for (let feature of this[featureName]) {
+        if (feature.hasValue(featureValue)) {
+          return true
+        }
+      }
+    }
+    return false
   }
 }
 
@@ -2733,6 +2752,18 @@ class Homonym {
     } else {
       throw new Error('Homonym has not been initialized properly. Unable to obtain language ID information.')
     }
+  }
+
+  /**
+   * Returns a list of all inflections within all lexemes
+   * @return {Inflection[]} An array of inflections
+   */
+  get inflections () {
+    let inflections = [];
+    for (const lexeme of this.lexemes) {
+      inflections = inflections.concat(lexeme.inflections);
+    }
+    return inflections
   }
 }
 
@@ -4571,27 +4602,6 @@ class Form extends Morpheme {
   }
 }
 
-class InflectionProperties {
-  constructor (partOfSpeech) {
-    this.partOfSpeech = partOfSpeech;
-    this.suffixBased = false;
-    this.fullFormBased = false;
-    if (partOfSpeech) {
-      // If there is a single part of speech info in an inflection
-      if (partOfSpeech === __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_NOUN) {
-        this.suffixBased = true;
-      }
-    }
-  }
-
-  get obligatoryMatches () {
-    if (this.fullFormBased) {
-      return [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.word]
-    }
-    return [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part] // Default value
-  }
-}
-
 /**
  * Stores inflection language data
  */
@@ -4658,8 +4668,6 @@ class LanguageDataset {
             let type = feature[0].type;
             // Store all multi-value features to create a separate copy of a a Suffix object for each of them
             multiValueFeatures.push({type: type, features: feature});
-          } else {
-            console.log(feature);
           }
         } else {
           // Array is empty
@@ -4702,24 +4710,27 @@ class LanguageDataset {
     this.footnotes.push(footnote);
   }
 
-  getInflectionProperties (partOfSpeech) {
-    return new InflectionProperties(partOfSpeech)
+  getObligatoryMatches () {
+    return []
+  }
+
+  getOptionalMatches (inflection) {
+    return []
+  }
+
+  setInflectionGrammar (inflection) {
+    inflection.grm.obligatoryMatches = this.getObligatoryMatches(inflection);
+    inflection.grm.optionalMatches = this.getOptionalMatches(inflection);
+    return inflection
   }
 
   getSuffixes (homonym) {
     // Add support for languages
     let result = new InflectionData(homonym);
     let inflections = {};
-    console.log('getSuffixes');
 
-    // Find partial matches first, and then full among them
-
-    // TODO: do we ever need lemmas?
     for (let lexeme of homonym.lexemes) {
       for (let inflection of lexeme.inflections) {
-        // Set grammar rules for an inflection
-        inflection.setGrammar();
-
         if (inflection.grm.pronounClassRequired) {
           /*
           A `class` grammatical feature is an obligatory match for Greek pronouns. Class, however, is not present in
@@ -4728,16 +4739,14 @@ class LanguageDataset {
           by finding an exact pronoun form match in inflection data and obtaining a corresponding `class` value.
           The value found will then be attached to an Inflection object.
            */
-          let grmClass;
           // Get a class this inflection belongs to
-          grmClass = this.model.getPronounClasses(this.forms, inflection.form);
-          if (grmClass.length === 0) {
-            console.warn(`Cannot determine a grammar class for a ${inflection.form} pronoun.`);
-          } else if (grmClass.length > 1) {
-            console.warn(`Several grammar classes found for a ${inflection.form} pronoun:`, grmClass);
+          let grmClasses = this.model.getPronounClasses(this.forms, inflection.form);
+          if (grmClasses.length === 0) {
+            console.warn(`Cannot determine a grammar class for a ${inflection.form} pronoun. 
+              Table construction will probably fail`);
           } else {
-            // There is only one value found
-            inflection.grm.class = grmClass[0];
+            // One or more values found
+            inflection[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmClass] = grmClasses;
           }
         }
 
@@ -4772,30 +4781,39 @@ class LanguageDataset {
 
         result[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part].push(partOfSpeech);
         result[partOfSpeech] = {};
-        let inflectionProperties = this.getInflectionProperties(partOfSpeech);
 
         let items = [];
-        // Don't search for forms for suffix based parts of speech
-        if (!inflectionProperties.suffixBased) {
+        // TODO: improve suffixBase/fullFormBased detection
+        // There might be both full form based and suffix based items in the same group
+        let suffixBased = inflectionsGroup.find(i => i.grm.suffixBased);
+        // If there is at least on full form based inflection, search for full form items
+        if (!suffixBased) {
           // If it is an irregular verb or a pronoun there will be form matches
 
           // Let's assume that it might be full form based
-          inflectionProperties.fullFormBased = true;
-          console.log(this.forms);
-          items = this.forms.reduce(this['reducer'].bind(this, inflectionsGroup, inflectionProperties), []);
+          for (let inflection of inflectionsGroup) {
+            inflection.grm.fullFormBased = true;
+            this.setInflectionGrammar(inflection);
+          }
+          items = this.forms.reduce(this['reducer'].bind(this, inflectionsGroup), []);
           if (items.length === 0) {
-            // It is not full form based
-            inflectionProperties.fullFormBased = false;
-            // And then probably it is suffix based
-            inflectionProperties.suffixBased = true;
+            // It is probably suffix based
+            suffixBased = true;
           }
         }
         // Otherwise, check for suffix matches
-        if (inflectionProperties.suffixBased) {
-          items = this.suffixes.reduce(this['reducer'].bind(this, inflectionsGroup, inflectionProperties), []);
+        if (suffixBased) {
+          for (let inflection of inflectionsGroup) {
+            inflection.grm.suffixBased = true;
+            inflection.grm.fullFormBased = false;
+            this.setInflectionGrammar(inflection);
+          }
+          items = this.suffixes.reduce(this['reducer'].bind(this, inflectionsGroup), []);
         }
 
         // TODO: Shall we produce a warning if no matches found?
+        // TODO: for both suffix based and full form based matches store matches into separate
+        // TODO: Each view should use either suffix based or full form based array
         result[partOfSpeech].suffixes = items;
         result[partOfSpeech].footnotes = [];
 
@@ -4831,8 +4849,8 @@ class LanguageDataset {
     return result
   }
 
-  reducer (inflections, inflectionProperties, accumulator, item) {
-    let result = this.matcher(inflections, inflectionProperties, item);
+  reducer (inflections, accumulator, item) {
+    let result = this.matcher(inflections, item);
     if (result) {
       accumulator.push(result);
     }
@@ -6481,13 +6499,16 @@ languageModel.features[types.gender].addImporter(importerName)
 languageModel.features[types.tense].addImporter(importerName)
     .map('future_perfect', languageModel.features[types.tense][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE_PERFECT]);
 const footnotes = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](types.footnote, [], __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_LATIN);
-const featureOptions = [types.grmCase, types.declension, types.gender, types.number, types.voice, types.mood, types.tense, types.person];
 
 // endregion Definition of grammatical features
 
 class LatinLanguageDataset extends LanguageDataset {
   constructor () {
-    super(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_LATIN);
+    super(LatinLanguageDataset.languageID);
+  }
+
+  static get languageID () {
+    return __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_LATIN
   }
 
 // For noun and adjectives
@@ -6757,27 +6778,42 @@ class LatinLanguageDataset extends LanguageDataset {
     return this
   }
 
+  getObligatoryMatches (inflection) {
+    let obligatoryMatches = [];
+    if (inflection.grm.fullFormBased) {
+      obligatoryMatches.push(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.word);
+    } else {
+      // Default value for suffix matching
+      obligatoryMatches.push(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part);
+    }
+    return obligatoryMatches
+  }
+
+  getOptionalMatches (inflection) {
+    const featureOptions = [
+      types.grmCase,
+      types.declension,
+      types.gender,
+      types.number,
+      types.voice,
+      types.mood,
+      types.tense,
+      types.person
+    ];
+    return featureOptions.filter(f => inflection[f])
+  }
+
   /**
    * Decides whether a suffix is a match to any of inflections, and if it is, what type of match it is.
    * @param {Inflection[]} inflections - an array of inflection objects to be matched against a suffix.
-   * @param {Object} inflectionProperties - Inflection properties object, defines grammar properties such as
-   * suffixBased or fullFormBased.
    * @param {Suffix} item - a suffix to be matched with inflections.
    * @returns {Suffix | null} if a match is found, returns a suffix object modified with some
    * additional information about a match. if no matches found, returns null.
    */
-  matcher (inflections, inflectionProperties, item) {
-    'use strict';
-    // All of those features must match between an inflection and an ending
-    let obligatoryMatches, optionalMatches;
+  matcher (inflections, item) {
     // I'm not sure if we ever want to restrict what we consider optional matches
     // so this is just a placeholder for now
     let matchOptional = true;
-    if (inflectionProperties.suffixBased) {
-      obligatoryMatches = [types.part];
-    } else {
-      obligatoryMatches = [types.word];
-    }
 
     // Any of those features must match between an inflection and an ending
     let bestMatchData = null; // information about the best match we would be able to find
@@ -6789,39 +6825,32 @@ class LatinLanguageDataset extends LanguageDataset {
      */
     for (let inflection of inflections) {
       let matchData = new MatchData(); // Create a match profile
-      if (matchOptional) {
-        optionalMatches = featureOptions.filter((f) => inflection[f]);
-      } else {
-        optionalMatches = [];
-      }
+      let optionalMatches = matchOptional ? inflection.grm.optionalMatches : [];
+      matchData.suffixMatch = inflection.compareWithWord(item.value);
 
-      if (inflectionProperties.suffixBased) {
-        if (this.model.normalizeWord(inflection.suffix) === this.model.normalizeWord(item.value)) {
-          matchData.suffixMatch = true;
-        }
-      } else {
-        let form = inflection.prefix ? inflection.prefix : '';
-        form = form + inflection.stem;
-        form = inflection.suffix ? form + inflection.suffix : form;
-        if (this.model.normalizeWord(form) === this.model.normalizeWord(item.value)) {
-          matchData.suffixMatch = true;
-        }
-      }
-
-      // Check obligatory matches
-      for (let feature of obligatoryMatches) {
+      // Check for obligatory matches
+      for (let feature of inflection.grm.obligatoryMatches) {
         let featureMatch = item.featureMatch(feature, inflection[feature]);
-        // matchFound = matchFound && featureMatch;
-
-        if (!featureMatch) {
+        if (featureMatch) {
+          matchData.matchedFeatures.push(feature);
+        } else {
           // If an obligatory match is not found, there is no reason to check other items
           break
         }
-        // Inflection's value of this feature is matching the one of the suffix
-        matchData.matchedFeatures.push(feature);
       }
 
-      if (matchData.matchedFeatures.length < obligatoryMatches.length) {
+      // Check for obligatory matches
+      for (let feature of inflection.grm.obligatoryMatches) {
+        let featureMatch = item.featureMatch(feature, inflection[feature]);
+        if (featureMatch) {
+          matchData.matchedFeatures.push(feature);
+        } else {
+          // If an obligatory match is not found, there is no reason to check other items
+          break
+        }
+      }
+
+      if (matchData.matchedFeatures.length < inflection.grm.obligatoryMatches.length) {
         // Not all obligatory matches are found, this is not a match
         break
       }
@@ -6834,7 +6863,7 @@ class LatinLanguageDataset extends LanguageDataset {
         }
       }
 
-      if (matchData.suffixMatch && (matchData.matchedFeatures.length === obligatoryMatches.length + optionalMatches.length)) {
+      if (matchData.suffixMatch && (matchData.matchedFeatures.length === inflection.grm.obligatoryMatches.length + optionalMatches.length)) {
         // This is a full match
         matchData.fullMatch = true;
 
@@ -6916,32 +6945,6 @@ var nounFootnotesCSV$1 = "Index,Text\r\n1,See  for Rules of variance within regu
 
 var pronounFormsCSV$1 = "Form,Headword,Class,Person,Number,Case,Gender,Type,Primary,Dialects,Footnote\r\nτούτω,οὗτος,demonstrative,,dual,accusative,masculine feminine neuter,regular,primary,,\r\nτούτοιν,οὗτος,demonstrative,,dual,dative,masculine feminine neuter,regular,primary,,\r\nτούτοιν,οὗτος,demonstrative,,dual,genitive,masculine feminine neuter,regular,primary,,\r\nτούτω,οὗτος,demonstrative,,dual,nominative,masculine feminine neuter,regular,primary,,\r\nταύτᾱς,οὗτος,demonstrative,,plural,accusative,feminine,regular,primary,,\r\nταύταις,οὗτος,demonstrative,,plural,dative,feminine,regular,primary,,\r\nτούτων,οὗτος,demonstrative,,plural,genitive,feminine,regular,primary,,\r\nαὗται,οὗτος,demonstrative,,plural,nominative,feminine,regular,primary,,\r\nτούτους,οὗτος,demonstrative,,plural,accusative,masculine,regular,primary,,\r\nτούτοις,οὗτος,demonstrative,,plural,dative,masculine,regular,primary,,\r\nτούτων,οὗτος,demonstrative,,plural,genitive,masculine,regular,primary,,\r\nοὗτοι,οὗτος,demonstrative,,plural,nominative,masculine,regular,primary,,\r\nταῦτα,οὗτος,demonstrative,,plural,accusative,neuter,regular,primary,,\r\nτούτοις,οὗτος,demonstrative,,plural,dative,neuter,regular,primary,,\r\nτούτων,οὗτος,demonstrative,,plural,genitive,neuter,regular,primary,,\r\nταῦτα,οὗτος,demonstrative,,plural,nominative,neuter,regular,primary,,\r\nταύτην,οὗτος,demonstrative,,singular,accusative,feminine,regular,primary,,\r\nταύτῃ,οὗτος,demonstrative,,singular,dative,feminine,regular,primary,,\r\nταύτης,οὗτος,demonstrative,,singular,genitive,feminine,regular,primary,,\r\nαὕτη,οὗτος,demonstrative,,singular,nominative,feminine,regular,primary,,\r\nτοῦτον,οὗτος,demonstrative,,singular,accusative,masculine,regular,primary,,\r\nτούτῳ,οὗτος,demonstrative,,singular,dative,masculine,regular,primary,,\r\nτούτου,οὗτος,demonstrative,,singular,genitive,masculine,regular,primary,,\r\nοὗτος,οὗτος,demonstrative,,singular,nominative,masculine,regular,primary,,\r\nτοῦτο,οὗτος,demonstrative,,singular,accusative,neuter,regular,primary,,\r\nτούτῳ,οὗτος,demonstrative,,singular,dative,neuter,regular,primary,,\r\nτούτου,οὗτος,demonstrative,,singular,genitive,neuter,regular,primary,,\r\nτοῦτο,οὗτος,demonstrative,,singular,nominative,neuter,regular,primary,,\r\nἐκείνω,ἐκεῖνος,demonstrative,,dual,accusative,masculine feminine neuter,regular,primary,,\r\nἐκείνοιν,ἐκεῖνος,demonstrative,,dual,dative,masculine feminine neuter,regular,primary,,\r\nἐκείνοιν,ἐκεῖνος,demonstrative,,dual,genitive,masculine feminine neuter,regular,primary,,\r\nἐκείνω,ἐκεῖνος,demonstrative,,dual,nominative,masculine feminine neuter,regular,primary,,\r\nἐκείνᾱς,ἐκεῖνος,demonstrative,,plural,accusative,feminine,regular,primary,,\r\nἐκείναις,ἐκεῖνος,demonstrative,,plural,dative,feminine,regular,primary,,\r\nἐκείνων,ἐκεῖνος,demonstrative,,plural,genitive,feminine,regular,primary,,\r\nἐκεῖναι,ἐκεῖνος,demonstrative,,plural,nominative,feminine,regular,primary,,\r\nἐκείνους,ἐκεῖνος,demonstrative,,plural,accusative,masculine,regular,primary,,\r\nἐκείνοις,ἐκεῖνος,demonstrative,,plural,dative,masculine,regular,primary,,\r\nἐκείνων,ἐκεῖνος,demonstrative,,plural,genitive,masculine,regular,primary,,\r\nἐκεῖνοι,ἐκεῖνος,demonstrative,,plural,nominative,masculine,regular,primary,,\r\nἐκεῖνα,ἐκεῖνος,demonstrative,,plural,accusative,neuter,regular,primary,,\r\nἐκείνοις,ἐκεῖνος,demonstrative,,plural,dative,neuter,regular,primary,,\r\nἐκείνων,ἐκεῖνος,demonstrative,,plural,genitive,neuter,regular,primary,,\r\nἐκεῖνα,ἐκεῖνος,demonstrative,,plural,nominative,neuter,regular,primary,,\r\nἐκείνην,ἐκεῖνος,demonstrative,,singular,accusative,feminine,regular,primary,,\r\nἐκείνῃ,ἐκεῖνος,demonstrative,,singular,dative,feminine,regular,primary,,\r\nἐκείνης,ἐκεῖνος,demonstrative,,singular,genitive,feminine,regular,primary,,\r\nἐκείνη,ἐκεῖνος,demonstrative,,singular,nominative,feminine,regular,primary,,\r\nἐκεῖνον,ἐκεῖνος,demonstrative,,singular,accusative,masculine,regular,primary,,\r\nἐκείνῳ,ἐκεῖνος,demonstrative,,singular,dative,masculine,regular,primary,,\r\nἐκείνου,ἐκεῖνος,demonstrative,,singular,genitive,masculine,regular,primary,,\r\nἐκεῖνος,ἐκεῖνος,demonstrative,,singular,nominative,masculine,regular,primary,,\r\nἐκεῖνο,ἐκεῖνος,demonstrative,,singular,accusative,neuter,regular,primary,,\r\nἐκείνῳ,ἐκεῖνος,demonstrative,,singular,dative,neuter,regular,primary,,\r\nἐκείνου,ἐκεῖνος,demonstrative,,singular,genitive,neuter,regular,primary,,\r\nἐκεῖνο,ἐκεῖνος,demonstrative,,singular,nominative,neuter,regular,primary,,\r\nτώδε,ὅδε,demonstrative,,dual,accusative,masculine feminine neuter,regular,primary,,\r\nτοῖνδε,ὅδε,demonstrative,,dual,dative,masculine feminine neuter,regular,primary,,\r\nτοῖνδε,ὅδε,demonstrative,,dual,genitive,masculine feminine neuter,regular,primary,,\r\nτώδε,ὅδε,demonstrative,,dual,nominative,masculine feminine neuter,regular,primary,,\r\nτά̄σδε,ὅδε,demonstrative,,plural,accusative,feminine,regular,primary,,\r\nταῖσδε,ὅδε,demonstrative,,plural,dative,feminine,regular,primary,,\r\nτῶνδε,ὅδε,demonstrative,,plural,genitive,feminine,regular,primary,,\r\nαἵδε,ὅδε,demonstrative,,plural,nominative,feminine,regular,primary,,\r\nτούσδε,ὅδε,demonstrative,,plural,accusative,masculine,regular,primary,,\r\nτοῖσδε,ὅδε,demonstrative,,plural,dative,masculine,regular,primary,,\r\nτῶνδε,ὅδε,demonstrative,,plural,genitive,masculine,regular,primary,,\r\nοἵδε,ὅδε,demonstrative,,plural,nominative,masculine,regular,primary,,\r\nτάδε,ὅδε,demonstrative,,plural,accusative,neuter,regular,primary,,\r\nτοῖσδε,ὅδε,demonstrative,,plural,dative,neuter,regular,primary,,\r\nτῶνδε,ὅδε,demonstrative,,plural,genitive,neuter,regular,primary,,\r\nτάδε,ὅδε,demonstrative,,plural,nominative,neuter,regular,primary,,\r\nτήνδε,ὅδε,demonstrative,,singular,accusative,feminine,regular,primary,,\r\nτῇδε,ὅδε,demonstrative,,singular,dative,feminine,regular,primary,,\r\nτῆσδε,ὅδε,demonstrative,,singular,genitive,feminine,regular,primary,,\r\nἥδε,ὅδε,demonstrative,,singular,nominative,feminine,regular,primary,,\r\nτόνδε,ὅδε,demonstrative,,singular,accusative,masculine,regular,primary,,\r\nτῷδε,ὅδε,demonstrative,,singular,dative,masculine,regular,primary,,\r\nτοῦδε,ὅδε,demonstrative,,singular,genitive,masculine,regular,primary,,\r\nὅδε,ὅδε,demonstrative,,singular,nominative,masculine,regular,primary,,\r\nτόδε,ὅδε,demonstrative,,singular,accusative,neuter,regular,primary,,\r\nτῷδε,ὅδε,demonstrative,,singular,dative,neuter,regular,primary,,\r\nτοῦδε,ὅδε,demonstrative,,singular,genitive,neuter,regular,primary,,\r\nτόδε,ὅδε,demonstrative,,singular,nominative,neuter,regular,primary,,\r\nὥτινε,,general relative,,dual,accusative,masculine feminine neuter,regular,primary,,\r\nοἷντινοιν,,general relative,,dual,dative,masculine feminine neuter,regular,primary,,\r\nοἷντινοιν,,general relative,,dual,genitive,masculine feminine neuter,regular,primary,,\r\nὥτινε,,general relative,,dual,nominative,masculine feminine neuter,regular,primary,,\r\nἅ̄στινας,,general relative,,plural,accusative,feminine,regular,primary,,\r\nαἷστισι,,general relative,,plural,dative,feminine,regular,primary,,\r\nαἷστισιν,,general relative,,plural,dative,feminine,regular,primary,,\r\nὁτέοισι,,general relative,,plural,dative,feminine,irregular,,\"Homer,Herodotus\",\r\nὧντινων,,general relative,,plural,genitive,feminine,regular,primary,,\r\nὅτεων,,general relative,,plural,genitive,feminine,irregular,,\"Homer,Herodotus\",\r\nαἵτινες,,general relative,,plural,nominative,feminine,regular,primary,,\r\nοὕστινας,,general relative,,plural,accusative,masculine,regular,primary,,\r\nὅτινας,,general relative,,plural,accusative,masculine,irregular,,Homer,\r\nοἷστισι,,general relative,,plural,dative,masculine,regular,primary,,\r\nοἷστισιν,,general relative,,plural,dative,masculine,regular,primary,,\r\nὅτοις,,general relative,,plural,dative,masculine,regular,primary,,\r\nὧντινων,,general relative,,plural,genitive,masculine,regular,primary,,\r\nὅτων,,general relative,,plural,genitive,masculine,regular,primary,,\r\nοἵτινες,,general relative,,plural,nominative,masculine,regular,primary,,\r\nἅτινα,,general relative,,plural,accusative,neuter,regular,primary,,\r\nἅττα,,general relative,,plural,accusative,neuter,regular,primary,,\r\nἅσσα,,general relative,,plural,accusative,neuter,irregular,,\"Homer,Herodotus\",\r\nοἷστισι,,general relative,,plural,dative,neuter,regular,primary,,\r\nοἷστισιν,,general relative,,plural,dative,neuter,regular,primary,,\r\nὅτοις,,general relative,,plural,dative,neuter,regular,primary,,\r\nὧντινων,,general relative,,plural,genitive,neuter,regular,primary,,\r\nὅτων,,general relative,,plural,genitive,neuter,regular,primary,,\r\nἅτινα,,general relative,,plural,nominative,neuter,regular,primary,,\r\nἅττα,,general relative,,plural,nominative,neuter,regular,primary,,\r\nἅσσα,,general relative,,plural,nominative,neuter,irregular,,\"Homer,Herodotus\",\r\nἥντινα,,general relative,,singular,accusative,feminine,regular,primary,,\r\nᾗτινι,,general relative,,singular,dative,feminine,regular,primary,,\r\nὅτεῳ,,general relative,,singular,dative,feminine,irregular,,\"Homer,Herodotus\",\r\nἧστινος,,general relative,,singular,genitive,feminine,regular,primary,,\r\nὅττεο,,general relative,,singular,genitive,feminine,irregular,,Homer,\r\nὅττευ,,general relative,,singular,genitive,feminine,irregular,,Homer,\r\nὅτευ,,general relative,,singular,genitive,feminine,irregular,,\"Homer,Herodotus\",\r\nἥτις,,general relative,,singular,nominative,feminine,regular,primary,,\r\nὅντινα,,general relative,,singular,accusative,masculine,regular,primary,,\r\nὅτινα,,general relative,,singular,accusative,masculine,irregular,,Homer,\r\nᾧτινι,,general relative,,singular,dative,masculine,regular,primary,,\r\nὅτῳ,,general relative,,singular,dative,masculine,regular,primary,,\r\nοὗτινος,,general relative,,singular,genitive,masculine,regular,primary,,\r\nὅτου,,general relative,,singular,genitive,masculine,regular,primary,,\r\nὅστις,,general relative,,singular,nominative,masculine,regular,primary,,\r\nὅτις,,general relative,,singular,nominative,masculine,irregular,,Homer,\r\nὅ τι,,general relative,,singular,accusative,neuter,regular,primary,,\r\nὅ ττι,,general relative,,singular,accusative,neuter,irregular,,Homer,\r\nᾧτινι,,general relative,,singular,dative,neuter,regular,primary,,\r\nὅτῳ,,general relative,,singular,dative,neuter,regular,primary,,\r\nοὗτινος,,general relative,,singular,genitive,neuter,regular,primary,,\r\nὅτου,,general relative,,singular,genitive,neuter,regular,primary,,\r\nὅ τι,,general relative,,singular,nominative,neuter,regular,primary,,\r\nὅ ττι,,general relative,,singular,nominative,neuter,irregular,,Homer,\r\nτινέ,,indefinite,,dual,accusative,masculine feminine,regular,primary,,\r\nτινοῖν,,indefinite,,dual,dative,masculine feminine,regular,primary,,\r\nτινοῖν,,indefinite,,dual,genitive,masculine feminine,regular,primary,,\r\nτινέ,,indefinite,,dual,nominative,masculine feminine,regular,primary,,\r\nτινέ,,indefinite,,dual,vocative,masculine feminine,regular,primary,,\r\nτινέ,,indefinite,,dual,accusative,neuter,regular,primary,,\r\nτινοῖν,,indefinite,,dual,dative,neuter,regular,primary,,\r\nτινοῖν,,indefinite,,dual,genitive,neuter,regular,primary,,\r\nτινέ,,indefinite,,dual,nominative,neuter,regular,primary,,\r\nτινέ,,indefinite,,dual,vocative,neuter,regular,primary,,\r\nτινάς,,indefinite,,plural,accusative,masculine feminine,regular,primary,,\r\nτισί,,indefinite,,plural,dative,masculine feminine,regular,primary,,\r\nτισίν,,indefinite,,plural,dative,masculine feminine,regular,primary,,\r\nτινῶν,,indefinite,,plural,genitive,masculine feminine,regular,primary,,\r\nτινές,,indefinite,,plural,nominative,masculine feminine,regular,primary,,\r\nτινά,,indefinite,,plural,accusative,neuter,regular,primary,,\r\nἄττα,,indefinite,,plural,accusative,neuter,regular,,,2\r\nτισί,,indefinite,,plural,dative,neuter,regular,primary,,\r\nτισίν,,indefinite,,plural,dative,neuter,regular,primary,,\r\nτινῶν,,indefinite,,plural,genitive,neuter,regular,primary,,\r\nτινά,,indefinite,,plural,nominative,neuter,regular,primary,,\r\nἄττα,,indefinite,,plural,nominative,neuter,regular,,,2\r\nτινά,,indefinite,,singular,accusative,masculine feminine,regular,primary,,\r\nἄττα,,indefinite,,singular,accusative,masculine feminine,regular,,,2\r\nτινί,,indefinite,,singular,dative,masculine feminine,regular,primary,,\r\nτῳ,,indefinite,,singular,dative,masculine feminine,regular,primary,,\r\nτινός,,indefinite,,singular,genitive,masculine feminine,regular,primary,,\r\nτου,,indefinite,,singular,genitive,masculine feminine,regular,primary,,\r\nτις,,indefinite,,singular,nominative,masculine feminine,regular,primary,,\r\nτι,,indefinite,,singular,accusative,neuter,regular,primary,,\r\nτινί,,indefinite,,singular,dative,neuter,regular,primary,,\r\nτῳ,,indefinite,,singular,dative,neuter,regular,primary,,\r\nτινός,,indefinite,,singular,genitive,neuter,regular,primary,,\r\nτου,,indefinite,,singular,genitive,neuter,regular,primary,,\r\nτι,,indefinite,,singular,nominative,neuter,regular,primary,,\r\nαὐτά,,intensive,,dual,accusative,feminine,regular,primary,,\r\nαὐταῖν,,intensive,,dual,dative,feminine,regular,primary,,\r\nαὐταῖν,,intensive,,dual,genitive,feminine,regular,primary,,\r\nαὐτά,,intensive,,dual,nominative,feminine,regular,primary,,\r\nαὐτώ,,intensive,,dual,accusative,masculine,regular,primary,,\r\nαὐτοῖν,,intensive,,dual,dative,masculine,regular,primary,,\r\nαὐτοῖν,,intensive,,dual,genitive,masculine,regular,primary,,\r\nαὐτώ,,intensive,,dual,nominative,masculine,regular,primary,,\r\nαὐτώ,,intensive,,dual,accusative,neuter,regular,primary,,\r\nαὐτοῖν,,intensive,,dual,dative,neuter,regular,primary,,\r\nαὐτοῖν,,intensive,,dual,genitive,neuter,regular,primary,,\r\nαὐτώ,,intensive,,dual,nominative,neuter,regular,primary,,\r\nαὐτά̄ς,,intensive,,plural,accusative,feminine,regular,primary,,\r\nαὐταῖς,,intensive,,plural,dative,feminine,regular,primary,,\r\nαὐτῶν,,intensive,,plural,genitive,feminine,regular,primary,,\r\nαὐτέων,,intensive,,plural,genitive,feminine,irregular,,Herodotus,\r\nαὐταί,,intensive,,plural,nominative,feminine,regular,primary,,\r\nαὐτούς,,intensive,,plural,accusative,masculine,regular,primary,,\r\nαὐτοῖς,,intensive,,plural,dative,masculine,regular,primary,,\r\nαὐτῶν,,intensive,,plural,genitive,masculine,regular,primary,,\r\nαὐτέων,,intensive,,plural,genitive,masculine,irregular,,Herodotus,\r\nαὐτοί,,intensive,,plural,nominative,masculine,regular,primary,,\r\nαὐτά,,intensive,,plural,accusative,neuter,regular,primary,,\r\nαὐτοῖς,,intensive,,plural,dative,neuter,regular,primary,,\r\nαὐτῶν,,intensive,,plural,genitive,neuter,regular,primary,,\r\nαὐτέων,,intensive,,plural,genitive,neuter,irregular,,Herodotus,\r\nαὐτά,,intensive,,plural,nominative,neuter,regular,primary,,\r\nαὐτήν,,intensive,,singular,accusative,feminine,regular,primary,,\r\nαὐτῇ,,intensive,,singular,dative,feminine,regular,primary,,\r\nαὐτῆς,,intensive,,singular,genitive,feminine,regular,primary,,\r\nαὐτή,,intensive,,singular,nominative,feminine,regular,primary,,\r\nαὐτόν,,intensive,,singular,accusative,masculine,regular,primary,,\r\nαὐτῷ,,intensive,,singular,dative,masculine,regular,primary,,\r\nαὐτοῦ,,intensive,,singular,genitive,masculine,regular,primary,,\r\nαὐτός,,intensive,,singular,nominative,masculine,regular,primary,,\r\nαὐτό,,intensive,,singular,accusative,neuter,regular,primary,,\r\nαὐτῷ,,intensive,,singular,dative,neuter,regular,primary,,\r\nαὐτοῦ,,intensive,,singular,genitive,neuter,regular,primary,,\r\nαὐτό,,intensive,,singular,nominative,neuter,regular,primary,,\r\nτίνε,,interrogative,,dual,accusative,masculine feminine,regular,primary,,\r\nτίνοιν,,interrogative,,dual,dative,masculine feminine,regular,primary,,\r\nτίνοιν,,interrogative,,dual,genitive,masculine feminine,regular,primary,,\r\nτίνε,,interrogative,,dual,nominative,masculine feminine,regular,primary,,\r\nτίνε,,interrogative,,dual,vocative,masculine feminine,regular,primary,,\r\nτίνε,,interrogative,,dual,accusative,neuter,regular,primary,,\r\nτίνοιν,,interrogative,,dual,dative,neuter,regular,primary,,\r\nτίνοιν,,interrogative,,dual,genitive,neuter,regular,primary,,\r\nτίνε,,interrogative,,dual,nominative,neuter,regular,primary,,\r\nτίνε,,interrogative,,dual,vocative,neuter,regular,primary,,\r\nτίνας,,interrogative,,plural,accusative,masculine feminine,regular,primary,,\r\nτίσι,,interrogative,,plural,dative,masculine feminine,regular,primary,,\r\nτίσιv,,interrogative,,plural,dative,masculine feminine,regular,primary,,\r\nτίνων,,interrogative,,plural,genitive,masculine feminine,regular,primary,,\r\nτίνες,,interrogative,,plural,nominative,masculine feminine,regular,primary,,\r\nτίνα,,interrogative,,plural,accusative,neuter,regular,primary,,\r\nτίσι,,interrogative,,plural,dative,neuter,regular,primary,,\r\nτίσιv,,interrogative,,plural,dative,neuter,regular,primary,,\r\nτίνων,,interrogative,,plural,genitive,neuter,regular,primary,,\r\nτίνα,,interrogative,,plural,nominative,neuter,regular,primary,,\r\nτίνα,,interrogative,,singular,accusative,masculine feminine,regular,primary,,\r\nτίνι,,interrogative,,singular,dative,masculine feminine,regular,primary,,\r\nτῷ,,interrogative,,singular,dative,masculine feminine,regular,primary,,\r\nτίνος,,interrogative,,singular,genitive,masculine feminine,regular,primary,,\r\nτοῦ,,interrogative,,singular,genitive,masculine feminine,regular,primary,,\r\nτίς,,interrogative,,singular,nominative,masculine feminine,regular,primary,,\r\nτί,,interrogative,,singular,accusative,neuter,regular,primary,,\r\nτίνι,,interrogative,,singular,dative,neuter,regular,primary,,\r\nτῷ,,interrogative,,singular,dative,neuter,regular,primary,,\r\nτίνος,,interrogative,,singular,genitive,neuter,regular,primary,,\r\nτοῦ,,interrogative,,singular,genitive,neuter,regular,primary,,\r\nτί,,interrogative,,singular,nominative,neuter,regular,primary,,\r\nνώ,,personal,1st,dual,accusative,,regular,primary,,\r\nνῷν,,personal,1st,dual,dative,,regular,primary,,\r\nνῷν,,personal,1st,dual,genitive,,regular,primary,,\r\nνώ,,personal,1st,dual,nominative,,regular,primary,,\r\nσφώ,,personal,2nd,dual,accusative,,regular,primary,,\r\nσφῷν,,personal,2nd,dual,dative,,regular,primary,,\r\nσφῷν,,personal,2nd,dual,genitive,,regular,primary,,\r\nσφώ,,personal,2nd,dual,nominative,,regular,primary,,\r\nἡμᾶς,,personal,1st,plural,accusative,,regular,primary,,\r\nἡμῖν,,personal,1st,plural,dative,,regular,primary,,\r\nἡμῶν,,personal,1st,plural,genitive,,regular,primary,,\r\nἡμεῖς,,personal,1st,plural,nominative,,regular,primary,,\r\nὑμᾶς,,personal,2nd,plural,accusative,,regular,primary,,\r\nὑμῖν,,personal,2nd,plural,dative,,regular,primary,,\r\nὑμῶν,,personal,2nd,plural,genitive,,regular,primary,,\r\nὑμεῖς,,personal,2nd,plural,nominative,,regular,primary,,\r\nσφᾶς,,personal,3rd,plural,accusative,,regular,primary,,\r\nσφίσι,,personal,3rd,plural,dative,,regular,primary,,\r\nσφίσιν,,personal,3rd,plural,dative,,regular,primary,,\r\nσφῶν,,personal,3rd,plural,genitive,,regular,primary,,\r\nσφεῖς,,personal,3rd,plural,nominative,,regular,primary,,\r\nἐμέ,,personal,1st,singular,accusative,,regular,primary,,\r\nμε,,personal,1st,singular,accusative,,regular,primary,,3\r\nἐμοί,,personal,1st,singular,dative,,regular,primary,,\r\nμοι,,personal,1st,singular,dative,,regular,primary,,3\r\nἐμοῦ,,personal,1st,singular,genitive,,regular,primary,,\r\nμου,,personal,1st,singular,genitive,,regular,primary,,3\r\nἐγώ,,personal,1st,singular,nominative,,regular,primary,,\r\nσέ,,personal,2nd,singular,accusative,,regular,primary,,\r\nσε,,personal,2nd,singular,accusative,,regular,primary,,3\r\nσοί,,personal,2nd,singular,dative,,regular,primary,,\r\nσοι,,personal,2nd,singular,dative,,regular,primary,,3\r\nσοῦ,,personal,2nd,singular,genitive,,regular,primary,,\r\nσου,,personal,2nd,singular,genitive,,regular,primary,,3\r\nσύ,,personal,2nd,singular,nominative,,regular,primary,,\r\nἕ,,personal,3rd,singular,accusative,,regular,primary,,\r\nἑ,,personal,3rd,singular,accusative,,regular,primary,,3\r\nοἷ,,personal,3rd,singular,dative,,regular,primary,,\r\nοἱ,,personal,3rd,singular,dative,,regular,primary,,3\r\nοὗ,,personal,3rd,singular,genitive,,regular,primary,,\r\nοὑ,,personal,3rd,singular,genitive,,regular,primary,,3\r\n-,,personal,3rd,singular,nominative,,regular,primary,,\r\nἀλλήλᾱ,,reciprocal,,dual,accusative,feminine,regular,primary,,\r\nἀλλήλαιν,,reciprocal,,dual,dative,feminine,regular,primary,,\r\nἀλλήλαιν,,reciprocal,,dual,genitive,feminine,regular,primary,,\r\nἀλλήλω,,reciprocal,,dual,accusative,masculine,regular,primary,,\r\nἀλλήλοιν,,reciprocal,,dual,dative,masculine,regular,primary,,\r\nἀλλήλοιν,,reciprocal,,dual,genitive,masculine,regular,primary,,\r\nἀλλήλω,,reciprocal,,dual,accusative,neuter,regular,primary,,\r\nἀλλήλοιν,,reciprocal,,dual,dative,neuter,regular,primary,,\r\nἀλλήλοιν,,reciprocal,,dual,genitive,neuter,regular,primary,,\r\nἀλλήλᾱς,,reciprocal,,plural,accusative,feminine,regular,primary,,\r\nἀλλήλαις,,reciprocal,,plural,dative,feminine,regular,primary,,\r\nἀλλήλων,,reciprocal,,plural,genitive,feminine,regular,primary,,\r\nἀλλήλους,,reciprocal,,plural,accusative,masculine,regular,primary,,\r\nἀλλήλοις,,reciprocal,,plural,dative,masculine,regular,primary,,\r\nἀλλήλων,,reciprocal,,plural,genitive,masculine,regular,primary,,\r\nἄλληλα,,reciprocal,,plural,accusative,neuter,regular,primary,,\r\nἀλλήλοις,,reciprocal,,plural,dative,neuter,regular,primary,,\r\nἀλλήλων,,reciprocal,,plural,genitive,neuter,regular,primary,,\r\nἡμᾶς,,reflexive,1st,plural,accusative,feminine,regular,primary,,\r\nαὐτά̄ς,,reflexive,1st,plural,accusative,feminine,regular,primary,,\r\nἡμῖν,,reflexive,1st,plural,dative,feminine,regular,primary,,\r\nαὐταῖς,,reflexive,1st,plural,dative,feminine,regular,primary,,\r\nἡμῶν,,reflexive,1st,plural,genitive,feminine,regular,primary,,\r\nαὐτῶν,,reflexive,1st,plural,genitive,feminine,regular,primary,,\r\nὑ̄μᾶς,,reflexive,2nd,plural,accusative,feminine,regular,primary,,\r\nαὐτά̄ς,,reflexive,2nd,plural,accusative,feminine,regular,primary,,\r\nὑ̄μῖν,,reflexive,2nd,plural,dative,feminine,regular,primary,,\r\nαὐταῖς,,reflexive,2nd,plural,dative,feminine,regular,primary,,\r\nὑ̄μῶν,,reflexive,2nd,plural,genitive,feminine,regular,primary,,\r\nαὐτῶν,,reflexive,2nd,plural,genitive,feminine,regular,primary,,\r\nἑαυτά̄ς,,reflexive,3rd,plural,accusative,feminine,regular,primary,,\r\nσφᾶς,,reflexive,3rd,plural,accusative,feminine,regular,primary,,\r\nαὑτά̄ς,,reflexive,3rd,plural,accusative,feminine,regular,primary,,\r\nἑαυταῖς,,reflexive,3rd,plural,dative,feminine,regular,primary,,\r\nσφίσιν,,reflexive,3rd,plural,dative,feminine,regular,primary,,\r\nαὑταῖς,,reflexive,3rd,plural,dative,feminine,regular,primary,,\r\nἑαυτῶν,,reflexive,3rd,plural,genitive,feminine,regular,primary,,\r\nσφῶν,,reflexive,3rd,plural,genitive,feminine,regular,primary,,\r\nαὑτῶν,,reflexive,3rd,plural,genitive,feminine,regular,primary,,\r\nἡμᾶς,,reflexive,1st,plural,accusative,masculine,regular,primary,,\r\nαὐτούς,,reflexive,1st,plural,accusative,masculine,regular,primary,,\r\nἡμῖν,,reflexive,1st,plural,dative,masculine,regular,primary,,\r\nαὐτοῖς,,reflexive,1st,plural,dative,masculine,regular,primary,,\r\nἡμῶν,,reflexive,1st,plural,genitive,masculine,regular,primary,,\r\nαὐτῶν,,reflexive,1st,plural,genitive,masculine,regular,primary,,\r\nὑ̄μᾶς,,reflexive,2nd,plural,accusative,masculine,regular,primary,,\r\nαὐτούς,,reflexive,2nd,plural,accusative,masculine,regular,primary,,\r\nὑ̄μῖν,,reflexive,2nd,plural,dative,masculine,regular,primary,,\r\nαὐτοῖς,,reflexive,2nd,plural,dative,masculine,regular,primary,,\r\nὑ̄μῶν,,reflexive,2nd,plural,genitive,masculine,regular,primary,,\r\nαὐτῶν,,reflexive,2nd,plural,genitive,masculine,regular,primary,,\r\nἑαυτούς,,reflexive,3rd,plural,accusative,masculine,regular,primary,,\r\nσφᾶς,,reflexive,3rd,plural,accusative,masculine,regular,primary,,\r\nαὑτούς,,reflexive,3rd,plural,accusative,masculine,regular,primary,,\r\nἑαυτοῖς,,reflexive,3rd,plural,dative,masculine,regular,primary,,\r\nσφίσιν,,reflexive,3rd,plural,dative,masculine,regular,primary,,\r\nαὑτοῖς,,reflexive,3rd,plural,dative,masculine,regular,primary,,\r\nἑαυτῶν,,reflexive,3rd,plural,genitive,masculine,regular,primary,,\r\nσφῶν,,reflexive,3rd,plural,genitive,masculine,regular,primary,,\r\nαὑτῶν,,reflexive,3rd,plural,genitive,masculine,regular,primary,,\r\nἑαυτά,,reflexive,3rd,plural,accusative,neuter,regular,primary,,\r\nσφέα,,reflexive,3rd,plural,accusative,neuter,regular,primary,,\r\nαὑτά,,reflexive,3rd,plural,accusative,neuter,regular,primary,,\r\nἑαυτοῖς,,reflexive,3rd,plural,dative,neuter,regular,primary,,\r\nσφίσιν,,reflexive,3rd,plural,dative,neuter,regular,primary,,\r\nαὑτοῖς,,reflexive,3rd,plural,dative,neuter,regular,primary,,\r\nἑαυτῶν,,reflexive,3rd,plural,genitive,neuter,regular,primary,,\r\nσφῶν,,reflexive,3rd,plural,genitive,neuter,regular,primary,,\r\nαὑτῶν,,reflexive,3rd,plural,genitive,neuter,regular,primary,,\r\nἐμαυτήν,,reflexive,1st,singular,accusative,feminine,regular,primary,,\r\nἐμαυτῇ,,reflexive,1st,singular,dative,feminine,regular,primary,,\r\nἐμαυτῆς,,reflexive,1st,singular,genitive,feminine,regular,primary,,\r\nσεαυτήν,,reflexive,2nd,singular,accusative,feminine,regular,primary,,\r\nσαυτήν,,reflexive,2nd,singular,accusative,feminine,regular,primary,,\r\nσεαυτῇ,,reflexive,2nd,singular,dative,feminine,regular,primary,,\r\nσαυτῇ,,reflexive,2nd,singular,dative,feminine,regular,primary,,\r\nσεαυτῆς,,reflexive,2nd,singular,genitive,feminine,regular,primary,,\r\nσαυτῆς,,reflexive,2nd,singular,genitive,feminine,regular,primary,,\r\nἑαυτήν,,reflexive,3rd,singular,accusative,feminine,regular,primary,,\r\nαὑτήν,,reflexive,3rd,singular,accusative,feminine,regular,primary,,\r\nἑαυτῇ,,reflexive,3rd,singular,dative,feminine,regular,primary,,\r\nαὑτῇ,,reflexive,3rd,singular,dative,feminine,regular,primary,,\r\nἑαυτῆς,,reflexive,3rd,singular,genitive,feminine,regular,primary,,\r\nαὑτῆς,,reflexive,3rd,singular,genitive,feminine,regular,primary,,\r\nἐμαυτόν,,reflexive,1st,singular,accusative,masculine,regular,primary,,\r\nἐμαυτῷ,,reflexive,1st,singular,dative,masculine,regular,primary,,\r\nἐμαυτοῦ,,reflexive,1st,singular,genitive,masculine,regular,primary,,\r\nσεαυτόν,,reflexive,2nd,singular,accusative,masculine,regular,primary,,\r\nσαυτόν,,reflexive,2nd,singular,accusative,masculine,regular,primary,,\r\nσεαυτῷ,,reflexive,2nd,singular,dative,masculine,regular,primary,,\r\nσαυτῷ,,reflexive,2nd,singular,dative,masculine,regular,primary,,\r\nσεαυτοῦ,,reflexive,2nd,singular,genitive,masculine,regular,primary,,\r\nσαυτοῦ,,reflexive,2nd,singular,genitive,masculine,regular,primary,,\r\nἑαυτόν,,reflexive,3rd,singular,accusative,masculine,regular,primary,,\r\nαὑτόν,,reflexive,3rd,singular,accusative,masculine,regular,primary,,\r\nἑαυτῷ,,reflexive,3rd,singular,dative,masculine,regular,primary,,\r\nαὑτῷ,,reflexive,3rd,singular,dative,masculine,regular,primary,,\r\nἑαυτοῦ,,reflexive,3rd,singular,genitive,masculine,regular,primary,,\r\nαὑτοῦ,,reflexive,3rd,singular,genitive,masculine,regular,primary,,\r\nἑαυτό,,reflexive,3rd,singular,accusative,neuter,regular,primary,,\r\nαὑτό,,reflexive,3rd,singular,accusative,neuter,regular,primary,,\r\nἑαυτῷ,,reflexive,3rd,singular,dative,neuter,regular,primary,,\r\nαὑτῷ,,reflexive,3rd,singular,dative,neuter,regular,primary,,\r\nἑαυτοῦ,,reflexive,3rd,singular,genitive,neuter,regular,primary,,\r\nαὑτοῦ,,reflexive,3rd,singular,genitive,neuter,regular,primary,,\r\nὥ,,relative,,dual,accusative,feminine,regular,primary,,\r\nἅ̄,,relative,,dual,accusative,feminine,irregular,,Attic,\r\nοἷν,,relative,,dual,dative,feminine,regular,primary,,\r\nαἷν,,relative,,dual,dative,feminine,irregular,,Attic,\r\nοἷν,,relative,,dual,genitive,feminine,regular,primary,,\r\nαἷν,,relative,,dual,genitive,feminine,irregular,,Attic,\r\nὥ,,relative,,dual,nominative,feminine,regular,primary,,\r\nἅ̄,,relative,,dual,nominative,feminine,irregular,,Attic,\r\nὥ,,relative,,dual,accusative,masculine,regular,primary,,\r\nοἷν,,relative,,dual,dative,masculine,regular,primary,,\r\nοἷν,,relative,,dual,genitive,masculine,regular,primary,,\r\nὥ,,relative,,dual,nominative,masculine,regular,primary,,\r\nὥ,,relative,,dual,accusative,neuter,regular,primary,,\r\nοἷν,,relative,,dual,dative,neuter,regular,primary,,\r\nοἷν,,relative,,dual,genitive,neuter,regular,primary,,\r\nὥ,,relative,,dual,nominative,neuter,regular,primary,,\r\nἅ̄ς,,relative,,plural,accusative,feminine,regular,primary,,\r\nαἷς,,relative,,plural,dative,feminine,regular,primary,,\r\nὧν,,relative,,plural,genitive,feminine,regular,primary,,\r\nαἵ,,relative,,plural,nominative,feminine,regular,primary,,\r\nοὕς,,relative,,plural,accusative,masculine,regular,primary,,\r\nοἷς,,relative,,plural,dative,masculine,regular,primary,,\r\nὧν,,relative,,plural,genitive,masculine,regular,primary,,\r\nοἵ,,relative,,plural,nominative,masculine,regular,primary,,\r\nἅ,,relative,,plural,accusative,neuter,regular,primary,,\r\nοἷς,,relative,,plural,dative,neuter,regular,primary,,\r\nὧν,,relative,,plural,genitive,neuter,regular,primary,,\r\nἅ,,relative,,plural,nominative,neuter,regular,primary,,\r\nἥν,,relative,,singular,accusative,feminine,regular,primary,,\r\nᾗ,,relative,,singular,dative,feminine,regular,primary,,\r\nἧς,,relative,,singular,genitive,feminine,regular,primary,,\r\nἥ,,relative,,singular,nominative,feminine,regular,primary,,\r\nὅν,,relative,,singular,accusative,masculine,regular,primary,,\r\nᾧ,,relative,,singular,dative,masculine,regular,primary,,\r\nοὗ,,relative,,singular,genitive,masculine,regular,primary,,\r\nὅς,,relative,,singular,nominative,masculine,regular,primary,,\r\nὅ,,relative,,singular,accusative,neuter,regular,primary,,\r\nᾧ,,relative,,singular,dative,neuter,regular,primary,,\r\nοὗ,,relative,,singular,genitive,neuter,regular,primary,,\r\nὅ,,relative,,singular,nominative,neuter,regular,primary,,";
 
-class GreekInflectionProperties extends InflectionProperties {
-  constructor (partOfSpeech) {
-    super(partOfSpeech);
-    if (partOfSpeech) {
-      // If there is a single part of speech info in an inflection
-      if (partOfSpeech === __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_NOUN) {
-        this.suffixBased = true;
-      }
-      if (partOfSpeech === __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_PRONOUN) {
-        this.fullFormBased = true;
-      }
-    }
-  }
-
-  get obligatoryMatches () {
-    if (this.partOfSpeech === __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_PRONOUN) {
-      return [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmClass]
-    }
-
-    if (this.fullFormBased) {
-      return [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.word]
-    }
-    return [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part] // Default value
-  }
-}
-
 /*
  * Greek language data module
  */
@@ -6955,7 +6958,6 @@ let languageModel$1 = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["h"
 // let dataSet = new LanguageDataset(Constants.LANG_GREEK)
 let fTypes = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types;
 
-const featureOptions$1 = [fTypes.grmCase, fTypes.declension, fTypes.gender, fTypes.number, fTypes.voice, fTypes.mood, fTypes.tense, fTypes.person];
 // region Definition of grammatical features
 /*
  Define grammatical features of a language. Those grammatical features definitions will also be used by morphological
@@ -6968,7 +6970,11 @@ const footnotes$1 = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /
 
 class GreekLanguageDataset extends LanguageDataset {
   constructor () {
-    super(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_GREEK);
+    super(GreekLanguageDataset.languageID);
+  }
+
+  static get languageID () {
+    return __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_GREEK
   }
 
   // For noun and adjectives
@@ -7118,34 +7124,52 @@ class GreekLanguageDataset extends LanguageDataset {
     return this
   }
 
-  getInflectionProperties (partOfSpeech) {
-    return new GreekInflectionProperties(partOfSpeech)
-  }
-
   getPronounGroupingLemmas (grammarClass) {
     let values = this.pronounGroupingLemmas.has(grammarClass) ? this.pronounGroupingLemmas.get(grammarClass) : [];
     return new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.word, values, this.languageID)
   }
 
+  getObligatoryMatches (inflection) {
+    let obligatoryMatches = [];
+    if (inflection.hasFeatureValue(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_PRONOUN)) {
+      obligatoryMatches.push(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmClass);
+    } else if (inflection.grm.fullFormBased) {
+      obligatoryMatches.push(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.word);
+    } else {
+      // Default value for suffix matching
+      obligatoryMatches.push(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part);
+    }
+    return obligatoryMatches
+  }
+
+  getOptionalMatches (inflection) {
+    const featureOptions = [
+      fTypes.grmCase,
+      fTypes.declension,
+      fTypes.gender,
+      fTypes.number,
+      fTypes.voice,
+      fTypes.mood,
+      fTypes.tense,
+      fTypes.person
+    ];
+    return featureOptions.filter(f => inflection[f])
+  }
+
   /**
    * Decides whether a suffix is a match to any of inflections, and if it is, what type of match it is.
    * @param {Inflection[]} inflections - An array of Inflection objects to be matched against a suffix.
-   * @param {Object} inflectionProperties - Inflection properties object, defines grammar properties such as
-   * suffixBased or fullFormBased.
    * @param {Suffix} item - A suffix to be matched with inflections.
    * @returns {Suffix | null} If a match is found, returns a Suffix object modified with some
    * additional information about a match. If no matches found, returns null.
    */
-  matcher (inflections, inflectionProperties, item) {
+  matcher (inflections, item) {
     'use strict';
     // All of those features must match between an inflection and an ending
     let optionalMatches;
     // I'm not sure if we ever want to restrict what we consider optional matches
     // so this is just a placeholder for now
     let matchOptional = true;
-
-    // Any of those features must match between an inflection and an ending
-    optionalMatches = [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number];
     let bestMatchData = null; // Information about the best match we would be able to find
 
     /*
@@ -7155,34 +7179,21 @@ class GreekLanguageDataset extends LanguageDataset {
      */
     for (let inflection of inflections) {
       let matchData = new MatchData(); // Create a match profile
-      if (matchOptional) {
-        optionalMatches = featureOptions$1.filter((f) => inflection[f]);
-      } else {
-        optionalMatches = [];
-      }
-
+      optionalMatches = matchOptional ? inflection.grm.optionalMatches : [];
       matchData.suffixMatch = inflection.compareWithWord(item.value);
 
       // Check for obligatory matches
-      for (let feature of inflectionProperties.obligatoryMatches) {
-        let featureMatch = false;
-        if (feature === __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmClass) {
-          featureMatch = inflection.grm.class ? item.featureMatch(feature, inflection.grm.class) : false;
+      for (let feature of inflection.grm.obligatoryMatches) {
+        let featureMatch = item.featureMatch(feature, inflection[feature]);
+        if (featureMatch) {
+          matchData.matchedFeatures.push(feature);
         } else {
-          featureMatch = item.featureMatch(feature, inflection[feature]);
-        }
-
-        // matchFound = matchFound && featureMatch;
-
-        if (!featureMatch) {
           // If an obligatory match is not found, there is no reason to check other items
           break
         }
-        // Inflection's value of this feature is matching the one of the suffix
-        matchData.matchedFeatures.push(feature);
       }
 
-      if (matchData.matchedFeatures.length < inflectionProperties.obligatoryMatches.length) {
+      if (matchData.matchedFeatures.length < inflection.grm.obligatoryMatches.length) {
         // Not all obligatory matches are found, this is not a match
         break
       }
@@ -7195,7 +7206,7 @@ class GreekLanguageDataset extends LanguageDataset {
         }
       }
 
-      if (matchData.suffixMatch && (matchData.matchedFeatures.length === inflectionProperties.obligatoryMatches.length + optionalMatches.length)) {
+      if (matchData.suffixMatch && (matchData.matchedFeatures.length === inflection.grm.obligatoryMatches + optionalMatches.length)) {
         // This is a full match
         matchData.fullMatch = true;
 
@@ -7257,8 +7268,11 @@ class LanguageDataList {
    * This function is chainable.
    * @param {LanguageDataset[]} languageData - Language datasets of different languages.
    */
-  constructor (languageData = [new LatinLanguageDataset(), new GreekLanguageDataset()]) {
-    this.sets = new Map(languageData.map(item => [item.languageID, item]));
+  constructor (languageData = [LatinLanguageDataset, GreekLanguageDataset]) {
+    this.sets = new Map();
+    for (let Set of languageData) {
+      this.sets.set(Set.languageID, new Set());
+    }
   }
 
   /**
@@ -7278,13 +7292,20 @@ class LanguageDataList {
   }
 
   /**
-   * Finds matching suffixes for a homonym.
+   * Finds matching forms or suffixes for a homonym.
    * @param {Homonym} homonym - A homonym for which matching suffixes must be found.
    * @return {InflectionData} A return value of an inflection query.
    */
   getSuffixes (homonym) {
+    console.log(`getSuffixes`);
     if (this.sets.has(homonym.languageID)) {
-      return this.sets.get(homonym.languageID).getSuffixes(homonym)
+      let dataset = this.sets.get(homonym.languageID);
+      for (let inflection of homonym.inflections) {
+        // Set grammar rules for an inflection
+        inflection.setGrammar();
+        dataset.setInflectionGrammar(inflection);
+      }
+      return dataset.getSuffixes(homonym)
     } else {
       return new InflectionData(homonym) // Return an empty inflection data set
     }
@@ -9513,7 +9534,7 @@ class View {
     return string
       .toLowerCase()
       .split(' ')
-      .map(word => word[0].toUpperCase() + word.substr(1))
+      .map(word => word.length >= 1 ? `${word[0].toUpperCase()}${word.substr(1)}` : '')
       .join(' ')
   }
 }
@@ -11937,12 +11958,16 @@ class GreekNounSimplifiedView extends GreekNounView {
  * is to define common features and properties for all pronoun classes.
  */
 class GreekPronounView extends GreekView {
-  constructor (inflectionData, messages) {
+  /**
+   * @param {InflectionData} inflectionData
+   * @param {MessageBundle} messages
+   * @param {string} grammarClass - For what pronoun class a view will be created
+   */
+  constructor (inflectionData, messages, grammarClass = 'Greek') {
     super(inflectionData, messages);
-    let grammarClass = GreekPronounView.getClassFromInflection(this.inflectionData);
-    this.id = `${grammarClass}${View.toTitleCase(GreekPronounView.partOfSpeech)}Declension`;
-    this.name = `${grammarClass} ${GreekPronounView.partOfSpeech} declension`;
-    this.title = View.toTitleCase(`${grammarClass} ${GreekPronounView.partOfSpeech} Declension`);
+    this.id = GreekPronounView.getID(grammarClass);
+    this.name = GreekPronounView.getName(grammarClass);
+    this.title = GreekPronounView.getTitle(grammarClass);
     this.partOfSpeech = GreekPronounView.partOfSpeech;
     this.featureTypes = {};
 
@@ -12003,21 +12028,24 @@ class GreekPronounView extends GreekView {
   }
 
   /**
-   * Retrieves a value of a class feature from inflectionData. Inflection data should have the same class value
-   * among all its data items.
-   * @param {InflectionData} inflectionData
-   * @return {string} A grammar class name
+   * What classes of pronouns this view should be used with.
+   * Should be defined in descendants.
+   * @return {string[]} Array of class names
    */
-  static getClassFromInflection (inflectionData) {
-    let grammarClass = inflectionData.getFeatureValues(GreekPronounView.partOfSpeech, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmClass);
-    if (grammarClass.length === 1) {
-      grammarClass = grammarClass[0];
-    } else {
-      console.warn(`Cannot determine a grammar class of a Greek pronoun "${inflectionData.targetWord}": 
-        there is no grammar class in inflection data or there is more than one grammar class`);
-      grammarClass = '';
-    }
-    return grammarClass
+  static get classes () {
+    return []
+  }
+
+  static getID (grammarClass) {
+    return `${grammarClass}${View.toTitleCase(GreekPronounView.partOfSpeech)}Declension`
+  }
+
+  static getName (grammarClass) {
+    return `${grammarClass} ${GreekPronounView.partOfSpeech} declension`
+  }
+
+  static getTitle (grammarClass) {
+    return View.toTitleCase(`${grammarClass} ${GreekPronounView.partOfSpeech} Declension`).trim()
   }
 }
 
@@ -12066,12 +12094,15 @@ class GreekGenderPronounView extends GreekPronounView {
    * @return {boolean}
    */
   static matchFilter (inflectionData) {
-    let grammarClass = GreekPronounView.getClassFromInflection(inflectionData);
-
-    if (__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].compareLanguages(GreekGenderPronounView.languageID, inflectionData.languageID)) {
-      return inflectionData.partsOfSpeech.includes(GreekGenderPronounView.partOfSpeech) &&
-        GreekGenderPronounView.classes.includes(grammarClass)
+    if (__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].compareLanguages(GreekGenderPronounView.languageID, inflectionData.languageID) &&
+      inflectionData.hasOwnProperty(GreekGenderPronounView.partOfSpeech)) {
+      let found = inflectionData[GreekGenderPronounView.partOfSpeech].suffixes.find(
+        form => GreekGenderPronounView.classes.includes(form.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmClass]));
+      if (found) {
+        return true
+      }
     }
+    return false
   }
 }
 
@@ -12080,11 +12111,10 @@ class GreekGenderPronounView extends GreekPronounView {
  */
 class GreekLemmaGenderPronounView extends GreekPronounView {
   constructor (inflectionData, messages) {
-    super(inflectionData, messages);
+    super(inflectionData, messages, GreekLemmaGenderPronounView.classes[0]);
 
     // Add lemmas
-    let grammarClass = GreekPronounView.getClassFromInflection(this.inflectionData);
-    this.featureTypes.lemmas = this.dataset.getPronounGroupingLemmas(grammarClass);
+    this.featureTypes.lemmas = this.dataset.getPronounGroupingLemmas(GreekLemmaGenderPronounView.classes[0]);
     this.features.lemmas = new GroupFeatureType(this.featureTypes.lemmas, 'Lemma');
 
     /*
@@ -12117,12 +12147,15 @@ class GreekLemmaGenderPronounView extends GreekPronounView {
    * @return {boolean}
    */
   static matchFilter (inflectionData) {
-    let grammarClass = GreekPronounView.getClassFromInflection(inflectionData);
-
-    if (__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].compareLanguages(GreekLemmaGenderPronounView.languageID, inflectionData.languageID)) {
-      return inflectionData.partsOfSpeech.includes(GreekLemmaGenderPronounView.partOfSpeech) &&
-        GreekLemmaGenderPronounView.classes.includes(grammarClass)
+    if (__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].compareLanguages(GreekLemmaGenderPronounView.languageID, inflectionData.languageID) &&
+      inflectionData.hasOwnProperty(GreekLemmaGenderPronounView.partOfSpeech)) {
+      let found = inflectionData[GreekLemmaGenderPronounView.partOfSpeech].suffixes.find(
+        form => GreekLemmaGenderPronounView.classes.includes(form.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmClass]));
+      if (found) {
+        return true
+      }
     }
+    return false
   }
 }
 
@@ -12983,6 +13016,28 @@ class LatinLanguageModel$1 extends LanguageModel {
   static toCode () {
     return STR_LANG_CODE_LAT
   }
+
+  static getInflectionGrammar (inflection) {
+    let grammar = {
+      fullFormBased: false,
+      suffixBased: false,
+      pronounClassRequired: false
+    };
+    if (inflection.hasOwnProperty(Feature$1.types.part) &&
+      Array.isArray(inflection[Feature$1.types.part]) &&
+      inflection[Feature$1.types.part].length === 1) {
+      let partOfSpeech = inflection[Feature$1.types.part][0];
+      if (partOfSpeech.value === POFS_PRONOUN) {
+        grammar.fullFormBased = true;
+      } else {
+        grammar.suffixBased = true;
+      }
+    } else {
+      console.warn(`Unable to set grammar: part of speech data is missing or is incorrect`, inflection[Feature$1.types.part]);
+    }
+
+    return grammar
+  }
 }
 
 /**
@@ -13283,7 +13338,6 @@ class GreekLanguageModel$1 extends LanguageModel {
       Array.isArray(inflection[Feature$1.types.part]) &&
       inflection[Feature$1.types.part].length === 1) {
       let partOfSpeech = inflection[Feature$1.types.part][0];
-      // TODO: this should be language specific
       if (partOfSpeech.value === POFS_PRONOUN) {
         grammar.fullFormBased = true;
       } else {
@@ -13304,8 +13358,12 @@ class GreekLanguageModel$1 extends LanguageModel {
   }
 
   /**
-   * Determine a class of a given word (a pronoun).
-   * Finds grammar class(es) in a pronoun source data that match(es) a provided pronoun.
+   * Determines a class of a given word (pronoun) by finding a matching word entry(ies)
+   * in a pronoun source info (`forms`) and getting a single or multiple classes of those entries.
+   * Some morphological analyzers provide class information that is unreliable or do not
+   * provide class information at all. However, class information is essential in
+   * deciding in what table should pronouns be grouped. For this, we have to
+   * determine pronoun classes using this method.
    * @param {Form[]} forms - An array of known forms of pronouns.
    * @param {string} word - A word we need to find a matching class for.
    * @param {boolean} normalize - Whether normalized forms of words shall be used for comparison.
@@ -14046,7 +14104,7 @@ FeatureType$1.UNRESTRICTED_VALUE = Symbol('unrestricted');
  */
 class GreekPersonGenderPronounView extends GreekPronounView {
   constructor (inflectionData, messages) {
-    super(inflectionData, messages);
+    super(inflectionData, messages, GreekPersonGenderPronounView.classes[0]);
 
     // Add persons
     this.featureTypes.persons = new FeatureType$1(
@@ -14057,7 +14115,7 @@ class GreekPersonGenderPronounView extends GreekPronounView {
         __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_3RD
       ],
       this.languageID);
-    this.features.perons = new GroupFeatureType(this.featureTypes.persons, 'Person');
+    this.features.persons = new GroupFeatureType(this.featureTypes.persons, 'Person');
 
     /*
     Define tables and table features.
@@ -14083,18 +14141,83 @@ class GreekPersonGenderPronounView extends GreekPronounView {
   /**
    * Determines wither this view can be used to display an inflection table of any data
    * within an `inflectionData` object.
-   * By default a view can be used if a view and an inflection data piece have the same language,
-   * the same part of speech, and the view is enabled for lexemes within an inflection data.
+   * For that, inflectionData should match language and part of speech of this view,
+   * and inflection data should contain at least one data item with the class
+   * suitable for this view.
    * @param inflectionData
    * @return {boolean}
    */
   static matchFilter (inflectionData) {
-    let grammarClass = GreekPronounView.getClassFromInflection(inflectionData);
-
-    if (__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].compareLanguages(GreekPersonGenderPronounView.languageID, inflectionData.languageID)) {
-      return inflectionData.partsOfSpeech.includes(GreekPersonGenderPronounView.partOfSpeech) &&
-        GreekPersonGenderPronounView.classes.includes(grammarClass)
+    if (__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].compareLanguages(GreekPersonGenderPronounView.languageID, inflectionData.languageID) &&
+      inflectionData.hasOwnProperty(GreekPersonGenderPronounView.partOfSpeech)) {
+      let found = inflectionData[GreekPersonGenderPronounView.partOfSpeech].suffixes.find(
+        form => GreekPersonGenderPronounView.classes.includes(form.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmClass]));
+      if (found) {
+        return true
+      }
     }
+    return false
+  }
+}
+
+/**
+ * Used for personal pronouns. Produces a table grouped into columns by person
+ */
+class GreekPersonPronounView extends GreekPronounView {
+  constructor (inflectionData, messages) {
+    super(inflectionData, messages, GreekPersonPronounView.classes[0]);
+
+    // Add persons
+    this.featureTypes.persons = new FeatureType$1(
+      __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person,
+      [
+        __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_1ST,
+        __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_2ND,
+        __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_3RD
+      ],
+      this.languageID);
+    this.features.persons = new GroupFeatureType(this.featureTypes.persons, 'Person');
+
+    /*
+    Define tables and table features.
+    Features should go as: column features first, row features last. This specifies the order of grouping
+    in which a table tree will be built.
+     */
+    this.table = new Table([this.features.persons, this.features.numbers, this.features.cases]);
+    let features = this.table.features;
+    features.columns = [this.featureTypes.persons];
+    features.rows = [this.featureTypes.numbers, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["h" /* GreekLanguageModel */].getFeatureType(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase)];
+    features.columnRowTitles = [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["h" /* GreekLanguageModel */].getFeatureType(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase)];
+    features.fullWidthRowTitles = [this.featureTypes.numbers];
+  }
+
+  /**
+   * What classes of pronouns this view should be used with
+   * @return {string[]} Array of class names
+   */
+  static get classes () {
+    return [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].CLASS_PERSONAL]
+  }
+
+  /**
+   * Determines wither this view can be used to display an inflection table of any data
+   * within an `inflectionData` object.
+   * For that, inflectionData should match language and part of speech of this view,
+   * and inflection data should contain at least one data item with the class
+   * suitable for this view.
+   * @param inflectionData
+   * @return {boolean}
+   */
+  static matchFilter (inflectionData) {
+    if (__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].compareLanguages(GreekPersonPronounView.languageID, inflectionData.languageID) &&
+      inflectionData.hasOwnProperty(GreekPersonPronounView.partOfSpeech)) {
+      let found = inflectionData[GreekPersonPronounView.partOfSpeech].suffixes.find(
+        form => GreekPersonPronounView.classes.includes(form.features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmClass]));
+      if (found) {
+        return true
+      }
+    }
+    return false
   }
 }
 
@@ -14131,6 +14254,7 @@ class ViewSet {
           GreekNounSimplifiedView,
           GreekGenderPronounView,
           GreekPersonGenderPronounView,
+          GreekPersonPronounView,
           GreekLemmaGenderPronounView
         ]
       ]
