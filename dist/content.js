@@ -1509,6 +1509,33 @@ class LatinLanguageModel extends LanguageModel {
   static toCode () {
     return STR_LANG_CODE_LAT
   }
+
+  /**
+   * Sets inflection grammar properties based on its characteristics
+   * @param {Inflection} inflection - An inflection object
+   * @return {Object} Inflection properties
+   */
+  static getInflectionGrammar (inflection) {
+    let grammar = {
+      fullFormBased: false,
+      suffixBased: false,
+      pronounClassRequired: false
+    };
+    if (inflection.hasOwnProperty(Feature.types.part) &&
+      Array.isArray(inflection[Feature.types.part]) &&
+      inflection[Feature.types.part].length === 1) {
+      let partOfSpeech = inflection[Feature.types.part][0];
+      if (partOfSpeech.value === POFS_PRONOUN) {
+        grammar.fullFormBased = true;
+      } else {
+        grammar.suffixBased = true;
+      }
+    } else {
+      console.warn(`Unable to set grammar: part of speech data is missing or is incorrect`, inflection[Feature.types.part]);
+    }
+
+    return grammar
+  }
 }
 
 /**
@@ -1799,6 +1826,11 @@ class GreekLanguageModel extends LanguageModel {
     return '.,;:!?\'"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r'
   }
 
+  /**
+   * Sets inflection grammar properties based on its characteristics
+   * @param {Inflection} inflection - An inflection object
+   * @return {Object} Inflection properties
+   */
   static getInflectionGrammar (inflection) {
     let grammar = {
       fullFormBased: false,
@@ -1809,7 +1841,6 @@ class GreekLanguageModel extends LanguageModel {
       Array.isArray(inflection[Feature.types.part]) &&
       inflection[Feature.types.part].length === 1) {
       let partOfSpeech = inflection[Feature.types.part][0];
-      // TODO: this should be language specific
       if (partOfSpeech.value === POFS_PRONOUN) {
         grammar.fullFormBased = true;
       } else {
@@ -2567,6 +2598,12 @@ class Inflection {
     }
   }
 
+  /**
+   * Checks whether an inflection has a feature with `featureName` name and `featureValue` value
+   * @param {string} featureName - A name of a feature
+   * @param {string} featureValue - A value of a feature
+   * @return {boolean} True if an inflection contains a feature, false otherwise
+   */
   hasFeatureValue (featureName, featureValue) {
     if (this.hasOwnProperty(featureName) && Array.isArray(this[featureName]) && this[featureName].length > 0) {
       for (let feature of this[featureName]) {
@@ -2755,7 +2792,7 @@ class Homonym {
   }
 
   /**
-   * Returns a list of all inflections within all lexemes
+   * Returns a list of all inflections within all lexemes of a homonym
    * @return {Inflection[]} An array of inflections
    */
   get inflections () {
@@ -4737,7 +4774,7 @@ class LanguageDataset {
     return inflection
   }
 
-  getSuffixes (homonym) {
+  getInflectionData (homonym) {
     // Add support for languages
     let result = new InflectionData(homonym);
     let inflections = {};
@@ -4868,6 +4905,107 @@ class LanguageDataset {
       accumulator.push(result);
     }
     return accumulator
+  }
+
+  /**
+   * Decides whether a suffix is a match to any of inflections, and if it is, what type of match it is.
+   * @param {Inflection[]} inflections - an array of inflection objects to be matched against a suffix.
+   * @param {Suffix} item - a suffix to be matched with inflections.
+   * @returns {Suffix | null} if a match is found, returns a suffix object modified with some
+   * additional information about a match. if no matches found, returns null.
+   */
+  matcher (inflections, item) {
+    // I'm not sure if we ever want to restrict what we consider optional matches
+    // so this is just a placeholder for now
+    let matchOptional = true;
+
+    // Any of those features must match between an inflection and an ending
+    let bestMatchData = null; // information about the best match we would be able to find
+
+    /*
+     There can be only one full match between an inflection and a suffix (except when suffix has multiple values?)
+     But there could be multiple partial matches. So we should try to find the best match possible and return it.
+     a fullFeature match is when one of inflections has all grammatical features fully matching those of a suffix
+     */
+    for (let inflection of inflections) {
+      let matchData = new MatchData(); // Create a match profile
+      let optionalMatches = matchOptional ? inflection.grm.optionalMatches : [];
+      matchData.suffixMatch = inflection.compareWithWord(item.value);
+
+      // Check for obligatory matches
+      for (let feature of inflection.grm.obligatoryMatches) {
+        let featureMatch = item.featureMatch(feature, inflection[feature]);
+        if (featureMatch) {
+          matchData.matchedFeatures.push(feature);
+        } else {
+          // If an obligatory match is not found, there is no reason to check other items
+          break
+        }
+      }
+
+      if (matchData.matchedFeatures.length < inflection.grm.obligatoryMatches.length) {
+        // Not all obligatory matches are found, this is not a match
+        break
+      }
+
+      // Check optional matches now
+      for (let feature of optionalMatches) {
+        let matchedValue = item.featureMatch(feature, inflection[feature]);
+        if (matchedValue) {
+          matchData.matchedFeatures.push(feature);
+        }
+      }
+
+      if (matchData.suffixMatch && (matchData.matchedFeatures.length === inflection.grm.obligatoryMatches.length + optionalMatches.length)) {
+        // This is a full match
+        matchData.fullMatch = true;
+
+        // There can be only one full match, no need to search any further
+        item.match = matchData;
+        return item
+      }
+      bestMatchData = this.bestMatch(bestMatchData, matchData);
+    }
+    if (bestMatchData) {
+      // There is some match found
+      item.match = bestMatchData;
+      return item
+    }
+    return null
+  }
+
+  /**
+   * Decides whether matchA is 'better' (i.e. has more items matched) than matchB or not
+   * @param {MatchData} matchA
+   * @param {MatchData} matchB
+   * @returns {MatchData} A best of two matches
+   */
+  bestMatch (matchA, matchB) {
+    // If one of the arguments is not set, return the other one
+    if (!matchA && matchB) {
+      return matchB
+    }
+
+    if (!matchB && matchA) {
+      return matchA
+    }
+
+    // item match has a priority
+    if (matchA.suffixMatch !== matchB.suffixMatch) {
+      if (matchA.suffixMatch > matchB.suffixMatch) {
+        return matchA
+      } else {
+        return matchB
+      }
+    }
+
+    // If same on suffix matche, compare by how many features matched
+    if (matchA.matchedFeatures.length >= matchB.matchedFeatures.length) {
+      // Arbitrarily return matchA if matches are the same
+      return matchA
+    } else {
+      return matchB
+    }
   }
 }
 LanguageDataset.SUFFIX = 'suffix';
@@ -6815,118 +6953,6 @@ class LatinLanguageDataset extends LanguageDataset {
     ];
     return featureOptions.filter(f => inflection[f])
   }
-
-  /**
-   * Decides whether a suffix is a match to any of inflections, and if it is, what type of match it is.
-   * @param {Inflection[]} inflections - an array of inflection objects to be matched against a suffix.
-   * @param {Suffix} item - a suffix to be matched with inflections.
-   * @returns {Suffix | null} if a match is found, returns a suffix object modified with some
-   * additional information about a match. if no matches found, returns null.
-   */
-  matcher (inflections, item) {
-    // I'm not sure if we ever want to restrict what we consider optional matches
-    // so this is just a placeholder for now
-    let matchOptional = true;
-
-    // Any of those features must match between an inflection and an ending
-    let bestMatchData = null; // information about the best match we would be able to find
-
-    /*
-     There can be only one full match between an inflection and a suffix (except when suffix has multiple values?)
-     But there could be multiple partial matches. So we should try to find the best match possible and return it.
-     a fullFeature match is when one of inflections has all grammatical features fully matching those of a suffix
-     */
-    for (let inflection of inflections) {
-      let matchData = new MatchData(); // Create a match profile
-      let optionalMatches = matchOptional ? inflection.grm.optionalMatches : [];
-      matchData.suffixMatch = inflection.compareWithWord(item.value);
-
-      // Check for obligatory matches
-      for (let feature of inflection.grm.obligatoryMatches) {
-        let featureMatch = item.featureMatch(feature, inflection[feature]);
-        if (featureMatch) {
-          matchData.matchedFeatures.push(feature);
-        } else {
-          // If an obligatory match is not found, there is no reason to check other items
-          break
-        }
-      }
-
-      // Check for obligatory matches
-      for (let feature of inflection.grm.obligatoryMatches) {
-        let featureMatch = item.featureMatch(feature, inflection[feature]);
-        if (featureMatch) {
-          matchData.matchedFeatures.push(feature);
-        } else {
-          // If an obligatory match is not found, there is no reason to check other items
-          break
-        }
-      }
-
-      if (matchData.matchedFeatures.length < inflection.grm.obligatoryMatches.length) {
-        // Not all obligatory matches are found, this is not a match
-        break
-      }
-
-      // Check optional matches now
-      for (let feature of optionalMatches) {
-        let matchedValue = item.featureMatch(feature, inflection[feature]);
-        if (matchedValue) {
-          matchData.matchedFeatures.push(feature);
-        }
-      }
-
-      if (matchData.suffixMatch && (matchData.matchedFeatures.length === inflection.grm.obligatoryMatches.length + optionalMatches.length)) {
-        // This is a full match
-        matchData.fullMatch = true;
-
-        // There can be only one full match, no need to search any further
-        item.match = matchData;
-        return item
-      }
-      bestMatchData = this.bestMatch(bestMatchData, matchData);
-    }
-    if (bestMatchData) {
-      // There is some match found
-      item.match = bestMatchData;
-      return item
-    }
-    return null
-  }
-
-  /**
-   * Decides whether matchA is 'better' (i.e. has more items matched) than matchB or not
-   * @param {MatchData} matchA
-   * @param {MatchData} matchB
-   * @returns {MatchData} A best of two matches
-   */
-  bestMatch (matchA, matchB) {
-    // If one of the arguments is not set, return the other one
-    if (!matchA && matchB) {
-      return matchB
-    }
-
-    if (!matchB && matchA) {
-      return matchA
-    }
-
-    // item match has a priority
-    if (matchA.suffixMatch !== matchB.suffixMatch) {
-      if (matchA.suffixMatch > matchB.suffixMatch) {
-        return matchA
-      } else {
-        return matchB
-      }
-    }
-
-    // If same on suffix matche, compare by how many features matched
-    if (matchA.matchedFeatures.length >= matchB.matchedFeatures.length) {
-      // Arbitrarily return matchA if matches are the same
-      return matchA
-    } else {
-      return matchB
-    }
-  }
 }
 
 class ExtendedGreekData extends ExtendedLanguageData {
@@ -7174,108 +7200,6 @@ class GreekLanguageDataset extends LanguageDataset {
     ];
     return featureOptions.filter(f => inflection[f])
   }
-
-  /**
-   * Decides whether a suffix is a match to any of inflections, and if it is, what type of match it is.
-   * @param {Inflection[]} inflections - An array of Inflection objects to be matched against a suffix.
-   * @param {Suffix} item - A suffix to be matched with inflections.
-   * @returns {Suffix | null} If a match is found, returns a Suffix object modified with some
-   * additional information about a match. If no matches found, returns null.
-   */
-  matcher (inflections, item) {
-    'use strict';
-    // All of those features must match between an inflection and an ending
-    let optionalMatches;
-    // I'm not sure if we ever want to restrict what we consider optional matches
-    // so this is just a placeholder for now
-    let matchOptional = true;
-    let bestMatchData = null; // Information about the best match we would be able to find
-
-    /*
-     There can be only one full match between an inflection and a suffix (except when suffix has multiple values?)
-     But there could be multiple partial matches. So we should try to find the best match possible and return it.
-     a fullFeature match is when one of inflections has all grammatical features fully matching those of a suffix
-     */
-    for (let inflection of inflections) {
-      let matchData = new MatchData(); // Create a match profile
-      optionalMatches = matchOptional ? inflection.grm.optionalMatches : [];
-      matchData.suffixMatch = inflection.compareWithWord(item.value);
-
-      // Check for obligatory matches
-      for (let feature of inflection.grm.obligatoryMatches) {
-        let featureMatch = item.featureMatch(feature, inflection[feature]);
-        if (featureMatch) {
-          matchData.matchedFeatures.push(feature);
-        } else {
-          // If an obligatory match is not found, there is no reason to check other items
-          break
-        }
-      }
-
-      if (matchData.matchedFeatures.length < inflection.grm.obligatoryMatches.length) {
-        // Not all obligatory matches are found, this is not a match
-        break
-      }
-
-      // Check optional matches now
-      for (let feature of optionalMatches) {
-        let matchedValue = item.featureMatch(feature, inflection[feature]);
-        if (matchedValue) {
-          matchData.matchedFeatures.push(feature);
-        }
-      }
-
-      if (matchData.suffixMatch && (matchData.matchedFeatures.length === inflection.grm.obligatoryMatches + optionalMatches.length)) {
-        // This is a full match
-        matchData.fullMatch = true;
-
-        // There can be only one full match, no need to search any further
-        item.match = matchData;
-        return item
-      }
-      bestMatchData = this.bestMatch(bestMatchData, matchData);
-    }
-    if (bestMatchData) {
-      // There is some match found
-      item.match = bestMatchData;
-      return item
-    }
-    return null
-  }
-
-  /**
-   * Decides whether matchA is 'better' (i.e. has more items matched) than matchB or not
-   * @param {MatchData} matchA
-   * @param {MatchData} matchB
-   * @returns {MatchData} A best of two matches
-   */
-  bestMatch (matchA, matchB) {
-    // If one of the arguments is not set, return the other one
-    if (!matchA && matchB) {
-      return matchB
-    }
-
-    if (!matchB && matchA) {
-      return matchA
-    }
-
-    // Suffix match has a priority
-    if (matchA.suffixMatch !== matchB.suffixMatch) {
-      if (matchA.suffixMatch > matchB.suffixMatch) {
-        return matchA
-      } else {
-        return matchB
-      }
-    }
-
-    // If same on suffix matches, compare by how many features matched
-    if (matchA.matchedFeatures.length >= matchB.matchedFeatures.length) {
-      // Arbitrarily return matchA if matches are the same
-      return matchA
-    } else {
-      return matchB
-    }
-  }
 }
 
 /**
@@ -7315,7 +7239,7 @@ class LanguageDataList {
    * @param {Homonym} homonym - A homonym for which matching suffixes must be found.
    * @return {InflectionData} A return value of an inflection query.
    */
-  getSuffixes (homonym) {
+  getInflectionData (homonym) {
     if (this.sets.has(homonym.languageID)) {
       let dataset = this.sets.get(homonym.languageID);
       for (let inflection of homonym.inflections) {
@@ -7323,7 +7247,7 @@ class LanguageDataList {
         inflection.setGrammar();
         dataset.setInflectionGrammar(inflection);
       }
-      return dataset.getSuffixes(homonym)
+      return dataset.getInflectionData(homonym)
     } else {
       return new InflectionData(homonym) // Return an empty inflection data set
     }
@@ -26971,7 +26895,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
     // Update status info with data from a morphological analyzer
     this.ui.showStatusInfo(this.homonym.targetWord, this.homonym.languageID)
 
-    this.lexicalData = yield this.langData.getSuffixes(this.homonym)
+    this.lexicalData = yield this.langData.getInflectionData(this.homonym)
     this.ui.addMessage(`Inflection data is ready`)
     this.ui.updateInflections(this.lexicalData, this.homonym)
 
