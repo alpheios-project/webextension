@@ -610,10 +610,10 @@ export default class ContentUIController {
     this.popup.popupData.defDataReady = hasFullDefs
   }
 
-  updateLanguage(currentLanguage) {
-    this.state.setItem('currentLanguage',currentLanguage)
-    this.panel.requestGrammar({ type: 'table-of-contents', value:'', languageID: LanguageModelFactory.getLanguageIdFromCode(currentLanguage)})
-    this.panel.enableInflections(LanguageModelFactory.getLanguageForCode(currentLanguage).canInflect())
+  updateLanguage (currentLanguage) {
+    this.state.setItem('currentLanguage', currentLanguage)
+    this.panel.requestGrammar({type: 'table-of-contents', value: '', languageID: LanguageModelFactory.getLanguageIdFromCode(currentLanguage)})
+    this.panel.enableInflections(LanguageModelFactory.getLanguageModel(currentLanguage).canInflect())
     console.log(`Current language is ${this.state.currentLanguage}`)
   }
 

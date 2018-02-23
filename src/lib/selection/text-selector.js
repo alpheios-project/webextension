@@ -14,7 +14,7 @@ export default class TextSelector {
     this.languageCode = ''
     this.languageID = undefined
     this.model = undefined
-    this.language = undefined
+    // this.language = undefined
 
     this.start = 0
     this.end = 0
@@ -51,7 +51,7 @@ export default class TextSelector {
     let textSelector = new TextSelector()
     textSelector.text = jsonObject.text
     textSelector.languageCode = jsonObject.languageCode
-    textSelector.language = TextSelector.getLanguage(textSelector.languageCode)
+    // textSelector.language = TextSelector.getLanguage(textSelector.languageCode)
     return textSelector
   }
 
@@ -68,9 +68,9 @@ export default class TextSelector {
    * @param {string} languageCode - A default language code that will be used if language cannot be determined.
    * @return {LanguageModel} Language model of a selection's language
    */
-  static getLanguage (languageCode) {
+  /* static getLanguage (languageCode) {
     return Models.LanguageModelFactory.getLanguageForCode(languageCode)
-  }
+  } */
 
   get textQuoteSelector () {
     return new TextQuoteSelector()

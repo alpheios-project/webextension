@@ -90,10 +90,12 @@ const LANG_UNIT_WORD = Symbol('word');
 const LANG_UNIT_CHAR = Symbol('char');
 const LANG_DIR_LTR = Symbol('ltr');
 const LANG_DIR_RTL = Symbol('rtl');
+const LANG_UNDEFINED = Symbol('undefined');
 const LANG_LATIN = Symbol('latin');
 const LANG_GREEK = Symbol('greek');
 const LANG_ARABIC = Symbol('arabic');
 const LANG_PERSIAN = Symbol('persian');
+const STR_LANG_CODE_UNDEFINED = 'undefined';
 const STR_LANG_CODE_LAT = 'lat';
 const STR_LANG_CODE_LA = 'la';
 const STR_LANG_CODE_GRC = 'grc';
@@ -307,10 +309,12 @@ var constants = Object.freeze({
 	LANG_UNIT_CHAR: LANG_UNIT_CHAR,
 	LANG_DIR_LTR: LANG_DIR_LTR,
 	LANG_DIR_RTL: LANG_DIR_RTL,
+	LANG_UNDEFINED: LANG_UNDEFINED,
 	LANG_LATIN: LANG_LATIN,
 	LANG_GREEK: LANG_GREEK,
 	LANG_ARABIC: LANG_ARABIC,
 	LANG_PERSIAN: LANG_PERSIAN,
+	STR_LANG_CODE_UNDEFINED: STR_LANG_CODE_UNDEFINED,
 	STR_LANG_CODE_LAT: STR_LANG_CODE_LAT,
 	STR_LANG_CODE_LA: STR_LANG_CODE_LA,
 	STR_LANG_CODE_GRC: STR_LANG_CODE_GRC,
@@ -938,15 +942,111 @@ class InflectionGroup {
  * @class  LanguageModel is the base class for language-specific behavior
  */
 class LanguageModel {
-  /**
-   */
   constructor () {
-    this.sourceLanguage = null;
-    this.contextForward = 0;
-    this.context_backward = 0;
-    this.direction = LANG_DIR_LTR;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.codes = [];
+    // This is just to avoid JavaScript Standard error on `context_backward` getter name. Don't need a constructor otherwise
+    // TODO: `contextBackward` shall be used instead of `context_backward` wherever it is used
+    this.context_backward = LanguageModel.contextBackward;
+  }
+
+  static get contextForward () { return 0 }
+  static get contextBackward () { return 0 }
+  static get direction () { return LANG_DIR_LTR }
+  static get baseUnit () { return LANG_UNIT_WORD }
+
+  /**
+   * @deprecated
+   */
+  get contextForward () {
+    console.warn(`Please use static "contextForward" instead`);
+    return this.constructor.contextForward
+  }
+
+  /**
+   * @deprecated
+   */
+  get contextBackward () {
+    console.warn(`Please use static "contextBackward" instead`);
+    return this.constructor.contextBackward
+  }
+
+  /**
+   * @deprecated
+   */
+  get direction () {
+    console.warn(`Please use static "direction" instead`);
+    return this.constructor.direction
+  }
+
+  /**
+   * @deprecated
+   */
+  get baseUnit () {
+    console.warn(`Please use static "baseUnit" instead`);
+    return this.constructor.baseUnit
+  }
+
+  /**
+   * @deprecated
+   */
+  get features () {
+    console.warn(`Please use individual "getFeatureType" or static "features" instead`);
+    return this.constructor.features
+  }
+
+  static get features () {
+    let features = {};
+    for (const featureName of this.featureValues.keys()) {
+      features[featureName] = this.getFeatureType(featureName);
+    }
+    return features
+  }
+
+  static get languageID () {
+    return LANG_UNDEFINED
+  }
+
+  static get languageCode () {
+    return STR_LANG_CODE_UNDEFINED
+  }
+
+  /**
+   * Returns an array of language codes that represents the language.
+   * @return {String[]} An array of language codes that matches the language.
+   */
+  static get languageCodes () {
+    return []
+  }
+
+  static get codes () {
+    console.warn(`Use static "languageCodes" instead`);
+    return this.languageCodes
+  }
+
+  /**
+   * @deprecated
+   * @return {String[]}
+   */
+  get codes () {
+    console.warn(`Please use a static version of "codes" instead`);
+    return this.constructor.languageCodes
+  }
+
+  /**
+   * @deprecated
+   * @return {string}
+   */
+  toCode () {
+    console.warn(`Please use a static "languageCode" instead`);
+    return this.constructor.languageCode
+  }
+
+  /**
+   * @deprecated
+   * @return {string}
+   */
+  static toCode () {
+    console.warn(`Please use a static "languageCode" instead`);
+    return this.languageCode
   }
 
   static get featureValues () {
@@ -1069,64 +1169,54 @@ class LanguageModel {
     ])
   }
 
+  /**
+   * @deprecated
+   * @return {symbol} Returns a language ID
+   */
+  static get sourceLanguage () {
+    console.warn(`Please use languageID directly`);
+    return this.languageID
+  }
+
+  /**
+   * @deprecated
+   * @return {symbol} Returns a language ID
+   */
+  get sourceLanguage () {
+    console.warn(`Please use languageID directly`);
+    return this.constructor.languageID
+  }
+
+  static getFeatureType (name) {
+    let featureValues = this.featureValues;
+    if (featureValues.has(name)) {
+      return new FeatureType(name, featureValues.get(name), this.languageID)
+    } else {
+      throw new Error(`Feature "${name}" is not defined`)
+    }
+  }
+
   _initializeFeatures () {
     let features = {};
-    let code = this.toCode();
-    features[Feature.types.part] = new FeatureType(Feature.types.part,
-      [POFS_ADVERB,
-        POFS_ADVERBIAL,
-        POFS_ADJECTIVE,
-        POFS_ARTICLE,
-        POFS_CONJUNCTION,
-        POFS_EXCLAMATION,
-        POFS_INTERJECTION,
-        POFS_NOUN,
-        POFS_NUMERAL,
-        POFS_PARTICLE,
-        POFS_PREFIX,
-        POFS_PREPOSITION,
-        POFS_PRONOUN,
-        POFS_SUFFIX,
-        POFS_SUPINE,
-        POFS_VERB,
-        POFS_VERB_PARTICIPLE], code);
-    features[Feature.types.gender] = new FeatureType(Feature.types.gender,
-      [GEND_MASCULINE, GEND_FEMININE, GEND_NEUTER], code);
-    features[Feature.types.type] = new FeatureType(Feature.types.type,
-      [TYPE_REGULAR, TYPE_IRREGULAR], code);
-    features[Feature.types.person] = new FeatureType(Feature.types.person,
-      [ORD_1ST, ORD_2ND, ORD_3RD], code);
-    // some general, non-language specific grammatical features
-    features[Feature.types.age] = new FeatureType(Feature.types.age,
-      [FeatureType.UNRESTRICTED_VALUE], code);
-    features[Feature.types.area] = new FeatureType(Feature.types.area,
-      [FeatureType.UNRESTRICTED_VALUE], code);
-    features[Feature.types.source] = new FeatureType(Feature.types.source,
-      [FeatureType.UNRESTRICTED_VALUE], code);
-    features[Feature.types.frequency] = new FeatureType(Feature.types.frequency,
-      [FeatureType.UNRESTRICTED_VALUE], code);
-    features[Feature.types.geo] = new FeatureType(Feature.types.geo,
-      [FeatureType.UNRESTRICTED_VALUE], code);
-    features[Feature.types.pronunciation] = new FeatureType(Feature.types.pronunciation,
-      [FeatureType.UNRESTRICTED_VALUE], code);
-    features[Feature.types.kind] = new FeatureType(Feature.types.kind,
-      [FeatureType.UNRESTRICTED_VALUE], code);
-    features[Feature.types.comparison] = new FeatureType(Feature.types.comparison,
-      [COMP_POSITIVE, COMP_SUPERLATIVE, COMP_COMPARITIVE], code);
-    features[Feature.types.morph] = new FeatureType(Feature.types.morph,
-      [FeatureType.UNRESTRICTED_VALUE], code);
-    features[Feature.types.stemtype] = new FeatureType(Feature.types.stemtype,
-      [FeatureType.UNRESTRICTED_VALUE], code);
-    features[Feature.types.derivtype] = new FeatureType(Feature.types.derivtype,
-      [FeatureType.UNRESTRICTED_VALUE], code);
+    for (const featureName of this.constructor.featureValues.keys()) {
+      features[featureName] = this.constructor.getFeatureType(featureName);
+    }
     return features
+  }
+
+  /**
+   * @deprecated
+   */
+  grammarFeatures () {
+    console.warn(`Please use a static version of "grammarFeatures" instead`);
+    return this.constructor.grammarFeatures()
   }
 
   /**
    * Identify the morphological features which should be linked to a grammar.
    * @returns {String[]} Array of Feature types
    */
-  grammarFeatures () {
+  static grammarFeatures () {
     return []
   }
 
@@ -1134,7 +1224,7 @@ class LanguageModel {
    * Check to see if this language tool can produce an inflection table display
    * for the current node
    */
-  canInflect (node) {
+  static canInflect (node) {
     return false
   }
 
@@ -1145,7 +1235,7 @@ class LanguageModel {
    * @type Boolean
    */
   static supportsLanguage (code) {
-    return this.codes.includes[code]
+    return this.languageCodes.includes[code]
   }
 
   /**
@@ -1165,30 +1255,40 @@ class LanguageModel {
    * @param {string} preceding optional preceding word
    * @param {string} following optional following word
    * @param {string} encoding optional encoding name to filter the response to
-   * @returns an array of alternate encodinges
+   * @returns {Array} an array of alternate encodings
    */
-  alternateWordEncodings (word, preceding = null, folloiwng = null, encoding = null) {
+  static alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
     return []
+  }
+
+  alternateWordEncodings (word, preceding, following, encoding) {
+    console.warn(`Please use static "alternateWordEncodings" instead`);
+    return this.constructor.alternateWordEncodings(word, preceding, following, encoding)
   }
 
   /**
    * Get a list of valid puncutation for this language
    * @returns {String} a string containing valid puncutation symbols
    */
-  getPunctuation () {
+  static getPunctuation () {
     return '.,;:!?\'"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r'
   }
 
+  /**
+   * @deprecated
+   * @return {String}
+   */
+  getPunctuation () {
+    console.warn(`Please use a static version of "getPunctuation"`);
+    return this.constructor.getPunctuation()
+  }
+
   toString () {
-    return String(this.sourceLanguage)
+    return String(this.constructor.languageCode)
   }
 
   isEqual (model) {
-    return this.sourceLanguage === model.sourceLanguage
-  }
-
-  toCode () {
-    return null
+    return LanguageModelFactory.compareLanguages(this.languageID, model.languageID)
   }
 
   /*
@@ -1199,22 +1299,13 @@ class LanguageModel {
    */
 
   /**
-   * Returns an array of language codes that represents the language.
-   * @return {String[]} An array of language codes that matches the language.
-   */
-  static get codes () {
-    return []
-  }
-
-  /**
-   * Checks wither a language has a particular language code in its list of codes
+   * Checks whether a language has a particular language code in its list of codes
    * @param {String} languageCode - A language code to check
-   * @param {String[]} codes - Array of language codes a specific language has
-   * @return {boolean} Wither this language code exists in a language code list
+   * @return {boolean} Whether this language code exists in a language code list
    */
-  static hasCodeInList (languageCode, codes) {
-    if (LanguageModel.isLanguageCode(languageCode)) {
-      return codes.includes(languageCode)
+  static hasCode (languageCode) {
+    if (this.isLanguageCode(languageCode)) {
+      return this.languageCodes.includes(languageCode)
     } else {
       throw new Error(`Format of a "${languageCode}" is incorrect`)
     }
@@ -1236,6 +1327,15 @@ class LanguageModel {
    */
   static isLanguageCode (language) {
     return !LanguageModel.isLanguageID(language)
+  }
+
+  /**
+   * @deprecated
+   * @param node
+   */
+  canInflect (node) {
+    console.warn(`Please use a static version of "canInflect" instead`);
+    return this.constructor.canInflect(node)
   }
 
   /**
@@ -1369,92 +1469,108 @@ class LanguageModel {
  * @class  LatinLanguageModel is the lass for Latin specific behavior
  */
 class LatinLanguageModel extends LanguageModel {
-   /**
-   */
-  constructor () {
-    super();
-    this.sourceLanguage = LatinLanguageModel.sourceLanguage; // For compatibility, should use a static method instead
-    this.contextForward = 0;
-    this.contextBackward = 0;
-    this.direction = LANG_DIR_LTR;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.codes = LatinLanguageModel.codes; // To keep compatibility with existing code
-    this.features = this._initializeFeatures();
-  }
+  static get languageID () { return LANG_LATIN }
+  static get languageCode () { return STR_LANG_CODE_LAT }
+  static get languageCodes () { return [STR_LANG_CODE_LA, STR_LANG_CODE_LAT] }
+  static get contextForward () { return 0 }
+  static get contextBackward () { return 0 }
+  static get direction () { return LANG_DIR_LTR }
+  static get baseUnit () { return LANG_UNIT_WORD }
 
-  static get sourceLanguage () {
-    return LANG_LATIN
-  }
-
-  static get codes () {
-    return [STR_LANG_CODE_LA, STR_LANG_CODE_LAT]
-  }
-
-  /**
-   * Checks wither a language has a particular language code in its list of codes
-   * @param {String} languageCode - A language code to check
-   * @return {boolean} Wither this language code exists in a language code list
-   */
-  static hasCode (languageCode) {
-    return LanguageModel.hasCodeInList(languageCode, LatinLanguageModel.codes)
-  }
-
-  _initializeFeatures () {
-    let features = super._initializeFeatures();
-    let code = this.toCode();
-    features[Feature.types.grmClass] = new FeatureType(Feature.types.grmClass,
-      [ CLASS_PERSONAL,
-        CLASS_REFLEXIVE,
-        CLASS_POSSESSIVE,
-        CLASS_DEMONSTRATIVE,
-        CLASS_RELATIVE,
-        CLASS_INTERROGATIVE
+  static get featureValues () {
+    /*
+    This could be a static variable, but then it will create a circular reference:
+    Feature -> LanguageModelFactory -> LanguageModel -> Feature
+     */
+    return new Map([
+      ...LanguageModel.featureValues,
+      [
+        Feature.types.grmClass,
+        [
+          CLASS_PERSONAL,
+          CLASS_REFLEXIVE,
+          CLASS_POSSESSIVE,
+          CLASS_DEMONSTRATIVE,
+          CLASS_RELATIVE,
+          CLASS_INTERROGATIVE
+        ]
       ],
-      code);
-    features[Feature.types.number] = new FeatureType(Feature.types.number, [NUM_SINGULAR, NUM_PLURAL], code);
-    features[Feature.types.grmCase] = new FeatureType(Feature.types.grmCase,
-      [ CASE_NOMINATIVE,
-        CASE_GENITIVE,
-        CASE_DATIVE,
-        CASE_ACCUSATIVE,
-        CASE_ABLATIVE,
-        CASE_LOCATIVE,
-        CASE_VOCATIVE
-      ], code);
-    features[Feature.types.declension] = new FeatureType(Feature.types.declension,
-      [ ORD_1ST, ORD_2ND, ORD_3RD, ORD_4TH, ORD_5TH ], code);
-    features[Feature.types.tense] = new FeatureType(Feature.types.tense,
-      [ TENSE_PRESENT,
-        TENSE_IMPERFECT,
-        TENSE_FUTURE,
-        TENSE_PERFECT,
-        TENSE_PLUPERFECT,
-        TENSE_FUTURE_PERFECT
-      ], code);
-    features[Feature.types.voice] = new FeatureType(Feature.types.voice, [VOICE_ACTIVE, VOICE_PASSIVE], code);
-    features[Feature.types.mood] = new FeatureType(Feature.types.mood,
-      [ MOOD_INDICATIVE,
-        MOOD_SUBJUNCTIVE,
-        MOOD_IMPERATIVE,
-        MOOD_PARTICIPLE,
-        MOOD_SUPINE,
-        MOOD_GERUNDIVE,
-        MOOD_PARTICIPLE,
-        MOOD_INFINITIVE
-      ], code);
-    features[Feature.types.conjugation] = new FeatureType(Feature.types.conjugation,
-      [ ORD_1ST,
-        ORD_2ND,
-        ORD_3RD,
-        ORD_4TH
-      ], code);
-    return features
+      [
+        Feature.types.number,
+        [
+          NUM_SINGULAR,
+          NUM_PLURAL
+        ]
+      ],
+      [
+        Feature.types.grmCase,
+        [
+          CASE_NOMINATIVE,
+          CASE_GENITIVE,
+          CASE_DATIVE,
+          CASE_ACCUSATIVE,
+          CASE_ABLATIVE,
+          CASE_LOCATIVE,
+          CASE_VOCATIVE
+        ]
+      ],
+      [
+        Feature.types.declension,
+        [
+          ORD_1ST,
+          ORD_2ND,
+          ORD_3RD,
+          ORD_4TH,
+          ORD_5TH
+        ]
+      ],
+      [
+        Feature.types.tense,
+        [
+          TENSE_PRESENT,
+          TENSE_IMPERFECT,
+          TENSE_FUTURE,
+          TENSE_PERFECT,
+          TENSE_PLUPERFECT,
+          TENSE_FUTURE_PERFECT
+        ]
+      ],
+      [
+        Feature.types.voice,
+        [
+          VOICE_ACTIVE,
+          VOICE_PASSIVE
+        ]
+      ],
+      [
+        Feature.types.mood,
+        [
+          MOOD_INDICATIVE,
+          MOOD_SUBJUNCTIVE,
+          MOOD_IMPERATIVE,
+          MOOD_PARTICIPLE,
+          MOOD_SUPINE,
+          MOOD_GERUNDIVE,
+          MOOD_PARTICIPLE,
+          MOOD_INFINITIVE
+        ]
+      ],
+      [
+        Feature.types.conjugation,
+        [
+          ORD_1ST,
+          ORD_2ND,
+          ORD_3RD,
+          ORD_4TH
+        ]
+      ]
+    ])
   }
 
   /**
    * @override LanguageModel#grammarFeatures
    */
-  grammarFeatures () {
+  static grammarFeatures () {
     // TODO this ideally might be grammar specific
     return [Feature.types.part, Feature.types.grmCase, Feature.types.mood, Feature.types.declension, Feature.types.tense]
   }
@@ -1463,7 +1579,7 @@ class LatinLanguageModel extends LanguageModel {
    * Check to see if this language tool can produce an inflection table display
    * for the current node
    */
-  canInflect (node) {
+  static canInflect (node) {
     return true
   }
 
@@ -1497,17 +1613,8 @@ class LatinLanguageModel extends LanguageModel {
    * Get a list of valid puncutation for this language
    * @returns {String} a string containing valid puncutation symbols
    */
-  getPunctuation () {
+  static getPunctuation () {
     return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
-  }
-
-  // For compatibility with existing code, can be replaced with a static version
-  toCode () {
-    return LatinLanguageModel.toCode()
-  }
-
-  static toCode () {
-    return STR_LANG_CODE_LAT
   }
 
   /**
@@ -1542,23 +1649,13 @@ class LatinLanguageModel extends LanguageModel {
  * @class  LatinLanguageModel is the lass for Latin specific behavior
  */
 class GreekLanguageModel extends LanguageModel {
-  /**
-   * @constructor
-   */
-  constructor () {
-    super();
-    this.sourceLanguage = GreekLanguageModel.sourceLanguage;
-    this.contextForward = 0;
-    this.contextBackward = 0;
-    this.direction = LANG_DIR_LTR;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.languageCodes = GreekLanguageModel.codes;
-    this.features = this._initializeFeatures();
-  }
-
-  static get languageID () {
-    return LANG_GREEK
-  }
+  static get languageID () { return LANG_GREEK }
+  static get languageCode () { return STR_LANG_CODE_GRC }
+  static get languageCodes () { return [STR_LANG_CODE_GRC] }
+  static get contextForward () { return 0 }
+  static get contextBackward () { return 0 }
+  static get direction () { return LANG_DIR_LTR }
+  static get baseUnit () { return LANG_UNIT_WORD }
 
   static get featureValues () {
     /*
@@ -1639,6 +1736,7 @@ class GreekLanguageModel extends LanguageModel {
         ]
       ],
       [
+        // TODO full list of greek dialects
         Feature.types.dialect,
         [
           'attic',
@@ -1649,108 +1747,18 @@ class GreekLanguageModel extends LanguageModel {
     ])
   }
 
-  static getFeatureType (name) {
-    let featureValues = GreekLanguageModel.featureValues;
-    if (featureValues.has(name)) {
-      return new FeatureType(name, featureValues.get(name), GreekLanguageModel.sourceLanguage)
-    } else {
-      throw new Error(`Feature "${name}" is not defined`)
-    }
-  }
-
-  _initializeFeatures () {
-    let features = super._initializeFeatures();
-    let code = this.toCode();
-    features[Feature.types.grmClass] = new FeatureType(Feature.types.grmClass,
-      [CLASS_DEMONSTRATIVE,
-        CLASS_GENERAL_RELATIVE,
-        CLASS_INDEFINITE,
-        CLASS_INTENSIVE,
-        CLASS_INTERROGATIVE,
-        CLASS_PERSONAL,
-        CLASS_POSSESSIVE,
-        CLASS_RECIPROCAL,
-        CLASS_REFLEXIVE,
-        CLASS_RELATIVE
-      ],
-      code);
-    features[Feature.types.number] = new FeatureType(Feature.types.number, [NUM_SINGULAR, NUM_PLURAL, NUM_DUAL], code);
-    features[Feature.types.grmCase] = new FeatureType(Feature.types.grmCase,
-      [CASE_NOMINATIVE,
-        CASE_GENITIVE,
-        CASE_DATIVE,
-        CASE_ACCUSATIVE,
-        CASE_VOCATIVE
-      ], code);
-    features[Feature.types.declension] = new FeatureType(Feature.types.declension,
-      [ORD_1ST, ORD_2ND, ORD_3RD], code);
-    features[Feature.types.tense] = new FeatureType(Feature.types.tense,
-      [TENSE_PRESENT,
-        TENSE_IMPERFECT,
-        TENSE_FUTURE,
-        TENSE_PERFECT,
-        TENSE_PLUPERFECT,
-        TENSE_FUTURE_PERFECT,
-        TENSE_AORIST
-      ], code);
-    features[Feature.types.voice] = new FeatureType(Feature.types.voice,
-      [VOICE_PASSIVE,
-        VOICE_ACTIVE,
-        VOICE_MEDIOPASSIVE,
-        VOICE_MIDDLE
-      ], code);
-    features[Feature.types.mood] = new FeatureType(Feature.types.mood,
-      [MOOD_INDICATIVE,
-        MOOD_SUBJUNCTIVE,
-        MOOD_OPTATIVE,
-        MOOD_IMPERATIVE
-      ], code);
-    // TODO full list of greek dialects
-    features[Feature.types.dialect] = new FeatureType(Feature.types.dialect, ['attic', 'epic', 'doric'], code);
-    return features
-  }
-
-  /**
-   * @return {Symbol} Returns a language ID
-   */
-  static get sourceLanguage () {
-    return LANG_GREEK
-  }
-
-  static get codes () {
-    return [STR_LANG_CODE_GRC]
-  }
-
-  /**
-   * Checks wither a language has a particular language code in its list of codes
-   * @param {String} languageCode - A language code to check
-   * @return {boolean} Wither this language code exists in a language code list
-   */
-  static hasCode (languageCode) {
-    return LanguageModel.hasCodeInList(languageCode, GreekLanguageModel.codes)
-  }
-
-  // For compatibility with existing code, can be replaced with a static version
-  toCode () {
-    return GreekLanguageModel.toCode()
-  }
-
-  static toCode () {
-    return STR_LANG_CODE_GRC
-  }
-
   /**
    * Check to see if this language tool can produce an inflection table display
    * for the current node
    */
-  canInflect (node) {
+  static canInflect (node) {
     return false
   }
 
   /**
    * @override LanguageModel#grammarFeatures
    */
-  grammarFeatures () {
+  static grammarFeatures () {
     // TODO this ideally might be grammar specific
     return [Feature.types.part, Feature.types.grmCase, Feature.types.mood, Feature.types.declension, Feature.types.tense, Feature.types.voice]
   }
@@ -1774,7 +1782,7 @@ class GreekLanguageModel extends LanguageModel {
   /**
    * @override LanguageModel#alternateWordEncodings
    */
-  alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
+  static alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
     // the original alpheios code used the following normalizations
     // 1. When looking up a lemma
     //    stripped vowel length
@@ -1822,7 +1830,7 @@ class GreekLanguageModel extends LanguageModel {
    * Get a list of valid puncutation for this language
    * @returns {String} a string containing valid puncutation symbols
    */
-  getPunctuation () {
+  static getPunctuation () {
     return '.,;:!?\'"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r'
   }
 
@@ -1903,62 +1911,26 @@ class GreekLanguageModel extends LanguageModel {
  * @class  LatinLanguageModel is the lass for Latin specific behavior
  */
 class ArabicLanguageModel extends LanguageModel {
-   /**
-   * @constructor
-   */
-  constructor () {
-    super();
-    this.sourceLanguage = ArabicLanguageModel.sourceLanguage;
-    this.contextForward = 0;
-    this.contextBackward = 0;
-    this.direction = LANG_DIR_RTL;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.languageCodes = ArabicLanguageModel.codes;
-    this._initializeFeatures();
-  }
-
-  _initializeFeatures () {
-    this.features = super._initializeFeatures();
-  }
-
-  static get sourceLanguage () {
-    return LANG_ARABIC
-  }
-
-  static get codes () {
-    return [STR_LANG_CODE_ARA, STR_LANG_CODE_AR]
-  }
-
-  // For compatibility with existing code, can be replaced with a static version
-  toCode () {
-    return ArabicLanguageModel.toCode()
-  }
-
-  static toCode () {
-    return STR_LANG_CODE_ARA
-  }
-
-  /**
-   * Checks wither a language has a particular language code in its list of codes
-   * @param {String} languageCode - A language code to check
-   * @return {boolean} Wither this language code exists in a language code list
-   */
-  static hasCode (languageCode) {
-    return LanguageModel.hasCodeInList(languageCode, ArabicLanguageModel.codes)
-  }
+  static get languageID () { return LANG_ARABIC }
+  static get languageCode () { return STR_LANG_CODE_ARA }
+  static get languageCodes () { return [STR_LANG_CODE_ARA, STR_LANG_CODE_AR] }
+  static get contextForward () { return 0 }
+  static get contextBackward () { return 0 }
+  static get direction () { return LANG_DIR_RTL }
+  static get baseUnit () { return LANG_UNIT_WORD }
 
   /**
    * Check to see if this language tool can produce an inflection table display
    * for the current node
    */
-  canInflect (node) {
+  static canInflect (node) {
     return false
   }
 
   /**
    * @override LanguageModel#alternateWordEncodings
    */
-  alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
+  static alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
     // tanwin (& tatweel) - drop FATHATAN, DAMMATAN, KASRATAN, TATWEEL
     let tanwin = word.replace(/[\u{064B}\u{064C}\u{064D}\u{0640}]/ug, '');
     // hamzas - replace ALEF WITH MADDA ABOVE, ALEF WITH HAMZA ABOVE/BELOW with ALEF
@@ -1990,7 +1962,7 @@ class ArabicLanguageModel extends LanguageModel {
    * Get a list of valid puncutation for this language
    * @returns {String} a string containing valid puncutation symbols
    */
-  getPunctuation () {
+  static getPunctuation () {
     return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
   }
 }
@@ -1999,55 +1971,19 @@ class ArabicLanguageModel extends LanguageModel {
  * @class  PersianLanguageModel is the lass for Persian specific behavior
  */
 class PersianLanguageModel extends LanguageModel {
-   /**
-   * @constructor
-   */
-  constructor () {
-    super();
-    this.sourceLanguage = PersianLanguageModel.sourceLanguage;
-    this.contextForward = 0;
-    this.contextBackward = 0;
-    this.direction = LANG_DIR_RTL;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.languageCodes = PersianLanguageModel.codes;
-    this._initializeFeatures();
-  }
-
-  _initializeFeatures () {
-    this.features = super._initializeFeatures();
-  }
-
-  static get sourceLanguage () {
-    return LANG_PERSIAN
-  }
-
-  static get codes () {
-    return [STR_LANG_CODE_PER, STR_LANG_CODE_FAS, STR_LANG_CODE_FA, STR_LANG_CODE_FA_IR]
-  }
-
-  // For compatibility with existing code, can be replaced with a static version
-  toCode () {
-    return PersianLanguageModel.toCode()
-  }
-
-  static toCode () {
-    return STR_LANG_CODE_PER
-  }
-
-  /**
-   * Checks wither a language has a particular language code in its list of codes
-   * @param {String} languageCode - A language code to check
-   * @return {boolean} Wither this language code exists in a language code list
-   */
-  static hasCode (languageCode) {
-    return LanguageModel.hasCodeInList(languageCode, PersianLanguageModel.codes)
-  }
+  static get languageID () { return LANG_PERSIAN }
+  static get languageCode () { return STR_LANG_CODE_PER }
+  static get languageCodes () { return [STR_LANG_CODE_PER, STR_LANG_CODE_FAS, STR_LANG_CODE_FA, STR_LANG_CODE_FA_IR] }
+  static get contextForward () { return 0 }
+  static get contextBackward () { return 0 }
+  static get direction () { return LANG_DIR_RTL }
+  static get baseUnit () { return LANG_UNIT_WORD }
 
   /**
    * Check to see if this language tool can produce an inflection table display
    * for the current node
    */
-  canInflect (node) {
+  static canInflect (node) {
     return false
   }
 
@@ -2055,7 +1991,7 @@ class PersianLanguageModel extends LanguageModel {
    * Get a list of valid puncutation for this language
    * @returns {String} a string containing valid puncutation symbols
    */
-  getPunctuation () {
+  static getPunctuation () {
     return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
   }
 }
@@ -2113,9 +2049,11 @@ class LanguageModelFactory {
   static getLanguageIdFromCode (languageCode) {
     for (const languageModel of MODELS.values()) {
       if (languageModel.hasCode(languageCode)) {
-        return languageModel.sourceLanguage
+        return languageModel.languageID
       }
     }
+    // Noting found, return a Symbol with an undefined value (to keep return value type the same)
+    return LANG_UNDEFINED
   }
 
   /**
@@ -2125,10 +2063,12 @@ class LanguageModelFactory {
    */
   static getLanguageCodeFromId (languageID) {
     for (const languageModel of MODELS.values()) {
-      if (languageModel.sourceLanguage === languageID) {
-        return languageModel.toCode()
+      if (languageModel.languageID === languageID) {
+        return languageModel.languageCode
       }
     }
+    // Noting found, return a string with an undefined value (to keep return value type the same)
+    return STR_LANG_CODE_UNDEFINED
   }
 
   /**
@@ -2440,7 +2380,7 @@ class Lemma {
       }
 
       if (element.languageID !== this.languageID) {
-        throw new Error('Language "' + element.languageID + '" of a feature does not match a language "' +
+        throw new Error('Language "' + element.languageID.toString() + '" of a feature does not match a language "' +
                 this.languageID.toString() + '" of a Lemma object.')
       }
 
@@ -6628,7 +6568,6 @@ var papaparse = createCommonjsModule(function (module, exports) {
 /*
  * Latin language data module
  */
-let languageModel = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */]();
 let types = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types;
 
 // region Definition of grammatical features
@@ -6637,18 +6576,18 @@ let types = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */
  analyzer's language modules as well.
  */
 const importerName = 'csv';
-languageModel.features[types.declension].addImporter(importerName)
+__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.declension).addImporter(importerName)
     .map('1st 2nd',
-  [ languageModel.features[types.declension][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_1ST],
-    languageModel.features[types.declension][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_2ND]
+  [ __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.declension)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_1ST],
+    __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.declension)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_2ND]
   ]);
-languageModel.features[types.gender].addImporter(importerName)
+__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.gender).addImporter(importerName)
     .map('masculine feminine',
-  [ languageModel.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_MASCULINE],
-    languageModel.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_FEMININE]
+  [ __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.gender)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_MASCULINE],
+    __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.gender)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_FEMININE]
   ]);
-languageModel.features[types.tense].addImporter(importerName)
-    .map('future_perfect', languageModel.features[types.tense][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE_PERFECT]);
+__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.tense).addImporter(importerName)
+    .map('future_perfect', __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.tense)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE_PERFECT]);
 const footnotes = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](types.footnote, [], __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_LATIN);
 
 // endregion Definition of grammatical features
@@ -6676,11 +6615,11 @@ class LatinLanguageDataset extends LanguageDataset {
       }
 
       let features = [partOfSpeech,
-        languageModel.features[types.number].getFromImporter('csv', data[i][1]),
-        languageModel.features[types.grmCase].getFromImporter('csv', data[i][2]),
-        languageModel.features[types.declension].getFromImporter('csv', data[i][3]),
-        languageModel.features[types.gender].getFromImporter('csv', data[i][4]),
-        languageModel.features[types.type].getFromImporter('csv', data[i][5])];
+        this.model.getFeatureType(types.number).getFromImporter('csv', data[i][1]),
+        this.model.getFeatureType(types.grmCase).getFromImporter('csv', data[i][2]),
+        this.model.getFeatureType(types.declension).getFromImporter('csv', data[i][3]),
+        this.model.getFeatureType(types.gender).getFromImporter('csv', data[i][4]),
+        this.model.getFeatureType(types.type).getFromImporter('csv', data[i][5])];
       if (data[i][6]) {
         // There can be multiple footnote indexes separated by spaces
         let indexes = data[i][6].split(' ').map(function (index) {
@@ -6703,19 +6642,19 @@ class LatinLanguageDataset extends LanguageDataset {
       // TODO read a headword into a principalPars array
 //  if (data[i][1]) { }
       if (data[i][2]) {
-        features.push(languageModel.features[types.grmClass].getFromImporter('csv', data[i][2]));
+        features.push(this.model.getFeatureType(types.grmClass).getFromImporter('csv', data[i][2]));
       }
       if (data[i][3]) {
-        features.push(languageModel.features[types.person].getFromImporter('csv', data[i][3]));
+        features.push(this.model.getFeatureType(types.person).getFromImporter('csv', data[i][3]));
       }
       if (data[i][4]) {
-        features.push(languageModel.features[types.number].getFromImporter('csv', data[i][4]));
+        features.push(this.model.getFeatureType(types.number).getFromImporter('csv', data[i][4]));
       }
       if (data[i][5]) {
-        features.push(languageModel.features[types.case].getFromImporter('csv', data[i][5]));
+        features.push(this.model.getFeatureType(types.case).getFromImporter('csv', data[i][5]));
       }
       if (data[i][6]) {
-        features.push(languageModel.features[types.type].getFromImporter('csv', data[i][6]));
+        features.push(this.model.getFeatureType(types.type).getFromImporter('csv', data[i][6]));
       }
       let form = data[i][7] ? data[i][7] : '';
 
@@ -6748,7 +6687,7 @@ class LatinLanguageDataset extends LanguageDataset {
       let columns = [types.conjugation, types.voice, types.mood, types.tense, types.number, types.person, types.case, types.type];
       columns.forEach((c, j) => {
         try {
-          features.push(languageModel.features[c].getFromImporter('csv', data[i][j + 1]));
+          features.push(this.model.getFeatureType(c).getFromImporter('csv', data[i][j + 1]));
         } catch (e) {
           // ignore empty or non-parsable values
         }
@@ -6757,7 +6696,7 @@ class LatinLanguageDataset extends LanguageDataset {
       let grammartype = data[i][7];
       // Type information can be empty if no ending is provided
       if (grammartype) {
-        features.push(languageModel.features[types.type].getFromImporter('csv', grammartype));
+        features.push(this.model.getFeatureType(types.type).getFromImporter('csv', grammartype));
       }
       // Footnotes
       if (data[i][9]) {
@@ -6787,7 +6726,7 @@ class LatinLanguageDataset extends LanguageDataset {
       let columns = [types.conjugation, types.voice, types.mood, types.tense, types.number, types.person, types.case, types.type];
       columns.forEach((c, j) => {
         try {
-          features.push(languageModel.features[c].getFromImporter('csv', data[i][j + 1]));
+          features.push(this.model.getFeatureType(c).getFromImporter('csv', data[i][j + 1]));
         } catch (e) {
           // ignore empty or non-parsable values
         }
@@ -6796,7 +6735,7 @@ class LatinLanguageDataset extends LanguageDataset {
       let grammartype = data[i][7];
       // Type information can be empty if no ending is provided
       if (grammartype) {
-        features.push(languageModel.features[types.type].getFromImporter('csv', grammartype));
+        features.push(this.model.getFeatureType(types.type).getFromImporter('csv', grammartype));
       }
       this.addItem(suffix, LanguageDataset.SUFFIX, features);
     }
@@ -6818,7 +6757,7 @@ class LatinLanguageDataset extends LanguageDataset {
       let columns = [types.conjugation, types.voice, types.mood, types.tense, types.number, types.person, types.case, types.type];
       columns.forEach((c, j) => {
         try {
-          features.push(languageModel.features[c].getFromImporter('csv', data[i][j + 1]));
+          features.push(this.model.getFeatureType(c).getFromImporter('csv', data[i][j + 1]));
         } catch (e) {
           // ignore empty or non-parsable values
         }
@@ -6827,7 +6766,7 @@ class LatinLanguageDataset extends LanguageDataset {
       let grammartype = data[i][7];
       // Type information can be empty if no ending is provided
       if (grammartype) {
-        features.push(languageModel.features[types.type].getFromImporter('csv', grammartype));
+        features.push(this.model.getFeatureType(types.type).getFromImporter('csv', grammartype));
       }
       this.addItem(suffix, LanguageDataset.SUFFIX, features);
     }
@@ -6843,21 +6782,21 @@ class LatinLanguageDataset extends LanguageDataset {
 
       // Lemma,PrincipalParts,Form,Voice,Mood,Tense,Number,Person,Footnote
       let features = [partOfSpeech,
-        new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](types.word, [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */].UNRESTRICTED_VALUE], languageModel.toCode()).getFromImporter('csv', lemma)];
+        new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](types.word, [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */].UNRESTRICTED_VALUE], this.languageID).getFromImporter('csv', lemma)];
       if (data[i][3]) {
-        features.push(languageModel.features[types.voice].getFromImporter('csv', data[i][3]));
+        features.push(this.model.getFeatureType(types.voice).getFromImporter('csv', data[i][3]));
       }
       if (data[i][4]) {
-        features.push(languageModel.features[types.mood].getFromImporter('csv', data[i][4]));
+        features.push(this.model.getFeatureType(types.mood).getFromImporter('csv', data[i][4]));
       }
       if (data[i][5]) {
-        features.push(languageModel.features[types.tense].getFromImporter('csv', data[i][5]));
+        features.push(this.model.getFeatureType(types.tense).getFromImporter('csv', data[i][5]));
       }
       if (data[i][6]) {
-        features.push(languageModel.features[types.number].getFromImporter('csv', data[i][6]));
+        features.push(this.model.getFeatureType(types.number).getFromImporter('csv', data[i][6]));
       }
       if (data[i][7]) {
-        features.push(languageModel.features[types.person].getFromImporter('csv', data[i][7]));
+        features.push(this.model.getFeatureType(types.person).getFromImporter('csv', data[i][7]));
       }
 
       // Footnotes
@@ -6886,28 +6825,28 @@ class LatinLanguageDataset extends LanguageDataset {
     let footnotes;
 
     // Nouns
-    partOfSpeech = languageModel.features[types.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_NOUN];
+    partOfSpeech = this.model.getFeatureType(types.part)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_NOUN];
     suffixes = papaparse.parse(nounSuffixesCSV, {});
     this.addSuffixes(partOfSpeech, suffixes.data);
     footnotes = papaparse.parse(nounFootnotesCSV, {});
     this.addFootnotes(partOfSpeech, footnotes.data);
 
     // Pronouns
-    partOfSpeech = languageModel.features[types.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_PRONOUN];
+    partOfSpeech = this.model.getFeatureType(types.part)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_PRONOUN];
     forms = papaparse.parse(pronounFormsCSV, {});
     this.addPronounForms(partOfSpeech, forms.data);
     footnotes = papaparse.parse(pronounFootnotesCSV, {});
     this.addFootnotes(partOfSpeech, footnotes.data);
 
     // Adjectives
-    partOfSpeech = languageModel.features[types.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_ADJECTIVE];
+    partOfSpeech = this.model.getFeatureType(types.part)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_ADJECTIVE];
     suffixes = papaparse.parse(adjectiveSuffixesCSV, {});
     this.addSuffixes(partOfSpeech, suffixes.data);
     footnotes = papaparse.parse(adjectiveFootnotesCSV, {});
     this.addFootnotes(partOfSpeech, footnotes.data);
 
     // Verbs
-    partOfSpeech = languageModel.features[types.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_VERB];
+    partOfSpeech = this.model.getFeatureType(types.part)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_VERB];
     suffixes = papaparse.parse(verbSuffixesCSV, {});
     this.addVerbSuffixes(partOfSpeech, suffixes.data);
     footnotes = papaparse.parse(verbFootnotesCSV, {});
@@ -6918,12 +6857,12 @@ class LatinLanguageDataset extends LanguageDataset {
     this.addFootnotes(partOfSpeech, footnotes.data);
 
     // Verb Participles
-    partOfSpeech = languageModel.features[types.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_VERB_PARTICIPLE];
+    partOfSpeech = this.model.getFeatureType(types.part)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_VERB_PARTICIPLE];
     suffixes = papaparse.parse(verbParticipleSuffixesCSV, {});
     this.addVerbParticipleSuffixes(partOfSpeech, suffixes.data);
 
     // Verb Supine
-    partOfSpeech = languageModel.features[types.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_SUPINE];
+    partOfSpeech = this.model.getFeatureType(types.part)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_SUPINE];
     suffixes = papaparse.parse(verbSupineSuffixesCSV, {});
     this.addVerbSupineSuffixes(partOfSpeech, suffixes.data);
     return this
@@ -6992,7 +6931,6 @@ var pronounFormsCSV$1 = "Form,Headword,Class,Person,Number,Case,Gender,Type,Prim
 import adjectiveFootnotesCSV from './data/adjective/footnotes.csv';
 import verbSuffixesCSV from './data/verb/suffixes.csv';
 import verbFootnotesCSV from './data/verb/footnotes.csv'; */
-let languageModel$1 = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["h" /* GreekLanguageModel */]();
 // Create a language data set that will keep all language-related information
 // let dataSet = new LanguageDataset(Constants.LANG_GREEK)
 let fTypes = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types;
@@ -7043,11 +6981,11 @@ class GreekLanguageDataset extends LanguageDataset {
 
       let primary = false;
       let features = [partOfSpeech,
-        languageModel$1.features[fTypes.number].getFromImporter(impName, item[n.number]),
-        languageModel$1.features[fTypes.grmCase].getFromImporter(impName, item[n.grmCase]),
-        languageModel$1.features[fTypes.declension].getFromImporter(impName, item[n.declension]),
-        languageModel$1.features[fTypes.gender].getFromImporter(impName, item[n.gender]),
-        languageModel$1.features[fTypes.type].getFromImporter(impName, item[n.type])];
+        this.model.getFeatureType(fTypes.number).getFromImporter(impName, item[n.number]),
+        this.model.getFeatureType(fTypes.grmCase).getFromImporter(impName, item[n.grmCase]),
+        this.model.getFeatureType(fTypes.declension).getFromImporter(impName, item[n.declension]),
+        this.model.getFeatureType(fTypes.gender).getFromImporter(impName, item[n.gender]),
+        this.model.getFeatureType(fTypes.type).getFromImporter(impName, item[n.type])];
       if (item[n.primary] === 'primary') {
         primary = true;
       }
@@ -7106,15 +7044,15 @@ class GreekLanguageDataset extends LanguageDataset {
 
       if (item[n.hdwd]) {
         features.push(
-          new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](fTypes.word, [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */].UNRESTRICTED_VALUE], languageModel$1.sourceLanguage).getFromImporter(impName, item[n.hdwd])
+          new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](fTypes.word, [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */].UNRESTRICTED_VALUE], this.languageID).getFromImporter(impName, item[n.hdwd])
         );
       }
-      if (item[n.grmClass]) { features.push(languageModel$1.features[fTypes.grmClass].getFromImporter(impName, item[n.grmClass])); }
-      if (item[n.person]) { features.push(languageModel$1.features[fTypes.person].getFromImporter(impName, item[n.person])); }
-      if (item[n.number]) { features.push(languageModel$1.features[fTypes.number].getFromImporter(impName, item[n.number])); }
-      if (item[n.grmCase]) { features.push(languageModel$1.features[fTypes.grmCase].getFromImporter(impName, item[n.grmCase])); }
-      if (item[n.gender]) { features.push(languageModel$1.features[fTypes.gender].getFromImporter(impName, item[n.gender])); }
-      if (item[n.type]) { features.push(languageModel$1.features[fTypes.type].getFromImporter(impName, item[n.type])); }
+      if (item[n.grmClass]) { features.push(this.model.getFeatureType(fTypes.grmClass).getFromImporter(impName, item[n.grmClass])); }
+      if (item[n.person]) { features.push(this.model.getFeatureType(fTypes.person).getFromImporter(impName, item[n.person])); }
+      if (item[n.number]) { features.push(this.model.getFeatureType(fTypes.number).getFromImporter(impName, item[n.number])); }
+      if (item[n.grmCase]) { features.push(this.model.getFeatureType(fTypes.grmCase).getFromImporter(impName, item[n.grmCase])); }
+      if (item[n.gender]) { features.push(this.model.getFeatureType(fTypes.gender).getFromImporter(impName, item[n.gender])); }
+      if (item[n.type]) { features.push(this.model.getFeatureType(fTypes.type).getFromImporter(impName, item[n.type])); }
 
       let primary = (item[n.primary] === 'primary');
 
@@ -7150,14 +7088,14 @@ class GreekLanguageDataset extends LanguageDataset {
     let forms;
 
     // Nouns
-    let partOfSpeech = languageModel$1.features[fTypes.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_NOUN];
+    let partOfSpeech = this.model.getFeatureType(fTypes.part)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_NOUN];
     let suffixes = papaparse.parse(nounSuffixesCSV$1, {});
     this.addSuffixes(partOfSpeech, suffixes.data);
     let footnotes = papaparse.parse(nounFootnotesCSV$1, {});
     this.addFootnotes(partOfSpeech, footnotes.data);
 
     // Pronouns
-    partOfSpeech = languageModel$1.features[fTypes.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_PRONOUN];
+    partOfSpeech = this.model.getFeatureType(fTypes.part)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_PRONOUN];
     forms = papaparse.parse(pronounFormsCSV$1, {});
     this.addPronounForms(partOfSpeech, forms.data);
     return this
@@ -11058,24 +10996,25 @@ class LatinView extends View {
   constructor (inflectionData, messages) {
     super(inflectionData, messages);
     this.languageModel = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */](); // TODO: Do we really need to create it every time?
-    this.language_features = this.languageModel.features;
+    this.model = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */];
+    this.language_features = this.model.features;
     // limit regular verb moods
     this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood] =
       new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood,
         [ __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].MOOD_INDICATIVE,
           __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].MOOD_SUBJUNCTIVE
-        ], this.languageModel.toCode());
+        ], this.model.languageID);
 
         /*
         Default grammatical features of a view. It child views need to have different feature values, redefine
         those values in child objects.
          */
     this.features = {
-      numbers: new GroupFeatureType(this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number], 'Number'),
-      cases: new GroupFeatureType(this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase], 'Case'),
-      declensions: new GroupFeatureType(this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension], 'Declension'),
-      genders: new GroupFeatureType(this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender], 'Gender'),
-      types: new GroupFeatureType(this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.type], 'Type')
+      numbers: new GroupFeatureType(this.model.getFeatureType(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.number), 'Number'),
+      cases: new GroupFeatureType(this.model.getFeatureType(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase), 'Case'),
+      declensions: new GroupFeatureType(this.model.getFeatureType(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.declension), 'Declension'),
+      genders: new GroupFeatureType(this.model.getFeatureType(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.gender), 'Gender'),
+      types: new GroupFeatureType(this.model.getFeatureType(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.type), 'Type')
     };
     this.features.declensions.getTitle = LatinView.getDeclensionTitle;
   }
@@ -11085,7 +11024,7 @@ class LatinView extends View {
    * @return {symbol}
    */
   static get languageID () {
-    return __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_LATIN
+    return __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].languageID
   }
 
     /*
@@ -11531,12 +11470,12 @@ class LatinImperativeView extends LatinVerbMoodView {
     this.name = 'imperative';
     this.title = 'Imperative';
     this.features.moods = new GroupFeatureType(
-      new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood, [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].MOOD_IMPERATIVE], this.languageModel.toCode()),
+      new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood, [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].MOOD_IMPERATIVE], this.model.languageID),
       'Mood');
-    this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person] = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person, [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_2ND, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_3RD], this.languageModel.toCode());
+    this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person] = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person, [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_2ND, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_3RD], this.model.languageID);
     this.features.persons = new GroupFeatureType(this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.person], 'Person');
     this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense] = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense,
-      [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_PRESENT, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE], this.languageModel.toCode());
+      [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_PRESENT, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE], this.model.languageID);
     this.features.tenses = new GroupFeatureType(this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense], 'Tense');
     this.createTable();
     this.table.suffixCellFilter = LatinImperativeView.suffixCellFilter;
@@ -11595,10 +11534,10 @@ class LatinSupineView extends LatinView {
     this.name = 'supine';
     this.title = 'Supine';
     this.features.moods = new GroupFeatureType(
-      new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood, [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].MOOD_SUPINE], this.languageModel.toCode()),
+      new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood, [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].MOOD_SUPINE], this.model.languageID),
       'Mood');
     this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase] = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase,
-      [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].CASE_ACCUSATIVE, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].CASE_ABLATIVE], this.languageModel.toCode());
+      [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].CASE_ACCUSATIVE, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].CASE_ABLATIVE], this.model.languageID);
     this.features = {
       cases: new GroupFeatureType(this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.grmCase], 'Case'),
       voices: new GroupFeatureType(this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.voice], 'Voice'),
@@ -11646,7 +11585,7 @@ class LatinVerbParticipleView extends LatinView {
     this.name = 'participle';
     this.title = 'Participle';
     this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense] = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense,
-      [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_PRESENT, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_PERFECT, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE], this.languageModel.toCode());
+      [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_PRESENT, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_PERFECT, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE], this.model.languageID);
     this.features = {
       tenses: new GroupFeatureType(this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense], 'Tenses'),
       voices: new GroupFeatureType(this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.voice], 'Voice'),
@@ -11693,10 +11632,10 @@ class LatinInfinitiveView extends LatinVerbMoodView {
     this.name = 'infinitive';
     this.title = 'Infinitive';
     this.features.moods = new GroupFeatureType(
-      new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood, [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].MOOD_INFINITIVE], this.languageModel.toCode()),
+      new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood, [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].MOOD_INFINITIVE], this.model.languageID),
       'Mood');
     this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense] = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense,
-      [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_PRESENT, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_PERFECT, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE], this.languageModel.toCode());
+      [__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_PRESENT, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_PERFECT, __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE], this.model.languageID);
     this.features.tenses = new GroupFeatureType(this.language_features[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.tense], 'Tense');
     this.createTable();
     this.table.suffixCellFilter = LatinInfinitiveView.suffixCellFilter;
@@ -12106,10 +12045,12 @@ const LANG_UNIT_WORD = Symbol('word');
 
 const LANG_DIR_LTR = Symbol('ltr');
 const LANG_DIR_RTL = Symbol('rtl');
+const LANG_UNDEFINED = Symbol('undefined');
 const LANG_LATIN = Symbol('latin');
 const LANG_GREEK = Symbol('greek');
 const LANG_ARABIC = Symbol('arabic');
 const LANG_PERSIAN = Symbol('persian');
+const STR_LANG_CODE_UNDEFINED = 'undefined';
 const STR_LANG_CODE_LAT = 'lat';
 const STR_LANG_CODE_LA = 'la';
 const STR_LANG_CODE_GRC = 'grc';
@@ -12149,9 +12090,9 @@ const GEND_NEUTER = 'neuter';
 
 
 // comparative
-const COMP_POSITIVE = 'positive';
-const COMP_COMPARITIVE = 'comparative';
-const COMP_SUPERLATIVE = 'superlative';
+
+
+
 // case
 
 const CASE_ABLATIVE = 'ablative';
@@ -12387,15 +12328,111 @@ class InflectionGroup {
  * @class  LanguageModel is the base class for language-specific behavior
  */
 class LanguageModel {
-  /**
-   */
   constructor () {
-    this.sourceLanguage = null;
-    this.contextForward = 0;
-    this.context_backward = 0;
-    this.direction = LANG_DIR_LTR;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.codes = [];
+    // This is just to avoid JavaScript Standard error on `context_backward` getter name. Don't need a constructor otherwise
+    // TODO: `contextBackward` shall be used instead of `context_backward` wherever it is used
+    this.context_backward = LanguageModel.contextBackward;
+  }
+
+  static get contextForward () { return 0 }
+  static get contextBackward () { return 0 }
+  static get direction () { return LANG_DIR_LTR }
+  static get baseUnit () { return LANG_UNIT_WORD }
+
+  /**
+   * @deprecated
+   */
+  get contextForward () {
+    console.warn(`Please use static "contextForward" instead`);
+    return this.constructor.contextForward
+  }
+
+  /**
+   * @deprecated
+   */
+  get contextBackward () {
+    console.warn(`Please use static "contextBackward" instead`);
+    return this.constructor.contextBackward
+  }
+
+  /**
+   * @deprecated
+   */
+  get direction () {
+    console.warn(`Please use static "direction" instead`);
+    return this.constructor.direction
+  }
+
+  /**
+   * @deprecated
+   */
+  get baseUnit () {
+    console.warn(`Please use static "baseUnit" instead`);
+    return this.constructor.baseUnit
+  }
+
+  /**
+   * @deprecated
+   */
+  get features () {
+    console.warn(`Please use individual "getFeatureType" or static "features" instead`);
+    return this.constructor.features
+  }
+
+  static get features () {
+    let features = {};
+    for (const featureName of this.featureValues.keys()) {
+      features[featureName] = this.getFeatureType(featureName);
+    }
+    return features
+  }
+
+  static get languageID () {
+    return LANG_UNDEFINED
+  }
+
+  static get languageCode () {
+    return STR_LANG_CODE_UNDEFINED
+  }
+
+  /**
+   * Returns an array of language codes that represents the language.
+   * @return {String[]} An array of language codes that matches the language.
+   */
+  static get languageCodes () {
+    return []
+  }
+
+  static get codes () {
+    console.warn(`Use static "languageCodes" instead`);
+    return this.languageCodes
+  }
+
+  /**
+   * @deprecated
+   * @return {String[]}
+   */
+  get codes () {
+    console.warn(`Please use a static version of "codes" instead`);
+    return this.constructor.languageCodes
+  }
+
+  /**
+   * @deprecated
+   * @return {string}
+   */
+  toCode () {
+    console.warn(`Please use a static "languageCode" instead`);
+    return this.constructor.languageCode
+  }
+
+  /**
+   * @deprecated
+   * @return {string}
+   */
+  static toCode () {
+    console.warn(`Please use a static "languageCode" instead`);
+    return this.languageCode
   }
 
   static get featureValues () {
@@ -12518,64 +12555,54 @@ class LanguageModel {
     ])
   }
 
+  /**
+   * @deprecated
+   * @return {symbol} Returns a language ID
+   */
+  static get sourceLanguage () {
+    console.warn(`Please use languageID directly`);
+    return this.languageID
+  }
+
+  /**
+   * @deprecated
+   * @return {symbol} Returns a language ID
+   */
+  get sourceLanguage () {
+    console.warn(`Please use languageID directly`);
+    return this.constructor.languageID
+  }
+
+  static getFeatureType (name) {
+    let featureValues = this.featureValues;
+    if (featureValues.has(name)) {
+      return new FeatureType$1(name, featureValues.get(name), this.languageID)
+    } else {
+      throw new Error(`Feature "${name}" is not defined`)
+    }
+  }
+
   _initializeFeatures () {
     let features = {};
-    let code = this.toCode();
-    features[Feature$1.types.part] = new FeatureType$1(Feature$1.types.part,
-      [POFS_ADVERB,
-        POFS_ADVERBIAL,
-        POFS_ADJECTIVE,
-        POFS_ARTICLE,
-        POFS_CONJUNCTION,
-        POFS_EXCLAMATION,
-        POFS_INTERJECTION,
-        POFS_NOUN,
-        POFS_NUMERAL,
-        POFS_PARTICLE,
-        POFS_PREFIX,
-        POFS_PREPOSITION,
-        POFS_PRONOUN,
-        POFS_SUFFIX,
-        POFS_SUPINE,
-        POFS_VERB,
-        POFS_VERB_PARTICIPLE], code);
-    features[Feature$1.types.gender] = new FeatureType$1(Feature$1.types.gender,
-      [GEND_MASCULINE, GEND_FEMININE, GEND_NEUTER], code);
-    features[Feature$1.types.type] = new FeatureType$1(Feature$1.types.type,
-      [TYPE_REGULAR, TYPE_IRREGULAR], code);
-    features[Feature$1.types.person] = new FeatureType$1(Feature$1.types.person,
-      [ORD_1ST, ORD_2ND, ORD_3RD], code);
-    // some general, non-language specific grammatical features
-    features[Feature$1.types.age] = new FeatureType$1(Feature$1.types.age,
-      [FeatureType$1.UNRESTRICTED_VALUE], code);
-    features[Feature$1.types.area] = new FeatureType$1(Feature$1.types.area,
-      [FeatureType$1.UNRESTRICTED_VALUE], code);
-    features[Feature$1.types.source] = new FeatureType$1(Feature$1.types.source,
-      [FeatureType$1.UNRESTRICTED_VALUE], code);
-    features[Feature$1.types.frequency] = new FeatureType$1(Feature$1.types.frequency,
-      [FeatureType$1.UNRESTRICTED_VALUE], code);
-    features[Feature$1.types.geo] = new FeatureType$1(Feature$1.types.geo,
-      [FeatureType$1.UNRESTRICTED_VALUE], code);
-    features[Feature$1.types.pronunciation] = new FeatureType$1(Feature$1.types.pronunciation,
-      [FeatureType$1.UNRESTRICTED_VALUE], code);
-    features[Feature$1.types.kind] = new FeatureType$1(Feature$1.types.kind,
-      [FeatureType$1.UNRESTRICTED_VALUE], code);
-    features[Feature$1.types.comparison] = new FeatureType$1(Feature$1.types.comparison,
-      [COMP_POSITIVE, COMP_SUPERLATIVE, COMP_COMPARITIVE], code);
-    features[Feature$1.types.morph] = new FeatureType$1(Feature$1.types.morph,
-      [FeatureType$1.UNRESTRICTED_VALUE], code);
-    features[Feature$1.types.stemtype] = new FeatureType$1(Feature$1.types.stemtype,
-      [FeatureType$1.UNRESTRICTED_VALUE], code);
-    features[Feature$1.types.derivtype] = new FeatureType$1(Feature$1.types.derivtype,
-      [FeatureType$1.UNRESTRICTED_VALUE], code);
+    for (const featureName of this.constructor.featureValues.keys()) {
+      features[featureName] = this.constructor.getFeatureType(featureName);
+    }
     return features
+  }
+
+  /**
+   * @deprecated
+   */
+  grammarFeatures () {
+    console.warn(`Please use a static version of "grammarFeatures" instead`);
+    return this.constructor.grammarFeatures()
   }
 
   /**
    * Identify the morphological features which should be linked to a grammar.
    * @returns {String[]} Array of Feature types
    */
-  grammarFeatures () {
+  static grammarFeatures () {
     return []
   }
 
@@ -12583,7 +12610,7 @@ class LanguageModel {
    * Check to see if this language tool can produce an inflection table display
    * for the current node
    */
-  canInflect (node) {
+  static canInflect (node) {
     return false
   }
 
@@ -12594,7 +12621,7 @@ class LanguageModel {
    * @type Boolean
    */
   static supportsLanguage (code) {
-    return this.codes.includes[code]
+    return this.languageCodes.includes[code]
   }
 
   /**
@@ -12614,30 +12641,40 @@ class LanguageModel {
    * @param {string} preceding optional preceding word
    * @param {string} following optional following word
    * @param {string} encoding optional encoding name to filter the response to
-   * @returns an array of alternate encodinges
+   * @returns {Array} an array of alternate encodings
    */
-  alternateWordEncodings (word, preceding = null, folloiwng = null, encoding = null) {
+  static alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
     return []
+  }
+
+  alternateWordEncodings (word, preceding, following, encoding) {
+    console.warn(`Please use static "alternateWordEncodings" instead`);
+    return this.constructor.alternateWordEncodings(word, preceding, following, encoding)
   }
 
   /**
    * Get a list of valid puncutation for this language
    * @returns {String} a string containing valid puncutation symbols
    */
-  getPunctuation () {
+  static getPunctuation () {
     return '.,;:!?\'"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r'
   }
 
+  /**
+   * @deprecated
+   * @return {String}
+   */
+  getPunctuation () {
+    console.warn(`Please use a static version of "getPunctuation"`);
+    return this.constructor.getPunctuation()
+  }
+
   toString () {
-    return String(this.sourceLanguage)
+    return String(this.constructor.languageCode)
   }
 
   isEqual (model) {
-    return this.sourceLanguage === model.sourceLanguage
-  }
-
-  toCode () {
-    return null
+    return LanguageModelFactory$1.compareLanguages(this.languageID, model.languageID)
   }
 
   /*
@@ -12648,22 +12685,13 @@ class LanguageModel {
    */
 
   /**
-   * Returns an array of language codes that represents the language.
-   * @return {String[]} An array of language codes that matches the language.
-   */
-  static get codes () {
-    return []
-  }
-
-  /**
-   * Checks wither a language has a particular language code in its list of codes
+   * Checks whether a language has a particular language code in its list of codes
    * @param {String} languageCode - A language code to check
-   * @param {String[]} codes - Array of language codes a specific language has
-   * @return {boolean} Wither this language code exists in a language code list
+   * @return {boolean} Whether this language code exists in a language code list
    */
-  static hasCodeInList (languageCode, codes) {
-    if (LanguageModel.isLanguageCode(languageCode)) {
-      return codes.includes(languageCode)
+  static hasCode (languageCode) {
+    if (this.isLanguageCode(languageCode)) {
+      return this.languageCodes.includes(languageCode)
     } else {
       throw new Error(`Format of a "${languageCode}" is incorrect`)
     }
@@ -12685,6 +12713,15 @@ class LanguageModel {
    */
   static isLanguageCode (language) {
     return !LanguageModel.isLanguageID(language)
+  }
+
+  /**
+   * @deprecated
+   * @param node
+   */
+  canInflect (node) {
+    console.warn(`Please use a static version of "canInflect" instead`);
+    return this.constructor.canInflect(node)
   }
 
   /**
@@ -12818,92 +12855,108 @@ class LanguageModel {
  * @class  LatinLanguageModel is the lass for Latin specific behavior
  */
 class LatinLanguageModel$1 extends LanguageModel {
-   /**
-   */
-  constructor () {
-    super();
-    this.sourceLanguage = LatinLanguageModel$1.sourceLanguage; // For compatibility, should use a static method instead
-    this.contextForward = 0;
-    this.contextBackward = 0;
-    this.direction = LANG_DIR_LTR;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.codes = LatinLanguageModel$1.codes; // To keep compatibility with existing code
-    this.features = this._initializeFeatures();
-  }
+  static get languageID () { return LANG_LATIN }
+  static get languageCode () { return STR_LANG_CODE_LAT }
+  static get languageCodes () { return [STR_LANG_CODE_LA, STR_LANG_CODE_LAT] }
+  static get contextForward () { return 0 }
+  static get contextBackward () { return 0 }
+  static get direction () { return LANG_DIR_LTR }
+  static get baseUnit () { return LANG_UNIT_WORD }
 
-  static get sourceLanguage () {
-    return LANG_LATIN
-  }
-
-  static get codes () {
-    return [STR_LANG_CODE_LA, STR_LANG_CODE_LAT]
-  }
-
-  /**
-   * Checks wither a language has a particular language code in its list of codes
-   * @param {String} languageCode - A language code to check
-   * @return {boolean} Wither this language code exists in a language code list
-   */
-  static hasCode (languageCode) {
-    return LanguageModel.hasCodeInList(languageCode, LatinLanguageModel$1.codes)
-  }
-
-  _initializeFeatures () {
-    let features = super._initializeFeatures();
-    let code = this.toCode();
-    features[Feature$1.types.grmClass] = new FeatureType$1(Feature$1.types.grmClass,
-      [ CLASS_PERSONAL,
-        CLASS_REFLEXIVE,
-        CLASS_POSSESSIVE,
-        CLASS_DEMONSTRATIVE,
-        CLASS_RELATIVE,
-        CLASS_INTERROGATIVE
+  static get featureValues () {
+    /*
+    This could be a static variable, but then it will create a circular reference:
+    Feature -> LanguageModelFactory -> LanguageModel -> Feature
+     */
+    return new Map([
+      ...LanguageModel.featureValues,
+      [
+        Feature$1.types.grmClass,
+        [
+          CLASS_PERSONAL,
+          CLASS_REFLEXIVE,
+          CLASS_POSSESSIVE,
+          CLASS_DEMONSTRATIVE,
+          CLASS_RELATIVE,
+          CLASS_INTERROGATIVE
+        ]
       ],
-      code);
-    features[Feature$1.types.number] = new FeatureType$1(Feature$1.types.number, [NUM_SINGULAR, NUM_PLURAL], code);
-    features[Feature$1.types.grmCase] = new FeatureType$1(Feature$1.types.grmCase,
-      [ CASE_NOMINATIVE,
-        CASE_GENITIVE,
-        CASE_DATIVE,
-        CASE_ACCUSATIVE,
-        CASE_ABLATIVE,
-        CASE_LOCATIVE,
-        CASE_VOCATIVE
-      ], code);
-    features[Feature$1.types.declension] = new FeatureType$1(Feature$1.types.declension,
-      [ ORD_1ST, ORD_2ND, ORD_3RD, ORD_4TH, ORD_5TH ], code);
-    features[Feature$1.types.tense] = new FeatureType$1(Feature$1.types.tense,
-      [ TENSE_PRESENT,
-        TENSE_IMPERFECT,
-        TENSE_FUTURE,
-        TENSE_PERFECT,
-        TENSE_PLUPERFECT,
-        TENSE_FUTURE_PERFECT
-      ], code);
-    features[Feature$1.types.voice] = new FeatureType$1(Feature$1.types.voice, [VOICE_ACTIVE, VOICE_PASSIVE], code);
-    features[Feature$1.types.mood] = new FeatureType$1(Feature$1.types.mood,
-      [ MOOD_INDICATIVE,
-        MOOD_SUBJUNCTIVE,
-        MOOD_IMPERATIVE,
-        MOOD_PARTICIPLE,
-        MOOD_SUPINE,
-        MOOD_GERUNDIVE,
-        MOOD_PARTICIPLE,
-        MOOD_INFINITIVE
-      ], code);
-    features[Feature$1.types.conjugation] = new FeatureType$1(Feature$1.types.conjugation,
-      [ ORD_1ST,
-        ORD_2ND,
-        ORD_3RD,
-        ORD_4TH
-      ], code);
-    return features
+      [
+        Feature$1.types.number,
+        [
+          NUM_SINGULAR,
+          NUM_PLURAL
+        ]
+      ],
+      [
+        Feature$1.types.grmCase,
+        [
+          CASE_NOMINATIVE,
+          CASE_GENITIVE,
+          CASE_DATIVE,
+          CASE_ACCUSATIVE,
+          CASE_ABLATIVE,
+          CASE_LOCATIVE,
+          CASE_VOCATIVE
+        ]
+      ],
+      [
+        Feature$1.types.declension,
+        [
+          ORD_1ST,
+          ORD_2ND,
+          ORD_3RD,
+          ORD_4TH,
+          ORD_5TH
+        ]
+      ],
+      [
+        Feature$1.types.tense,
+        [
+          TENSE_PRESENT,
+          TENSE_IMPERFECT,
+          TENSE_FUTURE,
+          TENSE_PERFECT,
+          TENSE_PLUPERFECT,
+          TENSE_FUTURE_PERFECT
+        ]
+      ],
+      [
+        Feature$1.types.voice,
+        [
+          VOICE_ACTIVE,
+          VOICE_PASSIVE
+        ]
+      ],
+      [
+        Feature$1.types.mood,
+        [
+          MOOD_INDICATIVE,
+          MOOD_SUBJUNCTIVE,
+          MOOD_IMPERATIVE,
+          MOOD_PARTICIPLE,
+          MOOD_SUPINE,
+          MOOD_GERUNDIVE,
+          MOOD_PARTICIPLE,
+          MOOD_INFINITIVE
+        ]
+      ],
+      [
+        Feature$1.types.conjugation,
+        [
+          ORD_1ST,
+          ORD_2ND,
+          ORD_3RD,
+          ORD_4TH
+        ]
+      ]
+    ])
   }
 
   /**
    * @override LanguageModel#grammarFeatures
    */
-  grammarFeatures () {
+  static grammarFeatures () {
     // TODO this ideally might be grammar specific
     return [Feature$1.types.part, Feature$1.types.grmCase, Feature$1.types.mood, Feature$1.types.declension, Feature$1.types.tense]
   }
@@ -12912,7 +12965,7 @@ class LatinLanguageModel$1 extends LanguageModel {
    * Check to see if this language tool can produce an inflection table display
    * for the current node
    */
-  canInflect (node) {
+  static canInflect (node) {
     return true
   }
 
@@ -12946,17 +12999,8 @@ class LatinLanguageModel$1 extends LanguageModel {
    * Get a list of valid puncutation for this language
    * @returns {String} a string containing valid puncutation symbols
    */
-  getPunctuation () {
+  static getPunctuation () {
     return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
-  }
-
-  // For compatibility with existing code, can be replaced with a static version
-  toCode () {
-    return LatinLanguageModel$1.toCode()
-  }
-
-  static toCode () {
-    return STR_LANG_CODE_LAT
   }
 
   /**
@@ -12991,23 +13035,13 @@ class LatinLanguageModel$1 extends LanguageModel {
  * @class  LatinLanguageModel is the lass for Latin specific behavior
  */
 class GreekLanguageModel$1 extends LanguageModel {
-  /**
-   * @constructor
-   */
-  constructor () {
-    super();
-    this.sourceLanguage = GreekLanguageModel$1.sourceLanguage;
-    this.contextForward = 0;
-    this.contextBackward = 0;
-    this.direction = LANG_DIR_LTR;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.languageCodes = GreekLanguageModel$1.codes;
-    this.features = this._initializeFeatures();
-  }
-
-  static get languageID () {
-    return LANG_GREEK
-  }
+  static get languageID () { return LANG_GREEK }
+  static get languageCode () { return STR_LANG_CODE_GRC }
+  static get languageCodes () { return [STR_LANG_CODE_GRC] }
+  static get contextForward () { return 0 }
+  static get contextBackward () { return 0 }
+  static get direction () { return LANG_DIR_LTR }
+  static get baseUnit () { return LANG_UNIT_WORD }
 
   static get featureValues () {
     /*
@@ -13088,6 +13122,7 @@ class GreekLanguageModel$1 extends LanguageModel {
         ]
       ],
       [
+        // TODO full list of greek dialects
         Feature$1.types.dialect,
         [
           'attic',
@@ -13098,108 +13133,18 @@ class GreekLanguageModel$1 extends LanguageModel {
     ])
   }
 
-  static getFeatureType (name) {
-    let featureValues = GreekLanguageModel$1.featureValues;
-    if (featureValues.has(name)) {
-      return new FeatureType$1(name, featureValues.get(name), GreekLanguageModel$1.sourceLanguage)
-    } else {
-      throw new Error(`Feature "${name}" is not defined`)
-    }
-  }
-
-  _initializeFeatures () {
-    let features = super._initializeFeatures();
-    let code = this.toCode();
-    features[Feature$1.types.grmClass] = new FeatureType$1(Feature$1.types.grmClass,
-      [CLASS_DEMONSTRATIVE,
-        CLASS_GENERAL_RELATIVE,
-        CLASS_INDEFINITE,
-        CLASS_INTENSIVE,
-        CLASS_INTERROGATIVE,
-        CLASS_PERSONAL,
-        CLASS_POSSESSIVE,
-        CLASS_RECIPROCAL,
-        CLASS_REFLEXIVE,
-        CLASS_RELATIVE
-      ],
-      code);
-    features[Feature$1.types.number] = new FeatureType$1(Feature$1.types.number, [NUM_SINGULAR, NUM_PLURAL, NUM_DUAL], code);
-    features[Feature$1.types.grmCase] = new FeatureType$1(Feature$1.types.grmCase,
-      [CASE_NOMINATIVE,
-        CASE_GENITIVE,
-        CASE_DATIVE,
-        CASE_ACCUSATIVE,
-        CASE_VOCATIVE
-      ], code);
-    features[Feature$1.types.declension] = new FeatureType$1(Feature$1.types.declension,
-      [ORD_1ST, ORD_2ND, ORD_3RD], code);
-    features[Feature$1.types.tense] = new FeatureType$1(Feature$1.types.tense,
-      [TENSE_PRESENT,
-        TENSE_IMPERFECT,
-        TENSE_FUTURE,
-        TENSE_PERFECT,
-        TENSE_PLUPERFECT,
-        TENSE_FUTURE_PERFECT,
-        TENSE_AORIST
-      ], code);
-    features[Feature$1.types.voice] = new FeatureType$1(Feature$1.types.voice,
-      [VOICE_PASSIVE,
-        VOICE_ACTIVE,
-        VOICE_MEDIOPASSIVE,
-        VOICE_MIDDLE
-      ], code);
-    features[Feature$1.types.mood] = new FeatureType$1(Feature$1.types.mood,
-      [MOOD_INDICATIVE,
-        MOOD_SUBJUNCTIVE,
-        MOOD_OPTATIVE,
-        MOOD_IMPERATIVE
-      ], code);
-    // TODO full list of greek dialects
-    features[Feature$1.types.dialect] = new FeatureType$1(Feature$1.types.dialect, ['attic', 'epic', 'doric'], code);
-    return features
-  }
-
-  /**
-   * @return {Symbol} Returns a language ID
-   */
-  static get sourceLanguage () {
-    return LANG_GREEK
-  }
-
-  static get codes () {
-    return [STR_LANG_CODE_GRC]
-  }
-
-  /**
-   * Checks wither a language has a particular language code in its list of codes
-   * @param {String} languageCode - A language code to check
-   * @return {boolean} Wither this language code exists in a language code list
-   */
-  static hasCode (languageCode) {
-    return LanguageModel.hasCodeInList(languageCode, GreekLanguageModel$1.codes)
-  }
-
-  // For compatibility with existing code, can be replaced with a static version
-  toCode () {
-    return GreekLanguageModel$1.toCode()
-  }
-
-  static toCode () {
-    return STR_LANG_CODE_GRC
-  }
-
   /**
    * Check to see if this language tool can produce an inflection table display
    * for the current node
    */
-  canInflect (node) {
+  static canInflect (node) {
     return false
   }
 
   /**
    * @override LanguageModel#grammarFeatures
    */
-  grammarFeatures () {
+  static grammarFeatures () {
     // TODO this ideally might be grammar specific
     return [Feature$1.types.part, Feature$1.types.grmCase, Feature$1.types.mood, Feature$1.types.declension, Feature$1.types.tense, Feature$1.types.voice]
   }
@@ -13223,7 +13168,7 @@ class GreekLanguageModel$1 extends LanguageModel {
   /**
    * @override LanguageModel#alternateWordEncodings
    */
-  alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
+  static alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
     // the original alpheios code used the following normalizations
     // 1. When looking up a lemma
     //    stripped vowel length
@@ -13271,7 +13216,7 @@ class GreekLanguageModel$1 extends LanguageModel {
    * Get a list of valid puncutation for this language
    * @returns {String} a string containing valid puncutation symbols
    */
-  getPunctuation () {
+  static getPunctuation () {
     return '.,;:!?\'"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r'
   }
 
@@ -13352,62 +13297,26 @@ class GreekLanguageModel$1 extends LanguageModel {
  * @class  LatinLanguageModel is the lass for Latin specific behavior
  */
 class ArabicLanguageModel extends LanguageModel {
-   /**
-   * @constructor
-   */
-  constructor () {
-    super();
-    this.sourceLanguage = ArabicLanguageModel.sourceLanguage;
-    this.contextForward = 0;
-    this.contextBackward = 0;
-    this.direction = LANG_DIR_RTL;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.languageCodes = ArabicLanguageModel.codes;
-    this._initializeFeatures();
-  }
-
-  _initializeFeatures () {
-    this.features = super._initializeFeatures();
-  }
-
-  static get sourceLanguage () {
-    return LANG_ARABIC
-  }
-
-  static get codes () {
-    return [STR_LANG_CODE_ARA, STR_LANG_CODE_AR]
-  }
-
-  // For compatibility with existing code, can be replaced with a static version
-  toCode () {
-    return ArabicLanguageModel.toCode()
-  }
-
-  static toCode () {
-    return STR_LANG_CODE_ARA
-  }
-
-  /**
-   * Checks wither a language has a particular language code in its list of codes
-   * @param {String} languageCode - A language code to check
-   * @return {boolean} Wither this language code exists in a language code list
-   */
-  static hasCode (languageCode) {
-    return LanguageModel.hasCodeInList(languageCode, ArabicLanguageModel.codes)
-  }
+  static get languageID () { return LANG_ARABIC }
+  static get languageCode () { return STR_LANG_CODE_ARA }
+  static get languageCodes () { return [STR_LANG_CODE_ARA, STR_LANG_CODE_AR] }
+  static get contextForward () { return 0 }
+  static get contextBackward () { return 0 }
+  static get direction () { return LANG_DIR_RTL }
+  static get baseUnit () { return LANG_UNIT_WORD }
 
   /**
    * Check to see if this language tool can produce an inflection table display
    * for the current node
    */
-  canInflect (node) {
+  static canInflect (node) {
     return false
   }
 
   /**
    * @override LanguageModel#alternateWordEncodings
    */
-  alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
+  static alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
     // tanwin (& tatweel) - drop FATHATAN, DAMMATAN, KASRATAN, TATWEEL
     let tanwin = word.replace(/[\u{064B}\u{064C}\u{064D}\u{0640}]/ug, '');
     // hamzas - replace ALEF WITH MADDA ABOVE, ALEF WITH HAMZA ABOVE/BELOW with ALEF
@@ -13439,7 +13348,7 @@ class ArabicLanguageModel extends LanguageModel {
    * Get a list of valid puncutation for this language
    * @returns {String} a string containing valid puncutation symbols
    */
-  getPunctuation () {
+  static getPunctuation () {
     return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
   }
 }
@@ -13448,55 +13357,19 @@ class ArabicLanguageModel extends LanguageModel {
  * @class  PersianLanguageModel is the lass for Persian specific behavior
  */
 class PersianLanguageModel extends LanguageModel {
-   /**
-   * @constructor
-   */
-  constructor () {
-    super();
-    this.sourceLanguage = PersianLanguageModel.sourceLanguage;
-    this.contextForward = 0;
-    this.contextBackward = 0;
-    this.direction = LANG_DIR_RTL;
-    this.baseUnit = LANG_UNIT_WORD;
-    this.languageCodes = PersianLanguageModel.codes;
-    this._initializeFeatures();
-  }
-
-  _initializeFeatures () {
-    this.features = super._initializeFeatures();
-  }
-
-  static get sourceLanguage () {
-    return LANG_PERSIAN
-  }
-
-  static get codes () {
-    return [STR_LANG_CODE_PER, STR_LANG_CODE_FAS, STR_LANG_CODE_FA, STR_LANG_CODE_FA_IR]
-  }
-
-  // For compatibility with existing code, can be replaced with a static version
-  toCode () {
-    return PersianLanguageModel.toCode()
-  }
-
-  static toCode () {
-    return STR_LANG_CODE_PER
-  }
-
-  /**
-   * Checks wither a language has a particular language code in its list of codes
-   * @param {String} languageCode - A language code to check
-   * @return {boolean} Wither this language code exists in a language code list
-   */
-  static hasCode (languageCode) {
-    return LanguageModel.hasCodeInList(languageCode, PersianLanguageModel.codes)
-  }
+  static get languageID () { return LANG_PERSIAN }
+  static get languageCode () { return STR_LANG_CODE_PER }
+  static get languageCodes () { return [STR_LANG_CODE_PER, STR_LANG_CODE_FAS, STR_LANG_CODE_FA, STR_LANG_CODE_FA_IR] }
+  static get contextForward () { return 0 }
+  static get contextBackward () { return 0 }
+  static get direction () { return LANG_DIR_RTL }
+  static get baseUnit () { return LANG_UNIT_WORD }
 
   /**
    * Check to see if this language tool can produce an inflection table display
    * for the current node
    */
-  canInflect (node) {
+  static canInflect (node) {
     return false
   }
 
@@ -13504,7 +13377,7 @@ class PersianLanguageModel extends LanguageModel {
    * Get a list of valid puncutation for this language
    * @returns {String} a string containing valid puncutation symbols
    */
-  getPunctuation () {
+  static getPunctuation () {
     return ".,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
   }
 }
@@ -13562,9 +13435,11 @@ class LanguageModelFactory$1 {
   static getLanguageIdFromCode (languageCode) {
     for (const languageModel of MODELS.values()) {
       if (languageModel.hasCode(languageCode)) {
-        return languageModel.sourceLanguage
+        return languageModel.languageID
       }
     }
+    // Noting found, return a Symbol with an undefined value (to keep return value type the same)
+    return LANG_UNDEFINED
   }
 
   /**
@@ -13574,10 +13449,12 @@ class LanguageModelFactory$1 {
    */
   static getLanguageCodeFromId (languageID) {
     for (const languageModel of MODELS.values()) {
-      if (languageModel.sourceLanguage === languageID) {
-        return languageModel.toCode()
+      if (languageModel.languageID === languageID) {
+        return languageModel.languageCode
       }
     }
+    // Noting found, return a string with an undefined value (to keep return value type the same)
+    return STR_LANG_CODE_UNDEFINED
   }
 
   /**
@@ -26461,12 +26338,12 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
     textSelector.languageCode = this.getLanguageCode(this.defaultLanguageCode)
     textSelector.languageID = __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(textSelector.languageCode)
     textSelector.model = __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageModel(this.languageID)
-    textSelector.language = __WEBPACK_IMPORTED_MODULE_2__text_selector__["a" /* default */].getLanguage(textSelector.languageCode)
+    // textSelector.language = TextSelector.getLanguage(textSelector.languageCode)
 
-    if (this.wordSeparator.has(textSelector.language.baseUnit)) {
-      textSelector = this.wordSeparator.get(textSelector.language.baseUnit)(textSelector)
+    if (this.wordSeparator.has(textSelector.model.baseUnit)) {
+      textSelector = this.wordSeparator.get(textSelector.model.baseUnit)(textSelector)
     } else {
-      console.warn(`No word separator function found for a "${textSelector.language.baseUnit}" base unit`)
+      console.warn(`No word separator function found for a "${textSelector.model.baseUnit}" base unit`)
     }
     return textSelector
   }
@@ -26521,7 +26398,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
     // clean string:
     //   convert punctuation to spaces
-    anchorText = anchorText.replace(new RegExp('[' + textSelector.language.getPunctuation() + ']', 'g'), ' ')
+    anchorText = anchorText.replace(new RegExp('[' + textSelector.model.getPunctuation() + ']', 'g'), ' ')
 
     // find word
     let wordStart = anchorText.lastIndexOf(' ', ro)
@@ -26557,7 +26434,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
     let contextStr = null
     let contextPos = 0
 
-    if (textSelector.language.contextForward || textSelector.language.contextBackward) {
+    if (textSelector.model.contextForward || textSelector.model.contextBackward) {
       let startstr = anchorText.substring(0, wordEnd)
       let endstr = anchorText.substring(wordEnd + 1, anchorText.length)
       let preWordlist = startstr.split(/\s+/)
@@ -26567,13 +26444,13 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
       // prior to the selected word
       // the selected word is the last item in the
       // preWordlist array
-      if (preWordlist.length > textSelector.language.contextBackward + 1) {
-        preWordlist = preWordlist.slice(preWordlist.length - (textSelector.language.contextBackward + 1))
+      if (preWordlist.length > textSelector.model.contextBackward + 1) {
+        preWordlist = preWordlist.slice(preWordlist.length - (textSelector.model.contextBackward + 1))
       }
       // limit to the requested # of context words
       // following to the selected word
-      if (postWordlist.length > textSelector.language.contextForward) {
-        postWordlist = postWordlist.slice(0, textSelector.language.contextForward)
+      if (postWordlist.length > textSelector.model.contextForward) {
+        postWordlist = postWordlist.slice(0, textSelector.model.contextForward)
       }
 
       /* TODO: should we put the punctuation back in to the
@@ -26686,7 +26563,7 @@ class TextSelector {
     this.languageCode = ''
     this.languageID = undefined
     this.model = undefined
-    this.language = undefined
+    // this.language = undefined
 
     this.start = 0
     this.end = 0
@@ -26723,7 +26600,7 @@ class TextSelector {
     let textSelector = new TextSelector()
     textSelector.text = jsonObject.text
     textSelector.languageCode = jsonObject.languageCode
-    textSelector.language = TextSelector.getLanguage(textSelector.languageCode)
+    // textSelector.language = TextSelector.getLanguage(textSelector.languageCode)
     return textSelector
   }
 
@@ -26740,9 +26617,9 @@ class TextSelector {
    * @param {string} languageCode - A default language code that will be used if language cannot be determined.
    * @return {LanguageModel} Language model of a selection's language
    */
-  static getLanguage (languageCode) {
-    return __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageForCode(languageCode)
-  }
+  /* static getLanguage (languageCode) {
+    return Models.LanguageModelFactory.getLanguageForCode(languageCode)
+  } */
 
   get textQuoteSelector () {
     return new __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__["a" /* default */]()
@@ -27632,10 +27509,10 @@ class ContentUIController {
     this.popup.popupData.defDataReady = hasFullDefs
   }
 
-  updateLanguage(currentLanguage) {
-    this.state.setItem('currentLanguage',currentLanguage)
-    this.panel.requestGrammar({ type: 'table-of-contents', value:'', languageID: __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(currentLanguage)})
-    this.panel.enableInflections(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageForCode(currentLanguage).canInflect())
+  updateLanguage (currentLanguage) {
+    this.state.setItem('currentLanguage', currentLanguage)
+    this.panel.requestGrammar({type: 'table-of-contents', value: '', languageID: __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageIdFromCode(currentLanguage)})
+    this.panel.enableInflections(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].getLanguageModel(currentLanguage).canInflect())
     console.log(`Current language is ${this.state.currentLanguage}`)
   }
 
