@@ -1,4 +1,5 @@
 import { LanguageModelFactory as LMF, Lexeme, Lemma, Homonym } from 'alpheios-data-models'
+import { LanguageDatasetFactory as LDF } from 'alpheios-inflection-tables'
 import Query from './query.js'
 
 export default class LexicalQuery extends Query {
@@ -7,7 +8,6 @@ export default class LexicalQuery extends Query {
     this.selector = selector
     this.ui = options.uiController
     this.maAdapter = options.maAdapter
-    this.langData = options.langData
     this.lexicons = options.lexicons
     this.langOpts = options.langOpts
     this.resourceOptions = options.resourceOptions
@@ -67,7 +67,8 @@ export default class LexicalQuery extends Query {
     // Update status info with data from a morphological analyzer
     this.ui.showStatusInfo(this.homonym.targetWord, this.homonym.languageID)
 
-    this.lexicalData = yield this.langData.getInflectionData(this.homonym)
+    console.log(`Before getting inflection data`)
+    this.lexicalData = yield LDF.getInflectionData(this.homonym)
     this.ui.addMessage(`Inflection data is ready`)
     this.ui.updateInflections(this.lexicalData, this.homonym)
 

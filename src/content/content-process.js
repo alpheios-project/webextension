@@ -28,7 +28,7 @@ export default class ContentProcess {
     this.messagingService = new MessagingService()
 
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
-    this.langData = new LanguageDataList().loadData()
+    // this.langData = new LanguageDataList().loadData()
     this.ui = new ContentUIController(this.state, this.options, this.resourceOptions)
   }
 
@@ -110,7 +110,7 @@ export default class ContentProcess {
           LexicalQuery.create(textSelector, {
             uiController: this.ui,
             maAdapter: this.maAdapter,
-            langData: this.langData,
+            // langData: this.langData,
             lexicons: Lexicons,
             resourceOptions: this.resourceOptions,
             langOpts: { [Constants.LANG_PERSIAN]: { lookupMorphLast: true } } // TODO this should be externalized
