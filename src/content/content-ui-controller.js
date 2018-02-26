@@ -2,16 +2,11 @@
 import {Lexeme, Feature, Definition, LanguageModelFactory, Constants} from 'alpheios-data-models'
 import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
 import Vue from 'vue/dist/vue' // Vue in a runtime + compiler configuration
-import Template from './template.htmlf'
 import TabScript from '../lib/content/tab-script'
-import Panel from './vue-components/panel.vue'
-import Popup from './vue-components/popup.vue'
+import {Panel, Popup, L10n, Locales, enUS, enGB} from 'alpheios-components'
+import Template from './template.htmlf'
 import { Grammars } from 'alpheios-res-client'
 import ResourceQuery from './queries/resource-query'
-import L10n from '../lib/l10n/l10n'
-import Locales from '../locales/locales'
-import enUS from '../locales/en-us/messages.json'
-import enGB from '../locales/en-gb/messages'
 
 const languageNames = new Map([
   [Constants.LANG_LATIN, 'Latin'],

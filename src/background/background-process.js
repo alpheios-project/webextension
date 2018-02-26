@@ -1,8 +1,5 @@
 /* global browser */
-import enUS from '../locales/en-us/messages.json'
-import enGB from '../locales/en-gb/messages'
-import Locales from '../locales/locales'
-import L10n from '../lib/l10n/l10n'
+import { enUS, enGB, Locales, L10n } from 'alpheios-components'
 import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'

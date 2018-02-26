@@ -1,8 +1,7 @@
 const webpack = require('./webpack')
-const sass = require('./sass')
-const imagemin = require('./imagemin')
 const config = require('./config')
 const zip = require('./zip')
+const styles = require('./styles')
 
 const webpackTasks = config.webpack.tasks.map(task => Object.assign(task, config.webpack.common))
 
@@ -14,13 +13,10 @@ for (let [index, value] of process.argv.entries()) {
 
 if (!taskName || taskName === 'all') {
   // Run all build tasks in a sequence
-  imagemin.run(config.image, config.pathToProjectRoot)
-  sass.run(config.style)
+  styles.run(config.styles)
   webpack.run(webpackTasks)
-} else if (taskName === 'images') {
-  imagemin.run(config.image, config.pathToProjectRoot)
 } else if (taskName === 'styles') {
-  sass.run(config.style)
+  styles.run(config.styles)
 } else if (taskName === 'webpack') {
   webpack.run(webpackTasks)
 } else if (taskName === 'chrome') {
