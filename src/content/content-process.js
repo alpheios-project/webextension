@@ -11,9 +11,7 @@ import StateResponse from '../lib/messaging/response/state-response'
 import TabScript from '../lib/content/tab-script'
 import Options from './content-options'
 import ResourceOptions from './resource-options'
-import HTMLSelector from '../lib/selection/media/html-selector'
-import LexicalQuery from './queries/lexical-query'
-import ContentUIController from './content-ui-controller'
+import { UIController, HTMLSelector, LexicalQuery } from 'alpheios-components'
 
 export default class ContentProcess {
   constructor () {
@@ -29,7 +27,7 @@ export default class ContentProcess {
 
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
     this.langData = new LanguageDataList().loadData()
-    this.ui = new ContentUIController(this.state, this.options, this.resourceOptions)
+    this.ui = new UIController(this.state, this.options, this.resourceOptions, TabScript.statuses)
   }
 
   initialize () {
