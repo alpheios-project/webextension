@@ -4,7 +4,7 @@ import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
 import ContextMenuItem from './context-menu-item.js'
-import ContentMenuSeprator from './context-menu-separator.js'
+import ContentMenuSeperator from './context-menu-separator.js'
 import TabScript from '../lib/content/tab-script.js'
 import {
   Transporter,
@@ -32,10 +32,15 @@ export default class BackgroundProcess {
       .addMessages(enGB, Locales.en_GB)
       .setLocale(Locales.en_US)
     return {
+      activateBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_ACTIVATE,
+      deactivateBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_DEACTIVATE,
+      disabledBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_DISABLED,
       activateMenuItemId: 'activate-alpheios-content',
       activateMenuItemText: l10n.messages.LABEL_CTXTMENU_ACTIVATE,
       deactivateMenuItemId: 'deactivate-alpheios-content',
       deactivateMenuItemText: l10n.messages.LABEL_CTXTMENU_DEACTIVATE,
+      disabledMenuItemId: 'disabled-alpheios-content',
+      disabledMenuItemText: l10n.messages.LABEL_CTXTMENU_DISABLED,
       openPanelMenuItemId: 'open-alpheios-panel',
       openPanelMenuItemText: l10n.messages.LABEL_CTXTMENU_OPENPANEL,
       infoMenuItemId: 'show-alpheios-panel-info',
@@ -68,8 +73,9 @@ export default class BackgroundProcess {
       activate: new ContextMenuItem(BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
       deactivate: new ContextMenuItem(BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
       openPanel: new ContextMenuItem(BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText),
-      separatorOne: new ContentMenuSeprator(BackgroundProcess.defaults.separatorOneId),
-      info: new ContextMenuItem(BackgroundProcess.defaults.infoMenuItemId, BackgroundProcess.defaults.infoMenuItemText)
+      separatorOne: new ContentMenuSeperator(BackgroundProcess.defaults.separatorOneId),
+      info: new ContextMenuItem(BackgroundProcess.defaults.infoMenuItemId, BackgroundProcess.defaults.infoMenuItemText),
+      disabled: new ContextMenuItem(BackgroundProcess.defaults.disabledMenuItemId, BackgroundProcess.defaults.disabledMenuItemText)
     }
     this.menuItems.activate.enable() // This one will be enabled by default
 
@@ -282,7 +288,20 @@ export default class BackgroundProcess {
     let tab = this.tabs.get(tabID).update(newState)
 
     // Menu state should reflect a status of a content script
+    this.updateBrowserActionForTab(tab)
     this.setMenuForTab(tab)
+  }
+
+  updateBrowserActionForTab(tab) {
+    if (tab && tab.hasOwnProperty('status')) {
+      if (tab.isActive()) {
+        browser.browserAction.setTitle({title:BackgroundProcess.defaults.deactivateBrowserActionTitle,tabId:tab.tabID})
+      } else if (tab.isDeactivated()) {
+        browser.browserAction.setTitle({title:BackgroundProcess.defaults.activateBrowserActionTitle,tabId:tab.tabID})
+      } else if (tab.isDisabled()) {
+        browser.browserAction.setTitle({title:BackgroundProcess.defaults.disabledBrowserActionTitle,tabId:tab.tabID})
+      }
+    }
   }
 
   setMenuForTab (tab) {
@@ -292,6 +311,7 @@ export default class BackgroundProcess {
     this.menuItems.openPanel.disable()
     this.menuItems.separatorOne.disable()
     this.menuItems.info.disable()
+    this.menuItems.disabled.disable()
 
     if (tab) {
       // Menu state should reflect a status of a content script
@@ -300,10 +320,18 @@ export default class BackgroundProcess {
           this.menuItems.activate.disable()
           this.menuItems.deactivate.enable()
           this.menuItems.openPanel.enable()
+          this.menuItems.info.enable()
         } else if (tab.isDeactivated()) {
           this.menuItems.deactivate.disable()
           this.menuItems.activate.enable()
           this.menuItems.openPanel.disable()
+          this.menuItems.info.enable()
+        } else if (tab.isDisabled()) {
+          this.menuItems.activate.disable()
+          this.menuItems.deactivate.disable()
+          this.menuItems.disabled.enable()
+          this.menuItems.openPanel.disable()
+          this.menuItems.info.disable()
         }
       }
 
@@ -316,7 +344,6 @@ export default class BackgroundProcess {
       }
 
       this.menuItems.separatorOne.enable()
-      this.menuItems.info.enable()
     } else {
       // If tab is not provided will set menu do an initial state
       this.menuItems.activate.enable()

@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -2524,7 +2524,8 @@ class TabScript {
         values: {
           PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
           ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
-          DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated') // Content script has been loaded, but is deactivated
+          DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
+          DISABLED: Symbol.for('Alpheios_Status_Disabled')
         },
         defaultValueIndex: 0
       },
@@ -2658,6 +2659,10 @@ class TabScript {
     return this.status === TabScript.statuses.script.DEACTIVATED
   }
 
+  isDisabled () {
+    return this.status === TabScript.statuses.script.DISABLED
+  }
+
   activate () {
     this.status = TabScript.statuses.script.ACTIVE
     return this
@@ -2665,6 +2670,11 @@ class TabScript {
 
   deactivate () {
     this.status = TabScript.statuses.script.DEACTIVATED
+    return this
+  }
+
+  disable () {
+    this.status = TabScript.statuses.script.DISABLED
     return this
   }
 
@@ -3301,37 +3311,10 @@ exports.Transporter = Transporter;
 exports.StorageAdapter = LocalStorageAdapter;
 exports.TestAdapter = TestAdapter;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(10)))
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports) {
-
-var g;
-
-// This works in non-strict mode
-g = (function() {
-	return this;
-})();
-
-try {
-	// This works if eval is allowed (see CSP)
-	g = g || Function("return this")() || (1,eval)("this");
-} catch(e) {
-	// This works if the window reference is available
-	if(typeof window === "object")
-		g = window;
-}
-
-// g can still be undefined, but nothing to do about it...
-// We return undefined, instead of nothing here, so it's
-// easier to handle this case. if(!global) { ...}
-
-module.exports = g;
-
-
-/***/ }),
-/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3376,12 +3359,12 @@ class ResponseMessage extends __WEBPACK_IMPORTED_MODULE_0__message_message__["a"
 
 
 /***/ }),
-/* 6 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__content_process__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
 
@@ -3402,14 +3385,14 @@ contentProcess.initialize()
 
 
 /***/ }),
-/* 7 */
+/* 6 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__ = __webpack_require__(7);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_tufts_adapter__ = __webpack_require__(9);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_lexicon_client__ = __webpack_require__(10);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_tufts_adapter__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_alpheios_lexicon_client__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_alpheios_experience__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_alpheios_experience__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_message__ = __webpack_require__(1);
@@ -3441,26 +3424,39 @@ class ContentProcess {
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
     this.options = new __WEBPACK_IMPORTED_MODULE_10_alpheios_components__["ContentOptions"](browser.storage.sync.get,browser.storage.sync.set)
     this.resourceOptions = new __WEBPACK_IMPORTED_MODULE_10_alpheios_components__["ResourceOptions"](browser.storage.sync.get,browser.storage.sync.set)
-
     this.messagingService = new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_service__["a" /* default */]()
-
+    if (this.isEmbedded()) {
+      return
+    }
     this.maAdapter = new __WEBPACK_IMPORTED_MODULE_2_alpheios_tufts_adapter__["a" /* default */]() // Morphological analyzer adapter, with default arguments
     this.langData = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* LanguageDataList */]().loadData()
-    this.ui = new __WEBPACK_IMPORTED_MODULE_10_alpheios_components__["UIController"](this.state, this.options, this.resourceOptions, __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses)
+    this.ui = new __WEBPACK_IMPORTED_MODULE_10_alpheios_components__["UIController"](this.state, this.options, this.resourceOptions, __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses,  browser.runtime.getManifest())
   }
 
   initialize () {
     // Adds message listeners
     this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_message__["a" /* default */].types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
+    document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
+    if (this.state.isDisabled()) {
+      return
+    }
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
     document.body.addEventListener('keydown', this.handleEscapeKey.bind(this))
-    document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
-    this.reactivate()
   }
 
   get isActive () {
     return this.state.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+  }
+
+  isEmbedded() {
+    if (document.getElementById('alpheios-main')) {
+      console.log('Alpheios is embedded.')
+      this.state.disable()
+      return true
+    } else {
+      return false
+    }
   }
 
   handleReload () {
@@ -3479,8 +3475,12 @@ class ContentProcess {
   }
 
   reactivate () {
-    console.log('Content has been reactivated.')
-    this.state.status = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+    if ( this.state.isDisabled()) {
+      console.log('Alpheios is disabled')
+    } else {
+      console.log('Content has been reactivated.')
+      this.state.status = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+    }
   }
 
   handleStateRequest (request, sender) {
@@ -3498,7 +3498,10 @@ class ContentProcess {
       }
     }
     if (diff.has('status')) {
-      if (diff.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE) {
+      if (this.state.isDisabled()) {
+        console.log("Content is disabled. Ignoring status update.")
+      }
+      else if (diff.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE) {
         this.state.activate()
       } else {
         this.state.deactivate()
@@ -3507,11 +3510,13 @@ class ContentProcess {
         console.log('Content has been deactivated')
       }
     }
-    if (diff.has('panelStatus')) {
-      if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
-    }
-    if (diff.has('tab') && diff.tab) {
-      this.ui.changeTab(diff.tab)
+    if (this.ui) {
+      if (diff.has('panelStatus')) {
+        if (diff.panelStatus === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
+      }
+      if (diff.has('tab') && diff.tab) {
+        this.ui.changeTab(diff.tab)
+      }
     }
     this.messagingService.sendResponseToBg(new __WEBPACK_IMPORTED_MODULE_8__lib_messaging_response_state_response__["a" /* default */](request, this.state)).catch(
       (error) => {
@@ -3578,7 +3583,7 @@ class ContentProcess {
 
 
 /***/ }),
-/* 8 */
+/* 7 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -11427,7 +11432,7 @@ class ViewSet {
 
 
 /***/ }),
-/* 9 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -12038,7 +12043,7 @@ class TuftsAdapter extends BaseAdapter {
 
 
 /***/ }),
-/* 10 */
+/* 9 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -14034,6 +14039,33 @@ class Lexicons {
 
 
 /***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
 /* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -14140,7 +14172,7 @@ module.exports = bytesToUuid;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__response_response_message__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__stored_request__ = __webpack_require__(15);
 /* global browser */
 
@@ -14332,7 +14364,7 @@ class StateMessage extends __WEBPACK_IMPORTED_MODULE_0__message__["a" /* default
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(5);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__response_message__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(2);
 
 
@@ -14360,14 +14392,14 @@ class StateResponse extends __WEBPACK_IMPORTED_MODULE_1__response_message__["a" 
 
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(true)
-		module.exports = factory(__webpack_require__(0), __webpack_require__(19), __webpack_require__(20), __webpack_require__(21));
+		module.exports = factory(__webpack_require__(0), __webpack_require__(19), __webpack_require__(20));
 	else if(typeof define === 'function' && define.amd)
-		define(["alpheios-data-models", "alpheios-inflection-tables", "alpheios-experience", "alpheios-res-client"], factory);
+		define(["alpheios-data-models", "alpheios-inflection-tables", "alpheios-res-client"], factory);
 	else {
-		var a = typeof exports === 'object' ? factory(require("alpheios-data-models"), require("alpheios-inflection-tables"), require("alpheios-experience"), require("alpheios-res-client")) : factory(root["alpheios-data-models"], root["alpheios-inflection-tables"], root["alpheios-experience"], root["alpheios-res-client"]);
+		var a = typeof exports === 'object' ? factory(require("alpheios-data-models"), require("alpheios-inflection-tables"), require("alpheios-res-client")) : factory(root["alpheios-data-models"], root["alpheios-inflection-tables"], root["alpheios-res-client"]);
 		for(var i in a) (typeof exports === 'object' ? exports : root)[i] = a[i];
 	}
-})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_47__, __WEBPACK_EXTERNAL_MODULE_77__, __WEBPACK_EXTERNAL_MODULE_83__) {
+})(typeof self !== 'undefined' ? self : this, function(__WEBPACK_EXTERNAL_MODULE_3__, __WEBPACK_EXTERNAL_MODULE_47__, __WEBPACK_EXTERNAL_MODULE_82__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -23968,7 +24000,7 @@ exports.hop = hop;
 /* 24 */
 /***/ (function(module, exports) {
 
-module.exports = "{\n  \"COOKIE_TEST_MESSAGE\": {\n    \"message\": \"This is a test message about a cookie.\",\n    \"description\": \"A test message that is shown in a panel\",\n    \"component\": \"Panel\"\n  },\n  \"NUM_LINES_TEST_MESSAGE\": {\n    \"message\": \"There {numLines, plural, =0 {are no lines} =1 {is one line} other {are # lines}}.\",\n    \"description\": \"A test message that is shown in a panel\",\n    \"component\": \"Panel\",\n    \"params\": [\"numLines\"]\n  },\n  \"TOOLTIP_MOVE_PANEL_LEFT\": {\n    \"message\": \"Move Panel to Left\",\n    \"description\": \"tooltip for moving the panel to the left\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_MOVE_PANEL_RIGHT\": {\n    \"message\": \"Move Panel to Right\",\n    \"description\": \"tooltip for moving the panel to the right\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_CLOSE_PANEL\": {\n    \"message\": \"Close Panel\",\n    \"description\": \"tooltip for closing the panel\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_HELP\": {\n    \"message\": \"Help\",\n    \"description\": \"tooltip for help tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_INFLECT\": {\n    \"message\": \"Inflection Tables\",\n    \"description\": \"tooltip for inflections tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_DEFINITIONS\": {\n    \"message\": \"Definitions\",\n    \"description\": \"tooltip for definitions tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_GRAMMAR\": {\n    \"message\": \"Grammar\",\n    \"description\": \"tooltip for grammar tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_OPTIONS\": {\n    \"message\": \"Options\",\n    \"description\": \"tooltip for settings tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_STATUS\": {\n    \"message\": \"Status Messages\",\n    \"description\": \"tooltip for status tab\",\n    \"component\": \"Panel\"\n  },\n  \"PLACEHOLDER_DEFINITIONS\":  {\n    \"message\": \"Lookup a word to show definitions...\",\n    \"description\": \"placeholder for definitions panel\",\n    \"component\": \"Panel\"\n  },\n  \"PLACEHOLDER_INFLECT\":  {\n    \"message\": \"Lookup a word to show inflections...\",\n    \"description\": \"placeholder for inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"PLACEHOLDER_INFLECT_UNAVAILABLE\":  {\n    \"message\": \"Inflection data is unavailable\",\n    \"description\": \"placeholder for inflections panel if unavailable\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_SELECT_POFS\":  {\n    \"message\": \"Part of speech:\",\n    \"description\": \"label for part of speech selector on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_SHOWFULL\": {\n    \"message\": \"Full Table\",\n    \"description\": \"label for show full table button on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_COLLAPSE\": {\n    \"message\": \"Collapse\",\n    \"description\": \"label for collapse table button on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_HIDEEMPTY\": {\n    \"message\": \"Hide empty columns\",\n    \"description\": \"label for hide empty columns button on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_SHOWEMPTY\": {\n    \"message\": \"Show empty columns\",\n    \"description\": \"label for show empty columns button on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_GETTINGSTARTED\": {\n    \"message\": \"Getting Started\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_GETTINGSTARTED\": {\n    \"message\": \"Getting Started\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_ACTIVATE\": {\n    \"message\": \"Activate on a page with Latin, Ancient Greek, Arabic or Persian text.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_CLICK\": {\n    \"message\": \"Double-click on a word to retrieve morphology and short definitions.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_LANGDETECT\": {\n    \"message\": \"Alpheios will try to detect the language of the word from the page markup. If it cannot it will use the default language.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFO_CURRENTLANGUAGE\": {\n    \"message\": \"Current language:\",\n    \"description\": \"label for current language in info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_SETTINGS\": {\n    \"message\": \"Click the Settings wheel to change the default language, default dictionaries or to disable the popup (set UI Type to 'panel').\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_ARROW\": {\n    \"message\": \"Use the arrow at the top of this panel to move it from the right to left of your browser window.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_REOPEN\": {\n    \"message\": \"You can reopen this panel at any time by selecting 'Info' from the Alpheios Reading Tools option in your browser's context menu.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_DEACTIVATE\": {\n    \"message\": \"Deactivate Alpheios by clicking the toolbar icon or choosing 'Deactivate' from the Alpheios Reading Tools option in your browser's context menu.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_POPUP_CLOSE\": {\n    \"message\": \"Close Popup\",\n    \"description\": \"tooltip for closing the popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_INFLECT\": {\n    \"message\": \"Inflect\",\n    \"description\": \"label for inflect button on popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_OPTIONS\": {\n    \"message\": \"Options\",\n    \"description\": \"label for options button on popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_DEFINE\": {\n    \"message\": \"Define\",\n    \"description\": \"label for define button on popup\",\n    \"component\": \"Popup\"\n  },\n  \"PLACEHOLDER_POPUP_DATA\": {\n    \"message\": \"No lexical data is available yet\",\n    \"description\": \"placeholder text for popup data\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_CREDITS\": {\n    \"message\": \"Credits:\",\n    \"description\": \"label for credits on popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_SHOWCREDITS\": {\n    \"message\": \"Credits\",\n    \"description\": \"label for show credits link on popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_HIDECREDITS\": {\n    \"message\": \"Hide Credits\",\n    \"description\": \"label for hide credits link on popup\",\n    \"component\": \"Popup\"\n  },\n  \"TEXT_NOTICE_CHANGE_LANGUAGE\": {\n    \"message\": \"Language: {languageName}<br>Wrong? Change to:\",\n    \"description\": \"language notification\",\n    \"component\": \"UI\",\n    \"params\": [\"languageName\"]\n  },\n  \"TEXT_NOTICE_LANGUAGE_UNKNOWN\": {\n    \"message\": \"unknown\",\n    \"description\": \"unknown language notification\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_GRAMMAR_NOTFOUND\": {\n    \"message\": \"The requested grammar resource is not currently available\",\n    \"description\": \"grammar not found notification\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_MORPHDATA_READY\": {\n    \"message\": \"Morphological analyzer data is ready\",\n    \"description\": \"morph data ready notice\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_MORPHDATA_NOTFOUND\": {\n    \"message\": \"Morphological data not found. Definition queries pending.\",\n    \"description\": \"morph data not found notice\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_INFLDATA_READY\": {\n    \"message\": \"Inflection data is ready\",\n    \"description\": \"inflection data ready notice\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_DEFSDATA_READY\": {\n    \"message\":\"{requestType} request is completed successfully. Lemma: \\\"{lemma}\\\"\",\n    \"description\": \"definition request success notice\",\n    \"component\": \"UI\",\n    \"params\": [\"requestType\",\"lemma\"]\n  },\n  \"TEXT_NOTICE_DEFSDATA_NOTFOUND\": {\n    \"message\":\"{requestType} request failed. Lemma not found for: \\\"{word}\\\"\",\n    \"description\": \"definition request success notice\",\n    \"component\": \"UI\",\n    \"params\": [\"requestType\",\"word\"]\n  },\n  \"TEXT_NOTICE_LEXQUERY_COMPLETE\": {\n    \"message\": \"All lexical queries complete.\",\n    \"description\": \"lexical queries complete notice\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_GRAMMAR_READY\": {\n    \"message\": \"Grammar resource retrieved\",\n    \"description\": \"grammar retrieved notice\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_GRAMMAR_COMPLETE\": {\n    \"message\": \"All grammar resource data retrieved\",\n    \"description\": \"grammar retrieved notice\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_RESQUERY_COMPLETE\": {\n    \"message\": \"All resource data retrieved\",\n    \"description\": \"resource query complete notice\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_CTXTMENU_DEACTIVATE\": {\n    \"message\": \"Deactivate\",\n    \"description\": \"Deactivate context menu label\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_CTXTMENU_ACTIVATE\": {\n    \"message\": \"Activate\",\n    \"description\": \"Activate context menu label\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_CTXTMENU_OPENPANEL\": {\n    \"message\": \"Open Panel\",\n    \"description\": \"Open Panel context menu label\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_CTXTMENU_INFO\": {\n    \"message\": \"Info\",\n    \"description\": \"Info context menu label\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_CTXTMENU_SENDEXP\": {\n    \"message\": \"Send Experiences to remote server\",\n    \"description\": \"send exp data context menu label\",\n    \"component\": \"UI\"\n  }\n}\n"
+module.exports = "{\n  \"COOKIE_TEST_MESSAGE\": {\n    \"message\": \"This is a test message about a cookie.\",\n    \"description\": \"A test message that is shown in a panel\",\n    \"component\": \"Panel\"\n  },\n  \"NUM_LINES_TEST_MESSAGE\": {\n    \"message\": \"There {numLines, plural, =0 {are no lines} =1 {is one line} other {are # lines}}.\",\n    \"description\": \"A test message that is shown in a panel\",\n    \"component\": \"Panel\",\n    \"params\": [\"numLines\"]\n  },\n  \"TOOLTIP_MOVE_PANEL_LEFT\": {\n    \"message\": \"Move Panel to Left\",\n    \"description\": \"tooltip for moving the panel to the left\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_MOVE_PANEL_RIGHT\": {\n    \"message\": \"Move Panel to Right\",\n    \"description\": \"tooltip for moving the panel to the right\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_CLOSE_PANEL\": {\n    \"message\": \"Close Panel\",\n    \"description\": \"tooltip for closing the panel\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_HELP\": {\n    \"message\": \"Help\",\n    \"description\": \"tooltip for help tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_INFLECT\": {\n    \"message\": \"Inflection Tables\",\n    \"description\": \"tooltip for inflections tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_DEFINITIONS\": {\n    \"message\": \"Definitions\",\n    \"description\": \"tooltip for definitions tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_GRAMMAR\": {\n    \"message\": \"Grammar\",\n    \"description\": \"tooltip for grammar tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_OPTIONS\": {\n    \"message\": \"Options\",\n    \"description\": \"tooltip for settings tab\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_STATUS\": {\n    \"message\": \"Status Messages\",\n    \"description\": \"tooltip for status tab\",\n    \"component\": \"Panel\"\n  },\n  \"PLACEHOLDER_DEFINITIONS\":  {\n    \"message\": \"Lookup a word to show definitions...\",\n    \"description\": \"placeholder for definitions panel\",\n    \"component\": \"Panel\"\n  },\n  \"PLACEHOLDER_INFLECT\":  {\n    \"message\": \"Lookup a word to show inflections...\",\n    \"description\": \"placeholder for inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"PLACEHOLDER_INFLECT_UNAVAILABLE\":  {\n    \"message\": \"Inflection data is unavailable\",\n    \"description\": \"placeholder for inflections panel if unavailable\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_SELECT_POFS\":  {\n    \"message\": \"Part of speech:\",\n    \"description\": \"label for part of speech selector on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_SHOWFULL\": {\n    \"message\": \"Full Table\",\n    \"description\": \"label for show full table button on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_COLLAPSE\": {\n    \"message\": \"Collapse\",\n    \"description\": \"label for collapse table button on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_HIDEEMPTY\": {\n    \"message\": \"Hide empty columns\",\n    \"description\": \"label for hide empty columns button on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFLECT_SHOWEMPTY\": {\n    \"message\": \"Show empty columns\",\n    \"description\": \"label for show empty columns button on inflections panel\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_GETTINGSTARTED\": {\n    \"message\": \"Getting Started\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_GETTINGSTARTED\": {\n    \"message\": \"Getting Started\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_ACTIVATE\": {\n    \"message\": \"Activate on a page with Latin, Ancient Greek, Arabic or Persian text.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_CLICK\": {\n    \"message\": \"Double-click on a word to retrieve morphology and short definitions.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_LANGDETECT\": {\n    \"message\": \"Alpheios will try to detect the language of the word from the page markup. If it cannot it will use the default language.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"LABEL_INFO_CURRENTLANGUAGE\": {\n    \"message\": \"Current language:\",\n    \"description\": \"label for current language in info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_SETTINGS\": {\n    \"message\": \"Click the Settings wheel to change the default language, default dictionaries or to disable the popup (set UI Type to 'panel').\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_ARROW\": {\n    \"message\": \"Use the arrow at the top of this panel to move it from the right to left of your browser window.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_REOPEN\": {\n    \"message\": \"You can reopen this panel at any time by selecting 'Info' from the Alpheios Reading Tools option in your browser's context menu.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TEXT_INFO_DEACTIVATE\": {\n    \"message\": \"Deactivate Alpheios by clicking the toolbar icon or choosing 'Deactivate' from the Alpheios Reading Tools option in your browser's context menu.\",\n    \"description\": \"info text\",\n    \"component\": \"Panel\"\n  },\n  \"TOOLTIP_POPUP_CLOSE\": {\n    \"message\": \"Close Popup\",\n    \"description\": \"tooltip for closing the popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_INFLECT\": {\n    \"message\": \"Inflect\",\n    \"description\": \"label for inflect button on popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_OPTIONS\": {\n    \"message\": \"Options\",\n    \"description\": \"label for options button on popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_DEFINE\": {\n    \"message\": \"Define\",\n    \"description\": \"label for define button on popup\",\n    \"component\": \"Popup\"\n  },\n  \"PLACEHOLDER_POPUP_DATA\": {\n    \"message\": \"No lexical data is available yet\",\n    \"description\": \"placeholder text for popup data\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_CREDITS\": {\n    \"message\": \"Credits:\",\n    \"description\": \"label for credits on popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_SHOWCREDITS\": {\n    \"message\": \"Credits\",\n    \"description\": \"label for show credits link on popup\",\n    \"component\": \"Popup\"\n  },\n  \"LABEL_POPUP_HIDECREDITS\": {\n    \"message\": \"Hide Credits\",\n    \"description\": \"label for hide credits link on popup\",\n    \"component\": \"Popup\"\n  },\n  \"TEXT_NOTICE_CHANGE_LANGUAGE\": {\n    \"message\": \"Language: {languageName}<br>Wrong? Change to:\",\n    \"description\": \"language notification\",\n    \"component\": \"UI\",\n    \"params\": [\"languageName\"]\n  },\n  \"TEXT_NOTICE_LANGUAGE_UNKNOWN\": {\n    \"message\": \"unknown\",\n    \"description\": \"unknown language notification\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_GRAMMAR_NOTFOUND\": {\n    \"message\": \"The requested grammar resource is not currently available\",\n    \"description\": \"grammar not found notification\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_MORPHDATA_READY\": {\n    \"message\": \"Morphological analyzer data is ready\",\n    \"description\": \"morph data ready notice\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_MORPHDATA_NOTFOUND\": {\n    \"message\": \"Morphological data not found. Definition queries pending.\",\n    \"description\": \"morph data not found notice\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_INFLDATA_READY\": {\n    \"message\": \"Inflection data is ready\",\n    \"description\": \"inflection data ready notice\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_DEFSDATA_READY\": {\n    \"message\":\"{requestType} request is completed successfully. Lemma: \\\"{lemma}\\\"\",\n    \"description\": \"definition request success notice\",\n    \"component\": \"UI\",\n    \"params\": [\"requestType\",\"lemma\"]\n  },\n  \"TEXT_NOTICE_DEFSDATA_NOTFOUND\": {\n    \"message\":\"{requestType} request failed. Lemma not found for: \\\"{word}\\\"\",\n    \"description\": \"definition request success notice\",\n    \"component\": \"UI\",\n    \"params\": [\"requestType\",\"word\"]\n  },\n  \"TEXT_NOTICE_LEXQUERY_COMPLETE\": {\n    \"message\": \"All lexical queries complete.\",\n    \"description\": \"lexical queries complete notice\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_GRAMMAR_READY\": {\n    \"message\": \"Grammar resource retrieved\",\n    \"description\": \"grammar retrieved notice\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_GRAMMAR_COMPLETE\": {\n    \"message\": \"All grammar resource data retrieved\",\n    \"description\": \"grammar retrieved notice\",\n    \"component\": \"UI\"\n  },\n  \"TEXT_NOTICE_RESQUERY_COMPLETE\": {\n    \"message\": \"All resource data retrieved\",\n    \"description\": \"resource query complete notice\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_BROWSERACTION_DEACTIVATE\": {\n    \"message\": \"Deactivate Alpheios\",\n    \"description\": \"Deactivate browser action title\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_BROWSERACTION_ACTIVATE\": {\n    \"message\": \"Activate Alpheios\",\n    \"description\": \"Activate browser action title\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_BROWSERACTION_DISABLED\": {\n    \"message\": \"(Alpheios Extension Disabled For Page)\",\n    \"description\": \"Disabled browser action title\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_CTXTMENU_DEACTIVATE\": {\n    \"message\": \"Deactivate\",\n    \"description\": \"Deactivate context menu label\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_CTXTMENU_ACTIVATE\": {\n    \"message\": \"Activate\",\n    \"description\": \"Activate context menu label\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_CTXTMENU_DISABLED\": {\n    \"message\": \"(Disabled)\",\n    \"description\": \"Disabled context menu label\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_CTXTMENU_OPENPANEL\": {\n    \"message\": \"Open Panel\",\n    \"description\": \"Open Panel context menu label\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_CTXTMENU_INFO\": {\n    \"message\": \"Info\",\n    \"description\": \"Info context menu label\",\n    \"component\": \"UI\"\n  },\n  \"LABEL_CTXTMENU_SENDEXP\": {\n    \"message\": \"Send Experiences to remote server\",\n    \"description\": \"send exp data context menu label\",\n    \"component\": \"UI\"\n  }\n}\n"
 
 /***/ }),
 /* 25 */
@@ -24074,7 +24106,7 @@ class ResourceQuery extends __WEBPACK_IMPORTED_MODULE_0__query_js__["a" /* defau
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(84);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4__ = __webpack_require__(83);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v4___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v4__);
 
 
@@ -24184,11 +24216,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__locales_en_gb_messages_json__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__locales_en_gb_messages_json___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__locales_en_gb_messages_json__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_controllers_ui_controller__ = __webpack_require__(76);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_selection_media_html_selector__ = __webpack_require__(87);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_queries_lexical_query__ = __webpack_require__(92);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_selection_media_html_selector__ = __webpack_require__(86);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_queries_lexical_query__ = __webpack_require__(91);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_queries_resource_query__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_options_content_options__ = __webpack_require__(93);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_options_resource_options__ = __webpack_require__(94);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_options_content_options__ = __webpack_require__(92);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_options_resource_options__ = __webpack_require__(93);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Popup", function() { return __WEBPACK_IMPORTED_MODULE_0__vue_components_popup_vue__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Panel", function() { return __WEBPACK_IMPORTED_MODULE_1__vue_components_panel_vue__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "L10n", function() { return __WEBPACK_IMPORTED_MODULE_2__lib_l10n_l10n__["a"]; });
@@ -29026,26 +29058,24 @@ exports["default"] = {"locale":"en","pluralRuleFunction":function (n,ord){var s=
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__ = __webpack_require__(77);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_experience__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__ = __webpack_require__(78);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_vue_dist_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__vue_components_panel_vue__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__vue_components_popup_vue__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__l10n_l10n__ = __webpack_require__(22);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__locales_locales__ = __webpack_require__(4);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__locales_en_us_messages_json__ = __webpack_require__(24);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__locales_en_us_messages_json___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__locales_en_us_messages_json__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__locales_en_gb_messages_json__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__locales_en_gb_messages_json___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__locales_en_gb_messages_json__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__template_htmlf__ = __webpack_require__(82);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9__template_htmlf__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_alpheios_res_client__ = __webpack_require__(83);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_alpheios_res_client___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10_alpheios_res_client__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__queries_resource_query__ = __webpack_require__(26);
-/* global Node, browser */
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue__ = __webpack_require__(77);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_vue_dist_vue__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__vue_components_panel_vue__ = __webpack_require__(17);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__vue_components_popup_vue__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__l10n_l10n__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__locales_locales__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__locales_en_us_messages_json__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__locales_en_us_messages_json___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6__locales_en_us_messages_json__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__locales_en_gb_messages_json__ = __webpack_require__(25);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__locales_en_gb_messages_json___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7__locales_en_gb_messages_json__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__template_htmlf__ = __webpack_require__(81);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__template_htmlf___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8__template_htmlf__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_alpheios_res_client__ = __webpack_require__(82);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_alpheios_res_client___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_alpheios_res_client__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__queries_resource_query__ = __webpack_require__(26);
+/* global Node */
 
-
+// import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
  // Vue in a runtime + compiler configuration
 
 
@@ -29065,7 +29095,7 @@ const languageNames = new Map([
 ])
 
 class UIController {
-  constructor (state, options, resourceOptions, statuses) {
+  constructor (state, options, resourceOptions, statuses, manifest) {
     this.state = state
     this.options = options
     this.resourceOptions = resourceOptions
@@ -29074,23 +29104,24 @@ class UIController {
     this.irregularBaseFontSizeClassName = 'alpheios-irregular-base-font-size'
     this.irregularBaseFontSize = !UIController.hasRegularBaseFontSize()
     this.verboseMode = false
+    this.manifest = manifest
 
     this.zIndex = this.getZIndexMax()
 
-    this.l10n = new __WEBPACK_IMPORTED_MODULE_5__l10n_l10n__["a" /* default */]()
-      .addMessages(__WEBPACK_IMPORTED_MODULE_7__locales_en_us_messages_json___default.a, __WEBPACK_IMPORTED_MODULE_6__locales_locales__["a" /* default */].en_US)
-      .addMessages(__WEBPACK_IMPORTED_MODULE_8__locales_en_gb_messages_json___default.a, __WEBPACK_IMPORTED_MODULE_6__locales_locales__["a" /* default */].en_GB)
-      .setLocale(__WEBPACK_IMPORTED_MODULE_6__locales_locales__["a" /* default */].en_US)
+    this.l10n = new __WEBPACK_IMPORTED_MODULE_4__l10n_l10n__["a" /* default */]()
+      .addMessages(__WEBPACK_IMPORTED_MODULE_6__locales_en_us_messages_json___default.a, __WEBPACK_IMPORTED_MODULE_5__locales_locales__["a" /* default */].en_US)
+      .addMessages(__WEBPACK_IMPORTED_MODULE_7__locales_en_gb_messages_json___default.a, __WEBPACK_IMPORTED_MODULE_5__locales_locales__["a" /* default */].en_GB)
+      .setLocale(__WEBPACK_IMPORTED_MODULE_5__locales_locales__["a" /* default */].en_US)
 
     // Inject HTML code of a plugin. Should go in reverse order.
     document.body.classList.add('alpheios')
     let container = document.createElement('div')
     document.body.insertBefore(container, null)
-    container.outerHTML = __WEBPACK_IMPORTED_MODULE_9__template_htmlf___default.a
+    container.outerHTML = __WEBPACK_IMPORTED_MODULE_8__template_htmlf___default.a
     // Initialize components
-    this.panel = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
+    this.panel = new __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue___default.a({
       el: '#alpheios-panel',
-      components: { panel: __WEBPACK_IMPORTED_MODULE_3__vue_components_panel_vue__["a" /* default */] },
+      components: { panel: __WEBPACK_IMPORTED_MODULE_2__vue_components_panel_vue__["a" /* default */] },
       data: {
         panelData: {
           isOpen: false,
@@ -29122,7 +29153,7 @@ class UIController {
             tableBody: 'alpheios-panel-content-infl-table-body'
           },
           infoComponentData: {
-            manifest: browser.runtime.getManifest(),
+            manifest: this.manifest,
             languageName: UIController.getLanguageName(this.state.currentLanguage)
           },
           messages: [],
@@ -29287,18 +29318,18 @@ class UIController {
         },
 
         requestGrammar: function (feature) {
-          __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["ObjectMonitor"].track(
-            __WEBPACK_IMPORTED_MODULE_11__queries_resource_query__["a" /* default */].create(feature, {
-              uiController: this.uiController,
-              grammars: __WEBPACK_IMPORTED_MODULE_10_alpheios_res_client__["Grammars"]
-            }),
-            {
-              experience: 'Get resource',
-              actions: [
-                { name: 'getData', action: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["ObjectMonitor"].actions.START, event: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["ObjectMonitor"].events.GET },
-                { name: 'finalize', action: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["ObjectMonitor"].actions.STOP, event: __WEBPACK_IMPORTED_MODULE_1_alpheios_experience__["ObjectMonitor"].events.GET }
-              ]
-            }).getData()
+          // ExpObjMon.track(
+          __WEBPACK_IMPORTED_MODULE_10__queries_resource_query__["a" /* default */].create(feature, {
+            uiController: this.uiController,
+            grammars: __WEBPACK_IMPORTED_MODULE_9_alpheios_res_client__["Grammars"]
+          }).getData()
+            //, {
+            // experience: 'Get resource',
+            //  actions: [
+            //    { name: 'getData', action: ExpObjMon.actions.START, event: ExpObjMon.events.GET },
+            //    { name: 'finalize', action: ExpObjMon.actions.STOP, event: ExpObjMon.events.GET }
+            // ]
+            // }).getData()
         },
 
         settingChange: function (name, value) {
@@ -29337,9 +29368,9 @@ class UIController {
     })
 
     // Create a Vue instance for a popup
-    this.popup = new __WEBPACK_IMPORTED_MODULE_2_vue_dist_vue___default.a({
+    this.popup = new __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue___default.a({
       el: '#alpheios-popup',
-      components: { popup: __WEBPACK_IMPORTED_MODULE_4__vue_components_popup_vue__["a" /* default */] },
+      components: { popup: __WEBPACK_IMPORTED_MODULE_3__vue_components_popup_vue__["a" /* default */] },
       data: {
         messages: [],
         lexemes: [],
@@ -29774,12 +29805,6 @@ class UIController {
 
 /***/ }),
 /* 77 */
-/***/ (function(module, exports) {
-
-module.exports = __WEBPACK_EXTERNAL_MODULE_77__;
-
-/***/ }),
-/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, setImmediate) {/*!
@@ -40581,10 +40606,10 @@ return Vue$3;
 
 })));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(79).setImmediate))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(78).setImmediate))
 
 /***/ }),
-/* 79 */
+/* 78 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global) {var apply = Function.prototype.apply;
@@ -40637,7 +40662,7 @@ exports._unrefActive = exports.active = function(item) {
 };
 
 // setimmediate attaches itself to the global object
-__webpack_require__(80);
+__webpack_require__(79);
 // On some exotic environments, it's not clear which object `setimmeidate` was
 // able to install onto.  Search each possibility in the same order as the
 // `setimmediate` library.
@@ -40651,7 +40676,7 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ }),
-/* 80 */
+/* 79 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
@@ -40841,10 +40866,10 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
     attachTo.clearImmediate = clearImmediate;
 }(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(81)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5), __webpack_require__(80)))
 
 /***/ }),
-/* 81 */
+/* 80 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -41034,23 +41059,23 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 82 */
+/* 81 */
 /***/ (function(module, exports) {
 
 module.exports = "<div id=\"alpheios-popup\" >\n    <popup :messages=\"messages\" :definitions=\"definitions\" :visible=\"visible\" :lexemes=\"lexemes\" :linkedfeatures=\"linkedFeatures\"\n           :data=\"popupData\" @close=\"close\" @closepopupnotifications=\"clearNotifications\" @showpaneltab=\"showPanelTab\"\n           @sendfeature=\"sendFeature\" @settingchange=\"settingChange\">\n    </popup>\n</div>\n<div id=\"alpheios-panel\">\n    <panel :data=\"panelData\" @close=\"close\" @closenotifications=\"clearNotifications\"\n           @setposition=\"setPositionTo\" @settingchange=\"settingChange\" @resourcesettingchange=\"resourceSettingChange\"\n           @changetab=\"changeTab\"></panel>\n</div>\n";
 
 /***/ }),
-/* 83 */
+/* 82 */
 /***/ (function(module, exports) {
 
-module.exports = __WEBPACK_EXTERNAL_MODULE_83__;
+module.exports = __WEBPACK_EXTERNAL_MODULE_82__;
 
 /***/ }),
-/* 84 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var rng = __webpack_require__(85);
-var bytesToUuid = __webpack_require__(86);
+var rng = __webpack_require__(84);
+var bytesToUuid = __webpack_require__(85);
 
 function v4(options, buf, offset) {
   var i = buf && offset || 0;
@@ -41081,7 +41106,7 @@ module.exports = v4;
 
 
 /***/ }),
-/* 85 */
+/* 84 */
 /***/ (function(module, exports) {
 
 // Unique ID creation requires a high quality random # generator.  In the
@@ -41119,7 +41144,7 @@ if (getRandomValues) {
 
 
 /***/ }),
-/* 86 */
+/* 85 */
 /***/ (function(module, exports) {
 
 /**
@@ -41148,16 +41173,16 @@ module.exports = bytesToUuid;
 
 
 /***/ }),
-/* 87 */
+/* 86 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(88);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(87);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(89);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(91);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(88);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(90);
  // To polyfill Element.closest() if required
 
 
@@ -41348,7 +41373,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 88 */
+/* 87 */
 /***/ (function(module, exports) {
 
 // element-closest | CC0-1.0 | github.com/jonathantneal/closest
@@ -41387,11 +41412,11 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 89 */
+/* 88 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(90);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(89);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__);
 
@@ -41475,7 +41500,7 @@ class TextSelector {
 
 
 /***/ }),
-/* 90 */
+/* 89 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -41489,7 +41514,7 @@ class TextQuoteSelector {
 
 
 /***/ }),
-/* 91 */
+/* 90 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -41543,7 +41568,7 @@ class MediaSelector {
 
 
 /***/ }),
-/* 92 */
+/* 91 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -41726,7 +41751,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
 
 
 /***/ }),
-/* 93 */
+/* 92 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -41860,7 +41885,7 @@ class ContentOptions {
 
 
 /***/ }),
-/* 94 */
+/* 93 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -49889,539 +49914,6 @@ class ViewSet {
 
 /***/ }),
 /* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-/**
- * A base object class for an Experience object.
- */
-class Experience {
-  constructor (description) {
-    this.description = description;
-    this.startTime = undefined;
-    this.endTime = undefined;
-    this.details = [];
-  }
-
-  static readObject (jsonObject) {
-    let experience = new Experience(jsonObject.description);
-    if (jsonObject.startTime) { experience.startTime = jsonObject.startTime; }
-    if (jsonObject.endTime) { experience.endTime = jsonObject.endTime; }
-    for (let detailsItem of jsonObject.details) {
-      experience.details.push(Experience.readObject(detailsItem));
-    }
-    return experience
-  }
-
-  attach (experience) {
-    this.details.push(experience);
-  }
-
-  start () {
-    this.startTime = new Date().getTime();
-    return this
-  }
-
-  complete () {
-    this.endTime = new Date().getTime();
-    return this
-  }
-
-  get duration () {
-    return this.endTime - this.startTime
-  }
-
-  toString () {
-    return `"${this.description}" experience duration is ${this.duration} ms`
-  }
-}
-
-var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-// Unique ID creation requires a high quality random # generator.  In the
-// browser this is a little complicated due to unknown quality of Math.random()
-// and inconsistent support for the `crypto` API.  We do the best we can via
-// feature-detection
-var rng;
-
-var crypto = commonjsGlobal.crypto || commonjsGlobal.msCrypto; // for IE 11
-if (crypto && crypto.getRandomValues) {
-  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
-  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
-  rng = function whatwgRNG() {
-    crypto.getRandomValues(rnds8);
-    return rnds8;
-  };
-}
-
-if (!rng) {
-  // Math.random()-based (RNG)
-  //
-  // If all else fails, use Math.random().  It's fast, but is of unspecified
-  // quality.
-  var rnds = new Array(16);
-  rng = function() {
-    for (var i = 0, r; i < 16; i++) {
-      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-    }
-
-    return rnds;
-  };
-}
-
-var rngBrowser = rng;
-
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-var byteToHex = [];
-for (var i = 0; i < 256; ++i) {
-  byteToHex[i] = (i + 0x100).toString(16).substr(1);
-}
-
-function bytesToUuid(buf, offset) {
-  var i = offset || 0;
-  var bth = byteToHex;
-  return bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]];
-}
-
-var bytesToUuid_1 = bytesToUuid;
-
-function v4(options, buf, offset) {
-  var i = buf && offset || 0;
-
-  if (typeof(options) == 'string') {
-    buf = options == 'binary' ? new Array(16) : null;
-    options = null;
-  }
-  options = options || {};
-
-  var rnds = options.random || (options.rng || rngBrowser)();
-
-  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-  rnds[6] = (rnds[6] & 0x0f) | 0x40;
-  rnds[8] = (rnds[8] & 0x3f) | 0x80;
-
-  // Copy bytes to buffer, if provided
-  if (buf) {
-    for (var ii = 0; ii < 16; ++ii) {
-      buf[i + ii] = rnds[ii];
-    }
-  }
-
-  return buf || bytesToUuid_1(rnds);
-}
-
-var v4_1 = v4;
-
-/* global browser */
-
-/**
- * Represents an adapter for a local storage where experiences are accumulated before a batch of
- * experiences is sent to a remote server and is removed from a local storage.
- * Currently a `browser.storage.local` local storage is used.
- */
-class LocalStorageAdapter {
-  /**
-   * Returns an adapter default values
-   * @return {{prefix: string}}
-   */
-  static get defaults () {
-    return {
-      // A prefix used to distinguish experience objects from objects of other types
-      prefix: 'experience_'
-    }
-  }
-
-  /**
-   * Stores a single experience to the local storage.
-   * @param {Experience} experience - An experience object to be saved.
-   */
-  static write (experience) {
-    // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
-    let uuid = `${LocalStorageAdapter.defaults.prefix}${v4_1()}`;
-
-    browser.storage.local.set({[uuid]: experience}).then(
-      () => {
-        console.log(`Experience has been written to the local storage successfully`);
-      },
-      (error) => {
-        console.error(`Cannot write experience to the local storage because of the following error: ${error}`);
-      }
-    );
-  }
-
-  /**
-   * Reads all experiences that are present in a local storage.
-   * @return {Promise.<{key: Experience}, Error>} Returns a promise that resolves with an object
-   * containing key: value pairs for each experience stored and rejects with an Error object.
-   */
-  static async readAll () {
-    try {
-      return await browser.storage.local.get()
-    } catch (error) {
-      console.error(`Cannot read data from the local storage because of the following error: ${error}`);
-      return error
-    }
-  }
-
-  /**
-   * Removes experience objects with specified keys from a local storage.
-   * @param {String[]} keys - an array of keys that specifies what Experience objects need to be removed.
-   * @return {Promise.<*|{minArgs, maxArgs}>} A Promise that will be fulfilled with no arguments
-   * if the operation succeeded. If the operation failed, the promise will be rejected with an error message.
-   */
-  static async remove (keys) {
-    return browser.storage.local.remove(keys)
-  }
-}
-
-class Monitor {
-  constructor (monitoringDataList) {
-    this.monitored = new Map();
-    if (monitoringDataList) {
-      for (let monitoringData of monitoringDataList) {
-        this.monitored.set(monitoringData.monitoredFunction, monitoringData);
-      }
-    }
-  }
-
-  static track (object, monitoringDataList) {
-    return new Proxy(object, new Monitor(monitoringDataList))
-  }
-
-  get (target, property, receiver) {
-    if (this.monitored.has(property)) {
-      let monitoringData = this.monitored.get(property);
-      if (monitoringData.hasOwnProperty('asyncWrapper')) {
-        return Monitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
-      } else {
-        console.error(`Only async wrappers are supported by monitor`);
-      }
-    }
-    return target[property]
-  }
-
-  monitor (functionName, functionConfig) {
-    this.monitored.set(functionName, functionConfig);
-  }
-
-  static syncWrapper (target, property, experience) {
-    console.log(`${property}() sync method has been called`);
-    const origMethod = target[property];
-    return function (...args) {
-      let result = origMethod.apply(this, args);
-      console.log(`${property}() sync method has been completed`);
-      experience.complete();
-      console.log(`${experience}`);
-      return result
-    }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, etc.
-   * @param target
-   * @param property
-   * @param actionFunction
-   * @param monitoringData
-   * @return {Function}
-   */
-  static asyncWrapper (target, property, actionFunction, monitoringData) {
-    console.log(`${property}() async method has been requested`);
-    return async function (...args) {
-      try {
-        return await actionFunction(this, target, property, args, monitoringData, LocalStorageAdapter)
-      } catch (error) {
-        console.error(`${property}() failed: ${error.value}`);
-        throw error
-      }
-    }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, and such.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @param storage
-   * @return {Promise.<*>}
-   */
-  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
-    let experience = new Experience(monitoringData.experience);
-    console.log(`${property}() async method has been called`);
-    // Last item in arguments list is a transaction
-    args.push(experience);
-    let result = await target[property].apply(monitor, args);
-    // resultObject.value is a returned message, experience object is in a `experience` property
-    experience = result.state;
-    experience.complete();
-    console.log(`${property}() completed with success, experience is:`, experience);
-
-    storage.write(experience);
-    return result
-  }
-
-  /**
-   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
-   * functions that create user experience.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @return {Promise.<*>}
-   */
-  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
-    let experience = new Experience(monitoringData.experience);
-    console.log(`${property}() async method has been called`);
-    let resultObject = await target[property].apply(monitor, args);
-    experience.complete();
-    resultObject.state.attach(experience);
-    console.log(`${property}() completed with success, experience is: ${experience}`);
-    return resultObject
-  }
-
-  /**
-   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async attachToMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`);
-    // First argument is always a request object, last argument is a state (Experience) object
-    args[0].experience = args[args.length - 1];
-    let result = await target[property].apply(monitor, args);
-    console.log(`${property}() completed with success`);
-    return result
-  }
-
-  /**
-   * This is a wrapper around functions that handle incoming messages with an experience object attached.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async detachFromMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`);
-    // First argument is an incoming request object
-    if (args[0].experience) {
-      args.push(Experience.readObject(args[0].experience));
-    } else {
-      console.warn(`This message has no experience data attached. Experience data will not be recorded`);
-    }
-    let result = await target[property].apply(monitor, args);
-    console.log(`${property}() completed with success`);
-    return result
-  }
-}
-
-const experienceActions = {
-  START: Symbol('Experience start'),
-  STOP: Symbol('Experience stop')
-};
-
-const eventTypes = {
-  CONSTRUCT: Symbol('Construct'),
-  GET: Symbol('Get'),
-  SET: Symbol('Set')
-};
-
-class ObjectMonitor {
-  constructor (options = {}) {
-    this.experienceDescription = '';
-    for (let event of Object.values(ObjectMonitor.events)) {
-      this[event] = [];
-    }
-
-    if (options) {
-      if (options.experience) { this.experienceDescription = options.experience; }
-      if (options.actions) {
-        for (const action of options.actions) {
-          this[action.event].push(action);
-        }
-      }
-    }
-  }
-
-  static get actions () {
-    return experienceActions
-  }
-
-  static get events () {
-    return eventTypes
-  }
-
-  static track (object, options) {
-    return new Proxy(object, new ObjectMonitor(options))
-  }
-
-  get (target, property) {
-    for (let action of this[ObjectMonitor.events.GET]) {
-      if (action.name === property) { this.experienceAction(action); }
-    }
-    return target[property]
-  }
-
-  set (target, property, value) {
-    for (let action of this[ObjectMonitor.events.SET]) {
-      if (action.name === property) { this.experienceAction(action); }
-    }
-    target[property] = value;
-    return true // Success of a set operation
-  }
-
-  experienceAction (action) {
-    if (action.action === ObjectMonitor.actions.START) {
-      this.experience = new Experience(this.experienceDescription).start();
-      console.log(`Experience started`);
-    } else if (action.action === ObjectMonitor.actions.STOP) {
-      this.experience.complete();
-      console.log(`Experience completed:`, this.experience);
-      LocalStorageAdapter.write(this.experience);
-    }
-  }
-}
-
-/**
- * Responsible form transporting experiences from one storage to the other. Current implementation
- * sends a batch of experience objects to the remote server once a certain amount of them
- * is accumulated in a local storage.
- */
-class Transporter {
-  /**
-   * Sets a transporter configuration.
-   * @param {LocalStorageAdapter} localStorage - Represents local storage where experience objects are
-   * accumulated before being sent to a remote server.
-   * @param {RemoteStorageAdapter} remoteStorage - Represents a remote server that stores experience objects.
-   * @param {number} qtyThreshold - A minimal number of experiences to be sent to a remote storage.
-   * @param {number} interval - Interval, in milliseconds, of checking a local storage for changes
-   */
-  constructor (localStorage, remoteStorage, qtyThreshold, interval) {
-    this.localStorage = localStorage;
-    this.remoteStorage = remoteStorage;
-    this.qtyThreshold = qtyThreshold;
-    window.setInterval(this.checkExperienceStorage.bind(this), interval);
-  }
-
-  /**
-   * Runs at a specified interval and check if any new experience objects has been recorded to the local storage.
-   * If number of experience records exceeds a threshold, sends all experiences to the remote server and
-   * removes them from local storage.
-   * @return {Promise.<void>}
-   */
-  async checkExperienceStorage () {
-    console.log(`Experience storage check`);
-    let records = await this.localStorage.readAll();
-    let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
-    if (keys.length > this.qtyThreshold) {
-      await this.sendExperiencesToRemote();
-    }
-  }
-
-  /**
-   * If there are any experiences in the local storage, sends all of them to a remote server and, if succeeded,
-   * removes them from a local storage.
-   * @return {Promise.<*>}
-   */
-  async sendExperiencesToRemote () {
-    try {
-      let records = await this.localStorage.readAll();
-      let values = Object.values(records);
-      let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
-      if (keys.length > 0) {
-        // If there are any records in a local storage
-        await this.remoteStorage.write(values);
-        await this.localStorage.remove(keys);
-      } else {
-        console.log(`No data in local experience storage`);
-      }
-    } catch (error) {
-      console.error(`Cannot send experiences to a remote server: ${error}`);
-      return error
-    }
-  }
-}
-
-/**
- * Defines an API for storing experiences on a remote server, such as LRS.
- */
-class RemoteStorageAdapter {
-  /**
-   * Stores one or several experiences on a remote server.
-   * @param {Experience[]} experiences - An array of experiences to store remotely.
-   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
-   * and is rejected when storing on a remote server failed.
-   */
-  static write (experiences) {
-    console.warn(`This method should be implemented within a subclass and should never be called directly.  
-      If you see this message then something is probably goes wrong`);
-    return new Promise()
-  }
-}
-
-/**
- * This is a test implementation of a remote experience store adapter. It does not send anything anywhere
- * and just records experiences that are passed to it.
- */
-class TestAdapter extends RemoteStorageAdapter {
-  /**
-   * Imitates storing of one or several experiences on a remote server.
-   * @param {Experience[]} experiences - An array of experiences to store remotely.
-   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
-   * and is rejected when storing on a remote server failed.
-   */
-  static write (experiences) {
-    return new Promise((resolve, reject) => {
-      if (!experiences) {
-        reject(new Error(`experience cannot be empty`));
-        return
-      }
-      if (!Array.isArray(experiences)) {
-        reject(new Error(`experiences must be an array`));
-        return
-      }
-      console.log('Experience sent to a remote server:');
-      for (let experience of experiences) {
-        console.log(experience);
-      }
-      resolve();
-    })
-  }
-}
-
-exports.Experience = Experience;
-exports.Monitor = Monitor;
-exports.ObjectMonitor = ObjectMonitor;
-exports.Transporter = Transporter;
-exports.StorageAdapter = LocalStorageAdapter;
-exports.TestAdapter = TestAdapter;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
-
-/***/ }),
-/* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

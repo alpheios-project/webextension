@@ -20,26 +20,41 @@ export default class ContentProcess {
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
     this.options = new ContentOptions(browser.storage.sync.get,browser.storage.sync.set)
     this.resourceOptions = new ResourceOptions(browser.storage.sync.get,browser.storage.sync.set)
-
     this.messagingService = new MessagingService()
-
+    if (this.isEmbedded()) {
+      return
+    }
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
     this.langData = new LanguageDataList().loadData()
-    this.ui = new UIController(this.state, this.options, this.resourceOptions, TabScript.statuses)
+    this.ui = new UIController(this.state, this.options, this.resourceOptions, TabScript.statuses,  browser.runtime.getManifest())
   }
 
   initialize () {
     // Adds message listeners
     this.messagingService.addHandler(Message.types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
+    document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
+    if (this.state.isDisabled()) {
+      return
+    }
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
     document.body.addEventListener('keydown', this.handleEscapeKey.bind(this))
-    document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
-    this.reactivate()
   }
 
   get isActive () {
     return this.state.status === TabScript.statuses.script.ACTIVE
+  }
+
+  isEmbedded() {
+    // TODO figure out a more general way to identify if Alpheios is embedded that doesn't
+    // require use of a predetermined element id
+    if (document.getElementById('alpheios-main')) {
+      console.log('Alpheios is embedded.')
+      this.state.disable()
+      return true
+    } else {
+      return false
+    }
   }
 
   handleReload () {
@@ -58,8 +73,12 @@ export default class ContentProcess {
   }
 
   reactivate () {
-    console.log('Content has been reactivated.')
-    this.state.status = TabScript.statuses.script.ACTIVE
+    if ( this.state.isDisabled()) {
+      console.log('Alpheios is disabled')
+    } else {
+      console.log('Content has been reactivated.')
+      this.state.status = TabScript.statuses.script.ACTIVE
+    }
   }
 
   handleStateRequest (request, sender) {
@@ -77,7 +96,10 @@ export default class ContentProcess {
       }
     }
     if (diff.has('status')) {
-      if (diff.status === TabScript.statuses.script.ACTIVE) {
+      if (this.state.isDisabled()) {
+        console.log("Content is disabled. Ignoring status update.")
+      }
+      else if (diff.status === TabScript.statuses.script.ACTIVE) {
         this.state.activate()
       } else {
         this.state.deactivate()
@@ -86,11 +108,13 @@ export default class ContentProcess {
         console.log('Content has been deactivated')
       }
     }
-    if (diff.has('panelStatus')) {
-      if (diff.panelStatus === TabScript.statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
-    }
-    if (diff.has('tab') && diff.tab) {
-      this.ui.changeTab(diff.tab)
+    if (this.ui) {
+      if (diff.has('panelStatus')) {
+        if (diff.panelStatus === TabScript.statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
+      }
+      if (diff.has('tab') && diff.tab) {
+        this.ui.changeTab(diff.tab)
+      }
     }
     this.messagingService.sendResponseToBg(new StateResponse(request, this.state)).catch(
       (error) => {

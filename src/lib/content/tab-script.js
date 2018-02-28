@@ -30,7 +30,8 @@ export default class TabScript {
         values: {
           PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
           ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
-          DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated') // Content script has been loaded, but is deactivated
+          DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
+          DISABLED: Symbol.for('Alpheios_Status_Disabled')
         },
         defaultValueIndex: 0
       },
@@ -164,6 +165,10 @@ export default class TabScript {
     return this.status === TabScript.statuses.script.DEACTIVATED
   }
 
+  isDisabled () {
+    return this.status === TabScript.statuses.script.DISABLED
+  }
+
   activate () {
     this.status = TabScript.statuses.script.ACTIVE
     return this
@@ -171,6 +176,11 @@ export default class TabScript {
 
   deactivate () {
     this.status = TabScript.statuses.script.DEACTIVATED
+    return this
+  }
+
+  disable () {
+    this.status = TabScript.statuses.script.DISABLED
     return this
   }
 
