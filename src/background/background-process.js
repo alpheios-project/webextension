@@ -4,7 +4,7 @@ import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
 import ContextMenuItem from './context-menu-item.js'
-import ContentMenuSeperator from './context-menu-separator.js'
+import ContentMenuSeparator from './context-menu-separator.js'
 import TabScript from '../lib/content/tab-script.js'
 import {
   Transporter,
@@ -73,7 +73,7 @@ export default class BackgroundProcess {
       activate: new ContextMenuItem(BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
       deactivate: new ContextMenuItem(BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
       openPanel: new ContextMenuItem(BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText),
-      separatorOne: new ContentMenuSeperator(BackgroundProcess.defaults.separatorOneId),
+      separatorOne: new ContentMenuSeparator(BackgroundProcess.defaults.separatorOneId),
       info: new ContextMenuItem(BackgroundProcess.defaults.infoMenuItemId, BackgroundProcess.defaults.infoMenuItemText),
       disabled: new ContextMenuItem(BackgroundProcess.defaults.disabledMenuItemId, BackgroundProcess.defaults.disabledMenuItemText)
     }

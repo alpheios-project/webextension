@@ -3450,6 +3450,8 @@ class ContentProcess {
   }
 
   isEmbedded() {
+    // TODO figure out a more general way to identify if Alpheios is embedded that doesn't
+    // require use of a predetermined element id
     if (document.getElementById('alpheios-main')) {
       console.log('Alpheios is embedded.')
       this.state.disable()
