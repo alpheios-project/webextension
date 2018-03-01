@@ -33,12 +33,13 @@ export default class ContentProcess {
     // Adds message listeners
     this.messagingService.addHandler(Message.types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
-    document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
     if (this.state.isDisabled()) {
       return
     }
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
     document.body.addEventListener('keydown', this.handleEscapeKey.bind(this))
+    document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
+    this.reactivate()
   }
 
   get isActive () {

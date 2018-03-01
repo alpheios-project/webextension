@@ -3437,12 +3437,13 @@ class ContentProcess {
     // Adds message listeners
     this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_message__["a" /* default */].types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
-    document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
     if (this.state.isDisabled()) {
       return
     }
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
     document.body.addEventListener('keydown', this.handleEscapeKey.bind(this))
+    document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
+    this.reactivate()
   }
 
   get isActive () {
