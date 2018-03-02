@@ -241,14 +241,23 @@ export default class BackgroundProcess {
     if (this.tabs.has(details.tabId) && details.frameId === 0) {
       // If content script was loaded to that tab, restore it to the state it had before
       let tab = this.tabs.get(details.tabId)
+      tab.restore()
       try {
         await this.loadContentData(tab)
         this.setContentState(tab)
+        this.checkEmbeddedContent(details.tabId)
       } catch (error) {
         console.error(`Cannot load content script for a tab with an ID of ${details.tabId}`)
       }
     }
   }
+
+  checkEmbeddedContent (tabID) {
+    browser.tabs.executeScript(tabID, {
+      code: "document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))"
+    })
+  }
+
 
   /**
    * Listen to extension updates. Need to define to prevent the browser

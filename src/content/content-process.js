@@ -21,41 +21,43 @@ export default class ContentProcess {
     this.options = new ContentOptions(browser.storage.sync.get,browser.storage.sync.set)
     this.resourceOptions = new ResourceOptions(browser.storage.sync.get,browser.storage.sync.set)
     this.messagingService = new MessagingService()
-    if (this.isEmbedded()) {
-      return
-    }
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
     this.langData = new LanguageDataList().loadData()
-    this.ui = new UIController(this.state, this.options, this.resourceOptions, TabScript.statuses,  browser.runtime.getManifest())
+    this.ui = new UIController(this.state, this.options, this.resourceOptions,  browser.runtime.getManifest())
   }
 
   initialize () {
     // Adds message listeners
     this.messagingService.addHandler(Message.types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
-    if (this.state.isDisabled()) {
-      return
-    }
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
     document.body.addEventListener('keydown', this.handleEscapeKey.bind(this))
     document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
+    document.body.addEventListener('Alpheios_Embedded_Response', this.disableContent.bind(this))
     this.reactivate()
   }
 
   get isActive () {
-    return this.state.status === TabScript.statuses.script.ACTIVE
+    return this.state.isActive()
   }
 
-  isEmbedded() {
-    // TODO figure out a more general way to identify if Alpheios is embedded that doesn't
-    // require use of a predetermined element id
-    if (document.getElementById('alpheios-main')) {
-      console.log('Alpheios is embedded.')
-      this.state.disable()
-      return true
-    } else {
-      return false
+  get uiIsActive () {
+    return this.state.uiIsActive()
+  }
+
+  disableContent() {
+    console.log('Alpheios is embedded.')
+    // if we weren't already disabled, remember the current state
+    // and then deactivate before disabling
+    if (!this.state.isDisabled()) {
+      this.state.save()
+      if (this.isActive) {
+        console.log('Deactivating Alpheios')
+        this.deactivate()
+      }
     }
+    this.state.disable()
+    this.sendStateToBackground()
   }
 
   handleReload () {
@@ -70,7 +72,7 @@ export default class ContentProcess {
     console.log('Content has been deactivated.')
     this.ui.popup.close()
     this.ui.panel.close()
-    this.state.status = TabScript.statuses.script.DEACTIVATED
+    this.state.deactivate()
   }
 
   reactivate () {
@@ -78,7 +80,7 @@ export default class ContentProcess {
       console.log('Alpheios is disabled')
     } else {
       console.log('Content has been reactivated.')
-      this.state.status = TabScript.statuses.script.ACTIVE
+      this.state.activate()
     }
   }
 
@@ -97,16 +99,16 @@ export default class ContentProcess {
       }
     }
     if (diff.has('status')) {
-      if (this.state.isDisabled()) {
-        console.log("Content is disabled. Ignoring status update.")
-      }
-      else if (diff.status === TabScript.statuses.script.ACTIVE) {
+      if (diff.status === TabScript.statuses.script.ACTIVE) {
         this.state.activate()
-      } else {
+      } else if (diff.status === TabScript.statuses.script.DEACTIVATED) {
         this.state.deactivate()
         this.ui.panel.close()
         this.ui.popup.close()
         console.log('Content has been deactivated')
+      } else if (diff.status === TabScript.statuses.script.DISABLED) {
+        this.state.disable()
+        console.log('Content has been disabled')
       }
     }
     if (this.ui) {
@@ -125,6 +127,7 @@ export default class ContentProcess {
   }
 
   sendStateToBackground () {
+    console.log("send state to background",this.state)
     this.messagingService.sendMessageToBg(new StateMessage(this.state)).catch(
       (error) => {
         console.error('Unable to send a response to activation request', error)
@@ -144,7 +147,7 @@ export default class ContentProcess {
   }
 
   getSelectedText (event) {
-    if (this.isActive) {
+    if (this.isActive && this.uiIsActive) {
       /*
       TextSelector conveys text selection information. It is more generic of the two.
       HTMLSelector conveys page-specific information, such as location of a selection on a page.

@@ -2504,6 +2504,8 @@ class TabScript {
     this.status = undefined
     this.panelStatus = undefined
     this.tab = undefined
+    this.savedStatus = undefined
+    this.uiActive = false
 
     this.watchers = new Map()
   }
@@ -2525,9 +2527,13 @@ class TabScript {
           PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
           ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
           DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
-          DISABLED: Symbol.for('Alpheios_Status_Disabled')
+          DISABLED: Symbol.for('Alpheios_Status_Disabled'), // Content script has been loaded, but it is disabled
         },
         defaultValueIndex: 0
+      },
+      savedStatus: {
+        name: 'savedStatus',
+        valueType: Boolean
       },
       panelStatus: {
         name: 'panelStatus',
@@ -2557,6 +2563,10 @@ class TabScript {
     return [TabScript.props.tab.name]
   }
 
+  static get booleanProps () {
+    return [TabScript.props.savedStatus.name]
+  }
+
   /**
    * Only certain features will be stored within a serialized version of a TabScript. This is done
    * to prevent context-specific features (such as local event handlers) to be passed over the network
@@ -2564,7 +2574,7 @@ class TabScript {
    * @return {String[]}
    */
   static get dataProps () {
-    return TabScript.symbolProps.concat(TabScript.stringProps)
+    return TabScript.symbolProps.concat(TabScript.stringProps).concat(TabScript.booleanProps)
   }
 
   /**
@@ -2592,7 +2602,8 @@ class TabScript {
       script: {
         PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
         ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
-        DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated') // Content script has been loaded, but is deactivated
+        DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
+        DISABLED: Symbol.for('Alpheios_Status_Disabled') // Content script has been loaded, but it is disabled
       },
       panel: {
         OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
@@ -2663,6 +2674,10 @@ class TabScript {
     return this.status === TabScript.statuses.script.DISABLED
   }
 
+  uiIsActive () {
+    return this.uiActive
+  }
+
   activate () {
     this.status = TabScript.statuses.script.ACTIVE
     return this
@@ -2676,6 +2691,23 @@ class TabScript {
   disable () {
     this.status = TabScript.statuses.script.DISABLED
     return this
+  }
+
+  save () {
+    this.savedStatus = this.status
+    return this
+  }
+
+  restore () {
+    if (this.savedStatus) {
+      this.status = this.savedStatus
+      this.savedStatus = undefined
+    }
+    return this
+  }
+
+  activateUI () {
+    this.uiActive = true
   }
 
   changeTab (tabName) {
@@ -2770,6 +2802,10 @@ class TabScript {
     }
 
     for (let prop of TabScript.stringProps) {
+      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
+    }
+
+    for (let prop of TabScript.booleanProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
     }
 
@@ -3425,41 +3461,43 @@ class ContentProcess {
     this.options = new __WEBPACK_IMPORTED_MODULE_10_alpheios_components__["ContentOptions"](browser.storage.sync.get,browser.storage.sync.set)
     this.resourceOptions = new __WEBPACK_IMPORTED_MODULE_10_alpheios_components__["ResourceOptions"](browser.storage.sync.get,browser.storage.sync.set)
     this.messagingService = new __WEBPACK_IMPORTED_MODULE_6__lib_messaging_service__["a" /* default */]()
-    if (this.isEmbedded()) {
-      return
-    }
     this.maAdapter = new __WEBPACK_IMPORTED_MODULE_2_alpheios_tufts_adapter__["a" /* default */]() // Morphological analyzer adapter, with default arguments
     this.langData = new __WEBPACK_IMPORTED_MODULE_0_alpheios_inflection_tables__["a" /* LanguageDataList */]().loadData()
-    this.ui = new __WEBPACK_IMPORTED_MODULE_10_alpheios_components__["UIController"](this.state, this.options, this.resourceOptions, __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses,  browser.runtime.getManifest())
+    this.ui = new __WEBPACK_IMPORTED_MODULE_10_alpheios_components__["UIController"](this.state, this.options, this.resourceOptions,  browser.runtime.getManifest())
   }
 
   initialize () {
     // Adds message listeners
     this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_5__lib_messaging_message_message__["a" /* default */].types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
-    if (this.state.isDisabled()) {
-      return
-    }
     document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
     document.body.addEventListener('keydown', this.handleEscapeKey.bind(this))
     document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
+    document.body.addEventListener('Alpheios_Embedded_Response', this.disableContent.bind(this))
     this.reactivate()
   }
 
   get isActive () {
-    return this.state.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+    return this.state.isActive()
   }
 
-  isEmbedded() {
-    // TODO figure out a more general way to identify if Alpheios is embedded that doesn't
-    // require use of a predetermined element id
-    if (document.getElementById('alpheios-main')) {
-      console.log('Alpheios is embedded.')
-      this.state.disable()
-      return true
-    } else {
-      return false
+  get uiIsActive () {
+    return this.state.uiIsActive()
+  }
+
+  disableContent() {
+    console.log('Alpheios is embedded.')
+    // if we weren't already disabled, remember the current state
+    // and then deactivate before disabling
+    if (!this.state.isDisabled()) {
+      this.state.save()
+      if (this.isActive) {
+        console.log('Deactivating Alpheios')
+        this.deactivate()
+      }
     }
+    this.state.disable()
+    this.sendStateToBackground()
   }
 
   handleReload () {
@@ -3474,7 +3512,7 @@ class ContentProcess {
     console.log('Content has been deactivated.')
     this.ui.popup.close()
     this.ui.panel.close()
-    this.state.status = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.DEACTIVATED
+    this.state.deactivate()
   }
 
   reactivate () {
@@ -3482,7 +3520,7 @@ class ContentProcess {
       console.log('Alpheios is disabled')
     } else {
       console.log('Content has been reactivated.')
-      this.state.status = __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE
+      this.state.activate()
     }
   }
 
@@ -3501,16 +3539,16 @@ class ContentProcess {
       }
     }
     if (diff.has('status')) {
-      if (this.state.isDisabled()) {
-        console.log("Content is disabled. Ignoring status update.")
-      }
-      else if (diff.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE) {
+      if (diff.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.ACTIVE) {
         this.state.activate()
-      } else {
+      } else if (diff.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.DEACTIVATED) {
         this.state.deactivate()
         this.ui.panel.close()
         this.ui.popup.close()
         console.log('Content has been deactivated')
+      } else if (diff.status === __WEBPACK_IMPORTED_MODULE_9__lib_content_tab_script__["a" /* default */].statuses.script.DISABLED) {
+        this.state.disable()
+        console.log('Content has been disabled')
       }
     }
     if (this.ui) {
@@ -3529,6 +3567,7 @@ class ContentProcess {
   }
 
   sendStateToBackground () {
+    console.log("send state to background",this.state)
     this.messagingService.sendMessageToBg(new __WEBPACK_IMPORTED_MODULE_7__lib_messaging_message_state_message__["a" /* default */](this.state)).catch(
       (error) => {
         console.error('Unable to send a response to activation request', error)
@@ -3548,7 +3587,7 @@ class ContentProcess {
   }
 
   getSelectedText (event) {
-    if (this.isActive) {
+    if (this.isActive && this.uiIsActive) {
       /*
       TextSelector conveys text selection information. It is more generic of the two.
       HTMLSelector conveys page-specific information, such as location of a selection on a page.
@@ -29090,16 +29129,17 @@ const languageNames = new Map([
 ])
 
 class UIController {
-  constructor (state, options, resourceOptions, statuses, manifest) {
+  constructor (state, options, resourceOptions, manifest,
+    template = {html: __WEBPACK_IMPORTED_MODULE_8__template_htmlf___default.a, panelId: 'alpheios-panel', popupId: 'alpheios-popup'}) {
     this.state = state
     this.options = options
     this.resourceOptions = resourceOptions
-    this.statuses = statuses
     this.settings = UIController.settingValues
     this.irregularBaseFontSizeClassName = 'alpheios-irregular-base-font-size'
     this.irregularBaseFontSize = !UIController.hasRegularBaseFontSize()
     this.verboseMode = false
     this.manifest = manifest
+    this.template = template
 
     this.zIndex = this.getZIndexMax()
 
@@ -29112,10 +29152,10 @@ class UIController {
     document.body.classList.add('alpheios')
     let container = document.createElement('div')
     document.body.insertBefore(container, null)
-    container.outerHTML = __WEBPACK_IMPORTED_MODULE_8__template_htmlf___default.a
+    container.outerHTML = template.html
     // Initialize components
     this.panel = new __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue___default.a({
-      el: '#alpheios-panel',
+      el: `#${this.template.panelId}`,
       components: { panel: __WEBPACK_IMPORTED_MODULE_2__vue_components_panel_vue__["a" /* default */] },
       data: {
         panelData: {
@@ -29186,7 +29226,7 @@ class UIController {
         open: function () {
           if (!this.state.isPanelOpen()) {
             this.panelData.isOpen = true
-            this.state.setItem('panelStatus', statuses.panel.OPEN)
+            this.state.setPanelOpen()
           }
           return this
         },
@@ -29194,7 +29234,7 @@ class UIController {
         close: function () {
           if (!this.state.isPanelClosed()) {
             this.panelData.isOpen = false
-            this.state.setItem('panelStatus', statuses.panel.CLOSED)
+            this.state.setPanelClosed()
           }
           return this
         },
@@ -29356,15 +29396,15 @@ class UIController {
 
     this.options.load(() => {
       this.resourceOptions.load(() => {
-        this.state.status = statuses.script.ACTIVE
-        console.log('Content script is activated')
+        this.state.activateUI()
+        console.log('UI options are loaded')
         this.updateLanguage(this.options.items.preferredLanguage.currentValue)
       })
     })
 
     // Create a Vue instance for a popup
     this.popup = new __WEBPACK_IMPORTED_MODULE_1_vue_dist_vue___default.a({
-      el: '#alpheios-popup',
+      el: `#${this.template.popupId}`,
       components: { popup: __WEBPACK_IMPORTED_MODULE_3__vue_components_popup_vue__["a" /* default */] },
       data: {
         messages: [],
