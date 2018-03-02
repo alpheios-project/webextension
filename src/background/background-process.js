@@ -115,6 +115,7 @@ export default class BackgroundProcess {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
     let tab = TabScript.create(this.tabs.get(tabID)).activate().setPanelOpen()
     this.setContentState(tab)
+    this.checkEmbeddedContent(tabID)
   }
 
   async deactivateContent (tabID) {
@@ -253,9 +254,13 @@ export default class BackgroundProcess {
   }
 
   checkEmbeddedContent (tabID) {
-    browser.tabs.executeScript(tabID, {
-      code: "document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))"
-    })
+    try {
+      browser.tabs.executeScript(tabID, {
+        code: "document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))"
+      })
+    } catch (e) {
+      console.error(e)
+    }
   }
 
 

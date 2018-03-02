@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 5);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -2489,1321 +2489,6 @@ class ResourceProvider {
 
 /***/ }),
 /* 2 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/**
- * Contains a state of a tab content script.
- * @property {Number} tabID - An ID of a tab where the content script is loaded
- * @property {Symbol} status - A status of a current script (Active, Deactivated, Pending)
- * @property {panelStatus} panelStatus
- */
-class TabScript {
-  constructor (tabID) {
-    this.tabID = tabID
-    this.status = undefined
-    this.panelStatus = undefined
-    this.tab = undefined
-    this.savedStatus = undefined
-    this.uiActive = false
-
-    this.watchers = new Map()
-  }
-
-  static get propTypes () {
-    return {
-      NUMERIC: Symbol('Numeric'),
-      STRING: Symbol('String'),
-      SYMBOL: Symbol('Symbol')
-    }
-  }
-
-  static get props () {
-    return {
-      status: {
-        name: 'status',
-        valueType: TabScript.propTypes.SYMBOL,
-        values: {
-          PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
-          ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
-          DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
-          DISABLED: Symbol.for('Alpheios_Status_Disabled'), // Content script has been loaded, but it is disabled
-        },
-        defaultValueIndex: 0
-      },
-      savedStatus: {
-        name: 'savedStatus',
-        valueType: Boolean
-      },
-      panelStatus: {
-        name: 'panelStatus',
-        valueType: TabScript.propTypes.SYMBOL,
-        values: {
-          OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
-          CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
-        },
-        defaultValueIndex: 1
-      },
-      tab: {
-        name: 'tab',
-        valueType: TabScript.propTypes.STRING,
-        values: {
-          INFO: 'info'
-        },
-        defaultValueIndex: 0
-      }
-    }
-  }
-
-  static get symbolProps () {
-    return [TabScript.props.status.name, TabScript.props.panelStatus.name]
-  }
-
-  static get stringProps () {
-    return [TabScript.props.tab.name]
-  }
-
-  static get booleanProps () {
-    return [TabScript.props.savedStatus.name]
-  }
-
-  /**
-   * Only certain features will be stored within a serialized version of a TabScript. This is done
-   * to prevent context-specific features (such as local event handlers) to be passed over the network
-   * to a different context where they would make no sense. This getter returns a list of such fields.
-   * @return {String[]}
-   */
-  static get dataProps () {
-    return TabScript.symbolProps.concat(TabScript.stringProps).concat(TabScript.booleanProps)
-  }
-
-  /**
-   * A copy constructor.
-   * @param {TabScript} source - An instance of TabScript object we need to copy.
-   * @return {TabScript} A copy of a source object.
-   */
-  static create (source) {
-    let copy = new TabScript()
-    for (let key of Object.keys(source)) {
-      copy[key] = source[key]
-    }
-    return copy
-  }
-
-  static get defaults () {
-    return {
-      status: TabScript.statuses.script.ACTIVE,
-      panelStatus: TabScript.statuses.panel.OPEN
-    }
-  }
-
-  static get statuses () {
-    return {
-      script: {
-        PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
-        ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
-        DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
-        DISABLED: Symbol.for('Alpheios_Status_Disabled') // Content script has been loaded, but it is disabled
-      },
-      panel: {
-        OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
-        CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
-      }
-    }
-  }
-
-  /**
-   * Sets a watcher function that is called every time a property is changed using a setItem() method.
-   * @param {String} property - A name of a property that should be monitored
-   * @param {Function} watchFunc - A function that will be called every time a property changes
-   * @return {TabScript} Reference to self for chaining
-   */
-  setWatcher (property, watchFunc) {
-    this.watchers.set(property, watchFunc)
-    return this
-  }
-
-  /**
-   * SetItem provides a monitored way to change a TabScript state. If value is assigned to a data property directly
-   * there is no way to know if a property was changed. However, if a property was changed using setItem() method,
-   * and if there is a watcher function registered for a changed property name,
-   * this function will be called on every property change, passing a changed property name as an argument.
-   * @param key
-   * @param value
-   * @return {TabScript}
-   */
-  setItem (key, value) {
-    this[key] = value
-    if (this.watchers && this.watchers.has(key)) {
-      this.watchers.get(key)(key, this)
-    }
-    return this
-  }
-
-  isPanelOpen () {
-    return this.panelStatus === TabScript.statuses.panel.OPEN
-  }
-
-  isPanelClosed () {
-    return this.panelStatus === TabScript.statuses.panel.CLOSED
-  }
-
-  setPanelOpen () {
-    this.setItem('panelStatus', TabScript.statuses.panel.OPEN)
-    return this
-  }
-
-  setPanelClosed () {
-    this.setItem('panelStatus', TabScript.statuses.panel.CLOSED)
-    return this
-  }
-
-  hasSameID (tabID) {
-    return this.tabID === tabID
-  }
-
-  isActive () {
-    return this.status === TabScript.statuses.script.ACTIVE
-  }
-
-  isDeactivated () {
-    return this.status === TabScript.statuses.script.DEACTIVATED
-  }
-
-  isDisabled () {
-    return this.status === TabScript.statuses.script.DISABLED
-  }
-
-  uiIsActive () {
-    return this.uiActive
-  }
-
-  activate () {
-    this.status = TabScript.statuses.script.ACTIVE
-    return this
-  }
-
-  deactivate () {
-    this.status = TabScript.statuses.script.DEACTIVATED
-    return this
-  }
-
-  disable () {
-    this.status = TabScript.statuses.script.DISABLED
-    return this
-  }
-
-  save () {
-    this.savedStatus = this.status
-    return this
-  }
-
-  restore () {
-    if (this.savedStatus) {
-      this.status = this.savedStatus
-      this.savedStatus = undefined
-    }
-    return this
-  }
-
-  activateUI () {
-    this.uiActive = true
-  }
-
-  changeTab (tabName) {
-    this.setItem(TabScript.props.tab.name, tabName)
-    return this
-  }
-
-  update (source) {
-    for (let key of Object.keys(source)) {
-      this[key] = source[key]
-    }
-    return this
-  }
-
-  diff (state) {
-    let diff = {
-      _changedKeys: [],
-      _changedEntries: []
-    }
-
-    // Check if there are any differences in tab IDs
-    if (this.tabID !== state.tabID) {
-      diff.tabID = state.tabID
-      diff['_changedKeys'].push('tabID')
-      diff['_changedEntries'].push(['tabID', state.tabID])
-    }
-
-    for (let key of Object.keys(state)) {
-      // Build diffs only for data properties
-      if (TabScript.dataProps.includes(key)) {
-        if (this.hasOwnProperty(key)) {
-          if (this[key] !== state[key]) {
-            diff[key] = state[key]
-            diff['_changedKeys'].push(key)
-            diff['_changedEntries'].push([key, state[key]])
-          }
-        } else {
-          console.warn(`TabScript has no property named "${key}"`)
-        }
-      }
-    }
-
-    diff.keys = function () {
-      return diff['_changedKeys']
-    }
-
-    diff.entries = function () {
-      return diff['_changedEntries']
-    }
-
-    diff.has = function (prop) {
-      return diff._changedKeys.includes(prop)
-    }
-
-    diff.isEmpty = function () {
-      return !diff._changedKeys.length
-    }
-    return diff
-  }
-
-  /**
-   * Creates a serializable copy of a source object. Firefox uses the structured clone algorithm
-   * (https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) to serialize objects.
-   * Requirements of this algorithm are that a serializable object to have no Function or Error properties,
-   * neither any DOM Nodes. That's why an empty serializable object is created and only
-   * selected properties are copied into it.
-   * @param {TabScript} source - An object to be serialized.
-   * @return {Object} A serializable copy of a source.
-   */
-  static serializable (source) {
-    let serializable = {}
-    serializable.tabID = source.tabID
-    for (let key of Object.keys(source)) {
-      if (TabScript.dataProps.includes(key)) {
-        /*
-        Only certain features will be stored within a serialized version of a TabScript. This is done
-        to prevent context-specific features (such as local event handlers) to be passed over the network
-        to a different context where they would make no sense.
-         */
-        let value = source[key]
-        serializable[key] = (typeof value === 'symbol') ? Symbol.keyFor(value) : value
-      }
-    }
-    return serializable
-  }
-
-  static readObject (jsonObject) {
-    let tabScript = new TabScript(jsonObject.tabID)
-
-    for (let prop of TabScript.symbolProps) {
-      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
-    }
-
-    for (let prop of TabScript.stringProps) {
-      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
-    }
-
-    for (let prop of TabScript.booleanProps) {
-      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
-    }
-
-    return tabScript
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = TabScript;
-
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global) {
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
-/**
- * A base object class for an Experience object.
- */
-class Experience {
-  constructor (description) {
-    this.description = description;
-    this.startTime = undefined;
-    this.endTime = undefined;
-    this.details = [];
-  }
-
-  static readObject (jsonObject) {
-    let experience = new Experience(jsonObject.description);
-    if (jsonObject.startTime) { experience.startTime = jsonObject.startTime; }
-    if (jsonObject.endTime) { experience.endTime = jsonObject.endTime; }
-    for (let detailsItem of jsonObject.details) {
-      experience.details.push(Experience.readObject(detailsItem));
-    }
-    return experience
-  }
-
-  attach (experience) {
-    this.details.push(experience);
-  }
-
-  start () {
-    this.startTime = new Date().getTime();
-    return this
-  }
-
-  complete () {
-    this.endTime = new Date().getTime();
-    return this
-  }
-
-  get duration () {
-    return this.endTime - this.startTime
-  }
-
-  toString () {
-    return `"${this.description}" experience duration is ${this.duration} ms`
-  }
-}
-
-var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
-
-// Unique ID creation requires a high quality random # generator.  In the
-// browser this is a little complicated due to unknown quality of Math.random()
-// and inconsistent support for the `crypto` API.  We do the best we can via
-// feature-detection
-var rng;
-
-var crypto = commonjsGlobal.crypto || commonjsGlobal.msCrypto; // for IE 11
-if (crypto && crypto.getRandomValues) {
-  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
-  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
-  rng = function whatwgRNG() {
-    crypto.getRandomValues(rnds8);
-    return rnds8;
-  };
-}
-
-if (!rng) {
-  // Math.random()-based (RNG)
-  //
-  // If all else fails, use Math.random().  It's fast, but is of unspecified
-  // quality.
-  var rnds = new Array(16);
-  rng = function() {
-    for (var i = 0, r; i < 16; i++) {
-      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
-      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
-    }
-
-    return rnds;
-  };
-}
-
-var rngBrowser = rng;
-
-/**
- * Convert array of 16 byte values to UUID string format of the form:
- * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
- */
-var byteToHex = [];
-for (var i = 0; i < 256; ++i) {
-  byteToHex[i] = (i + 0x100).toString(16).substr(1);
-}
-
-function bytesToUuid(buf, offset) {
-  var i = offset || 0;
-  var bth = byteToHex;
-  return bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] + '-' +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]] +
-          bth[buf[i++]] + bth[buf[i++]];
-}
-
-var bytesToUuid_1 = bytesToUuid;
-
-function v4(options, buf, offset) {
-  var i = buf && offset || 0;
-
-  if (typeof(options) == 'string') {
-    buf = options == 'binary' ? new Array(16) : null;
-    options = null;
-  }
-  options = options || {};
-
-  var rnds = options.random || (options.rng || rngBrowser)();
-
-  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
-  rnds[6] = (rnds[6] & 0x0f) | 0x40;
-  rnds[8] = (rnds[8] & 0x3f) | 0x80;
-
-  // Copy bytes to buffer, if provided
-  if (buf) {
-    for (var ii = 0; ii < 16; ++ii) {
-      buf[i + ii] = rnds[ii];
-    }
-  }
-
-  return buf || bytesToUuid_1(rnds);
-}
-
-var v4_1 = v4;
-
-/* global browser */
-
-/**
- * Represents an adapter for a local storage where experiences are accumulated before a batch of
- * experiences is sent to a remote server and is removed from a local storage.
- * Currently a `browser.storage.local` local storage is used.
- */
-class LocalStorageAdapter {
-  /**
-   * Returns an adapter default values
-   * @return {{prefix: string}}
-   */
-  static get defaults () {
-    return {
-      // A prefix used to distinguish experience objects from objects of other types
-      prefix: 'experience_'
-    }
-  }
-
-  /**
-   * Stores a single experience to the local storage.
-   * @param {Experience} experience - An experience object to be saved.
-   */
-  static write (experience) {
-    // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
-    let uuid = `${LocalStorageAdapter.defaults.prefix}${v4_1()}`;
-
-    browser.storage.local.set({[uuid]: experience}).then(
-      () => {
-        console.log(`Experience has been written to the local storage successfully`);
-      },
-      (error) => {
-        console.error(`Cannot write experience to the local storage because of the following error: ${error}`);
-      }
-    );
-  }
-
-  /**
-   * Reads all experiences that are present in a local storage.
-   * @return {Promise.<{key: Experience}, Error>} Returns a promise that resolves with an object
-   * containing key: value pairs for each experience stored and rejects with an Error object.
-   */
-  static async readAll () {
-    try {
-      return await browser.storage.local.get()
-    } catch (error) {
-      console.error(`Cannot read data from the local storage because of the following error: ${error}`);
-      return error
-    }
-  }
-
-  /**
-   * Removes experience objects with specified keys from a local storage.
-   * @param {String[]} keys - an array of keys that specifies what Experience objects need to be removed.
-   * @return {Promise.<*|{minArgs, maxArgs}>} A Promise that will be fulfilled with no arguments
-   * if the operation succeeded. If the operation failed, the promise will be rejected with an error message.
-   */
-  static async remove (keys) {
-    return browser.storage.local.remove(keys)
-  }
-}
-
-class Monitor {
-  constructor (monitoringDataList) {
-    this.monitored = new Map();
-    if (monitoringDataList) {
-      for (let monitoringData of monitoringDataList) {
-        this.monitored.set(monitoringData.monitoredFunction, monitoringData);
-      }
-    }
-  }
-
-  static track (object, monitoringDataList) {
-    return new Proxy(object, new Monitor(monitoringDataList))
-  }
-
-  get (target, property, receiver) {
-    if (this.monitored.has(property)) {
-      let monitoringData = this.monitored.get(property);
-      if (monitoringData.hasOwnProperty('asyncWrapper')) {
-        return Monitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
-      } else {
-        console.error(`Only async wrappers are supported by monitor`);
-      }
-    }
-    return target[property]
-  }
-
-  monitor (functionName, functionConfig) {
-    this.monitored.set(functionName, functionConfig);
-  }
-
-  static syncWrapper (target, property, experience) {
-    console.log(`${property}() sync method has been called`);
-    const origMethod = target[property];
-    return function (...args) {
-      let result = origMethod.apply(this, args);
-      console.log(`${property}() sync method has been completed`);
-      experience.complete();
-      console.log(`${experience}`);
-      return result
-    }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, etc.
-   * @param target
-   * @param property
-   * @param actionFunction
-   * @param monitoringData
-   * @return {Function}
-   */
-  static asyncWrapper (target, property, actionFunction, monitoringData) {
-    console.log(`${property}() async method has been requested`);
-    return async function (...args) {
-      try {
-        return await actionFunction(this, target, property, args, monitoringData, LocalStorageAdapter)
-      } catch (error) {
-        console.error(`${property}() failed: ${error.value}`);
-        throw error
-      }
-    }
-  }
-
-  /**
-   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
-   * as a direct result of a user action: use of UI controls, and such.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @param storage
-   * @return {Promise.<*>}
-   */
-  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
-    let experience = new Experience(monitoringData.experience);
-    console.log(`${property}() async method has been called`);
-    // Last item in arguments list is a transaction
-    args.push(experience);
-    let result = await target[property].apply(monitor, args);
-    // resultObject.value is a returned message, experience object is in a `experience` property
-    experience = result.state;
-    experience.complete();
-    console.log(`${property}() completed with success, experience is:`, experience);
-
-    storage.write(experience);
-    return result
-  }
-
-  /**
-   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
-   * functions that create user experience.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @param monitoringData
-   * @return {Promise.<*>}
-   */
-  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
-    let experience = new Experience(monitoringData.experience);
-    console.log(`${property}() async method has been called`);
-    let resultObject = await target[property].apply(monitor, args);
-    experience.complete();
-    resultObject.state.attach(experience);
-    console.log(`${property}() completed with success, experience is: ${experience}`);
-    return resultObject
-  }
-
-  /**
-   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async attachToMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`);
-    // First argument is always a request object, last argument is a state (Experience) object
-    args[0].experience = args[args.length - 1];
-    let result = await target[property].apply(monitor, args);
-    console.log(`${property}() completed with success`);
-    return result
-  }
-
-  /**
-   * This is a wrapper around functions that handle incoming messages with an experience object attached.
-   * @param monitor
-   * @param target
-   * @param property
-   * @param args
-   * @return {Promise.<*>}
-   */
-  static async detachFromMessage (monitor, target, property, args) {
-    console.log(`${property}() async method has been called`);
-    // First argument is an incoming request object
-    if (args[0].experience) {
-      args.push(Experience.readObject(args[0].experience));
-    } else {
-      console.warn(`This message has no experience data attached. Experience data will not be recorded`);
-    }
-    let result = await target[property].apply(monitor, args);
-    console.log(`${property}() completed with success`);
-    return result
-  }
-}
-
-const experienceActions = {
-  START: Symbol('Experience start'),
-  STOP: Symbol('Experience stop')
-};
-
-const eventTypes = {
-  CONSTRUCT: Symbol('Construct'),
-  GET: Symbol('Get'),
-  SET: Symbol('Set')
-};
-
-class ObjectMonitor {
-  constructor (options = {}) {
-    this.experienceDescription = '';
-    for (let event of Object.values(ObjectMonitor.events)) {
-      this[event] = [];
-    }
-
-    if (options) {
-      if (options.experience) { this.experienceDescription = options.experience; }
-      if (options.actions) {
-        for (const action of options.actions) {
-          this[action.event].push(action);
-        }
-      }
-    }
-  }
-
-  static get actions () {
-    return experienceActions
-  }
-
-  static get events () {
-    return eventTypes
-  }
-
-  static track (object, options) {
-    return new Proxy(object, new ObjectMonitor(options))
-  }
-
-  get (target, property) {
-    for (let action of this[ObjectMonitor.events.GET]) {
-      if (action.name === property) { this.experienceAction(action); }
-    }
-    return target[property]
-  }
-
-  set (target, property, value) {
-    for (let action of this[ObjectMonitor.events.SET]) {
-      if (action.name === property) { this.experienceAction(action); }
-    }
-    target[property] = value;
-    return true // Success of a set operation
-  }
-
-  experienceAction (action) {
-    if (action.action === ObjectMonitor.actions.START) {
-      this.experience = new Experience(this.experienceDescription).start();
-      console.log(`Experience started`);
-    } else if (action.action === ObjectMonitor.actions.STOP) {
-      this.experience.complete();
-      console.log(`Experience completed:`, this.experience);
-      LocalStorageAdapter.write(this.experience);
-    }
-  }
-}
-
-/**
- * Responsible form transporting experiences from one storage to the other. Current implementation
- * sends a batch of experience objects to the remote server once a certain amount of them
- * is accumulated in a local storage.
- */
-class Transporter {
-  /**
-   * Sets a transporter configuration.
-   * @param {LocalStorageAdapter} localStorage - Represents local storage where experience objects are
-   * accumulated before being sent to a remote server.
-   * @param {RemoteStorageAdapter} remoteStorage - Represents a remote server that stores experience objects.
-   * @param {number} qtyThreshold - A minimal number of experiences to be sent to a remote storage.
-   * @param {number} interval - Interval, in milliseconds, of checking a local storage for changes
-   */
-  constructor (localStorage, remoteStorage, qtyThreshold, interval) {
-    this.localStorage = localStorage;
-    this.remoteStorage = remoteStorage;
-    this.qtyThreshold = qtyThreshold;
-    window.setInterval(this.checkExperienceStorage.bind(this), interval);
-  }
-
-  /**
-   * Runs at a specified interval and check if any new experience objects has been recorded to the local storage.
-   * If number of experience records exceeds a threshold, sends all experiences to the remote server and
-   * removes them from local storage.
-   * @return {Promise.<void>}
-   */
-  async checkExperienceStorage () {
-    console.log(`Experience storage check`);
-    let records = await this.localStorage.readAll();
-    let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
-    if (keys.length > this.qtyThreshold) {
-      await this.sendExperiencesToRemote();
-    }
-  }
-
-  /**
-   * If there are any experiences in the local storage, sends all of them to a remote server and, if succeeded,
-   * removes them from a local storage.
-   * @return {Promise.<*>}
-   */
-  async sendExperiencesToRemote () {
-    try {
-      let records = await this.localStorage.readAll();
-      let values = Object.values(records);
-      let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
-      if (keys.length > 0) {
-        // If there are any records in a local storage
-        await this.remoteStorage.write(values);
-        await this.localStorage.remove(keys);
-      } else {
-        console.log(`No data in local experience storage`);
-      }
-    } catch (error) {
-      console.error(`Cannot send experiences to a remote server: ${error}`);
-      return error
-    }
-  }
-}
-
-/**
- * Defines an API for storing experiences on a remote server, such as LRS.
- */
-class RemoteStorageAdapter {
-  /**
-   * Stores one or several experiences on a remote server.
-   * @param {Experience[]} experiences - An array of experiences to store remotely.
-   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
-   * and is rejected when storing on a remote server failed.
-   */
-  static write (experiences) {
-    console.warn(`This method should be implemented within a subclass and should never be called directly.  
-      If you see this message then something is probably goes wrong`);
-    return new Promise()
-  }
-}
-
-/**
- * This is a test implementation of a remote experience store adapter. It does not send anything anywhere
- * and just records experiences that are passed to it.
- */
-class TestAdapter extends RemoteStorageAdapter {
-  /**
-   * Imitates storing of one or several experiences on a remote server.
-   * @param {Experience[]} experiences - An array of experiences to store remotely.
-   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
-   * and is rejected when storing on a remote server failed.
-   */
-  static write (experiences) {
-    return new Promise((resolve, reject) => {
-      if (!experiences) {
-        reject(new Error(`experience cannot be empty`));
-        return
-      }
-      if (!Array.isArray(experiences)) {
-        reject(new Error(`experiences must be an array`));
-        return
-      }
-      console.log('Experience sent to a remote server:');
-      for (let experience of experiences) {
-        console.log(experience);
-      }
-      resolve();
-    })
-  }
-}
-
-exports.Experience = Experience;
-exports.Monitor = Monitor;
-exports.ObjectMonitor = ObjectMonitor;
-exports.Transporter = Transporter;
-exports.StorageAdapter = LocalStorageAdapter;
-exports.TestAdapter = TestAdapter;
-
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20)))
-
-/***/ }),
-/* 4 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_browser__ = __webpack_require__(5);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__background_process__ = __webpack_require__(6);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_alpheios_experience__);
-
-
-
-
-// Detect browser features
-let browserFeatures = new __WEBPACK_IMPORTED_MODULE_0__lib_browser__["a" /* default */]().inspect().getFeatures()
-console.log(`Support of a "browser" namespace: ${browserFeatures.browserNamespace}`)
-if (!browserFeatures.browserNamespace) {
-  console.log('"browser" namespace is not supported, will load a WebExtensions polyfill into the background script')
-  window.browser = __webpack_require__(21)
-}
-
-let monitoredBackgroundProcess = __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].track(
-  new __WEBPACK_IMPORTED_MODULE_1__background_process__["a" /* default */](browserFeatures),
-  [
-    {
-      monitoredFunction: 'getHomonymStatefully',
-      experience: 'Get homonym from a morphological analyzer',
-      asyncWrapper: __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].recordExperienceDetails
-    },
-    {
-      monitoredFunction: 'handleWordDataRequestStatefully',
-      asyncWrapper: __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].detachFromMessage
-    },
-    {
-      monitoredFunction: 'sendResponseToTabStatefully',
-      asyncWrapper: __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].attachToMessage
-    }
-  ]
-)
-monitoredBackgroundProcess.initialize()
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-class Browser {
-  constructor () {
-    this.browserNamespace = undefined
-  }
-
-  inspect () {
-    this.browserNamespace = !(typeof browser === 'undefined')
-    return this
-  }
-
-  getFeatures () {
-    return {
-      browserNamespace: this.browserNamespace
-    }
-  }
-
-  supportsBrowserNamespace () {
-    if (!this.browserNamespace) { this.inspect() }
-    return this.browserNamespace
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = Browser;
-
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_components__ = __webpack_require__(7);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_components___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_alpheios_components__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message_message_js__ = __webpack_require__(0);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service_js__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_state_request_js__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__context_menu_item_js__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__context_menu_separator_js__ = __webpack_require__(19);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__ = __webpack_require__(2);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_alpheios_experience__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_alpheios_experience__);
-/* global browser */
-
-
-
-
-
-
-
-
-// Use a logger that outputs timestamps (but loses line numbers)
-// import Logger from '../lib/logger'
-// console.log = Logger.log
-
-class BackgroundProcess {
-  constructor (browserFeatures) {
-    this.browserFeatures = browserFeatures
-    this.settings = BackgroundProcess.defaults
-
-    this.tabs = new Map() // A list of tabs that have content script loaded
-    this.tab = undefined // A tab that is currently active in a browser window
-
-    this.messagingService = new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service_js__["a" /* default */]()
-  }
-
-  static get defaults () {
-    let l10n = new __WEBPACK_IMPORTED_MODULE_0_alpheios_components__["L10n"]()
-      .addMessages(__WEBPACK_IMPORTED_MODULE_0_alpheios_components__["enUS"], __WEBPACK_IMPORTED_MODULE_0_alpheios_components__["Locales"].en_US)
-      .addMessages(__WEBPACK_IMPORTED_MODULE_0_alpheios_components__["enGB"], __WEBPACK_IMPORTED_MODULE_0_alpheios_components__["Locales"].en_GB)
-      .setLocale(__WEBPACK_IMPORTED_MODULE_0_alpheios_components__["Locales"].en_US)
-    return {
-      activateBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_ACTIVATE,
-      deactivateBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_DEACTIVATE,
-      disabledBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_DISABLED,
-      activateMenuItemId: 'activate-alpheios-content',
-      activateMenuItemText: l10n.messages.LABEL_CTXTMENU_ACTIVATE,
-      deactivateMenuItemId: 'deactivate-alpheios-content',
-      deactivateMenuItemText: l10n.messages.LABEL_CTXTMENU_DEACTIVATE,
-      disabledMenuItemId: 'disabled-alpheios-content',
-      disabledMenuItemText: l10n.messages.LABEL_CTXTMENU_DISABLED,
-      openPanelMenuItemId: 'open-alpheios-panel',
-      openPanelMenuItemText: l10n.messages.LABEL_CTXTMENU_OPENPANEL,
-      infoMenuItemId: 'show-alpheios-panel-info',
-      infoMenuItemText: l10n.messages.LABEL_CTXTMENU_INFO,
-      separatorOneId: 'separator-one',
-      sendExperiencesMenuItemId: 'send-experiences',
-      sendExperiencesMenuItemText: l10n.messages.LABEL_CTXTMENU_SENDEXP,
-      contentCSSFileName: 'styles/style.min.css',
-      contentScriptFileName: 'content.js',
-      browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
-      experienceStorageCheckInterval: 10000,
-      experienceStorageThreshold: 3,
-      contentScriptLoaded: false
-    }
-  }
-
-  initialize () {
-    console.log('Background script initialization started ...')
-
-    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message_message_js__["a" /* default */].types.STATE_MESSAGE, this.stateMessageHandler, this)
-    browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
-    browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
-    // browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
-    browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
-    browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
-    browser.runtime.onUpdateAvailable.addListener(this.updateAvailableListener.bind(this))
-    browser.runtime.onInstalled.addListener(this.handleOnInstalled.bind(this))
-
-    this.menuItems = {
-      activate: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
-      deactivate: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
-      openPanel: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText),
-      separatorOne: new __WEBPACK_IMPORTED_MODULE_5__context_menu_separator_js__["a" /* default */](BackgroundProcess.defaults.separatorOneId),
-      info: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.infoMenuItemId, BackgroundProcess.defaults.infoMenuItemText),
-      disabled: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.disabledMenuItemId, BackgroundProcess.defaults.disabledMenuItemText)
-    }
-    this.menuItems.activate.enable() // This one will be enabled by default
-
-    browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
-    browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
-
-    this.transporter = new __WEBPACK_IMPORTED_MODULE_7_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_7_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_7_alpheios_experience__["TestAdapter"],
-      BackgroundProcess.defaults.experienceStorageThreshold, BackgroundProcess.defaults.experienceStorageCheckInterval)
-  }
-
-  /**
-   * handler for the runtime.onInstalled event
-   */
-  handleOnInstalled(details) {
-    // if this is an update versus a fresh install we need to trigger reloads
-    // of the previously loaded content scripts. Only tabs with Alpheios loaded
-    // will respond to this event. Messaging between the new background script and the
-    // old content scripts is broken so we just send a custom event on the body of
-    // the page.
-    if (details.previousVersion) {
-      browser.tabs.query({}).then((tabs) => {
-        tabs.forEach((t) => {
-          try {
-            browser.tabs.executeScript(t.id, {
-              code: "document.body.dispatchEvent(new Event('Alpheios_Reload'))"
-            })
-          } catch (e) {
-            // just quietly fail here
-          }
-        })
-      })
-    }
-
-  }
-
-  async activateContent (tabID) {
-    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen()
-    this.setContentState(tab)
-  }
-
-  async deactivateContent (tabID) {
-    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].create(this.tabs.get(tabID)).deactivate().setPanelClosed()
-    this.setContentState(tab)
-  }
-
-  async openPanel (tabID) {
-    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen()
-    this.setContentState(tab)
-  }
-
-  async openInfoTab (tabID) {
-    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen().changeTab('info')
-    this.setContentState(tab)
-  }
-
-  loadPolyfill (tabID) {
-    if (!this.browserFeatures.browserNamespace) {
-      console.log('"browser" namespace is not supported, will load a WebExtension polyfill into a content script')
-      return browser.tabs.executeScript(
-        tabID,
-        {
-          file: this.settings.browserPolyfillName
-        })
-    } else {
-      // `browser` object is supported natively, no need to load a polyfill.
-      return Promise.resolve()
-    }
-  }
-
-  loadContentScript (tabID) {
-    console.log('Loading content script into a content tab')
-    return browser.tabs.executeScript(tabID, {
-      file: this.settings.contentScriptFileName
-    })
-  }
-
-  loadContentCSS (tabID) {
-    console.log('Loading CSS into a content tab')
-    return browser.tabs.insertCSS(tabID, {
-      file: this.settings.contentCSSFileName
-    })
-  }
-
-  /**
-   * Creates a TabScript object and loads content script(s) into a corresponding browser tab
-   * @param {Number} tabID - An ID of a tab
-   * @return {Promise.<TabScript>} A Promise that is resolved into a newly created TabScript object
-   */
-  async createTab (tabID) {
-    console.log(`Creating a new tab with an ID of ${tabID}`)
-    let newTab = new __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */](tabID)
-    newTab.tab = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].props.tab.values.INFO // Set active tab to `info` by default
-    this.tabs.set(tabID, newTab)
-    try {
-      await this.loadContentData(newTab)
-    } catch (error) {
-      console.error(`Cannot load content script for a tab with an ID of ${tabID}`)
-    }
-    return newTab
-  }
-
-  /**
-   * Changes state of a tab by sending it a state update request. Content script of a tab returns
-   * its actual state after request it fulfilled. A warning will be produced if an actual
-   * state does not match desired one.
-   * @param {TabScript} tab - A TabScript object that represents a tab and it desired state
-   */
-  setContentState (tab) {
-    this.messagingService.sendRequestToTab(new __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_state_request_js__["a" /* default */](tab), 10000, tab.tabID).then(
-      message => {
-        let contentState = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].readObject(message.body)
-        /*
-        ContentState is an actual state content script is in. It may not match a desired state because
-        content script may fail in one or several operations.
-         */
-        let diff = tab.diff(contentState)
-        if (!diff.isEmpty()) {
-          console.warn(`Content script was not able to update the following properties:`, diff.keys())
-        }
-        this.updateTabState(tab.tabID, contentState)
-      },
-      error => {
-        console.log(`No status confirmation from tab ${tab.tabID} on state request: ${error.message}`)
-      }
-    )
-  }
-
-  loadContentData (tabScript) {
-    let polyfillScript = this.loadPolyfill(tabScript.tabID)
-    let contentScript = this.loadContentScript(tabScript.tabID)
-    let contentCSS = this.loadContentCSS(tabScript.tabID)
-    return Promise.all([polyfillScript, contentScript, contentCSS])
-  }
-
-  stateMessageHandler (message, sender) {
-    let contentState = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].readObject(message.body)
-    this.updateTabState(contentState.tabID, contentState)
-    console.log(this.tabs.get(contentState.tabID))
-  }
-
-  tabActivationListener (info) {
-    this.tab = info.tabId
-    let tab = this.tabs.has(info.tabId) ? this.tabs.get(info.tabId) : undefined
-    this.setMenuForTab(tab)
-  }
-
-  /**
-   * Called when a page is loaded.
-   * Use this to listen on webNavigation.onCompleted rather than tabs.onUpdated
-   * because you can't tell from the tabs.onUpdated event whether it's the main
-   * browser window or an iframe that has been updated.
-   * the webNavigation.onCompleted event is the equivalent of domLoaded and you
-   * can distinguish iFrames from the main window in the details
-   * @param details
-   * @return {Promise.<void>}
-   */
-  async navigationCompletedListener (details) {
-    // make sure this is a tab we know about AND that it's not an iframe event
-    if (this.tabs.has(details.tabId) && details.frameId === 0) {
-      // If content script was loaded to that tab, restore it to the state it had before
-      let tab = this.tabs.get(details.tabId)
-      tab.restore()
-      try {
-        await this.loadContentData(tab)
-        this.setContentState(tab)
-        this.checkEmbeddedContent(details.tabId)
-      } catch (error) {
-        console.error(`Cannot load content script for a tab with an ID of ${details.tabId}`)
-      }
-    }
-  }
-
-  checkEmbeddedContent (tabID) {
-    browser.tabs.executeScript(tabID, {
-      code: "document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))"
-    })
-  }
-
-
-  /**
-   * Listen to extension updates. Need to define to prevent the browser
-   * from applying updates and reloading while the extension is activated
-   */
-  updateAvailableListener (details) {
-    console.log(`Update pending to version ${details.version} pending.`)
-  }
-
-  tabRemovalListener (tabID, removeInfo) {
-    if (this.tabs.has(tabID)) {
-      this.tabs.delete(tabID)
-    }
-  }
-
-  async menuListener (info, tab) {
-    if (info.menuItemId === this.settings.activateMenuItemId) {
-      this.activateContent(tab.id)
-    } else if (info.menuItemId === this.settings.deactivateMenuItemId) {
-      this.deactivateContent(tab.id)
-    } else if (info.menuItemId === this.settings.openPanelMenuItemId) {
-      this.openPanel(tab.id)
-    } else if (info.menuItemId === this.settings.infoMenuItemId) {
-      this.openInfoTab(tab.id)
-    }
-  }
-
-  async browserActionListener (tab) {
-    if (this.tabs.has(tab.id) && this.tabs.get(tab.id).isActive()) {
-      this.deactivateContent(tab.id)
-    } else {
-      this.activateContent(tab.id)
-    }
-  }
-
-  updateTabState (tabID, newState) {
-    let tab = this.tabs.get(tabID).update(newState)
-
-    // Menu state should reflect a status of a content script
-    this.updateBrowserActionForTab(tab)
-    this.setMenuForTab(tab)
-  }
-
-  updateBrowserActionForTab(tab) {
-    if (tab && tab.hasOwnProperty('status')) {
-      if (tab.isActive()) {
-        browser.browserAction.setTitle({title:BackgroundProcess.defaults.deactivateBrowserActionTitle,tabId:tab.tabID})
-      } else if (tab.isDeactivated()) {
-        browser.browserAction.setTitle({title:BackgroundProcess.defaults.activateBrowserActionTitle,tabId:tab.tabID})
-      } else if (tab.isDisabled()) {
-        browser.browserAction.setTitle({title:BackgroundProcess.defaults.disabledBrowserActionTitle,tabId:tab.tabID})
-      }
-    }
-  }
-
-  setMenuForTab (tab) {
-    // Deactivate all previously activated menu items to keep an order intact
-    this.menuItems.activate.disable()
-    this.menuItems.deactivate.disable()
-    this.menuItems.openPanel.disable()
-    this.menuItems.separatorOne.disable()
-    this.menuItems.info.disable()
-    this.menuItems.disabled.disable()
-
-    if (tab) {
-      // Menu state should reflect a status of a content script
-      if (tab.hasOwnProperty('status')) {
-        if (tab.isActive()) {
-          this.menuItems.activate.disable()
-          this.menuItems.deactivate.enable()
-          this.menuItems.openPanel.enable()
-          this.menuItems.info.enable()
-        } else if (tab.isDeactivated()) {
-          this.menuItems.deactivate.disable()
-          this.menuItems.activate.enable()
-          this.menuItems.openPanel.disable()
-          this.menuItems.info.enable()
-        } else if (tab.isDisabled()) {
-          this.menuItems.activate.disable()
-          this.menuItems.deactivate.disable()
-          this.menuItems.disabled.enable()
-          this.menuItems.openPanel.disable()
-          this.menuItems.info.disable()
-        }
-      }
-
-      if (tab.hasOwnProperty('panelStatus')) {
-        if (tab.isActive() && tab.isPanelClosed()) {
-          this.menuItems.openPanel.enable()
-        } else {
-          this.menuItems.openPanel.disable()
-        }
-      }
-
-      this.menuItems.separatorOne.enable()
-    } else {
-      // If tab is not provided will set menu do an initial state
-      this.menuItems.activate.enable()
-      this.menuItems.deactivate.disable()
-      this.menuItems.openPanel.disable()
-      this.menuItems.separatorOne.enable()
-      this.menuItems.info.enable()
-    }
-  }
-}
-/* harmony export (immutable) */ __webpack_exports__["a"] = BackgroundProcess;
-
-
-
-/***/ }),
-/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 (function webpackUniversalModuleDefinition(root, factory) {
@@ -13632,11 +12317,12 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__locales_en_gb_messages_json__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__locales_en_gb_messages_json___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5__locales_en_gb_messages_json__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_controllers_ui_controller__ = __webpack_require__(76);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_selection_media_html_selector__ = __webpack_require__(86);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_queries_lexical_query__ = __webpack_require__(91);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_queries_resource_query__ = __webpack_require__(26);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_options_content_options__ = __webpack_require__(92);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_options_resource_options__ = __webpack_require__(93);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__lib_controllers_ui_state__ = __webpack_require__(86);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__lib_selection_media_html_selector__ = __webpack_require__(87);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__lib_queries_lexical_query__ = __webpack_require__(92);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10__lib_queries_resource_query__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__lib_options_content_options__ = __webpack_require__(93);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__lib_options_resource_options__ = __webpack_require__(94);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Popup", function() { return __WEBPACK_IMPORTED_MODULE_0__vue_components_popup_vue__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Panel", function() { return __WEBPACK_IMPORTED_MODULE_1__vue_components_panel_vue__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "L10n", function() { return __WEBPACK_IMPORTED_MODULE_2__lib_l10n_l10n__["a"]; });
@@ -13644,11 +12330,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony reexport (default from non-hamory) */ __webpack_require__.d(__webpack_exports__, "enUS", function() { return __WEBPACK_IMPORTED_MODULE_4__locales_en_us_messages_json___default.a; });
 /* harmony reexport (default from non-hamory) */ __webpack_require__.d(__webpack_exports__, "enGB", function() { return __WEBPACK_IMPORTED_MODULE_5__locales_en_gb_messages_json___default.a; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "UIController", function() { return __WEBPACK_IMPORTED_MODULE_6__lib_controllers_ui_controller__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "HTMLSelector", function() { return __WEBPACK_IMPORTED_MODULE_7__lib_selection_media_html_selector__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "LexicalQuery", function() { return __WEBPACK_IMPORTED_MODULE_8__lib_queries_lexical_query__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "ResourceQuery", function() { return __WEBPACK_IMPORTED_MODULE_9__lib_queries_resource_query__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "ContentOptions", function() { return __WEBPACK_IMPORTED_MODULE_10__lib_options_content_options__["a"]; });
-/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "ResourceOptions", function() { return __WEBPACK_IMPORTED_MODULE_11__lib_options_resource_options__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "HTMLSelector", function() { return __WEBPACK_IMPORTED_MODULE_8__lib_selection_media_html_selector__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "LexicalQuery", function() { return __WEBPACK_IMPORTED_MODULE_9__lib_queries_lexical_query__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "ResourceQuery", function() { return __WEBPACK_IMPORTED_MODULE_10__lib_queries_resource_query__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "ContentOptions", function() { return __WEBPACK_IMPORTED_MODULE_11__lib_options_content_options__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "ResourceOptions", function() { return __WEBPACK_IMPORTED_MODULE_12__lib_options_resource_options__["a"]; });
+/* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "UIStateAPI", function() { return __WEBPACK_IMPORTED_MODULE_7__lib_controllers_ui_state__["a"]; });
+
 
 
 
@@ -18511,6 +17199,17 @@ const languageNames = new Map([
 ])
 
 class UIController {
+  /**
+   * @constructor
+   * @param {Object} state - State object for the parent application  (API definiition pending)
+   * @param {ContentOptions} options - content options  (API definition pending)
+   * @param {ResourceOptions} resourceOptions - resource options  (API definition pending)
+   * @param {Object} manifest - parent application info details  (API definition pending)
+   * @param {Object} template - object with the following properties:
+   *                            html: HTML string for the container of the Alpheios components
+   *                            panelId: the id of the wrapper for the panel component
+   *                            popupId: the id of the wrapper for the popup component
+   */
   constructor (state, options, resourceOptions, manifest,
     template = {html: __WEBPACK_IMPORTED_MODULE_8__template_htmlf___default.a, panelId: 'alpheios-panel', popupId: 'alpheios-popup'}) {
     this.state = state
@@ -30594,12 +29293,106 @@ module.exports = bytesToUuid;
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(87);
+/**
+ * Interface for a State Object to manage Alpheios UI State
+ */
+class UIStateAPI {
+  /**
+   * Method to use to set a general property on the state
+   * @param key
+   * @param value
+   * @return {UIStateAPI}
+   */
+  setItem (key, value) {
+    throw new Error('Unimplemented')
+  }
+
+  /**
+   * Sets a watcher function that is called every time a property is changed using a setItem() method.
+   * @param {String} property - A name of a property that should be monitored
+   * @param {Function} watchFunc - A function that will be called every time a property changes
+   * @return {State} Reference to self for chaining
+   */
+  setWatcher (property, watchFunc) {
+    throw new Error('Unimplemented')
+  }
+
+  /**
+   * Check if the state of the panel is open
+   * @return {boolean} true if open false if closed
+   */
+  isPanelOpen () {
+    return false
+  }
+
+  /**
+   * Check if the state of the panel is closed
+   * @return {boolean} true if closed false if open
+   */
+  isPanelClosed () {
+    return false
+  }
+
+  /**
+   * Set the state of the panel to open
+   * @return {UIStateAPI} the updated state object
+   */
+  setPanelOpen () {
+    console.log('setPanelOpen is not implemented')
+    return this
+  }
+
+  /**
+   * Set the state of the panel to closed
+   * @return {UIStateAPI} the updated state object
+   */
+  setPanelClosed () {
+    console.log('setPanelClosed is not implemented')
+    return this
+  }
+
+  /**
+   * Check if the state of the UI is active (i.e. fully loaded and ready to use)
+   * @return {boolean} true if active false if not
+   */
+  uiIsActive () {
+    return false
+  }
+
+  /**
+   * Set the state of the UI to active (i.e. fully loaded and ready to use)
+   * @return {IState} the updated state object
+   */
+  activateUI () {
+    console.log('activateUI is not implemented')
+    return this
+  }
+
+  /**
+   * Set the currently active panel tab
+   * @param {String} tabName name of the tab
+   * @return {UIStateAPI} the updated state object
+   */
+  changeTab (tabName) {
+    console.log('changeTab is not implemented')
+    return this
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = UIStateAPI;
+
+
+
+/***/ }),
+/* 87 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest__ = __webpack_require__(88);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_element_closest___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_element_closest__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(88);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(90);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__text_selector__ = __webpack_require__(89);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__media_selector__ = __webpack_require__(91);
  // To polyfill Element.closest() if required
 
 
@@ -30790,7 +29583,7 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ (function(module, exports) {
 
 // element-closest | CC0-1.0 | github.com/jonathantneal/closest
@@ -30829,11 +29622,11 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
 
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(89);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__w3c_text_quote_selector__ = __webpack_require__(90);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_alpheios_data_models___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_alpheios_data_models__);
 
@@ -30917,7 +29710,7 @@ class TextSelector {
 
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -30931,7 +29724,7 @@ class TextQuoteSelector {
 
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -30985,7 +29778,7 @@ class MediaSelector {
 
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -31168,7 +29961,7 @@ class LexicalQuery extends __WEBPACK_IMPORTED_MODULE_1__query_js__["a" /* defaul
 
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -31302,7 +30095,7 @@ class ContentOptions {
 
 
 /***/ }),
-/* 93 */
+/* 94 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -31478,6 +30271,1336 @@ class ResourceOptions {
 /******/ ]);
 });
 //# sourceMappingURL=alpheios-components.js.map
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_components__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_components___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_alpheios_components__);
+
+
+/**
+ * Contains a state of a tab content script.
+ * @property {Number} tabID - An ID of a tab where the content script is loaded
+ * @property {Symbol} status - A status of a current script (Active, Deactivated, Pending)
+ * @property {panelStatus} panelStatus
+ */
+class TabScript extends __WEBPACK_IMPORTED_MODULE_0_alpheios_components__["UIStateAPI"] {
+  constructor (tabID) {
+    super()
+    this.tabID = tabID
+    this.status = undefined
+    this.panelStatus = undefined
+    this.tab = undefined
+    this.savedStatus = undefined
+    this.uiActive = false
+
+    this.watchers = new Map()
+  }
+
+  static get propTypes () {
+    return {
+      NUMERIC: Symbol('Numeric'),
+      STRING: Symbol('String'),
+      SYMBOL: Symbol('Symbol')
+    }
+  }
+
+  static get props () {
+    return {
+      status: {
+        name: 'status',
+        valueType: TabScript.propTypes.SYMBOL,
+        values: {
+          PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
+          ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
+          DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
+          DISABLED: Symbol.for('Alpheios_Status_Disabled'), // Content script has been loaded, but it is disabled
+        },
+        defaultValueIndex: 0
+      },
+      savedStatus: {
+        name: 'savedStatus',
+        valueType: Boolean
+      },
+      panelStatus: {
+        name: 'panelStatus',
+        valueType: TabScript.propTypes.SYMBOL,
+        values: {
+          OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
+          CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
+        },
+        defaultValueIndex: 1
+      },
+      tab: {
+        name: 'tab',
+        valueType: TabScript.propTypes.STRING,
+        values: {
+          INFO: 'info'
+        },
+        defaultValueIndex: 0
+      },
+      uiActive: {
+        name: 'uiActive',
+        valueType: Boolean
+      }
+    }
+  }
+
+  static get symbolProps () {
+    return [TabScript.props.status.name, TabScript.props.panelStatus.name]
+  }
+
+  static get stringProps () {
+    return [TabScript.props.tab.name]
+  }
+
+  static get booleanProps () {
+    return [TabScript.props.savedStatus.name]
+  }
+
+  /**
+   * Only certain features will be stored within a serialized version of a TabScript. This is done
+   * to prevent context-specific features (such as local event handlers) to be passed over the network
+   * to a different context where they would make no sense. This getter returns a list of such fields.
+   * @return {String[]}
+   */
+  static get dataProps () {
+    return TabScript.symbolProps.concat(TabScript.stringProps).concat(TabScript.booleanProps)
+  }
+
+  /**
+   * A copy constructor.
+   * @param {TabScript} source - An instance of TabScript object we need to copy.
+   * @return {TabScript} A copy of a source object.
+   */
+  static create (source) {
+    let copy = new TabScript()
+    for (let key of Object.keys(source)) {
+      copy[key] = source[key]
+    }
+    return copy
+  }
+
+  static get defaults () {
+    return {
+      status: TabScript.statuses.script.ACTIVE,
+      panelStatus: TabScript.statuses.panel.OPEN
+    }
+  }
+
+  static get statuses () {
+    return {
+      script: {
+        PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
+        ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
+        DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
+        DISABLED: Symbol.for('Alpheios_Status_Disabled') // Content script has been loaded, but it is disabled
+      },
+      panel: {
+        OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
+        CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
+      }
+    }
+  }
+
+  /**
+   * Sets a watcher function that is called every time a property is changed using a setItem() method.
+   * @param {String} property - A name of a property that should be monitored
+   * @param {Function} watchFunc - A function that will be called every time a property changes
+   * @return {TabScript} Reference to self for chaining
+   */
+  setWatcher (property, watchFunc) {
+    this.watchers.set(property, watchFunc)
+    return this
+  }
+
+  /**
+   * SetItem provides a monitored way to change a TabScript state. If value is assigned to a data property directly
+   * there is no way to know if a property was changed. However, if a property was changed using setItem() method,
+   * and if there is a watcher function registered for a changed property name,
+   * this function will be called on every property change, passing a changed property name as an argument.
+   * @param key
+   * @param value
+   * @return {TabScript}
+   */
+  setItem (key, value) {
+    this[key] = value
+    if (this.watchers && this.watchers.has(key)) {
+      this.watchers.get(key)(key, this)
+    }
+    return this
+  }
+
+  isPanelOpen () {
+    return this.panelStatus === TabScript.statuses.panel.OPEN
+  }
+
+  isPanelClosed () {
+    return this.panelStatus === TabScript.statuses.panel.CLOSED
+  }
+
+  setPanelOpen () {
+    this.setItem('panelStatus', TabScript.statuses.panel.OPEN)
+    return this
+  }
+
+  setPanelClosed () {
+    this.setItem('panelStatus', TabScript.statuses.panel.CLOSED)
+    return this
+  }
+
+  hasSameID (tabID) {
+    return this.tabID === tabID
+  }
+
+  isActive () {
+    return this.status === TabScript.statuses.script.ACTIVE
+  }
+
+  isDeactivated () {
+    return this.status === TabScript.statuses.script.DEACTIVATED
+  }
+
+  isDisabled () {
+    return this.status === TabScript.statuses.script.DISABLED
+  }
+
+  uiIsActive () {
+    return this[TabScript.props.uiActive.name]
+  }
+
+  activate () {
+    this.status = TabScript.statuses.script.ACTIVE
+    return this
+  }
+
+  deactivate () {
+    this.status = TabScript.statuses.script.DEACTIVATED
+    return this
+  }
+
+  disable () {
+    this.status = TabScript.statuses.script.DISABLED
+    return this
+  }
+
+  save () {
+    this.savedStatus = this.status
+    return this
+  }
+
+  restore () {
+    if (this.savedStatus) {
+      this.status = this.savedStatus
+      this.savedStatus = undefined
+    }
+    return this
+  }
+
+  activateUI () {
+    this.setItem(TabScript.props.uiActive.name,true)
+    return this
+  }
+
+  changeTab (tabName) {
+    this.setItem(TabScript.props.tab.name, tabName)
+    return this
+  }
+
+  update (source) {
+    for (let key of Object.keys(source)) {
+      this[key] = source[key]
+    }
+    return this
+  }
+
+  diff (state) {
+    let diff = {
+      _changedKeys: [],
+      _changedEntries: []
+    }
+
+    // Check if there are any differences in tab IDs
+    if (this.tabID !== state.tabID) {
+      diff.tabID = state.tabID
+      diff['_changedKeys'].push('tabID')
+      diff['_changedEntries'].push(['tabID', state.tabID])
+    }
+
+    for (let key of Object.keys(state)) {
+      // Build diffs only for data properties
+      if (TabScript.dataProps.includes(key)) {
+        if (this.hasOwnProperty(key)) {
+          if (this[key] !== state[key]) {
+            diff[key] = state[key]
+            diff['_changedKeys'].push(key)
+            diff['_changedEntries'].push([key, state[key]])
+          }
+        } else {
+          console.warn(`TabScript has no property named "${key}"`)
+        }
+      }
+    }
+
+    diff.keys = function () {
+      return diff['_changedKeys']
+    }
+
+    diff.entries = function () {
+      return diff['_changedEntries']
+    }
+
+    diff.has = function (prop) {
+      return diff._changedKeys.includes(prop)
+    }
+
+    diff.isEmpty = function () {
+      return !diff._changedKeys.length
+    }
+    return diff
+  }
+
+  /**
+   * Creates a serializable copy of a source object. Firefox uses the structured clone algorithm
+   * (https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) to serialize objects.
+   * Requirements of this algorithm are that a serializable object to have no Function or Error properties,
+   * neither any DOM Nodes. That's why an empty serializable object is created and only
+   * selected properties are copied into it.
+   * @param {TabScript} source - An object to be serialized.
+   * @return {Object} A serializable copy of a source.
+   */
+  static serializable (source) {
+    let serializable = {}
+    serializable.tabID = source.tabID
+    for (let key of Object.keys(source)) {
+      if (TabScript.dataProps.includes(key)) {
+        /*
+        Only certain features will be stored within a serialized version of a TabScript. This is done
+        to prevent context-specific features (such as local event handlers) to be passed over the network
+        to a different context where they would make no sense.
+         */
+        let value = source[key]
+        serializable[key] = (typeof value === 'symbol') ? Symbol.keyFor(value) : value
+      }
+    }
+    return serializable
+  }
+
+  static readObject (jsonObject) {
+    let tabScript = new TabScript(jsonObject.tabID)
+
+    for (let prop of TabScript.symbolProps) {
+      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
+    }
+
+    for (let prop of TabScript.stringProps) {
+      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
+    }
+
+    for (let prop of TabScript.booleanProps) {
+      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
+    }
+
+    return tabScript
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = TabScript;
+
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global) {
+
+Object.defineProperty(exports, '__esModule', { value: true });
+
+/**
+ * A base object class for an Experience object.
+ */
+class Experience {
+  constructor (description) {
+    this.description = description;
+    this.startTime = undefined;
+    this.endTime = undefined;
+    this.details = [];
+  }
+
+  static readObject (jsonObject) {
+    let experience = new Experience(jsonObject.description);
+    if (jsonObject.startTime) { experience.startTime = jsonObject.startTime; }
+    if (jsonObject.endTime) { experience.endTime = jsonObject.endTime; }
+    for (let detailsItem of jsonObject.details) {
+      experience.details.push(Experience.readObject(detailsItem));
+    }
+    return experience
+  }
+
+  attach (experience) {
+    this.details.push(experience);
+  }
+
+  start () {
+    this.startTime = new Date().getTime();
+    return this
+  }
+
+  complete () {
+    this.endTime = new Date().getTime();
+    return this
+  }
+
+  get duration () {
+    return this.endTime - this.startTime
+  }
+
+  toString () {
+    return `"${this.description}" experience duration is ${this.duration} ms`
+  }
+}
+
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+var rng;
+
+var crypto = commonjsGlobal.crypto || commonjsGlobal.msCrypto; // for IE 11
+if (crypto && crypto.getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+  rng = function whatwgRNG() {
+    crypto.getRandomValues(rnds8);
+    return rnds8;
+  };
+}
+
+if (!rng) {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+  rng = function() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+
+var rngBrowser = rng;
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  return bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]];
+}
+
+var bytesToUuid_1 = bytesToUuid;
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options == 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rngBrowser)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid_1(rnds);
+}
+
+var v4_1 = v4;
+
+/* global browser */
+
+/**
+ * Represents an adapter for a local storage where experiences are accumulated before a batch of
+ * experiences is sent to a remote server and is removed from a local storage.
+ * Currently a `browser.storage.local` local storage is used.
+ */
+class LocalStorageAdapter {
+  /**
+   * Returns an adapter default values
+   * @return {{prefix: string}}
+   */
+  static get defaults () {
+    return {
+      // A prefix used to distinguish experience objects from objects of other types
+      prefix: 'experience_'
+    }
+  }
+
+  /**
+   * Stores a single experience to the local storage.
+   * @param {Experience} experience - An experience object to be saved.
+   */
+  static write (experience) {
+    // Keys of experience objects has an `experience_` prefix to distinguish them from objects of other types.
+    let uuid = `${LocalStorageAdapter.defaults.prefix}${v4_1()}`;
+
+    browser.storage.local.set({[uuid]: experience}).then(
+      () => {
+        console.log(`Experience has been written to the local storage successfully`);
+      },
+      (error) => {
+        console.error(`Cannot write experience to the local storage because of the following error: ${error}`);
+      }
+    );
+  }
+
+  /**
+   * Reads all experiences that are present in a local storage.
+   * @return {Promise.<{key: Experience}, Error>} Returns a promise that resolves with an object
+   * containing key: value pairs for each experience stored and rejects with an Error object.
+   */
+  static async readAll () {
+    try {
+      return await browser.storage.local.get()
+    } catch (error) {
+      console.error(`Cannot read data from the local storage because of the following error: ${error}`);
+      return error
+    }
+  }
+
+  /**
+   * Removes experience objects with specified keys from a local storage.
+   * @param {String[]} keys - an array of keys that specifies what Experience objects need to be removed.
+   * @return {Promise.<*|{minArgs, maxArgs}>} A Promise that will be fulfilled with no arguments
+   * if the operation succeeded. If the operation failed, the promise will be rejected with an error message.
+   */
+  static async remove (keys) {
+    return browser.storage.local.remove(keys)
+  }
+}
+
+class Monitor {
+  constructor (monitoringDataList) {
+    this.monitored = new Map();
+    if (monitoringDataList) {
+      for (let monitoringData of monitoringDataList) {
+        this.monitored.set(monitoringData.monitoredFunction, monitoringData);
+      }
+    }
+  }
+
+  static track (object, monitoringDataList) {
+    return new Proxy(object, new Monitor(monitoringDataList))
+  }
+
+  get (target, property, receiver) {
+    if (this.monitored.has(property)) {
+      let monitoringData = this.monitored.get(property);
+      if (monitoringData.hasOwnProperty('asyncWrapper')) {
+        return Monitor.asyncWrapper.call(this, target, property, monitoringData.asyncWrapper, monitoringData)
+      } else {
+        console.error(`Only async wrappers are supported by monitor`);
+      }
+    }
+    return target[property]
+  }
+
+  monitor (functionName, functionConfig) {
+    this.monitored.set(functionName, functionConfig);
+  }
+
+  static syncWrapper (target, property, experience) {
+    console.log(`${property}() sync method has been called`);
+    const origMethod = target[property];
+    return function (...args) {
+      let result = origMethod.apply(this, args);
+      console.log(`${property}() sync method has been completed`);
+      experience.complete();
+      console.log(`${experience}`);
+      return result
+    }
+  }
+
+  /**
+   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
+   * as a direct result of a user action: use of UI controls, etc.
+   * @param target
+   * @param property
+   * @param actionFunction
+   * @param monitoringData
+   * @return {Function}
+   */
+  static asyncWrapper (target, property, actionFunction, monitoringData) {
+    console.log(`${property}() async method has been requested`);
+    return async function (...args) {
+      try {
+        return await actionFunction(this, target, property, args, monitoringData, LocalStorageAdapter)
+      } catch (error) {
+        console.error(`${property}() failed: ${error.value}`);
+        throw error
+      }
+    }
+  }
+
+  /**
+   * A wrapper around asynchronous functions that create new experience. A wrapped function is called
+   * as a direct result of a user action: use of UI controls, and such.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @param monitoringData
+   * @param storage
+   * @return {Promise.<*>}
+   */
+  static async recordExperience (monitor, target, property, args, monitoringData, storage) {
+    let experience = new Experience(monitoringData.experience);
+    console.log(`${property}() async method has been called`);
+    // Last item in arguments list is a transaction
+    args.push(experience);
+    let result = await target[property].apply(monitor, args);
+    // resultObject.value is a returned message, experience object is in a `experience` property
+    experience = result.state;
+    experience.complete();
+    console.log(`${property}() completed with success, experience is:`, experience);
+
+    storage.write(experience);
+    return result
+  }
+
+  /**
+   * A wrapper around functions that are indirect result of user actions. Those functions are usually a part of
+   * functions that create user experience.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @param monitoringData
+   * @return {Promise.<*>}
+   */
+  static async recordExperienceDetails (monitor, target, property, args, monitoringData) {
+    let experience = new Experience(monitoringData.experience);
+    console.log(`${property}() async method has been called`);
+    let resultObject = await target[property].apply(monitor, args);
+    experience.complete();
+    resultObject.state.attach(experience);
+    console.log(`${property}() completed with success, experience is: ${experience}`);
+    return resultObject
+  }
+
+  /**
+   * This is a wrapper around functions that handle outgoing messages that should have an experience object attached
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @return {Promise.<*>}
+   */
+  static async attachToMessage (monitor, target, property, args) {
+    console.log(`${property}() async method has been called`);
+    // First argument is always a request object, last argument is a state (Experience) object
+    args[0].experience = args[args.length - 1];
+    let result = await target[property].apply(monitor, args);
+    console.log(`${property}() completed with success`);
+    return result
+  }
+
+  /**
+   * This is a wrapper around functions that handle incoming messages with an experience object attached.
+   * @param monitor
+   * @param target
+   * @param property
+   * @param args
+   * @return {Promise.<*>}
+   */
+  static async detachFromMessage (monitor, target, property, args) {
+    console.log(`${property}() async method has been called`);
+    // First argument is an incoming request object
+    if (args[0].experience) {
+      args.push(Experience.readObject(args[0].experience));
+    } else {
+      console.warn(`This message has no experience data attached. Experience data will not be recorded`);
+    }
+    let result = await target[property].apply(monitor, args);
+    console.log(`${property}() completed with success`);
+    return result
+  }
+}
+
+const experienceActions = {
+  START: Symbol('Experience start'),
+  STOP: Symbol('Experience stop')
+};
+
+const eventTypes = {
+  CONSTRUCT: Symbol('Construct'),
+  GET: Symbol('Get'),
+  SET: Symbol('Set')
+};
+
+class ObjectMonitor {
+  constructor (options = {}) {
+    this.experienceDescription = '';
+    for (let event of Object.values(ObjectMonitor.events)) {
+      this[event] = [];
+    }
+
+    if (options) {
+      if (options.experience) { this.experienceDescription = options.experience; }
+      if (options.actions) {
+        for (const action of options.actions) {
+          this[action.event].push(action);
+        }
+      }
+    }
+  }
+
+  static get actions () {
+    return experienceActions
+  }
+
+  static get events () {
+    return eventTypes
+  }
+
+  static track (object, options) {
+    return new Proxy(object, new ObjectMonitor(options))
+  }
+
+  get (target, property) {
+    for (let action of this[ObjectMonitor.events.GET]) {
+      if (action.name === property) { this.experienceAction(action); }
+    }
+    return target[property]
+  }
+
+  set (target, property, value) {
+    for (let action of this[ObjectMonitor.events.SET]) {
+      if (action.name === property) { this.experienceAction(action); }
+    }
+    target[property] = value;
+    return true // Success of a set operation
+  }
+
+  experienceAction (action) {
+    if (action.action === ObjectMonitor.actions.START) {
+      this.experience = new Experience(this.experienceDescription).start();
+      console.log(`Experience started`);
+    } else if (action.action === ObjectMonitor.actions.STOP) {
+      this.experience.complete();
+      console.log(`Experience completed:`, this.experience);
+      LocalStorageAdapter.write(this.experience);
+    }
+  }
+}
+
+/**
+ * Responsible form transporting experiences from one storage to the other. Current implementation
+ * sends a batch of experience objects to the remote server once a certain amount of them
+ * is accumulated in a local storage.
+ */
+class Transporter {
+  /**
+   * Sets a transporter configuration.
+   * @param {LocalStorageAdapter} localStorage - Represents local storage where experience objects are
+   * accumulated before being sent to a remote server.
+   * @param {RemoteStorageAdapter} remoteStorage - Represents a remote server that stores experience objects.
+   * @param {number} qtyThreshold - A minimal number of experiences to be sent to a remote storage.
+   * @param {number} interval - Interval, in milliseconds, of checking a local storage for changes
+   */
+  constructor (localStorage, remoteStorage, qtyThreshold, interval) {
+    this.localStorage = localStorage;
+    this.remoteStorage = remoteStorage;
+    this.qtyThreshold = qtyThreshold;
+    window.setInterval(this.checkExperienceStorage.bind(this), interval);
+  }
+
+  /**
+   * Runs at a specified interval and check if any new experience objects has been recorded to the local storage.
+   * If number of experience records exceeds a threshold, sends all experiences to the remote server and
+   * removes them from local storage.
+   * @return {Promise.<void>}
+   */
+  async checkExperienceStorage () {
+    console.log(`Experience storage check`);
+    let records = await this.localStorage.readAll();
+    let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
+    if (keys.length > this.qtyThreshold) {
+      await this.sendExperiencesToRemote();
+    }
+  }
+
+  /**
+   * If there are any experiences in the local storage, sends all of them to a remote server and, if succeeded,
+   * removes them from a local storage.
+   * @return {Promise.<*>}
+   */
+  async sendExperiencesToRemote () {
+    try {
+      let records = await this.localStorage.readAll();
+      let values = Object.values(records);
+      let keys = Object.keys(records).filter((element) => element.indexOf(this.localStorage.defaults.prefix) === 0);
+      if (keys.length > 0) {
+        // If there are any records in a local storage
+        await this.remoteStorage.write(values);
+        await this.localStorage.remove(keys);
+      } else {
+        console.log(`No data in local experience storage`);
+      }
+    } catch (error) {
+      console.error(`Cannot send experiences to a remote server: ${error}`);
+      return error
+    }
+  }
+}
+
+/**
+ * Defines an API for storing experiences on a remote server, such as LRS.
+ */
+class RemoteStorageAdapter {
+  /**
+   * Stores one or several experiences on a remote server.
+   * @param {Experience[]} experiences - An array of experiences to store remotely.
+   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
+   * and is rejected when storing on a remote server failed.
+   */
+  static write (experiences) {
+    console.warn(`This method should be implemented within a subclass and should never be called directly.  
+      If you see this message then something is probably goes wrong`);
+    return new Promise()
+  }
+}
+
+/**
+ * This is a test implementation of a remote experience store adapter. It does not send anything anywhere
+ * and just records experiences that are passed to it.
+ */
+class TestAdapter extends RemoteStorageAdapter {
+  /**
+   * Imitates storing of one or several experiences on a remote server.
+   * @param {Experience[]} experiences - An array of experiences to store remotely.
+   * @return {Promise} - A promise that is fulfilled when a value is stored on a remote server successfully
+   * and is rejected when storing on a remote server failed.
+   */
+  static write (experiences) {
+    return new Promise((resolve, reject) => {
+      if (!experiences) {
+        reject(new Error(`experience cannot be empty`));
+        return
+      }
+      if (!Array.isArray(experiences)) {
+        reject(new Error(`experiences must be an array`));
+        return
+      }
+      console.log('Experience sent to a remote server:');
+      for (let experience of experiences) {
+        console.log(experience);
+      }
+      resolve();
+    })
+  }
+}
+
+exports.Experience = Experience;
+exports.Monitor = Monitor;
+exports.ObjectMonitor = ObjectMonitor;
+exports.Transporter = Transporter;
+exports.StorageAdapter = LocalStorageAdapter;
+exports.TestAdapter = TestAdapter;
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(20)))
+
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__lib_browser__ = __webpack_require__(6);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__background_process__ = __webpack_require__(7);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_alpheios_experience__);
+
+
+
+
+// Detect browser features
+let browserFeatures = new __WEBPACK_IMPORTED_MODULE_0__lib_browser__["a" /* default */]().inspect().getFeatures()
+console.log(`Support of a "browser" namespace: ${browserFeatures.browserNamespace}`)
+if (!browserFeatures.browserNamespace) {
+  console.log('"browser" namespace is not supported, will load a WebExtensions polyfill into the background script')
+  window.browser = __webpack_require__(21)
+}
+
+let monitoredBackgroundProcess = __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].track(
+  new __WEBPACK_IMPORTED_MODULE_1__background_process__["a" /* default */](browserFeatures),
+  [
+    {
+      monitoredFunction: 'getHomonymStatefully',
+      experience: 'Get homonym from a morphological analyzer',
+      asyncWrapper: __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].recordExperienceDetails
+    },
+    {
+      monitoredFunction: 'handleWordDataRequestStatefully',
+      asyncWrapper: __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].detachFromMessage
+    },
+    {
+      monitoredFunction: 'sendResponseToTabStatefully',
+      asyncWrapper: __WEBPACK_IMPORTED_MODULE_2_alpheios_experience__["Monitor"].attachToMessage
+    }
+  ]
+)
+monitoredBackgroundProcess.initialize()
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+class Browser {
+  constructor () {
+    this.browserNamespace = undefined
+  }
+
+  inspect () {
+    this.browserNamespace = !(typeof browser === 'undefined')
+    return this
+  }
+
+  getFeatures () {
+    return {
+      browserNamespace: this.browserNamespace
+    }
+  }
+
+  supportsBrowserNamespace () {
+    if (!this.browserNamespace) { this.inspect() }
+    return this.browserNamespace
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Browser;
+
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_components__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_alpheios_components___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_alpheios_components__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__lib_messaging_message_message_js__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service_js__ = __webpack_require__(13);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_state_request_js__ = __webpack_require__(16);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__context_menu_item_js__ = __webpack_require__(18);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__context_menu_separator_js__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__ = __webpack_require__(3);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_alpheios_experience__ = __webpack_require__(4);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_alpheios_experience___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_alpheios_experience__);
+/* global browser */
+
+
+
+
+
+
+
+
+// Use a logger that outputs timestamps (but loses line numbers)
+// import Logger from '../lib/logger'
+// console.log = Logger.log
+
+class BackgroundProcess {
+  constructor (browserFeatures) {
+    this.browserFeatures = browserFeatures
+    this.settings = BackgroundProcess.defaults
+
+    this.tabs = new Map() // A list of tabs that have content script loaded
+    this.tab = undefined // A tab that is currently active in a browser window
+
+    this.messagingService = new __WEBPACK_IMPORTED_MODULE_2__lib_messaging_service_js__["a" /* default */]()
+  }
+
+  static get defaults () {
+    let l10n = new __WEBPACK_IMPORTED_MODULE_0_alpheios_components__["L10n"]()
+      .addMessages(__WEBPACK_IMPORTED_MODULE_0_alpheios_components__["enUS"], __WEBPACK_IMPORTED_MODULE_0_alpheios_components__["Locales"].en_US)
+      .addMessages(__WEBPACK_IMPORTED_MODULE_0_alpheios_components__["enGB"], __WEBPACK_IMPORTED_MODULE_0_alpheios_components__["Locales"].en_GB)
+      .setLocale(__WEBPACK_IMPORTED_MODULE_0_alpheios_components__["Locales"].en_US)
+    return {
+      activateBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_ACTIVATE,
+      deactivateBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_DEACTIVATE,
+      disabledBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_DISABLED,
+      activateMenuItemId: 'activate-alpheios-content',
+      activateMenuItemText: l10n.messages.LABEL_CTXTMENU_ACTIVATE,
+      deactivateMenuItemId: 'deactivate-alpheios-content',
+      deactivateMenuItemText: l10n.messages.LABEL_CTXTMENU_DEACTIVATE,
+      disabledMenuItemId: 'disabled-alpheios-content',
+      disabledMenuItemText: l10n.messages.LABEL_CTXTMENU_DISABLED,
+      openPanelMenuItemId: 'open-alpheios-panel',
+      openPanelMenuItemText: l10n.messages.LABEL_CTXTMENU_OPENPANEL,
+      infoMenuItemId: 'show-alpheios-panel-info',
+      infoMenuItemText: l10n.messages.LABEL_CTXTMENU_INFO,
+      separatorOneId: 'separator-one',
+      sendExperiencesMenuItemId: 'send-experiences',
+      sendExperiencesMenuItemText: l10n.messages.LABEL_CTXTMENU_SENDEXP,
+      contentCSSFileName: 'styles/style.min.css',
+      contentScriptFileName: 'content.js',
+      browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
+      experienceStorageCheckInterval: 10000,
+      experienceStorageThreshold: 3,
+      contentScriptLoaded: false
+    }
+  }
+
+  initialize () {
+    console.log('Background script initialization started ...')
+
+    this.messagingService.addHandler(__WEBPACK_IMPORTED_MODULE_1__lib_messaging_message_message_js__["a" /* default */].types.STATE_MESSAGE, this.stateMessageHandler, this)
+    browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
+    browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
+    // browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
+    browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
+    browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
+    browser.runtime.onUpdateAvailable.addListener(this.updateAvailableListener.bind(this))
+    browser.runtime.onInstalled.addListener(this.handleOnInstalled.bind(this))
+
+    this.menuItems = {
+      activate: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
+      deactivate: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
+      openPanel: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText),
+      separatorOne: new __WEBPACK_IMPORTED_MODULE_5__context_menu_separator_js__["a" /* default */](BackgroundProcess.defaults.separatorOneId),
+      info: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.infoMenuItemId, BackgroundProcess.defaults.infoMenuItemText),
+      disabled: new __WEBPACK_IMPORTED_MODULE_4__context_menu_item_js__["a" /* default */](BackgroundProcess.defaults.disabledMenuItemId, BackgroundProcess.defaults.disabledMenuItemText)
+    }
+    this.menuItems.activate.enable() // This one will be enabled by default
+
+    browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
+    browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
+
+    this.transporter = new __WEBPACK_IMPORTED_MODULE_7_alpheios_experience__["Transporter"](__WEBPACK_IMPORTED_MODULE_7_alpheios_experience__["StorageAdapter"], __WEBPACK_IMPORTED_MODULE_7_alpheios_experience__["TestAdapter"],
+      BackgroundProcess.defaults.experienceStorageThreshold, BackgroundProcess.defaults.experienceStorageCheckInterval)
+  }
+
+  /**
+   * handler for the runtime.onInstalled event
+   */
+  handleOnInstalled(details) {
+    // if this is an update versus a fresh install we need to trigger reloads
+    // of the previously loaded content scripts. Only tabs with Alpheios loaded
+    // will respond to this event. Messaging between the new background script and the
+    // old content scripts is broken so we just send a custom event on the body of
+    // the page.
+    if (details.previousVersion) {
+      browser.tabs.query({}).then((tabs) => {
+        tabs.forEach((t) => {
+          try {
+            browser.tabs.executeScript(t.id, {
+              code: "document.body.dispatchEvent(new Event('Alpheios_Reload'))"
+            })
+          } catch (e) {
+            // just quietly fail here
+          }
+        })
+      })
+    }
+
+  }
+
+  async activateContent (tabID) {
+    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
+    let tab = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen()
+    this.setContentState(tab)
+    this.checkEmbeddedContent(tabID)
+  }
+
+  async deactivateContent (tabID) {
+    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
+    let tab = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].create(this.tabs.get(tabID)).deactivate().setPanelClosed()
+    this.setContentState(tab)
+  }
+
+  async openPanel (tabID) {
+    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
+    let tab = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen()
+    this.setContentState(tab)
+  }
+
+  async openInfoTab (tabID) {
+    if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
+    let tab = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].create(this.tabs.get(tabID)).activate().setPanelOpen().changeTab('info')
+    this.setContentState(tab)
+  }
+
+  loadPolyfill (tabID) {
+    if (!this.browserFeatures.browserNamespace) {
+      console.log('"browser" namespace is not supported, will load a WebExtension polyfill into a content script')
+      return browser.tabs.executeScript(
+        tabID,
+        {
+          file: this.settings.browserPolyfillName
+        })
+    } else {
+      // `browser` object is supported natively, no need to load a polyfill.
+      return Promise.resolve()
+    }
+  }
+
+  loadContentScript (tabID) {
+    console.log('Loading content script into a content tab')
+    return browser.tabs.executeScript(tabID, {
+      file: this.settings.contentScriptFileName
+    })
+  }
+
+  loadContentCSS (tabID) {
+    console.log('Loading CSS into a content tab')
+    return browser.tabs.insertCSS(tabID, {
+      file: this.settings.contentCSSFileName
+    })
+  }
+
+  /**
+   * Creates a TabScript object and loads content script(s) into a corresponding browser tab
+   * @param {Number} tabID - An ID of a tab
+   * @return {Promise.<TabScript>} A Promise that is resolved into a newly created TabScript object
+   */
+  async createTab (tabID) {
+    console.log(`Creating a new tab with an ID of ${tabID}`)
+    let newTab = new __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */](tabID)
+    newTab.tab = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].props.tab.values.INFO // Set active tab to `info` by default
+    this.tabs.set(tabID, newTab)
+    try {
+      await this.loadContentData(newTab)
+    } catch (error) {
+      console.error(`Cannot load content script for a tab with an ID of ${tabID}`)
+    }
+    return newTab
+  }
+
+  /**
+   * Changes state of a tab by sending it a state update request. Content script of a tab returns
+   * its actual state after request it fulfilled. A warning will be produced if an actual
+   * state does not match desired one.
+   * @param {TabScript} tab - A TabScript object that represents a tab and it desired state
+   */
+  setContentState (tab) {
+    this.messagingService.sendRequestToTab(new __WEBPACK_IMPORTED_MODULE_3__lib_messaging_request_state_request_js__["a" /* default */](tab), 10000, tab.tabID).then(
+      message => {
+        let contentState = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].readObject(message.body)
+        /*
+        ContentState is an actual state content script is in. It may not match a desired state because
+        content script may fail in one or several operations.
+         */
+        let diff = tab.diff(contentState)
+        if (!diff.isEmpty()) {
+          console.warn(`Content script was not able to update the following properties:`, diff.keys())
+        }
+        this.updateTabState(tab.tabID, contentState)
+      },
+      error => {
+        console.log(`No status confirmation from tab ${tab.tabID} on state request: ${error.message}`)
+      }
+    )
+  }
+
+  loadContentData (tabScript) {
+    let polyfillScript = this.loadPolyfill(tabScript.tabID)
+    let contentScript = this.loadContentScript(tabScript.tabID)
+    let contentCSS = this.loadContentCSS(tabScript.tabID)
+    return Promise.all([polyfillScript, contentScript, contentCSS])
+  }
+
+  stateMessageHandler (message, sender) {
+    let contentState = __WEBPACK_IMPORTED_MODULE_6__lib_content_tab_script_js__["a" /* default */].readObject(message.body)
+    this.updateTabState(contentState.tabID, contentState)
+    console.log(this.tabs.get(contentState.tabID))
+  }
+
+  tabActivationListener (info) {
+    this.tab = info.tabId
+    let tab = this.tabs.has(info.tabId) ? this.tabs.get(info.tabId) : undefined
+    this.setMenuForTab(tab)
+  }
+
+  /**
+   * Called when a page is loaded.
+   * Use this to listen on webNavigation.onCompleted rather than tabs.onUpdated
+   * because you can't tell from the tabs.onUpdated event whether it's the main
+   * browser window or an iframe that has been updated.
+   * the webNavigation.onCompleted event is the equivalent of domLoaded and you
+   * can distinguish iFrames from the main window in the details
+   * @param details
+   * @return {Promise.<void>}
+   */
+  async navigationCompletedListener (details) {
+    // make sure this is a tab we know about AND that it's not an iframe event
+    if (this.tabs.has(details.tabId) && details.frameId === 0) {
+      // If content script was loaded to that tab, restore it to the state it had before
+      let tab = this.tabs.get(details.tabId)
+      tab.restore()
+      try {
+        await this.loadContentData(tab)
+        this.setContentState(tab)
+        this.checkEmbeddedContent(details.tabId)
+      } catch (error) {
+        console.error(`Cannot load content script for a tab with an ID of ${details.tabId}`)
+      }
+    }
+  }
+
+  checkEmbeddedContent (tabID) {
+    try {
+      browser.tabs.executeScript(tabID, {
+        code: "document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))"
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+
+  /**
+   * Listen to extension updates. Need to define to prevent the browser
+   * from applying updates and reloading while the extension is activated
+   */
+  updateAvailableListener (details) {
+    console.log(`Update pending to version ${details.version} pending.`)
+  }
+
+  tabRemovalListener (tabID, removeInfo) {
+    if (this.tabs.has(tabID)) {
+      this.tabs.delete(tabID)
+    }
+  }
+
+  async menuListener (info, tab) {
+    if (info.menuItemId === this.settings.activateMenuItemId) {
+      this.activateContent(tab.id)
+    } else if (info.menuItemId === this.settings.deactivateMenuItemId) {
+      this.deactivateContent(tab.id)
+    } else if (info.menuItemId === this.settings.openPanelMenuItemId) {
+      this.openPanel(tab.id)
+    } else if (info.menuItemId === this.settings.infoMenuItemId) {
+      this.openInfoTab(tab.id)
+    }
+  }
+
+  async browserActionListener (tab) {
+    if (this.tabs.has(tab.id) && this.tabs.get(tab.id).isActive()) {
+      this.deactivateContent(tab.id)
+    } else {
+      this.activateContent(tab.id)
+    }
+  }
+
+  updateTabState (tabID, newState) {
+    let tab = this.tabs.get(tabID).update(newState)
+
+    // Menu state should reflect a status of a content script
+    this.updateBrowserActionForTab(tab)
+    this.setMenuForTab(tab)
+  }
+
+  updateBrowserActionForTab(tab) {
+    if (tab && tab.hasOwnProperty('status')) {
+      if (tab.isActive()) {
+        browser.browserAction.setTitle({title:BackgroundProcess.defaults.deactivateBrowserActionTitle,tabId:tab.tabID})
+      } else if (tab.isDeactivated()) {
+        browser.browserAction.setTitle({title:BackgroundProcess.defaults.activateBrowserActionTitle,tabId:tab.tabID})
+      } else if (tab.isDisabled()) {
+        browser.browserAction.setTitle({title:BackgroundProcess.defaults.disabledBrowserActionTitle,tabId:tab.tabID})
+      }
+    }
+  }
+
+  setMenuForTab (tab) {
+    // Deactivate all previously activated menu items to keep an order intact
+    this.menuItems.activate.disable()
+    this.menuItems.deactivate.disable()
+    this.menuItems.openPanel.disable()
+    this.menuItems.separatorOne.disable()
+    this.menuItems.info.disable()
+    this.menuItems.disabled.disable()
+
+    if (tab) {
+      // Menu state should reflect a status of a content script
+      if (tab.hasOwnProperty('status')) {
+        if (tab.isActive()) {
+          this.menuItems.activate.disable()
+          this.menuItems.deactivate.enable()
+          this.menuItems.openPanel.enable()
+          this.menuItems.info.enable()
+        } else if (tab.isDeactivated()) {
+          this.menuItems.deactivate.disable()
+          this.menuItems.activate.enable()
+          this.menuItems.openPanel.disable()
+          this.menuItems.info.enable()
+        } else if (tab.isDisabled()) {
+          this.menuItems.activate.disable()
+          this.menuItems.deactivate.disable()
+          this.menuItems.disabled.enable()
+          this.menuItems.openPanel.disable()
+          this.menuItems.info.disable()
+        }
+      }
+
+      if (tab.hasOwnProperty('panelStatus')) {
+        if (tab.isActive() && tab.isPanelClosed()) {
+          this.menuItems.openPanel.enable()
+        } else {
+          this.menuItems.openPanel.disable()
+        }
+      }
+
+      this.menuItems.separatorOne.enable()
+    } else {
+      // If tab is not provided will set menu do an initial state
+      this.menuItems.activate.enable()
+      this.menuItems.deactivate.disable()
+      this.menuItems.openPanel.disable()
+      this.menuItems.separatorOne.enable()
+      this.menuItems.info.enable()
+    }
+  }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = BackgroundProcess;
+
+
 
 /***/ }),
 /* 8 */
@@ -32085,17 +32208,17 @@ class LanguageDataset {
 LanguageDataset.SUFFIX = 'suffix';
 LanguageDataset.FORM = 'form';
 
-var nounSuffixesCSV = "Ending,Number,Case,Declension,Gender,Type,Footnote\r\na,singular,nominative,1st,feminine,regular,\r\nē,singular,nominative,1st,feminine,irregular,\r\nēs,singular,nominative,1st,feminine,irregular,\r\nā,singular,nominative,1st,feminine,irregular,7\r\nus,singular,nominative,2nd,masculine feminine,regular,\r\ner,singular,nominative,2nd,masculine feminine,regular,\r\nir,singular,nominative,2nd,masculine feminine,regular,\r\n-,singular,nominative,2nd,masculine feminine,irregular,\r\nos,singular,nominative,2nd,masculine feminine,irregular,1\r\nōs,singular,nominative,2nd,masculine feminine,irregular,\r\nō,singular,nominative,2nd,masculine feminine,irregular,7\r\num,singular,nominative,2nd,neuter,regular,\r\nus,singular,nominative,2nd,neuter,irregular,10\r\non,singular,nominative,2nd,neuter,irregular,7\r\n-,singular,nominative,3rd,masculine feminine,regular,\r\nos,singular,nominative,3rd,masculine feminine,irregular,\r\nōn,singular,nominative,3rd,masculine feminine,irregular,7\r\n-,singular,nominative,3rd,neuter,regular,\r\nus,singular,nominative,4th,masculine feminine,regular,\r\nū,singular,nominative,4th,neuter,regular,\r\nēs,singular,nominative,5th,feminine,regular,\r\nae,singular,genitive,1st,feminine,regular,\r\nāī,singular,genitive,1st,feminine,irregular,1\r\nās,singular,genitive,1st,feminine,irregular,2\r\nēs,singular,genitive,1st,feminine,irregular,7\r\nī,singular,genitive,2nd,masculine feminine,regular,\r\nō,singular,genitive,2nd,masculine feminine,irregular,7\r\nī,singular,genitive,2nd,neuter,regular,\r\nis,singular,genitive,3rd,masculine feminine,regular,\r\nis,singular,genitive,3rd,neuter,regular,\r\nūs,singular,genitive,4th,masculine feminine,regular,\r\nuis,singular,genitive,4th,masculine feminine,irregular,1\r\nuos,singular,genitive,4th,masculine feminine,irregular,1\r\nī,singular,genitive,4th,masculine feminine,irregular,15\r\nūs,singular,genitive,4th,neuter,regular,\r\nēī,singular,genitive,5th,feminine,regular,\r\neī,singular,genitive,5th,feminine,regular,\r\nī,singular,genitive,5th,feminine,irregular,\r\nē,singular,genitive,5th,feminine,irregular,\r\nēs,singular,genitive,5th,feminine,irregular,6\r\nae,singular,dative,1st,feminine,regular,\r\nāī,singular,dative,1st,feminine,irregular,1\r\nō,singular,dative,2nd,masculine feminine,regular,\r\nō,singular,dative,2nd,neuter,regular,\r\nī,singular,dative,3rd,masculine feminine,regular,\r\ne,singular,dative,3rd,masculine feminine,irregular,17\r\nī,singular,dative,3rd,neuter,regular,\r\nūī,singular,dative,4th,masculine feminine,regular,\r\nū,singular,dative,4th,masculine feminine,regular,\r\nū,singular,dative,4th,neuter,regular,\r\nēī,singular,dative,5th,feminine,regular,\r\neī,singular,dative,5th,feminine,regular,\r\nī,singular,dative,5th,feminine,irregular,\r\nē,singular,dative,5th,feminine,irregular,6\r\nam,singular,accusative,1st,feminine,regular,\r\nēn,singular,accusative,1st,feminine,irregular,\r\nān,singular,accusative,1st,feminine,irregular,7\r\num,singular,accusative,2nd,masculine feminine,regular,\r\nom,singular,accusative,2nd,masculine feminine,irregular,1\r\nōn,singular,accusative,2nd,masculine feminine,irregular,7\r\num,singular,accusative,2nd,neuter,regular,\r\nus,singular,accusative,2nd,neuter,irregular,10\r\non,singular,accusative,2nd,neuter,irregular,7\r\nem,singular,accusative,3rd,masculine feminine,regular,\r\nim,singular,accusative,3rd,masculine feminine,irregular,11\r\na,singular,accusative,3rd,masculine feminine,irregular,7\r\n-,singular,accusative,3rd,neuter,regular,\r\num,singular,accusative,4th,masculine feminine,regular,\r\nū,singular,accusative,4th,neuter,regular,\r\nem,singular,accusative,5th,feminine,regular,\r\nā,singular,ablative,1st,feminine,regular,\r\nād,singular,ablative,1st,feminine,irregular,5\r\nē,singular,ablative,1st,feminine,irregular,7\r\nō,singular,ablative,2nd,masculine feminine,regular,\r\nōd,singular,ablative,2nd,masculine feminine,irregular,1\r\nō,singular,ablative,2nd,neuter,regular,\r\ne,singular,ablative,3rd,masculine feminine,regular,\r\nī,singular,ablative,3rd,masculine feminine,irregular,11\r\ne,singular,ablative,3rd,neuter,regular,\r\nī,singular,ablative,3rd,neuter,irregular,11\r\nū,singular,ablative,4th,masculine feminine,regular,\r\nūd,singular,ablative,4th,masculine feminine,irregular,1\r\nū,singular,ablative,4th,neuter,regular,\r\nē,singular,ablative,5th,feminine,regular,\r\nae,singular,locative,1st,feminine,regular,\r\nō,singular,locative,2nd,masculine feminine,regular,\r\nō,singular,locative,2nd,neuter,regular,\r\ne,singular,locative,3rd,masculine feminine,regular,\r\nī,singular,locative,3rd,masculine feminine,regular,\r\nī,singular,locative,3rd,neuter,regular,\r\nū,singular,locative,4th,masculine feminine,regular,\r\nū,singular,locative,4th,neuter,regular,\r\nē,singular,locative,5th,feminine,regular,\r\na,singular,vocative,1st,feminine,regular,\r\nē,singular,vocative,1st,feminine,irregular,\r\nā,singular,vocative,1st,feminine,irregular,7\r\ne,singular,vocative,2nd,masculine feminine,regular,\r\ner,singular,vocative,2nd,masculine feminine,regular,\r\nir,singular,vocative,2nd,masculine feminine,regular,\r\n-,singular,vocative,2nd,masculine feminine,irregular,\r\nī,singular,vocative,2nd,masculine feminine,irregular,8\r\nōs,singular,vocative,2nd,masculine feminine,irregular,\r\ne,singular,vocative,2nd,masculine feminine,irregular,7\r\num,singular,vocative,2nd,neuter,regular,\r\non,singular,vocative,2nd,neuter,irregular,7\r\n-,singular,vocative,3rd,masculine feminine,regular,\r\n-,singular,vocative,3rd,neuter,regular,\r\nus,singular,vocative,4th,masculine feminine,regular,\r\nū,singular,vocative,4th,neuter,regular,\r\nēs,singular,vocative,5th,feminine,regular,\r\nae,plural,nominative,1st,feminine,regular,\r\nī,plural,nominative,2nd,masculine feminine,regular,\r\noe,plural,nominative,2nd,masculine feminine,irregular,7 9\r\na,plural,nominative,2nd,neuter,regular,\r\nēs,plural,nominative,3rd,masculine feminine,regular,\r\nes,plural,nominative,3rd,masculine feminine,irregular,7\r\na,plural,nominative,3rd,neuter,regular,\r\nia,plural,nominative,3rd,neuter,irregular,11\r\nūs,plural,nominative,4th,masculine feminine,regular,\r\nua,plural,nominative,4th,neuter,regular,\r\nēs,plural,nominative,5th,feminine,regular,\r\nārum,plural,genitive,1st,feminine,regular,\r\num,plural,genitive,1st,feminine,irregular,3\r\nōrum,plural,genitive,2nd,masculine feminine,regular,\r\num,plural,genitive,2nd,masculine feminine,irregular,\r\nom,plural,genitive,2nd,masculine feminine,irregular,8\r\nōrum,plural,genitive,2nd,neuter,regular,\r\num,plural,genitive,2nd,neuter,irregular,\r\num,plural,genitive,3rd,masculine feminine,regular,\r\nium,plural,genitive,3rd,masculine feminine,irregular,11\r\nōn,plural,genitive,3rd,masculine feminine,irregular,7\r\num,plural,genitive,3rd,neuter,regular,\r\nium,plural,genitive,3rd,neuter,irregular,11\r\nuum,plural,genitive,4th,masculine feminine,regular,\r\num,plural,genitive,4th,masculine feminine,irregular,16\r\nuom,plural,genitive,4th,masculine feminine,irregular,1\r\nuum,plural,genitive,4th,neuter,regular,\r\nērum,plural,genitive,5th,feminine,regular,\r\nīs,plural,dative,1st,feminine,regular,\r\nābus,plural,dative,1st,feminine,irregular,4\r\neis,plural,dative,1st,feminine,irregular,6\r\nīs,plural,dative,2nd,masculine feminine,regular,\r\nīs,plural,dative,2nd,neuter,regular,\r\nibus,plural,dative,3rd,masculine feminine,regular,\r\nibus,plural,dative,3rd,neuter,regular,\r\nibus,plural,dative,4th,masculine feminine,regular,\r\nubus,plural,dative,4th,masculine feminine,irregular,14\r\nibus,plural,dative,4th,neuter,regular,\r\nēbus,plural,dative,5th,feminine,regular,\r\nās,plural,accusative,1st,feminine,regular,\r\nōs,plural,accusative,2nd,masculine feminine,regular,\r\na,plural,accusative,2nd,neuter,regular,\r\nēs,plural,accusative,3rd,masculine feminine,regular,\r\nīs,plural,accusative,3rd,masculine feminine,irregular,11\r\nas,plural,accusative,3rd,masculine feminine,irregular,7\r\na,plural,accusative,3rd,neuter,regular,\r\nia,plural,accusative,3rd,neuter,irregular,11\r\nūs,plural,accusative,4th,masculine feminine,regular,\r\nua,plural,accusative,4th,neuter,regular,\r\nēs,plural,accusative,5th,feminine,regular,\r\nīs,plural,ablative,1st,feminine,regular,\r\nābus,plural,ablative,1st,feminine,irregular,4\r\neis,plural,ablative,1st,feminine,irregular,6\r\nīs,plural,ablative,2nd,masculine feminine,regular,\r\nīs,plural,ablative,2nd,neuter,regular,\r\nibus,plural,ablative,3rd,masculine feminine,regular,\r\nibus,plural,ablative,3rd,neuter,regular,\r\nibus,plural,ablative,4th,masculine feminine,regular,\r\nubus,plural,ablative,4th,masculine feminine,irregular,14\r\nibus,plural,ablative,4th,neuter,regular,\r\nēbus,plural,ablative,5th,feminine,regular,\r\nīs,plural,locative,1st,feminine,regular,\r\nīs,plural,locative,2nd,masculine feminine,regular,\r\nīs,plural,locative,2nd,neuter,regular,\r\nibus,plural,locative,3rd,masculine feminine,regular,\r\nibus,plural,locative,3rd,neuter,regular,\r\nibus,plural,locative,4th,masculine feminine,regular,\r\nibus,plural,locative,4th,neuter,regular,\r\nēbus,plural,locative,5th,feminine,regular,\r\nae,plural,vocative,1st,feminine,regular,\r\nī,plural,vocative,2nd,masculine feminine,regular,\r\na,plural,vocative,2nd,neuter,regular,\r\nēs,plural,vocative,3rd,masculine feminine,regular,\r\na,plural,vocative,3rd,neuter,regular,\r\nia,plural,vocative,3rd,neuter,irregular,11\r\nūs,plural,vocative,4th,masculine feminine,regular,\r\nua,plural,vocative,4th,neuter,regular,\r\nēs,plural,vocative,5th,feminine,regular,";
+var nounSuffixesCSV = "Ending,Number,Case,Declension,Gender,Type,Footnote\na,singular,nominative,1st,feminine,regular,\nē,singular,nominative,1st,feminine,irregular,\nēs,singular,nominative,1st,feminine,irregular,\nā,singular,nominative,1st,feminine,irregular,7\nus,singular,nominative,2nd,masculine feminine,regular,\ner,singular,nominative,2nd,masculine feminine,regular,\nir,singular,nominative,2nd,masculine feminine,regular,\n-,singular,nominative,2nd,masculine feminine,irregular,\nos,singular,nominative,2nd,masculine feminine,irregular,1\nōs,singular,nominative,2nd,masculine feminine,irregular,\nō,singular,nominative,2nd,masculine feminine,irregular,7\num,singular,nominative,2nd,neuter,regular,\nus,singular,nominative,2nd,neuter,irregular,10\non,singular,nominative,2nd,neuter,irregular,7\n-,singular,nominative,3rd,masculine feminine,regular,\nos,singular,nominative,3rd,masculine feminine,irregular,\nōn,singular,nominative,3rd,masculine feminine,irregular,7\n-,singular,nominative,3rd,neuter,regular,\nus,singular,nominative,4th,masculine feminine,regular,\nū,singular,nominative,4th,neuter,regular,\nēs,singular,nominative,5th,feminine,regular,\nae,singular,genitive,1st,feminine,regular,\nāī,singular,genitive,1st,feminine,irregular,1\nās,singular,genitive,1st,feminine,irregular,2\nēs,singular,genitive,1st,feminine,irregular,7\nī,singular,genitive,2nd,masculine feminine,regular,\nō,singular,genitive,2nd,masculine feminine,irregular,7\nī,singular,genitive,2nd,neuter,regular,\nis,singular,genitive,3rd,masculine feminine,regular,\nis,singular,genitive,3rd,neuter,regular,\nūs,singular,genitive,4th,masculine feminine,regular,\nuis,singular,genitive,4th,masculine feminine,irregular,1\nuos,singular,genitive,4th,masculine feminine,irregular,1\nī,singular,genitive,4th,masculine feminine,irregular,15\nūs,singular,genitive,4th,neuter,regular,\nēī,singular,genitive,5th,feminine,regular,\neī,singular,genitive,5th,feminine,regular,\nī,singular,genitive,5th,feminine,irregular,\nē,singular,genitive,5th,feminine,irregular,\nēs,singular,genitive,5th,feminine,irregular,6\nae,singular,dative,1st,feminine,regular,\nāī,singular,dative,1st,feminine,irregular,1\nō,singular,dative,2nd,masculine feminine,regular,\nō,singular,dative,2nd,neuter,regular,\nī,singular,dative,3rd,masculine feminine,regular,\ne,singular,dative,3rd,masculine feminine,irregular,17\nī,singular,dative,3rd,neuter,regular,\nūī,singular,dative,4th,masculine feminine,regular,\nū,singular,dative,4th,masculine feminine,regular,\nū,singular,dative,4th,neuter,regular,\nēī,singular,dative,5th,feminine,regular,\neī,singular,dative,5th,feminine,regular,\nī,singular,dative,5th,feminine,irregular,\nē,singular,dative,5th,feminine,irregular,6\nam,singular,accusative,1st,feminine,regular,\nēn,singular,accusative,1st,feminine,irregular,\nān,singular,accusative,1st,feminine,irregular,7\num,singular,accusative,2nd,masculine feminine,regular,\nom,singular,accusative,2nd,masculine feminine,irregular,1\nōn,singular,accusative,2nd,masculine feminine,irregular,7\num,singular,accusative,2nd,neuter,regular,\nus,singular,accusative,2nd,neuter,irregular,10\non,singular,accusative,2nd,neuter,irregular,7\nem,singular,accusative,3rd,masculine feminine,regular,\nim,singular,accusative,3rd,masculine feminine,irregular,11\na,singular,accusative,3rd,masculine feminine,irregular,7\n-,singular,accusative,3rd,neuter,regular,\num,singular,accusative,4th,masculine feminine,regular,\nū,singular,accusative,4th,neuter,regular,\nem,singular,accusative,5th,feminine,regular,\nā,singular,ablative,1st,feminine,regular,\nād,singular,ablative,1st,feminine,irregular,5\nē,singular,ablative,1st,feminine,irregular,7\nō,singular,ablative,2nd,masculine feminine,regular,\nōd,singular,ablative,2nd,masculine feminine,irregular,1\nō,singular,ablative,2nd,neuter,regular,\ne,singular,ablative,3rd,masculine feminine,regular,\nī,singular,ablative,3rd,masculine feminine,irregular,11\ne,singular,ablative,3rd,neuter,regular,\nī,singular,ablative,3rd,neuter,irregular,11\nū,singular,ablative,4th,masculine feminine,regular,\nūd,singular,ablative,4th,masculine feminine,irregular,1\nū,singular,ablative,4th,neuter,regular,\nē,singular,ablative,5th,feminine,regular,\nae,singular,locative,1st,feminine,regular,\nō,singular,locative,2nd,masculine feminine,regular,\nō,singular,locative,2nd,neuter,regular,\ne,singular,locative,3rd,masculine feminine,regular,\nī,singular,locative,3rd,masculine feminine,regular,\nī,singular,locative,3rd,neuter,regular,\nū,singular,locative,4th,masculine feminine,regular,\nū,singular,locative,4th,neuter,regular,\nē,singular,locative,5th,feminine,regular,\na,singular,vocative,1st,feminine,regular,\nē,singular,vocative,1st,feminine,irregular,\nā,singular,vocative,1st,feminine,irregular,7\ne,singular,vocative,2nd,masculine feminine,regular,\ner,singular,vocative,2nd,masculine feminine,regular,\nir,singular,vocative,2nd,masculine feminine,regular,\n-,singular,vocative,2nd,masculine feminine,irregular,\nī,singular,vocative,2nd,masculine feminine,irregular,8\nōs,singular,vocative,2nd,masculine feminine,irregular,\ne,singular,vocative,2nd,masculine feminine,irregular,7\num,singular,vocative,2nd,neuter,regular,\non,singular,vocative,2nd,neuter,irregular,7\n-,singular,vocative,3rd,masculine feminine,regular,\n-,singular,vocative,3rd,neuter,regular,\nus,singular,vocative,4th,masculine feminine,regular,\nū,singular,vocative,4th,neuter,regular,\nēs,singular,vocative,5th,feminine,regular,\nae,plural,nominative,1st,feminine,regular,\nī,plural,nominative,2nd,masculine feminine,regular,\noe,plural,nominative,2nd,masculine feminine,irregular,7 9\na,plural,nominative,2nd,neuter,regular,\nēs,plural,nominative,3rd,masculine feminine,regular,\nes,plural,nominative,3rd,masculine feminine,irregular,7\na,plural,nominative,3rd,neuter,regular,\nia,plural,nominative,3rd,neuter,irregular,11\nūs,plural,nominative,4th,masculine feminine,regular,\nua,plural,nominative,4th,neuter,regular,\nēs,plural,nominative,5th,feminine,regular,\nārum,plural,genitive,1st,feminine,regular,\num,plural,genitive,1st,feminine,irregular,3\nōrum,plural,genitive,2nd,masculine feminine,regular,\num,plural,genitive,2nd,masculine feminine,irregular,\nom,plural,genitive,2nd,masculine feminine,irregular,8\nōrum,plural,genitive,2nd,neuter,regular,\num,plural,genitive,2nd,neuter,irregular,\num,plural,genitive,3rd,masculine feminine,regular,\nium,plural,genitive,3rd,masculine feminine,irregular,11\nōn,plural,genitive,3rd,masculine feminine,irregular,7\num,plural,genitive,3rd,neuter,regular,\nium,plural,genitive,3rd,neuter,irregular,11\nuum,plural,genitive,4th,masculine feminine,regular,\num,plural,genitive,4th,masculine feminine,irregular,16\nuom,plural,genitive,4th,masculine feminine,irregular,1\nuum,plural,genitive,4th,neuter,regular,\nērum,plural,genitive,5th,feminine,regular,\nīs,plural,dative,1st,feminine,regular,\nābus,plural,dative,1st,feminine,irregular,4\neis,plural,dative,1st,feminine,irregular,6\nīs,plural,dative,2nd,masculine feminine,regular,\nīs,plural,dative,2nd,neuter,regular,\nibus,plural,dative,3rd,masculine feminine,regular,\nibus,plural,dative,3rd,neuter,regular,\nibus,plural,dative,4th,masculine feminine,regular,\nubus,plural,dative,4th,masculine feminine,irregular,14\nibus,plural,dative,4th,neuter,regular,\nēbus,plural,dative,5th,feminine,regular,\nās,plural,accusative,1st,feminine,regular,\nōs,plural,accusative,2nd,masculine feminine,regular,\na,plural,accusative,2nd,neuter,regular,\nēs,plural,accusative,3rd,masculine feminine,regular,\nīs,plural,accusative,3rd,masculine feminine,irregular,11\nas,plural,accusative,3rd,masculine feminine,irregular,7\na,plural,accusative,3rd,neuter,regular,\nia,plural,accusative,3rd,neuter,irregular,11\nūs,plural,accusative,4th,masculine feminine,regular,\nua,plural,accusative,4th,neuter,regular,\nēs,plural,accusative,5th,feminine,regular,\nīs,plural,ablative,1st,feminine,regular,\nābus,plural,ablative,1st,feminine,irregular,4\neis,plural,ablative,1st,feminine,irregular,6\nīs,plural,ablative,2nd,masculine feminine,regular,\nīs,plural,ablative,2nd,neuter,regular,\nibus,plural,ablative,3rd,masculine feminine,regular,\nibus,plural,ablative,3rd,neuter,regular,\nibus,plural,ablative,4th,masculine feminine,regular,\nubus,plural,ablative,4th,masculine feminine,irregular,14\nibus,plural,ablative,4th,neuter,regular,\nēbus,plural,ablative,5th,feminine,regular,\nīs,plural,locative,1st,feminine,regular,\nīs,plural,locative,2nd,masculine feminine,regular,\nīs,plural,locative,2nd,neuter,regular,\nibus,plural,locative,3rd,masculine feminine,regular,\nibus,plural,locative,3rd,neuter,regular,\nibus,plural,locative,4th,masculine feminine,regular,\nibus,plural,locative,4th,neuter,regular,\nēbus,plural,locative,5th,feminine,regular,\nae,plural,vocative,1st,feminine,regular,\nī,plural,vocative,2nd,masculine feminine,regular,\na,plural,vocative,2nd,neuter,regular,\nēs,plural,vocative,3rd,masculine feminine,regular,\na,plural,vocative,3rd,neuter,regular,\nia,plural,vocative,3rd,neuter,irregular,11\nūs,plural,vocative,4th,masculine feminine,regular,\nua,plural,vocative,4th,neuter,regular,\nēs,plural,vocative,5th,feminine,regular,";
 
-var nounFootnotesCSV = "Index,Text\r\n1,archaic (final s and m of os and om may be omitted in inscriptions)\r\n2,only in familiās\r\n3,especially in Greek patronymics and compounds in -gena and -cola.\r\n4,always in deābus and filiābus; rarely with other words to distinguish the female\r\n5,archaic\r\n6,rare\r\n7,\"may occur in words of Greek origin. The forms of many Greek nouns vary among the first, second and third declensions.\"\r\n8,proper names in ius and filius and genius\r\n9,poetic\r\n10,\"only pelagus, vīrus, and sometimes vulgus\"\r\n11,may occur with i-stems\r\n12,several nouns (most commonly domus) show forms of both second and fourth declensions\r\n13,\"some nouns also have forms from the first declension (eg materia, saevitia) or the third declension (eg requiēs, satiēs, plēbēs, famēs)\"\r\n14,\"Always in partus and tribus, usually in artus and lacus, sometimes in other words, eg portus and specus\"\r\n15,Often in names of plants and trees and in nouns ending in -tus\r\n16,When pronounced as one syllable\r\n17,early\r\n18,dies and meridies are masculine";
+var nounFootnotesCSV = "Index,Text\n1,archaic (final s and m of os and om may be omitted in inscriptions)\n2,only in familiās\n3,especially in Greek patronymics and compounds in -gena and -cola.\n4,always in deābus and filiābus; rarely with other words to distinguish the female\n5,archaic\n6,rare\n7,\"may occur in words of Greek origin. The forms of many Greek nouns vary among the first, second and third declensions.\"\n8,proper names in ius and filius and genius\n9,poetic\n10,\"only pelagus, vīrus, and sometimes vulgus\"\n11,may occur with i-stems\n12,several nouns (most commonly domus) show forms of both second and fourth declensions\n13,\"some nouns also have forms from the first declension (eg materia, saevitia) or the third declension (eg requiēs, satiēs, plēbēs, famēs)\"\n14,\"Always in partus and tribus, usually in artus and lacus, sometimes in other words, eg portus and specus\"\n15,Often in names of plants and trees and in nouns ending in -tus\n16,When pronounced as one syllable\n17,early\n18,dies and meridies are masculine";
 
-var pronounFormsCSV = "Class,Person,Number,Case,Type,Form,Alt,Footnote\r\npersonal,1st,singular,nominative,regular,ego,,\r\npersonal,1st,singular,genitive,regular,meI,,\r\npersonal,1st,singular,genitive,irregular,mIs,,1\r\npersonal,1st,singular,dative,regular,mihi,,\r\npersonal,1st,singular,dative,irregular,mI,,\r\npersonal,1st,singular,accusative,regular,mE,,\r\npersonal,1st,singular,accusative,irregular,mEmE,,\r\npersonal,1st,singular,ablative,regular,mE,,\r\npersonal,1st,singular,ablative,irregular,mEmE,,\r\npersonal,1st,singular,vocative,,,,\r\npersonal,2nd,singular,nominative,regular,tU,,\r\npersonal,2nd,singular,genitive,regular,tuI,,\r\npersonal,2nd,singular,genitive,irregular,tIs,,1\r\npersonal,2nd,singular,dative,regular,tibi,,\r\npersonal,2nd,singular,accusative,regular,tE,,\r\npersonal,2nd,singular,accusative,irregular,tEtE,,\r\npersonal,2nd,singular,ablative,regular,tE,,\r\npersonal,2nd,singular,ablative,irregular,tEtE,,\r\npersonal,2nd,singular,vocative,regular,tU,,\r\npersonal,1st,plural,nominative,regular,nOs,,\r\npersonal,1st,plural,genitive,regular,nostrum,,\r\npersonal,1st,plural,dative,regular,nObIs,,\r\npersonal,1st,plural,accusative,regular,nOs,,\r\npersonal,1st,plural,ablative,regular,nObIs,,\r\npersonal,1st,plural,vocative,,,,\r\npersonal,2nd,plural,nominative,regular,vOs,,\r\npersonal,2nd,plural,genitive,regular,vestrum,,\r\npersonal,2nd,plural,genitive,regular,vestrI,,\r\npersonal,2nd,plural,genitive,irregular,vostrum,,\r\npersonal,2nd,plural,genitive,irregular,vostrI,,\r\npersonal,2nd,plural,dative,regular,vObIs,,\r\npersonal,2nd,plural,accusative,regular,vOs,,\r\npersonal,2nd,plural,ablative,regular,vObIs,,\r\npersonal,2nd,plural,vocative,regular,vOs,,\r\nreflexive,3rd,singular,nominative,,,,\r\nreflexive,3rd,singular,genitive,regular,suI,,\r\nreflexive,3rd,singular,dative,regular,sibi,,\r\nreflexive,3rd,singular,accusative,regular,sE,,\r\nreflexive,3rd,singular,accusative,irregular,sEsE,,\r\nreflexive,3rd,singular,ablative,regular,sE,,\r\nreflexive,3rd,singular,ablative,irregular,sEsE,,\r\nreflexive,3rd,singular,vocative,,,,\r\nreflexive,3rd,plural,nominative,,,,\r\nreflexive,3rd,plural,genitive,regular,suI,,\r\nreflexive,3rd,plural,dative,regular,sibi,,\r\nreflexive,3rd,plural,accusative,regular,sE,,\r\nreflexive,3rd,plural,accusative,irregular,sEsE,,\r\nreflexive,3rd,plural,ablative,regular,sE,,\r\nreflexive,3rd,plural,ablative,irregular,sEsE,,\r\nreflexive,3rd,plural,vocative,,,,\r\npossessive,1st,singular,nominative,regular,meus,,\r\npossessive,1st,singular,genitive,regular,meI,,\r\npossessive,1st,singular,dative,regular,meO,,\r\npossessive,1st,singular,accusative,regular,meum,,\r\npossessive,1st,singular,ablative,regular,meO,,\r\npossessive,1st,singular,vocative,regular,mI,,\r\npossessive,1st,singular,vocative,irregular,meus,,\r\npossessive,1st,singular,nominative,regular,mea,,\r\npossessive,1st,singular,genitive,regular,meae,,\r\npossessive,1st,singular,dative,regular,meae,,\r\npossessive,1st,singular,accusative,regular,meam,,\r\npossessive,1st,singular,ablative,regular,meA,,\r\npossessive,1st,singular,vocative,regular,mea,,\r\npossessive,1st,singular,nominative,regular,meum,,\r\npossessive,1st,singular,genitive,regular,meI,,\r\npossessive,1st,singular,dative,regular,meO,,\r\npossessive,1st,singular,accusative,regular,meum,,\r\npossessive,1st,singular,ablative,regular,meO,,\r\npossessive,1st,singular,vocative,regular,meum,,\r\npossessive,2nd,singular,nominative,regular,tuus,,\r\npossessive,2nd,singular,genitive,regular,tuI,,\r\npossessive,2nd,singular,dative,regular,tuO,,\r\npossessive,2nd,singular,accusative,regular,tuum,,\r\npossessive,2nd,singular,ablative,regular,tuO,,\r\npossessive,2nd,singular,vocative,,,,\r\npossessive,2nd,singular,nominative,regular,tua,,\r\npossessive,2nd,singular,genitive,regular,tuae,,\r\npossessive,2nd,singular,dative,regular,tuae,,\r\npossessive,2nd,singular,accusative,regular,tuam,,\r\npossessive,2nd,singular,ablative,regular,tuA,,\r\npossessive,2nd,singular,vocative,,,,\r\npossessive,2nd,singular,nominative,regular,tuum,,\r\npossessive,2nd,singular,genitive,regular,tuI,,\r\npossessive,2nd,singular,dative,regular,tuO,,\r\npossessive,2nd,singular,accusative,regular,tuum,,\r\npossessive,2nd,singular,ablative,regular,tuO,,\r\npossessive,2nd,singular,vocative,,,,\r\npossessive,3rd,singular,nominative,regular,suus,,\r\npossessive,3rd,singular,genitive,regular,suI,,\r\npossessive,3rd,singular,dative,regular,suO,,\r\npossessive,3rd,singular,accusative,regular,suum,,\r\npossessive,3rd,singular,ablative,regular,suO,,\r\npossessive,3rd,singular,vocative,,,,\r\npossessive,3rd,singular,nominative,regular,sua,,\r\npossessive,3rd,singular,genitive,regular,suae,,\r\npossessive,3rd,singular,dative,regular,suae,,\r\npossessive,3rd,singular,accusative,regular,suam,,\r\npossessive,3rd,singular,ablative,regular,suA,,\r\npossessive,3rd,singular,vocative,,,,\r\npossessive,3rd,singular,nominative,regular,suum,,\r\npossessive,3rd,singular,genitive,regular,suI,,\r\npossessive,3rd,singular,dative,regular,suO,,\r\npossessive,3rd,singular,accusative,regular,suum,,\r\npossessive,3rd,singular,ablative,regular,suO,,\r\npossessive,3rd,singular,vocative,,,,\r\npossessive,1st,plural,nominative,regular,meI,,\r\npossessive,1st,plural,genitive,regular,meOrum,,\r\npossessive,1st,plural,dative,regular,meIs,,\r\npossessive,1st,plural,accusative,regular,meOs,,\r\npossessive,1st,plural,ablative,regular,meIs,,\r\npossessive,1st,plural,vocative,regular,meI,,\r\npossessive,1st,plural,nominative,regular,meae,,\r\npossessive,1st,plural,genitive,regular,meArum,,\r\npossessive,1st,plural,dative,,,,\r\npossessive,1st,plural,accusative,regular,meAs,,\r\npossessive,1st,plural,ablative,,,,\r\npossessive,1st,plural,vocative,regular,meae,,\r\npossessive,1st,plural,nominative,regular,mea,,\r\npossessive,1st,plural,genitive,regular,meOrum,,\r\npossessive,1st,plural,dative,,,,\r\npossessive,1st,plural,accusative,regular,mea,,\r\npossessive,1st,plural,ablative,,,,\r\npossessive,1st,plural,vocative,regular,mea,,\r\npossessive,2nd,plural,nominative,regular,tuI,,\r\npossessive,2nd,plural,genitive,regular,tuOrum,,\r\npossessive,2nd,plural,dative,regular,tuIs,,\r\npossessive,2nd,plural,accusative,regular,tuOs,,\r\npossessive,2nd,plural,ablative,regular,tuIs,,\r\npossessive,2nd,plural,vocative,,,,\r\npossessive,2nd,plural,nominative,regular,tuae,,\r\npossessive,2nd,plural,genitive,regular,tuArum,,\r\npossessive,2nd,plural,dative,,,,\r\npossessive,2nd,plural,accusative,regular,tuAs,,\r\npossessive,2nd,plural,ablative,,,,\r\npossessive,2nd,,vocative,,,,\r\npossessive,2nd,plural,nominative,regular,tua,,\r\npossessive,2nd,plural,genitive,regular,tuOrum,,\r\npossessive,2nd,plural,dative,,,,\r\npossessive,2nd,plural,accusative,regular,tua,,\r\npossessive,2nd,plural,ablative,,,,\r\npossessive,2nd,plural,vocative,,,,\r\npossessive,3rd,plural,nominative,regular,suI,,\r\npossessive,3rd,plural,genitive,regular,suOrum,,\r\npossessive,3rd,plural,dative,regular,suIs,,\r\npossessive,3rd,plural,accusative,regular,suOs,,\r\npossessive,3rd,plural,ablative,regular,suIs,,\r\npossessive,3rd,plural,vocative,,,,\r\npossessive,3rd,plural,nominative,regular,suae,,\r\npossessive,3rd,plural,genitive,regular,suArum,,\r\npossessive,3rd,plural,dative,,,,\r\npossessive,3rd,plural,accusative,regular,suAs,,\r\npossessive,3rd,plural,ablative,,,,\r\npossessive,3rd,plural,vocative,,,,\r\npossessive,3rd,plural,nominative,regular,sua,,\r\npossessive,3rd,plural,genitive,regular,suOrum,,\r\npossessive,3rd,plural,dative,,,,\r\npossessive,3rd,plural,accusative,regular,sua,,\r\npossessive,3rd,plural,ablative,,,,\r\npossessive,3rd,plural,vocative,,,,\r\npossessive,1st,singular,nominative,regular,noster,,\r\npossessive,1st,singular,genitive,regular,nostrI,,\r\npossessive,1st,singular,dative,regular,nostrO,,\r\npossessive,1st,singular,accusative,regular,nostrum,,\r\npossessive,1st,singular,ablative,regular,nostrO,,\r\npossessive,1st,singular,vocative,regular,noster,,\r\npossessive,1st,singular,nominative,regular,nostra,,\r\npossessive,1st,singular,genitive,regular,nostrae,,\r\npossessive,1st,singular,dative,regular,nostrae,,\r\npossessive,1st,singular,accusative,regular,nostram,,\r\npossessive,1st,singular,ablative,regular,nostrA,,\r\npossessive,1st,singular,vocative,regular,nostra,,\r\npossessive,1st,singular,nominative,regular,nostrum,,\r\npossessive,1st,singular,genitive,regular,nostrI,,\r\npossessive,1st,singular,dative,regular,nostrO,,\r\npossessive,1st,singular,accusative,regular,nostrum,,\r\npossessive,1st,singular,ablative,regular,nostrO,,\r\npossessive,1st,singular,vocative,regular,nostrum,,\r\npossessive,2nd,singular,nominative,regular,vester,,\r\npossessive,2nd,singular,genitive,regular,vestrI,,\r\npossessive,2nd,singular,dative,regular,vestrO,,\r\npossessive,2nd,singular,accusative,regular,vestrum,,\r\npossessive,2nd,singular,ablative,regular,vestrO,,\r\npossessive,2nd,singular,vocative,,,,\r\npossessive,2nd,singular,nominative,regular,vestra,,\r\npossessive,2nd,singular,genitive,regular,vestrae,,\r\npossessive,2nd,singular,dative,regular,vestrae,,\r\npossessive,2nd,singular,accusative,regular,vestram,,\r\npossessive,2nd,singular,ablative,regular,vestrA,,\r\npossessive,2nd,singular,vocative,,,,\r\npossessive,2nd,singular,nominative,regular,vestum,,\r\npossessive,2nd,singular,genitive,regular,vestrI,,\r\npossessive,2nd,singular,dative,regular,vestrO,,\r\npossessive,2nd,singular,accusative,regular,vestrum,,\r\npossessive,2nd,singular,ablative,regular,vestrO,,\r\npossessive,2nd,singular,vocative,,,,\r\npossessive,1st,plural,nominative,regular,nostrI,,\r\npossessive,1st,plural,genitive,regular,nostrOrum,,\r\npossessive,1st,plural,dative,regular,nostrIs,,\r\npossessive,1st,plural,accusative,regular,nostrOs,,\r\npossessive,1st,plural,ablative,regular,nostrIs,,\r\npossessive,1st,plural,vocative,regular,nostrI,,\r\npossessive,1st,plural,nominative,regular,nostrae,,\r\npossessive,1st,plural,genitive,regular,nostrArum,,\r\npossessive,1st,plural,dative,,,,\r\npossessive,1st,plural,accusative,regular,nostrAs,,\r\npossessive,1st,plural,ablative,,,,\r\npossessive,1st,plural,vocative,regular,nostrae,,\r\npossessive,1st,plural,nominative,regular,nostra,,\r\npossessive,1st,plural,genitive,regular,nostrOrum,,\r\npossessive,1st,plural,dative,,,,\r\npossessive,1st,plural,accusative,regular,nostra,,\r\npossessive,1st,plural,ablative,,,,\r\npossessive,1st,plural,vocative,regular,nostra,,\r\npossessive,2nd,plural,nominative,regular,vestrI,,\r\npossessive,2nd,plural,genitive,regular,vestrOrum,,\r\npossessive,2nd,plural,dative,regular,vestrIs,,\r\npossessive,2nd,plural,accusative,regular,vestrOs,,\r\npossessive,2nd,plural,ablative,regular,vestrIs,,\r\npossessive,2nd,plural,vocative,,,,\r\npossessive,2nd,plural,nominative,regular,vestrae,,\r\npossessive,2nd,plural,genitive,regular,vestrArum,,\r\npossessive,2nd,plural,dative,,,,\r\npossessive,2nd,plural,accusative,regular,vestrAs,,\r\npossessive,2nd,plural,ablative,,,,\r\npossessive,2nd,,vocative,,,,\r\npossessive,2nd,plural,nominative,regular,vestra,,\r\npossessive,2nd,plural,genitive,regular,vestrOrum,,\r\npossessive,2nd,plural,dative,,,,\r\npossessive,2nd,plural,accusative,regular,vestra,,\r\npossessive,2nd,plural,ablative,,,,\r\npossessive,2nd,plural,vocative,,,,\r\ndemonstrative,,singular,nominative,regular,is,,\r\ndemonstrative,,singular,genitive,regular,eius,,\r\ndemonstrative,,singular,dative,regular,eI,,\r\ndemonstrative,,singular,accusative,regular,eum,,\r\ndemonstrative,,singular,ablative,regular,eO,,\r\ndemonstrative,,singular,nominative,regular,ea,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,regular,eam,,\r\ndemonstrative,,singular,ablative,regular,eA,,\r\ndemonstrative,,singular,nominative,regular,id,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,regular,id,,\r\ndemonstrative,,singular,ablative,regular,eO,,\r\ndemonstrative,,plural,nominative,regular,eI,,\r\ndemonstrative,,plural,nominative,irregular,iI,,\r\ndemonstrative,,plural,nominative,irregular,I,,\r\ndemonstrative,,plural,genitive,regular,eOrum,,\r\ndemonstrative,,plural,dative,regular,eIs,,\r\ndemonstrative,,plural,dative,irregular,iIs,,\r\ndemonstrative,,plural,dative,irregular,Is,,\r\ndemonstrative,,plural,accusative,regular,eOs,,\r\ndemonstrative,,plural,ablative,regular,eIs,,\r\ndemonstrative,,plural,ablative,irregular,iIs,,\r\ndemonstrative,,plural,ablative,irregular,Is,,\r\ndemonstrative,,plural,nominative,regular,eae,,\r\ndemonstrative,,plural,genitive,regular,eArum,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,regular,eAs,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,plural,nominative,regular,ea,,\r\ndemonstrative,,plural,genitive,regular,eOrum,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,regular,ea,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,singular,nominative,regular,ille,,\r\ndemonstrative,,singular,genitive,regular,illIus,,\r\ndemonstrative,,singular,dative,regular,illI,,\r\ndemonstrative,,singular,accusative,regular,illum,,\r\ndemonstrative,,singular,ablative,regular,illO,,\r\ndemonstrative,,singular,nominative,regular,illa,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,regular,illam,,\r\ndemonstrative,,singular,ablative,regular,illA,,\r\ndemonstrative,,singular,nominative,regular,illud,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,regular,illud,,\r\ndemonstrative,,singular,ablative,regular,illO,,\r\ndemonstrative,,plural,nominative,regular,illI,,\r\ndemonstrative,,plural,genitive,regular,illOrum,,\r\ndemonstrative,,plural,dative,regular,illIs,,\r\ndemonstrative,,plural,accusative,regular,illOs,,\r\ndemonstrative,,plural,ablative,regular,illIs,,\r\ndemonstrative,,plural,nominative,regular,illae,,\r\ndemonstrative,,plural,genitive,regular,illArum,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,regular,illAs,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,plural,nominative,regular,Illa,,\r\ndemonstrative,,plural,genitive,regular,illOrum,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,regular,illa,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,singular,nominative,regular,ipse,,\r\ndemonstrative,,singular,genitive,regular,ipsIus,,\r\ndemonstrative,,singular,dative,regular,ipsI,,\r\ndemonstrative,,singular,accusative,regular,ipsum,,\r\ndemonstrative,,singular,ablative,regular,ipsO,,\r\ndemonstrative,,singular,nominative,regular,ipsa,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,regular,ipsam,,\r\ndemonstrative,,singular,ablative,regular,ipsA,,\r\ndemonstrative,,singular,nominative,regular,ipsum,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,regular,ipsum,,\r\ndemonstrative,,singular,ablative,regular,ipsO,,\r\ndemonstrative,,plural,nominative,regular,ipsI,,\r\ndemonstrative,,plural,genitive,regular,ipsOrum,,\r\ndemonstrative,,plural,dative,regular,ipsIs,,\r\ndemonstrative,,plural,accusative,regular,ipsOs,,\r\ndemonstrative,,plural,ablative,regular,ipsIs,,\r\ndemonstrative,,plural,nominative,regular,ipsae,,\r\ndemonstrative,,plural,genitive,regular,ipsArum,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,regular,ipsAs,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,plural,nominative,regular,ipsa,,\r\ndemonstrative,,plural,genitive,regular,ipsOrum,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,regular,ipsa,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,singular,nominative,regular,iste,,\r\ndemonstrative,,singular,genitive,regular,istIus,,\r\ndemonstrative,,singular,dative,regular,istI,,\r\ndemonstrative,,singular,accusative,regular,istum,,\r\ndemonstrative,,singular,ablative,regular,istO,,\r\ndemonstrative,,singular,nominative,regular,ista,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,regular,istam,,\r\ndemonstrative,,singular,ablative,regular,istA,,\r\ndemonstrative,,singular,nominative,regular,istud,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,regular,istud,,\r\ndemonstrative,,singular,ablative,regular,istO,,\r\ndemonstrative,,plural,nominative,regular,istI,,\r\ndemonstrative,,plural,genitive,regular,istOrum,,\r\ndemonstrative,,plural,dative,regular,istIs,,\r\ndemonstrative,,plural,accusative,regular,istOs,,\r\ndemonstrative,,plural,ablative,regular,istIs,,\r\ndemonstrative,,plural,nominative,regular,istae,,\r\ndemonstrative,,plural,genitive,regular,istArum,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,regular,istAs,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,plural,nominative,regular,ista,,\r\ndemonstrative,,plural,genitive,regular,istOrum,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,regular,ista,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,singular,nominative,,,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,,,,\r\ndemonstrative,,singular,ablative,,,,\r\ndemonstrative,,singular,vocative,,,,\r\ndemonstrative,,singular,nominative,,,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,,,,\r\ndemonstrative,,singular,ablative,,,,\r\ndemonstrative,,singular,nominative,,,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,,,,\r\ndemonstrative,,singular,ablative,,,,\r\ndemonstrative,,singular,vocative,,,,\r\ndemonstrative,,plural,nominative,,,,\r\ndemonstrative,,plural,genitive,,,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,,,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,plural,vocative,,,,\r\ndemonstrative,,plural,nominative,,,,\r\ndemonstrative,,plural,genitive,,,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,,,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,plural,vocative,,,,\r\ndemonstrative,,plural,nominative,,,,\r\ndemonstrative,,plural,genitive,,,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,,,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,plural,vocative,,,,\r\ndemonstrative,,singular,nominative,regular,hIc,,\r\ndemonstrative,,singular,genitive,regular,huius,,\r\ndemonstrative,,singular,dative,regular,huic,,\r\ndemonstrative,,singular,accusative,regular,hunc,,\r\ndemonstrative,,singular,ablative,regular,hOc,,\r\ndemonstrative,,singular,vocative,regular,,,\r\ndemonstrative,,singular,nominative,regular,haec,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,regular,hanc,,\r\ndemonstrative,,singular,ablative,regular,hAc,,\r\ndemonstrative,,singular,vocative,regular,,,\r\ndemonstrative,,singular,nominative,regular,hOc,,\r\ndemonstrative,,singular,genitive,,,,\r\ndemonstrative,,singular,dative,,,,\r\ndemonstrative,,singular,accusative,regular,hOc,,\r\ndemonstrative,,singular,ablative,regular,hOc,,\r\ndemonstrative,,singular,vocative,regular,,,\r\ndemonstrative,,plural,nominative,regular,hI,,\r\ndemonstrative,,plural,genitive,regular,hOrum,,\r\ndemonstrative,,plural,dative,regular,hIs,,\r\ndemonstrative,,plural,accusative,regular,hOs,,\r\ndemonstrative,,plural,ablative,regular,hIs,,\r\ndemonstrative,,plural,vocative,regular,,,\r\ndemonstrative,,plural,nominative,regular,hae,,\r\ndemonstrative,,plural,genitive,regular,hArum,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,regular,hAs,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,plural,vocative,regular,,,\r\ndemonstrative,,plural,nominative,regular,haec,,\r\ndemonstrative,,plural,genitive,regular,hOrum,,\r\ndemonstrative,,plural,dative,,,,\r\ndemonstrative,,plural,accusative,regular,haec,,\r\ndemonstrative,,plural,ablative,,,,\r\ndemonstrative,,plural,vocative,regular,,,\r\nrelative,,singular,nominative,regular,quI,,\r\nrelative,,singular,genitive,regular,cuius,,\r\nrelative,,singular,genitive,irregular,quoius,,3\r\nrelative,,singular,dative,regular,cui,,\r\nrelative,,singular,dative,irregular,quoius,,3\r\nrelative,,singular,accusative,regular,quem,,\r\nrelative,,singular,ablative,regular,quO,,\r\nrelative,,singular,vocative,regular,,,\r\nrelative,,singular,nominative,regular,qua,,\r\nrelative,,singular,nominative,irregular,quae,,\r\nrelative,,singular,genitive,,,,\r\nrelative,,singular,dative,,,,\r\nrelative,,singular,accusative,regular,quam,,\r\nrelative,,singular,ablative,regular,quA,,\r\nrelative,,singular,vocative,regular,,,\r\nrelative,,singular,nominative,regular,quod,,\r\nrelative,,singular,genitive,,,,\r\nrelative,,singular,dative,,,,\r\nrelative,,singular,accusative,regular,quod,,\r\nrelative,,singular,ablative,regular,quO,,\r\nrelative,,singular,vocative,regular,,,\r\nrelative,,plural,nominative,regular,quI,,\r\nrelative,,plural,nominative,regular,quEs,,3\r\nrelative,,plural,genitive,regular,quOrum,,\r\nrelative,,plural,dative,regular,quibus,,\r\nrelative,,plural,dative,irregular,quIs,,\r\nrelative,,plural,accusative,regular,quOs,,\r\nrelative,,plural,ablative,regular,quibus,,\r\nrelative,,plural,ablative,irregular,quIs,,\r\nrelative,,plural,vocative,regular,,,\r\nrelative,,plural,nominative,regular,quae,,\r\nrelative,,plural,genitive,regular,quArum,,\r\nrelative,,plural,dative,,,,\r\nrelative,,plural,accusative,regular,quAs,,\r\nrelative,,plural,ablative,,,,\r\nrelative,,plural,vocative,regular,,,\r\nrelative,,plural,nominative,regular,quae,,\r\nrelative,,plural,genitive,regular,quorum,,\r\nrelative,,plural,dative,,,,\r\nrelative,,plural,accusative,regular,quae,,\r\nrelative,,plural,ablative,,,,\r\nrelative,,plural,vocative,regular,,,\r\ninterrogative,,singular,nominative,regular,quis,,\r\ninterrogative,,singular,genitive,regular,cuius,,\r\ninterrogative,,singular,dative,regular,cui,,\r\ninterrogative,,singular,accusative,regular,quem,,\r\ninterrogative,,singular,ablative,regular,quO,,\r\ninterrogative,,singular,vocative,regular,,,\r\ninterrogative,,singular,nominative,regular,quis,,\r\ninterrogative,,singular,genitive,regular,cuius,,\r\ninterrogative,,singular,dative,regular,cui,,\r\ninterrogative,,singular,accusative,regular,quem,,\r\ninterrogative,,singular,ablative,regular,quO,,\r\ninterrogative,,singular,vocative,regular,,,\r\ninterrogative,,singular,nominative,regular,quid,,\r\ninterrogative,,singular,genitive,,,,\r\ninterrogative,,singular,dative,,,,\r\ninterrogative,,singular,accusative,regular,quid,,\r\ninterrogative,,singular,ablative,regular,quO,,\r\ninterrogative,,singular,vocative,regular,,,\r\ninterrogative,,plural,nominative,regular,quI,,\r\ninterrogative,,plural,nominative,regular,quEs,,3\r\ninterrogative,,plural,genitive,regular,quOrum,,\r\ninterrogative,,plural,dative,regular,quibus,,\r\ninterrogative,,plural,dative,irregular,quIs,,\r\ninterrogative,,plural,accusative,regular,quOs,,\r\ninterrogative,,plural,ablative,regular,quibus,,\r\ninterrogative,,plural,ablative,irregular,quIs,,\r\ninterrogative,,plural,vocative,regular,,,\r\ninterrogative,,plural,nominative,regular,quae,,\r\ninterrogative,,plural,genitive,regular,quArum,,\r\ninterrogative,,plural,dative,,,,\r\ninterrogative,,plural,accusative,regular,quAs,,\r\ninterrogative,,plural,ablative,,,,\r\ninterrogative,,plural,vocative,regular,,,\r\ninterrogative,,plural,nominative,regular,quae,,\r\ninterrogative,,plural,genitive,regular,quorum,,\r\ninterrogative,,plural,dative,,,,\r\ninterrogative,,plural,accusative,regular,quae,,\r\ninterrogative,,plural,ablative,,,,\r\ninterrogative,,plural,vocative,regular,,,";
+var pronounFormsCSV = "Class,Person,Number,Case,Type,Form,Alt,Footnote\npersonal,1st,singular,nominative,regular,ego,,\npersonal,1st,singular,genitive,regular,meI,,\npersonal,1st,singular,genitive,irregular,mIs,,1\npersonal,1st,singular,dative,regular,mihi,,\npersonal,1st,singular,dative,irregular,mI,,\npersonal,1st,singular,accusative,regular,mE,,\npersonal,1st,singular,accusative,irregular,mEmE,,\npersonal,1st,singular,ablative,regular,mE,,\npersonal,1st,singular,ablative,irregular,mEmE,,\npersonal,1st,singular,vocative,,,,\npersonal,2nd,singular,nominative,regular,tU,,\npersonal,2nd,singular,genitive,regular,tuI,,\npersonal,2nd,singular,genitive,irregular,tIs,,1\npersonal,2nd,singular,dative,regular,tibi,,\npersonal,2nd,singular,accusative,regular,tE,,\npersonal,2nd,singular,accusative,irregular,tEtE,,\npersonal,2nd,singular,ablative,regular,tE,,\npersonal,2nd,singular,ablative,irregular,tEtE,,\npersonal,2nd,singular,vocative,regular,tU,,\npersonal,1st,plural,nominative,regular,nOs,,\npersonal,1st,plural,genitive,regular,nostrum,,\npersonal,1st,plural,dative,regular,nObIs,,\npersonal,1st,plural,accusative,regular,nOs,,\npersonal,1st,plural,ablative,regular,nObIs,,\npersonal,1st,plural,vocative,,,,\npersonal,2nd,plural,nominative,regular,vOs,,\npersonal,2nd,plural,genitive,regular,vestrum,,\npersonal,2nd,plural,genitive,regular,vestrI,,\npersonal,2nd,plural,genitive,irregular,vostrum,,\npersonal,2nd,plural,genitive,irregular,vostrI,,\npersonal,2nd,plural,dative,regular,vObIs,,\npersonal,2nd,plural,accusative,regular,vOs,,\npersonal,2nd,plural,ablative,regular,vObIs,,\npersonal,2nd,plural,vocative,regular,vOs,,\nreflexive,3rd,singular,nominative,,,,\nreflexive,3rd,singular,genitive,regular,suI,,\nreflexive,3rd,singular,dative,regular,sibi,,\nreflexive,3rd,singular,accusative,regular,sE,,\nreflexive,3rd,singular,accusative,irregular,sEsE,,\nreflexive,3rd,singular,ablative,regular,sE,,\nreflexive,3rd,singular,ablative,irregular,sEsE,,\nreflexive,3rd,singular,vocative,,,,\nreflexive,3rd,plural,nominative,,,,\nreflexive,3rd,plural,genitive,regular,suI,,\nreflexive,3rd,plural,dative,regular,sibi,,\nreflexive,3rd,plural,accusative,regular,sE,,\nreflexive,3rd,plural,accusative,irregular,sEsE,,\nreflexive,3rd,plural,ablative,regular,sE,,\nreflexive,3rd,plural,ablative,irregular,sEsE,,\nreflexive,3rd,plural,vocative,,,,\npossessive,1st,singular,nominative,regular,meus,,\npossessive,1st,singular,genitive,regular,meI,,\npossessive,1st,singular,dative,regular,meO,,\npossessive,1st,singular,accusative,regular,meum,,\npossessive,1st,singular,ablative,regular,meO,,\npossessive,1st,singular,vocative,regular,mI,,\npossessive,1st,singular,vocative,irregular,meus,,\npossessive,1st,singular,nominative,regular,mea,,\npossessive,1st,singular,genitive,regular,meae,,\npossessive,1st,singular,dative,regular,meae,,\npossessive,1st,singular,accusative,regular,meam,,\npossessive,1st,singular,ablative,regular,meA,,\npossessive,1st,singular,vocative,regular,mea,,\npossessive,1st,singular,nominative,regular,meum,,\npossessive,1st,singular,genitive,regular,meI,,\npossessive,1st,singular,dative,regular,meO,,\npossessive,1st,singular,accusative,regular,meum,,\npossessive,1st,singular,ablative,regular,meO,,\npossessive,1st,singular,vocative,regular,meum,,\npossessive,2nd,singular,nominative,regular,tuus,,\npossessive,2nd,singular,genitive,regular,tuI,,\npossessive,2nd,singular,dative,regular,tuO,,\npossessive,2nd,singular,accusative,regular,tuum,,\npossessive,2nd,singular,ablative,regular,tuO,,\npossessive,2nd,singular,vocative,,,,\npossessive,2nd,singular,nominative,regular,tua,,\npossessive,2nd,singular,genitive,regular,tuae,,\npossessive,2nd,singular,dative,regular,tuae,,\npossessive,2nd,singular,accusative,regular,tuam,,\npossessive,2nd,singular,ablative,regular,tuA,,\npossessive,2nd,singular,vocative,,,,\npossessive,2nd,singular,nominative,regular,tuum,,\npossessive,2nd,singular,genitive,regular,tuI,,\npossessive,2nd,singular,dative,regular,tuO,,\npossessive,2nd,singular,accusative,regular,tuum,,\npossessive,2nd,singular,ablative,regular,tuO,,\npossessive,2nd,singular,vocative,,,,\npossessive,3rd,singular,nominative,regular,suus,,\npossessive,3rd,singular,genitive,regular,suI,,\npossessive,3rd,singular,dative,regular,suO,,\npossessive,3rd,singular,accusative,regular,suum,,\npossessive,3rd,singular,ablative,regular,suO,,\npossessive,3rd,singular,vocative,,,,\npossessive,3rd,singular,nominative,regular,sua,,\npossessive,3rd,singular,genitive,regular,suae,,\npossessive,3rd,singular,dative,regular,suae,,\npossessive,3rd,singular,accusative,regular,suam,,\npossessive,3rd,singular,ablative,regular,suA,,\npossessive,3rd,singular,vocative,,,,\npossessive,3rd,singular,nominative,regular,suum,,\npossessive,3rd,singular,genitive,regular,suI,,\npossessive,3rd,singular,dative,regular,suO,,\npossessive,3rd,singular,accusative,regular,suum,,\npossessive,3rd,singular,ablative,regular,suO,,\npossessive,3rd,singular,vocative,,,,\npossessive,1st,plural,nominative,regular,meI,,\npossessive,1st,plural,genitive,regular,meOrum,,\npossessive,1st,plural,dative,regular,meIs,,\npossessive,1st,plural,accusative,regular,meOs,,\npossessive,1st,plural,ablative,regular,meIs,,\npossessive,1st,plural,vocative,regular,meI,,\npossessive,1st,plural,nominative,regular,meae,,\npossessive,1st,plural,genitive,regular,meArum,,\npossessive,1st,plural,dative,,,,\npossessive,1st,plural,accusative,regular,meAs,,\npossessive,1st,plural,ablative,,,,\npossessive,1st,plural,vocative,regular,meae,,\npossessive,1st,plural,nominative,regular,mea,,\npossessive,1st,plural,genitive,regular,meOrum,,\npossessive,1st,plural,dative,,,,\npossessive,1st,plural,accusative,regular,mea,,\npossessive,1st,plural,ablative,,,,\npossessive,1st,plural,vocative,regular,mea,,\npossessive,2nd,plural,nominative,regular,tuI,,\npossessive,2nd,plural,genitive,regular,tuOrum,,\npossessive,2nd,plural,dative,regular,tuIs,,\npossessive,2nd,plural,accusative,regular,tuOs,,\npossessive,2nd,plural,ablative,regular,tuIs,,\npossessive,2nd,plural,vocative,,,,\npossessive,2nd,plural,nominative,regular,tuae,,\npossessive,2nd,plural,genitive,regular,tuArum,,\npossessive,2nd,plural,dative,,,,\npossessive,2nd,plural,accusative,regular,tuAs,,\npossessive,2nd,plural,ablative,,,,\npossessive,2nd,,vocative,,,,\npossessive,2nd,plural,nominative,regular,tua,,\npossessive,2nd,plural,genitive,regular,tuOrum,,\npossessive,2nd,plural,dative,,,,\npossessive,2nd,plural,accusative,regular,tua,,\npossessive,2nd,plural,ablative,,,,\npossessive,2nd,plural,vocative,,,,\npossessive,3rd,plural,nominative,regular,suI,,\npossessive,3rd,plural,genitive,regular,suOrum,,\npossessive,3rd,plural,dative,regular,suIs,,\npossessive,3rd,plural,accusative,regular,suOs,,\npossessive,3rd,plural,ablative,regular,suIs,,\npossessive,3rd,plural,vocative,,,,\npossessive,3rd,plural,nominative,regular,suae,,\npossessive,3rd,plural,genitive,regular,suArum,,\npossessive,3rd,plural,dative,,,,\npossessive,3rd,plural,accusative,regular,suAs,,\npossessive,3rd,plural,ablative,,,,\npossessive,3rd,plural,vocative,,,,\npossessive,3rd,plural,nominative,regular,sua,,\npossessive,3rd,plural,genitive,regular,suOrum,,\npossessive,3rd,plural,dative,,,,\npossessive,3rd,plural,accusative,regular,sua,,\npossessive,3rd,plural,ablative,,,,\npossessive,3rd,plural,vocative,,,,\npossessive,1st,singular,nominative,regular,noster,,\npossessive,1st,singular,genitive,regular,nostrI,,\npossessive,1st,singular,dative,regular,nostrO,,\npossessive,1st,singular,accusative,regular,nostrum,,\npossessive,1st,singular,ablative,regular,nostrO,,\npossessive,1st,singular,vocative,regular,noster,,\npossessive,1st,singular,nominative,regular,nostra,,\npossessive,1st,singular,genitive,regular,nostrae,,\npossessive,1st,singular,dative,regular,nostrae,,\npossessive,1st,singular,accusative,regular,nostram,,\npossessive,1st,singular,ablative,regular,nostrA,,\npossessive,1st,singular,vocative,regular,nostra,,\npossessive,1st,singular,nominative,regular,nostrum,,\npossessive,1st,singular,genitive,regular,nostrI,,\npossessive,1st,singular,dative,regular,nostrO,,\npossessive,1st,singular,accusative,regular,nostrum,,\npossessive,1st,singular,ablative,regular,nostrO,,\npossessive,1st,singular,vocative,regular,nostrum,,\npossessive,2nd,singular,nominative,regular,vester,,\npossessive,2nd,singular,genitive,regular,vestrI,,\npossessive,2nd,singular,dative,regular,vestrO,,\npossessive,2nd,singular,accusative,regular,vestrum,,\npossessive,2nd,singular,ablative,regular,vestrO,,\npossessive,2nd,singular,vocative,,,,\npossessive,2nd,singular,nominative,regular,vestra,,\npossessive,2nd,singular,genitive,regular,vestrae,,\npossessive,2nd,singular,dative,regular,vestrae,,\npossessive,2nd,singular,accusative,regular,vestram,,\npossessive,2nd,singular,ablative,regular,vestrA,,\npossessive,2nd,singular,vocative,,,,\npossessive,2nd,singular,nominative,regular,vestum,,\npossessive,2nd,singular,genitive,regular,vestrI,,\npossessive,2nd,singular,dative,regular,vestrO,,\npossessive,2nd,singular,accusative,regular,vestrum,,\npossessive,2nd,singular,ablative,regular,vestrO,,\npossessive,2nd,singular,vocative,,,,\npossessive,1st,plural,nominative,regular,nostrI,,\npossessive,1st,plural,genitive,regular,nostrOrum,,\npossessive,1st,plural,dative,regular,nostrIs,,\npossessive,1st,plural,accusative,regular,nostrOs,,\npossessive,1st,plural,ablative,regular,nostrIs,,\npossessive,1st,plural,vocative,regular,nostrI,,\npossessive,1st,plural,nominative,regular,nostrae,,\npossessive,1st,plural,genitive,regular,nostrArum,,\npossessive,1st,plural,dative,,,,\npossessive,1st,plural,accusative,regular,nostrAs,,\npossessive,1st,plural,ablative,,,,\npossessive,1st,plural,vocative,regular,nostrae,,\npossessive,1st,plural,nominative,regular,nostra,,\npossessive,1st,plural,genitive,regular,nostrOrum,,\npossessive,1st,plural,dative,,,,\npossessive,1st,plural,accusative,regular,nostra,,\npossessive,1st,plural,ablative,,,,\npossessive,1st,plural,vocative,regular,nostra,,\npossessive,2nd,plural,nominative,regular,vestrI,,\npossessive,2nd,plural,genitive,regular,vestrOrum,,\npossessive,2nd,plural,dative,regular,vestrIs,,\npossessive,2nd,plural,accusative,regular,vestrOs,,\npossessive,2nd,plural,ablative,regular,vestrIs,,\npossessive,2nd,plural,vocative,,,,\npossessive,2nd,plural,nominative,regular,vestrae,,\npossessive,2nd,plural,genitive,regular,vestrArum,,\npossessive,2nd,plural,dative,,,,\npossessive,2nd,plural,accusative,regular,vestrAs,,\npossessive,2nd,plural,ablative,,,,\npossessive,2nd,,vocative,,,,\npossessive,2nd,plural,nominative,regular,vestra,,\npossessive,2nd,plural,genitive,regular,vestrOrum,,\npossessive,2nd,plural,dative,,,,\npossessive,2nd,plural,accusative,regular,vestra,,\npossessive,2nd,plural,ablative,,,,\npossessive,2nd,plural,vocative,,,,\ndemonstrative,,singular,nominative,regular,is,,\ndemonstrative,,singular,genitive,regular,eius,,\ndemonstrative,,singular,dative,regular,eI,,\ndemonstrative,,singular,accusative,regular,eum,,\ndemonstrative,,singular,ablative,regular,eO,,\ndemonstrative,,singular,nominative,regular,ea,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,regular,eam,,\ndemonstrative,,singular,ablative,regular,eA,,\ndemonstrative,,singular,nominative,regular,id,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,regular,id,,\ndemonstrative,,singular,ablative,regular,eO,,\ndemonstrative,,plural,nominative,regular,eI,,\ndemonstrative,,plural,nominative,irregular,iI,,\ndemonstrative,,plural,nominative,irregular,I,,\ndemonstrative,,plural,genitive,regular,eOrum,,\ndemonstrative,,plural,dative,regular,eIs,,\ndemonstrative,,plural,dative,irregular,iIs,,\ndemonstrative,,plural,dative,irregular,Is,,\ndemonstrative,,plural,accusative,regular,eOs,,\ndemonstrative,,plural,ablative,regular,eIs,,\ndemonstrative,,plural,ablative,irregular,iIs,,\ndemonstrative,,plural,ablative,irregular,Is,,\ndemonstrative,,plural,nominative,regular,eae,,\ndemonstrative,,plural,genitive,regular,eArum,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,regular,eAs,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,plural,nominative,regular,ea,,\ndemonstrative,,plural,genitive,regular,eOrum,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,regular,ea,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,singular,nominative,regular,ille,,\ndemonstrative,,singular,genitive,regular,illIus,,\ndemonstrative,,singular,dative,regular,illI,,\ndemonstrative,,singular,accusative,regular,illum,,\ndemonstrative,,singular,ablative,regular,illO,,\ndemonstrative,,singular,nominative,regular,illa,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,regular,illam,,\ndemonstrative,,singular,ablative,regular,illA,,\ndemonstrative,,singular,nominative,regular,illud,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,regular,illud,,\ndemonstrative,,singular,ablative,regular,illO,,\ndemonstrative,,plural,nominative,regular,illI,,\ndemonstrative,,plural,genitive,regular,illOrum,,\ndemonstrative,,plural,dative,regular,illIs,,\ndemonstrative,,plural,accusative,regular,illOs,,\ndemonstrative,,plural,ablative,regular,illIs,,\ndemonstrative,,plural,nominative,regular,illae,,\ndemonstrative,,plural,genitive,regular,illArum,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,regular,illAs,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,plural,nominative,regular,Illa,,\ndemonstrative,,plural,genitive,regular,illOrum,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,regular,illa,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,singular,nominative,regular,ipse,,\ndemonstrative,,singular,genitive,regular,ipsIus,,\ndemonstrative,,singular,dative,regular,ipsI,,\ndemonstrative,,singular,accusative,regular,ipsum,,\ndemonstrative,,singular,ablative,regular,ipsO,,\ndemonstrative,,singular,nominative,regular,ipsa,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,regular,ipsam,,\ndemonstrative,,singular,ablative,regular,ipsA,,\ndemonstrative,,singular,nominative,regular,ipsum,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,regular,ipsum,,\ndemonstrative,,singular,ablative,regular,ipsO,,\ndemonstrative,,plural,nominative,regular,ipsI,,\ndemonstrative,,plural,genitive,regular,ipsOrum,,\ndemonstrative,,plural,dative,regular,ipsIs,,\ndemonstrative,,plural,accusative,regular,ipsOs,,\ndemonstrative,,plural,ablative,regular,ipsIs,,\ndemonstrative,,plural,nominative,regular,ipsae,,\ndemonstrative,,plural,genitive,regular,ipsArum,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,regular,ipsAs,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,plural,nominative,regular,ipsa,,\ndemonstrative,,plural,genitive,regular,ipsOrum,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,regular,ipsa,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,singular,nominative,regular,iste,,\ndemonstrative,,singular,genitive,regular,istIus,,\ndemonstrative,,singular,dative,regular,istI,,\ndemonstrative,,singular,accusative,regular,istum,,\ndemonstrative,,singular,ablative,regular,istO,,\ndemonstrative,,singular,nominative,regular,ista,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,regular,istam,,\ndemonstrative,,singular,ablative,regular,istA,,\ndemonstrative,,singular,nominative,regular,istud,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,regular,istud,,\ndemonstrative,,singular,ablative,regular,istO,,\ndemonstrative,,plural,nominative,regular,istI,,\ndemonstrative,,plural,genitive,regular,istOrum,,\ndemonstrative,,plural,dative,regular,istIs,,\ndemonstrative,,plural,accusative,regular,istOs,,\ndemonstrative,,plural,ablative,regular,istIs,,\ndemonstrative,,plural,nominative,regular,istae,,\ndemonstrative,,plural,genitive,regular,istArum,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,regular,istAs,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,plural,nominative,regular,ista,,\ndemonstrative,,plural,genitive,regular,istOrum,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,regular,ista,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,singular,nominative,,,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,,,,\ndemonstrative,,singular,ablative,,,,\ndemonstrative,,singular,vocative,,,,\ndemonstrative,,singular,nominative,,,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,,,,\ndemonstrative,,singular,ablative,,,,\ndemonstrative,,singular,nominative,,,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,,,,\ndemonstrative,,singular,ablative,,,,\ndemonstrative,,singular,vocative,,,,\ndemonstrative,,plural,nominative,,,,\ndemonstrative,,plural,genitive,,,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,,,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,plural,vocative,,,,\ndemonstrative,,plural,nominative,,,,\ndemonstrative,,plural,genitive,,,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,,,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,plural,vocative,,,,\ndemonstrative,,plural,nominative,,,,\ndemonstrative,,plural,genitive,,,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,,,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,plural,vocative,,,,\ndemonstrative,,singular,nominative,regular,hIc,,\ndemonstrative,,singular,genitive,regular,huius,,\ndemonstrative,,singular,dative,regular,huic,,\ndemonstrative,,singular,accusative,regular,hunc,,\ndemonstrative,,singular,ablative,regular,hOc,,\ndemonstrative,,singular,vocative,regular,,,\ndemonstrative,,singular,nominative,regular,haec,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,regular,hanc,,\ndemonstrative,,singular,ablative,regular,hAc,,\ndemonstrative,,singular,vocative,regular,,,\ndemonstrative,,singular,nominative,regular,hOc,,\ndemonstrative,,singular,genitive,,,,\ndemonstrative,,singular,dative,,,,\ndemonstrative,,singular,accusative,regular,hOc,,\ndemonstrative,,singular,ablative,regular,hOc,,\ndemonstrative,,singular,vocative,regular,,,\ndemonstrative,,plural,nominative,regular,hI,,\ndemonstrative,,plural,genitive,regular,hOrum,,\ndemonstrative,,plural,dative,regular,hIs,,\ndemonstrative,,plural,accusative,regular,hOs,,\ndemonstrative,,plural,ablative,regular,hIs,,\ndemonstrative,,plural,vocative,regular,,,\ndemonstrative,,plural,nominative,regular,hae,,\ndemonstrative,,plural,genitive,regular,hArum,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,regular,hAs,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,plural,vocative,regular,,,\ndemonstrative,,plural,nominative,regular,haec,,\ndemonstrative,,plural,genitive,regular,hOrum,,\ndemonstrative,,plural,dative,,,,\ndemonstrative,,plural,accusative,regular,haec,,\ndemonstrative,,plural,ablative,,,,\ndemonstrative,,plural,vocative,regular,,,\nrelative,,singular,nominative,regular,quI,,\nrelative,,singular,genitive,regular,cuius,,\nrelative,,singular,genitive,irregular,quoius,,3\nrelative,,singular,dative,regular,cui,,\nrelative,,singular,dative,irregular,quoius,,3\nrelative,,singular,accusative,regular,quem,,\nrelative,,singular,ablative,regular,quO,,\nrelative,,singular,vocative,regular,,,\nrelative,,singular,nominative,regular,qua,,\nrelative,,singular,nominative,irregular,quae,,\nrelative,,singular,genitive,,,,\nrelative,,singular,dative,,,,\nrelative,,singular,accusative,regular,quam,,\nrelative,,singular,ablative,regular,quA,,\nrelative,,singular,vocative,regular,,,\nrelative,,singular,nominative,regular,quod,,\nrelative,,singular,genitive,,,,\nrelative,,singular,dative,,,,\nrelative,,singular,accusative,regular,quod,,\nrelative,,singular,ablative,regular,quO,,\nrelative,,singular,vocative,regular,,,\nrelative,,plural,nominative,regular,quI,,\nrelative,,plural,nominative,regular,quEs,,3\nrelative,,plural,genitive,regular,quOrum,,\nrelative,,plural,dative,regular,quibus,,\nrelative,,plural,dative,irregular,quIs,,\nrelative,,plural,accusative,regular,quOs,,\nrelative,,plural,ablative,regular,quibus,,\nrelative,,plural,ablative,irregular,quIs,,\nrelative,,plural,vocative,regular,,,\nrelative,,plural,nominative,regular,quae,,\nrelative,,plural,genitive,regular,quArum,,\nrelative,,plural,dative,,,,\nrelative,,plural,accusative,regular,quAs,,\nrelative,,plural,ablative,,,,\nrelative,,plural,vocative,regular,,,\nrelative,,plural,nominative,regular,quae,,\nrelative,,plural,genitive,regular,quorum,,\nrelative,,plural,dative,,,,\nrelative,,plural,accusative,regular,quae,,\nrelative,,plural,ablative,,,,\nrelative,,plural,vocative,regular,,,\ninterrogative,,singular,nominative,regular,quis,,\ninterrogative,,singular,genitive,regular,cuius,,\ninterrogative,,singular,dative,regular,cui,,\ninterrogative,,singular,accusative,regular,quem,,\ninterrogative,,singular,ablative,regular,quO,,\ninterrogative,,singular,vocative,regular,,,\ninterrogative,,singular,nominative,regular,quis,,\ninterrogative,,singular,genitive,regular,cuius,,\ninterrogative,,singular,dative,regular,cui,,\ninterrogative,,singular,accusative,regular,quem,,\ninterrogative,,singular,ablative,regular,quO,,\ninterrogative,,singular,vocative,regular,,,\ninterrogative,,singular,nominative,regular,quid,,\ninterrogative,,singular,genitive,,,,\ninterrogative,,singular,dative,,,,\ninterrogative,,singular,accusative,regular,quid,,\ninterrogative,,singular,ablative,regular,quO,,\ninterrogative,,singular,vocative,regular,,,\ninterrogative,,plural,nominative,regular,quI,,\ninterrogative,,plural,nominative,regular,quEs,,3\ninterrogative,,plural,genitive,regular,quOrum,,\ninterrogative,,plural,dative,regular,quibus,,\ninterrogative,,plural,dative,irregular,quIs,,\ninterrogative,,plural,accusative,regular,quOs,,\ninterrogative,,plural,ablative,regular,quibus,,\ninterrogative,,plural,ablative,irregular,quIs,,\ninterrogative,,plural,vocative,regular,,,\ninterrogative,,plural,nominative,regular,quae,,\ninterrogative,,plural,genitive,regular,quArum,,\ninterrogative,,plural,dative,,,,\ninterrogative,,plural,accusative,regular,quAs,,\ninterrogative,,plural,ablative,,,,\ninterrogative,,plural,vocative,regular,,,\ninterrogative,,plural,nominative,regular,quae,,\ninterrogative,,plural,genitive,regular,quorum,,\ninterrogative,,plural,dative,,,,\ninterrogative,,plural,accusative,regular,quae,,\ninterrogative,,plural,ablative,,,,\ninterrogative,,plural,vocative,regular,,,";
 
-var pronounFootnotesCSV = "Index,Text\r\n1,\"tU is made emphatic by adding on the endings –te, –temet or –timet. \r\n            The other forms of the personal pronoun (with the exception of the genitive plural) \r\n            are made emphatic by the addition of –met to the original form. Early emphatic forms include mEpte and tEpte.\"\r\n2,Enclitics –ce or –c are sometimes added to forms of hic. Common examples include huiusce and hIsce.\r\n3,Earlier forms.\r\n4,The plural forms of the Interrogatives are the same as the plural forms of the Relative.";
+var pronounFootnotesCSV = "Index,Text\n1,\"tU is made emphatic by adding on the endings –te, –temet or –timet. \n            The other forms of the personal pronoun (with the exception of the genitive plural) \n            are made emphatic by the addition of –met to the original form. Early emphatic forms include mEpte and tEpte.\"\n2,Enclitics –ce or –c are sometimes added to forms of hic. Common examples include huiusce and hIsce.\n3,Earlier forms.\n4,The plural forms of the Interrogatives are the same as the plural forms of the Relative.";
 
-var adjectiveSuffixesCSV = "Ending,Number,Case,Declension,Gender,Type,Footnote\r\na,singular,nominative,1st 2nd,feminine,regular,\r\nus,singular,nominative,1st 2nd,masculine,regular,\r\num,singular,nominative,1st 2nd,neuter,regular,\r\nis,singular,nominative,3rd,feminine,regular,\r\n-,singular,nominative,3rd,feminine,irregular,6\r\n-,singular,nominative,3rd,masculine,regular,\r\nis,singular,nominative,3rd,masculine,irregular,5\r\ne,singular,nominative,3rd,neuter,regular,\r\n-,singular,nominative,3rd,neuter,irregular,6\r\nae,singular,genitive,1st 2nd,feminine,regular,\r\nīus,singular,genitive,1st 2nd,feminine,irregular,3\r\nī,singular,genitive,1st 2nd,masculine,regular,\r\nīus,singular,genitive,1st 2nd,masculine,irregular,3\r\nī,singular,genitive,1st 2nd,neuter,regular,\r\nīus,singular,genitive,1st 2nd,neuter,irregular,3\r\nis,singular,genitive,3rd,feminine,regular,\r\nis,singular,genitive,3rd,masculine,regular,\r\nis,singular,genitive,3rd,neuter,regular,\r\nae,singular,dative,1st 2nd,feminine,regular,\r\nī,singular,dative,1st 2nd,feminine,irregular,3\r\nō,singular,dative,1st 2nd,masculine,regular,\r\nī,singular,dative,1st 2nd,masculine,irregular,3\r\nō,singular,dative,1st 2nd,neuter,regular,\r\nī,singular,dative,1st 2nd,neuter,irregular,3\r\nī,singular,dative,3rd,feminine,regular,\r\nī,singular,dative,3rd,masculine,regular,\r\nī,singular,dative,3rd,neuter,regular,\r\nam,singular,accusative,1st 2nd,feminine,regular,\r\num,singular,accusative,1st 2nd,masculine,regular,\r\num,singular,accusative,1st 2nd,neuter,regular,\r\nem,singular,accusative,3rd,feminine,regular,\r\nem,singular,accusative,3rd,masculine,regular,\r\ne,singular,accusative,3rd,neuter,regular,\r\n-,singular,accusative,3rd,neuter,irregular,6\r\nā,singular,ablative,1st 2nd,feminine,regular,\r\nō,singular,ablative,1st 2nd,feminine,irregular,4\r\nō,singular,ablative,1st 2nd,masculine,regular,\r\nō,singular,ablative,1st 2nd,neuter,regular,\r\nī,singular,ablative,3rd,feminine,regular,\r\ne,singular,ablative,3rd,feminine,irregular,7\r\nī,singular,ablative,3rd,masculine,regular,\r\ne,singular,ablative,3rd,masculine,irregular,7\r\nī,singular,ablative,3rd,neuter,regular,\r\nae,singular,locative,1st 2nd,feminine,regular,\r\nī,singular,locative,1st 2nd,masculine,regular,\r\nī,singular,locative,1st 2nd,neuter,regular,\r\nī,singular,locative,3rd,feminine,regular,\r\ne,singular,locative,3rd,feminine,irregular,7\r\nī,singular,locative,3rd,masculine,regular,\r\nī,singular,locative,3rd,neuter,regular,\r\na,singular,vocative,1st 2nd,feminine,regular,\r\ne,singular,vocative,1st 2nd,masculine,regular,\r\nī,singular,vocative,1st 2nd,masculine,irregular,\r\num,singular,vocative,1st 2nd,neuter,regular,\r\nis,singular,vocative,3rd,feminine,regular,\r\n-,singular,vocative,3rd,masculine,regular,\r\ne,singular,vocative,3rd,neuter,regular,\r\n-,singular,vocative,3rd,neuter,irregular,6\r\nae,plural,nominative,1st 2nd,feminine,regular,\r\nī,plural,nominative,1st 2nd,masculine,regular,\r\na,plural,nominative,1st 2nd,neuter,regular,\r\nēs,plural,nominative,3rd,feminine,regular,\r\nēs,plural,nominative,3rd,masculine,regular,\r\nia,plural,nominative,3rd,neuter,regular,\r\nārum,plural,genitive,1st 2nd,feminine,regular,\r\nōrum,plural,genitive,1st 2nd,masculine,regular,\r\nōrum,plural,genitive,1st 2nd,neuter,regular,\r\nium,plural,genitive,3rd,feminine,regular,\r\num,plural,genitive,3rd,feminine,irregular,8\r\nium,plural,genitive,3rd,masculine,regular,\r\num,plural,genitive,3rd,masculine,irregular,8\r\nium,plural,genitive,3rd,neuter,regular,\r\num,plural,genitive,3rd,neuter,irregular,8\r\nīs,plural,dative,1st 2nd,feminine,regular,\r\nīs,plural,dative,1st 2nd,masculine,regular,\r\nīs,plural,dative,1st 2nd,neuter,regular,\r\nibus,plural,dative,3rd,feminine,regular,\r\nibus,plural,dative,3rd,masculine,regular,\r\nibus,plural,dative,3rd,neuter,regular,\r\nās,plural,accusative,1st 2nd,feminine,regular,\r\nōs,plural,accusative,1st 2nd,masculine,regular,\r\na,plural,accusative,1st 2nd,neuter,regular,\r\nīs,plural,accusative,3rd,feminine,regular,\r\nēs,plural,accusative,3rd,feminine,irregular,9\r\nīs,plural,accusative,3rd,masculine,regular,\r\nēs,plural,accusative,3rd,masculine,irregular,9\r\nia,plural,accusative,3rd,neuter,regular,\r\nīs,plural,ablative,1st 2nd,feminine,regular,\r\nīs,plural,ablative,1st 2nd,masculine,regular,\r\nīs,plural,ablative,1st 2nd,neuter,regular,\r\nibus,plural,ablative,3rd,feminine,regular,\r\nibus,plural,ablative,3rd,masculine,regular,\r\nibus,plural,ablative,3rd,neuter,regular,\r\nīs,plural,locative,1st 2nd,feminine,regular,\r\nīs,plural,locative,1st 2nd,masculine,regular,\r\nīs,plural,locative,1st 2nd,neuter,regular,\r\nibus,plural,locative,3rd,feminine,regular,\r\nibus,plural,locative,3rd,masculine,regular,\r\nibus,plural,locative,3rd,neuter,regular,\r\nae,plural,vocative,1st 2nd,feminine,regular,\r\nī,plural,vocative,1st 2nd,masculine,regular,\r\na,plural,vocative,1st 2nd,neuter,regular,\r\nēs,plural,vocative,3rd,feminine,regular,\r\nēs,plural,vocative,3rd,masculine,regular,\r\nia,plural,vocative,3rd,neuter,regular,";
+var adjectiveSuffixesCSV = "Ending,Number,Case,Declension,Gender,Type,Footnote\na,singular,nominative,1st 2nd,feminine,regular,\nus,singular,nominative,1st 2nd,masculine,regular,\num,singular,nominative,1st 2nd,neuter,regular,\nis,singular,nominative,3rd,feminine,regular,\n-,singular,nominative,3rd,feminine,irregular,6\n-,singular,nominative,3rd,masculine,regular,\nis,singular,nominative,3rd,masculine,irregular,5\ne,singular,nominative,3rd,neuter,regular,\n-,singular,nominative,3rd,neuter,irregular,6\nae,singular,genitive,1st 2nd,feminine,regular,\nīus,singular,genitive,1st 2nd,feminine,irregular,3\nī,singular,genitive,1st 2nd,masculine,regular,\nīus,singular,genitive,1st 2nd,masculine,irregular,3\nī,singular,genitive,1st 2nd,neuter,regular,\nīus,singular,genitive,1st 2nd,neuter,irregular,3\nis,singular,genitive,3rd,feminine,regular,\nis,singular,genitive,3rd,masculine,regular,\nis,singular,genitive,3rd,neuter,regular,\nae,singular,dative,1st 2nd,feminine,regular,\nī,singular,dative,1st 2nd,feminine,irregular,3\nō,singular,dative,1st 2nd,masculine,regular,\nī,singular,dative,1st 2nd,masculine,irregular,3\nō,singular,dative,1st 2nd,neuter,regular,\nī,singular,dative,1st 2nd,neuter,irregular,3\nī,singular,dative,3rd,feminine,regular,\nī,singular,dative,3rd,masculine,regular,\nī,singular,dative,3rd,neuter,regular,\nam,singular,accusative,1st 2nd,feminine,regular,\num,singular,accusative,1st 2nd,masculine,regular,\num,singular,accusative,1st 2nd,neuter,regular,\nem,singular,accusative,3rd,feminine,regular,\nem,singular,accusative,3rd,masculine,regular,\ne,singular,accusative,3rd,neuter,regular,\n-,singular,accusative,3rd,neuter,irregular,6\nā,singular,ablative,1st 2nd,feminine,regular,\nō,singular,ablative,1st 2nd,feminine,irregular,4\nō,singular,ablative,1st 2nd,masculine,regular,\nō,singular,ablative,1st 2nd,neuter,regular,\nī,singular,ablative,3rd,feminine,regular,\ne,singular,ablative,3rd,feminine,irregular,7\nī,singular,ablative,3rd,masculine,regular,\ne,singular,ablative,3rd,masculine,irregular,7\nī,singular,ablative,3rd,neuter,regular,\nae,singular,locative,1st 2nd,feminine,regular,\nī,singular,locative,1st 2nd,masculine,regular,\nī,singular,locative,1st 2nd,neuter,regular,\nī,singular,locative,3rd,feminine,regular,\ne,singular,locative,3rd,feminine,irregular,7\nī,singular,locative,3rd,masculine,regular,\nī,singular,locative,3rd,neuter,regular,\na,singular,vocative,1st 2nd,feminine,regular,\ne,singular,vocative,1st 2nd,masculine,regular,\nī,singular,vocative,1st 2nd,masculine,irregular,\num,singular,vocative,1st 2nd,neuter,regular,\nis,singular,vocative,3rd,feminine,regular,\n-,singular,vocative,3rd,masculine,regular,\ne,singular,vocative,3rd,neuter,regular,\n-,singular,vocative,3rd,neuter,irregular,6\nae,plural,nominative,1st 2nd,feminine,regular,\nī,plural,nominative,1st 2nd,masculine,regular,\na,plural,nominative,1st 2nd,neuter,regular,\nēs,plural,nominative,3rd,feminine,regular,\nēs,plural,nominative,3rd,masculine,regular,\nia,plural,nominative,3rd,neuter,regular,\nārum,plural,genitive,1st 2nd,feminine,regular,\nōrum,plural,genitive,1st 2nd,masculine,regular,\nōrum,plural,genitive,1st 2nd,neuter,regular,\nium,plural,genitive,3rd,feminine,regular,\num,plural,genitive,3rd,feminine,irregular,8\nium,plural,genitive,3rd,masculine,regular,\num,plural,genitive,3rd,masculine,irregular,8\nium,plural,genitive,3rd,neuter,regular,\num,plural,genitive,3rd,neuter,irregular,8\nīs,plural,dative,1st 2nd,feminine,regular,\nīs,plural,dative,1st 2nd,masculine,regular,\nīs,plural,dative,1st 2nd,neuter,regular,\nibus,plural,dative,3rd,feminine,regular,\nibus,plural,dative,3rd,masculine,regular,\nibus,plural,dative,3rd,neuter,regular,\nās,plural,accusative,1st 2nd,feminine,regular,\nōs,plural,accusative,1st 2nd,masculine,regular,\na,plural,accusative,1st 2nd,neuter,regular,\nīs,plural,accusative,3rd,feminine,regular,\nēs,plural,accusative,3rd,feminine,irregular,9\nīs,plural,accusative,3rd,masculine,regular,\nēs,plural,accusative,3rd,masculine,irregular,9\nia,plural,accusative,3rd,neuter,regular,\nīs,plural,ablative,1st 2nd,feminine,regular,\nīs,plural,ablative,1st 2nd,masculine,regular,\nīs,plural,ablative,1st 2nd,neuter,regular,\nibus,plural,ablative,3rd,feminine,regular,\nibus,plural,ablative,3rd,masculine,regular,\nibus,plural,ablative,3rd,neuter,regular,\nīs,plural,locative,1st 2nd,feminine,regular,\nīs,plural,locative,1st 2nd,masculine,regular,\nīs,plural,locative,1st 2nd,neuter,regular,\nibus,plural,locative,3rd,feminine,regular,\nibus,plural,locative,3rd,masculine,regular,\nibus,plural,locative,3rd,neuter,regular,\nae,plural,vocative,1st 2nd,feminine,regular,\nī,plural,vocative,1st 2nd,masculine,regular,\na,plural,vocative,1st 2nd,neuter,regular,\nēs,plural,vocative,3rd,feminine,regular,\nēs,plural,vocative,3rd,masculine,regular,\nia,plural,vocative,3rd,neuter,regular,";
 
-var adjectiveFootnotesCSV = "Index,Text\r\n1,\"Adjectives agree with the noun they modify in gender, number and case.\"\r\n2,Adjectives are inflected according to either\r\n3,\"Only nullus, sōlus, alius (alia, aliud), tōtus, ūllus, ūnus, alter, neuter (neutra,\r\n            neutrum) and uter (utra, utrum).\"\r\n4,In a few adjectives of Greek origin.\r\n5,\"The \"\"two-ending\"\" adjectives use \"\"-is\"\", for both masculine and feminine nominative\r\n            singular.\"\r\n6,\"The \"\"one-ending\"\" adjectives use the same consonant ending for all three genders in the\r\n            nominative singular and the neuter accusative and vocative singular.\"\r\n7,\"An ablative singular in \"\"e\"\" is common in one-ending adjectives, but is usually confined to\r\n            poetry in three and two-ending adjectives.\"\r\n8,\"In comparatives, poetry and some one-ending adjectives.\"\r\n9,Chiefly in comparatives.";
+var adjectiveFootnotesCSV = "Index,Text\n1,\"Adjectives agree with the noun they modify in gender, number and case.\"\n2,Adjectives are inflected according to either\n3,\"Only nullus, sōlus, alius (alia, aliud), tōtus, ūllus, ūnus, alter, neuter (neutra,\n            neutrum) and uter (utra, utrum).\"\n4,In a few adjectives of Greek origin.\n5,\"The \"\"two-ending\"\" adjectives use \"\"-is\"\", for both masculine and feminine nominative\n            singular.\"\n6,\"The \"\"one-ending\"\" adjectives use the same consonant ending for all three genders in the\n            nominative singular and the neuter accusative and vocative singular.\"\n7,\"An ablative singular in \"\"e\"\" is common in one-ending adjectives, but is usually confined to\n            poetry in three and two-ending adjectives.\"\n8,\"In comparatives, poetry and some one-ending adjectives.\"\n9,Chiefly in comparatives.";
 
 var verbSuffixesCSV = "Ending,Conjugation,Voice,Mood,Tense,Number,Person,Case,Type,Footnote\r\nō,1st,active,indicative,present,singular,1st,,regular,\r\nās,1st,active,indicative,present,singular,2nd,,regular,\r\nat,1st,active,indicative,present,singular,3rd,,regular,\r\nāmus,1st,active,indicative,present,plural,1st,,regular,\r\nātis,1st,active,indicative,present,plural,2nd,,regular,\r\nant,1st,active,indicative,present,plural,3rd,,regular,\r\nem,1st,active,subjunctive,present,singular,1st,,regular,\r\nēs,1st,active,subjunctive,present,singular,2nd,,regular,\r\net,1st,active,subjunctive,present,singular,3rd,,regular,\r\nēmus,1st,active,subjunctive,present,plural,1st,,regular,\r\nētis,1st,active,subjunctive,present,plural,2nd,,regular,\r\nent,1st,active,subjunctive,present,plural,3rd,,regular,\r\neō,2nd,active,indicative,present,singular,1st,,regular,\r\nēs,2nd,active,indicative,present,singular,2nd,,regular,\r\nēt,2nd,active,indicative,present,singular,3rd,,regular,\r\nēmus,2nd,active,indicative,present,plural,1st,,regular,\r\nētis,2nd,active,indicative,present,plural,2nd,,regular,\r\nent,2nd,active,indicative,present,plural,3rd,,regular,\r\neam,2nd,active,subjunctive,present,singular,1st,,regular,\r\neās,2nd,active,subjunctive,present,singular,2nd,,regular,\r\neat,2nd,active,subjunctive,present,singular,3rd,,regular,\r\neāmus,2nd,active,subjunctive,present,plural,1st,,regular,\r\neātis,2nd,active,subjunctive,present,plural,2nd,,regular,\r\neant,2nd,active,subjunctive,present,plural,3rd,,regular,\r\nō,3rd,active,indicative,present,singular,1st,,regular,\r\nis,3rd,active,indicative,present,singular,2nd,,regular,\r\nit,3rd,active,indicative,present,singular,3rd,,regular,\r\nimus,3rd,active,indicative,present,plural,1st,,regular,\r\nitis,3rd,active,indicative,present,plural,2nd,,regular,\r\nunt,3rd,active,indicative,present,plural,3rd,,regular,\r\nam,3rd,active,subjunctive,present,singular,1st,,regular,\r\nās,3rd,active,subjunctive,present,singular,2nd,,regular,\r\nat,3rd,active,subjunctive,present,singular,3rd,,regular,\r\nāmus,3rd,active,subjunctive,present,plural,1st,,regular,\r\nātis,3rd,active,subjunctive,present,plural,2nd,,regular,\r\nant,3rd,active,subjunctive,present,plural,3rd,,regular,\r\niō,4th,active,indicative,present,singular,1st,,regular,\r\nīs,4th,active,indicative,present,singular,2nd,,regular,\r\nit,4th,active,indicative,present,singular,3rd,,regular,\r\nīmus,4th,active,indicative,present,plural,1st,,regular,\r\nītis,4th,active,indicative,present,plural,2nd,,regular,\r\niunt,4th,active,indicative,present,plural,3rd,,regular,\r\niam,4th,active,subjunctive,present,singular,1st,,regular,\r\niās,4th,active,subjunctive,present,singular,2nd,,regular,\r\niat,4th,active,subjunctive,present,singular,3rd,,regular,\r\niāmus,4th,active,subjunctive,present,plural,1st,,regular,\r\niāatis,4th,active,subjunctive,present,plural,2nd,,regular,\r\niant,4th,active,subjunctive,present,plural,3rd,,regular,\r\nābam,1st,active,indicative,imperfect,singular,1st,,regular,\r\nābas,1st,active,indicative,imperfect,singular,2nd,,regular,\r\nābat,1st,active,indicative,imperfect,singular,3rd,,regular,\r\nābāmus,1st,active,indicative,imperfect,plural,1st,,regular,\r\nābātis,1st,active,indicative,imperfect,plural,2nd,,regular,\r\nābant,1st,active,indicative,imperfect,plural,3rd,,regular,\r\nārem,1st,active,subjunctive,imperfect,singular,1st,,regular,\r\nārēs,1st,active,subjunctive,imperfect,singular,2nd,,regular,\r\nāret,1st,active,subjunctive,imperfect,singular,3rd,,regular,\r\nārēmus,1st,active,subjunctive,imperfect,plural,1st,,regular,\r\nārētis,1st,active,subjunctive,imperfect,plural,2nd,,regular,\r\nārent,1st,active,subjunctive,imperfect,plural,3rd,,regular,\r\nēbam,2nd,active,indicative,imperfect,singular,1st,,regular,\r\nēbās,2nd,active,indicative,imperfect,singular,2nd,,regular,\r\nēbat,2nd,active,indicative,imperfect,singular,3rd,,regular,\r\nēbāmus,2nd,active,indicative,imperfect,plural,1st,,regular,\r\nēbātis,2nd,active,indicative,imperfect,plural,2nd,,regular,\r\nēbant,2nd,active,indicative,imperfect,plural,3rd,,regular,\r\nērem,2nd,active,subjunctive,imperfect,singular,1st,,regular,\r\nērēs,2nd,active,subjunctive,imperfect,singular,2nd,,regular,\r\nēret,2nd,active,subjunctive,imperfect,singular,3rd,,regular,\r\nērēmus,2nd,active,subjunctive,imperfect,plural,1st,,regular,\r\nērētis,2nd,active,subjunctive,imperfect,plural,2nd,,regular,\r\nērēnt,2nd,active,subjunctive,imperfect,plural,3rd,,regular,\r\nēbas,3rd,active,indicative,imperfect,singular,1st,,regular,\r\nēbāt,3rd,active,indicative,imperfect,singular,2nd,,regular,\r\nēbat,3rd,active,indicative,imperfect,singular,3rd,,regular,\r\nēbāmus,3rd,active,indicative,imperfect,plural,1st,,regular,\r\nēbātis,3rd,active,indicative,imperfect,plural,2nd,,regular,\r\nēbant,3rd,active,indicative,imperfect,plural,3rd,,regular,\r\nerem,3rd,active,subjunctive,imperfect,singular,1st,,regular,\r\nerēs,3rd,active,subjunctive,imperfect,singular,2nd,,regular,\r\neret,3rd,active,subjunctive,imperfect,singular,3rd,,regular,\r\nerēmus,3rd,active,subjunctive,imperfect,plural,1st,,regular,\r\nerētis,3rd,active,subjunctive,imperfect,plural,2nd,,regular,\r\nerent,3rd,active,subjunctive,imperfect,plural,3rd,,regular,\r\niēbam,4th,active,indicative,imperfect,singular,1st,,regular,\r\nībam,4th,active,indicative,imperfect,singular,1st,,irregular,2\r\niēbas,4th,active,indicative,imperfect,singular,2nd,,regular,\r\nības,4th,active,indicative,imperfect,singular,2nd,,irregular,\r\niēbat,4th,active,indicative,imperfect,singular,3rd,,regular,\r\nībat,4th,active,indicative,imperfect,singular,3rd,,irregular,\r\niēbāmus,4th,active,indicative,imperfect,plural,1st,,regular,\r\nībāmus,4th,active,indicative,imperfect,plural,1st,,irregular,\r\niēbātis,4th,active,indicative,imperfect,plural,2nd,,regular,\r\nībātis,4th,active,indicative,imperfect,plural,2nd,,irregular,\r\niēbant,4th,active,indicative,imperfect,plural,3rd,,regular,\r\nībant,4th,active,indicative,imperfect,plural,3rd,,irregular,\r\nīrem,4th,active,subjunctive,imperfect,singular,1st,,regular,\r\nīrēs,4th,active,subjunctive,imperfect,singular,2nd,,regular,\r\nīret,4th,active,subjunctive,imperfect,singular,3rd,,regular,\r\nīrēmus,4th,active,subjunctive,imperfect,plural,1st,,regular,\r\nīrētis,4th,active,subjunctive,imperfect,plural,2nd,,regular,\r\nīrēnt,4th,active,subjunctive,imperfect,plural,3rd,,regular,\r\nābo,1st,active,indicative,future,singular,1st,,regular,\r\nābis,1st,active,indicative,future,singular,2nd,,regular,\r\nābit,1st,active,indicative,future,singular,3rd,,regular,\r\nābimus,1st,active,indicative,future,plural,1st,,regular,\r\nābitis,1st,active,indicative,future,plural,2nd,,regular,\r\nābunt,1st,active,indicative,future,plural,3rd,,regular,\r\n,1st,active,subjunctive,future,singular,1st,,,\r\n,1st,active,subjunctive,future,singular,2nd,,,\r\n,1st,active,subjunctive,future,singular,3rd,,,\r\n,1st,active,subjunctive,future,plural,1st,,,\r\n,1st,active,subjunctive,future,plural,2nd,,,\r\n,1st,active,subjunctive,future,plural,3rd,,,\r\nēbō,2nd,active,indicative,future,singular,1st,,regular,\r\nēbis,2nd,active,indicative,future,singular,2nd,,regular,\r\nēbit,2nd,active,indicative,future,singular,3rd,,regular,\r\nēbimus,2nd,active,indicative,future,plural,1st,,regular,\r\nēbitis,2nd,active,indicative,future,plural,2nd,,regular,\r\nēbunt,2nd,active,indicative,future,plural,3rd,,regular,\r\n,2nd,active,subjunctive,future,singular,1st,,regular,\r\n,2nd,active,subjunctive,future,singular,2nd,,,\r\n,2nd,active,subjunctive,future,singular,3rd,,,\r\n,2nd,active,subjunctive,future,plural,1st,,,\r\n,2nd,active,subjunctive,future,plural,2nd,,,\r\n,2nd,active,subjunctive,future,plural,3rd,,,\r\nam,3rd,active,indicative,future,singular,1st,,regular,\r\nēs,3rd,active,indicative,future,singular,2nd,,regular,\r\net,3rd,active,indicative,future,singular,3rd,,regular,\r\nēmus,3rd,active,indicative,future,plural,1st,,regular,\r\nētis,3rd,active,indicative,future,plural,2nd,,regular,\r\nent,3rd,active,indicative,future,plural,3rd,,regular,\r\n,3rd,active,subjunctive,future,singular,1st,,,\r\n,3rd,active,subjunctive,future,singular,2nd,,,\r\n,3rd,active,subjunctive,future,singular,3rd,,,\r\n,3rd,active,subjunctive,future,plural,1st,,,\r\n,3rd,active,subjunctive,future,plural,2nd,,,\r\n,3rd,active,subjunctive,future,plural,3rd,,,\r\niam,4th,active,indicative,future,singular,1st,,regular,\r\nībō,4th,active,indicative,future,singular,1st,,irregular,2\r\niēs,4th,active,indicative,future,singular,2nd,,regular,\r\nībis,4th,active,indicative,future,singular,2nd,,irregular,\r\niet,4th,active,indicative,future,singular,3rd,,regular,\r\nībit,4th,active,indicative,future,singular,3rd,,irregular,\r\niēmus,4th,active,indicative,future,plural,1st,,regular,\r\nībimus,4th,active,indicative,future,plural,1st,,irregular,\r\niētis,4th,active,indicative,future,plural,2nd,,regular,\r\nībitis,4th,active,indicative,future,plural,2nd,,irregular,\r\nient,4th,active,indicative,future,plural,3rd,,regular,\r\nībunt,4th,active,indicative,future,plural,3rd,,irregular,\r\n,4th,active,subjunctive,future,singular,1st,,,\r\n,4th,active,subjunctive,future,singular,2nd,,,\r\n,4th,active,subjunctive,future,singular,3rd,,,\r\n,4th,active,subjunctive,future,plural,1st,,,\r\n,4th,active,subjunctive,future,plural,2nd,,,\r\n,4th,active,subjunctive,future,plural,3rd,,,\r\nāvī,1st,active,indicative,perfect,singular,1st,,regular,\r\nāvistī,1st,active,indicative,perfect,singular,2nd,,regular,\r\nāvit,1st,active,indicative,perfect,singular,3rd,,regular,\r\nāvimus,1st,active,indicative,perfect,plural,1st,,regular,\r\nāvistis,1st,active,indicative,perfect,plural,2nd,,regular,\r\nāvērunt,1st,active,indicative,perfect,plural,3rd,,regular,\r\nāvēre,1st,active,indicative,perfect,plural,3rd,,irregular,6\r\nāverim,1st,active,subjunctive,perfect,singular,1st,,regular,\r\nāveris,1st,active,subjunctive,perfect,singular,2nd,,regular,\r\nāverit,1st,active,subjunctive,perfect,singular,3rd,,regular,\r\nāverimus,1st,active,subjunctive,perfect,plural,1st,,regular,\r\nāveritis,1st,active,subjunctive,perfect,plural,2nd,,regular,\r\nāverint,1st,active,subjunctive,perfect,plural,3rd,,regular,\r\nvī,2nd,active,indicative,perfect,singular,1st,,regular,\r\nvistī,2nd,active,indicative,perfect,singular,2nd,,regular,\r\nvit,2nd,active,indicative,perfect,singular,3rd,,regular,\r\nvimus,2nd,active,indicative,perfect,plural,1st,,regular,\r\nvistis,2nd,active,indicative,perfect,plural,2nd,,regular,\r\nvērunt,2nd,active,indicative,perfect,plural,3rd,,regular,\r\nvēre,2nd,active,indicative,perfect,plural,3rd,,irregular,6\r\nverim,2nd,active,subjunctive,perfect,singular,1st,,regular,\r\nveris,2nd,active,subjunctive,perfect,singular,2nd,,regular,\r\nverit,2nd,active,subjunctive,perfect,singular,3rd,,regular,\r\nverimus,2nd,active,subjunctive,perfect,plural,1st,,regular,\r\nveritis,2nd,active,subjunctive,perfect,plural,2nd,,regular,\r\nverint,2nd,active,subjunctive,perfect,plural,3rd,,regular,\r\nī,3rd,active,indicative,perfect,singular,1st,,regular,\r\nistī,3rd,active,indicative,perfect,singular,2nd,,regular,\r\nit,3rd,active,indicative,perfect,singular,3rd,,regular,\r\nimus,3rd,active,indicative,perfect,plural,1st,,regular,\r\nistis,3rd,active,indicative,perfect,plural,2nd,,regular,\r\nērunt,3rd,active,indicative,perfect,plural,3rd,,regular,\r\nēre,3rd,active,indicative,perfect,plural,3rd,,irregular,6\r\nerim,3rd,active,subjunctive,perfect,singular,1st,,regular,\r\neris,3rd,active,subjunctive,perfect,singular,2nd,,regular,\r\nerit,3rd,active,subjunctive,perfect,singular,3rd,,regular,\r\nerimus,3rd,active,subjunctive,perfect,plural,1st,,regular,\r\neritis,3rd,active,subjunctive,perfect,plural,2nd,,regular,\r\nerint,3rd,active,subjunctive,perfect,plural,3rd,,regular,\r\nīvi,4th,active,indicative,perfect,singular,1st,,regular,\r\nīvistī,4th,active,indicative,perfect,singular,2nd,,regular,\r\nīvit,4th,active,indicative,perfect,singular,3rd,,regular,\r\nīvimus,4th,active,indicative,perfect,plural,1st,,regular,\r\nīvistis,4th,active,indicative,perfect,plural,2nd,,regular,\r\nīvērunt,4th,active,indicative,perfect,plural,3rd,,regular,\r\nīvēre,4th,active,indicative,perfect,plural,3rd,,irregular,6\r\nīverim,4th,active,subjunctive,perfect,singular,1st,,regular,\r\niveris,4th,active,subjunctive,perfect,singular,2nd,,regular,\r\nīverit,4th,active,subjunctive,perfect,singular,3rd,,regular,\r\nīverimus,4th,active,subjunctive,perfect,plural,1st,,regular,\r\nīveritis,4th,active,subjunctive,perfect,plural,2nd,,regular,\r\nīverint,4th,active,subjunctive,perfect,plural,3rd,,regular,\r\nāveram,1st,active,indicative,pluperfect,singular,1st,,regular,\r\nāverās,1st,active,indicative,pluperfect,singular,2nd,,regular,\r\nāverat,1st,active,indicative,pluperfect,singular,3rd,,regular,\r\nāverāmus,1st,active,indicative,pluperfect,plural,1st,,regular,\r\nāverātis,1st,active,indicative,pluperfect,plural,2nd,,regular,\r\nāverant,1st,active,indicative,pluperfect,plural,3rd,,regular,\r\nāvissem,1st,active,subjunctive,pluperfect,singular,1st,,regular,\r\nāvissēs,1st,active,subjunctive,pluperfect,singular,2nd,,regular,\r\nāvisset,1st,active,subjunctive,pluperfect,singular,3rd,,regular,\r\nāvissēm,1st,active,subjunctive,pluperfect,plural,1st,,regular,\r\nāvissēs,1st,active,subjunctive,pluperfect,plural,2nd,,regular,\r\nāvisset,1st,active,subjunctive,pluperfect,plural,3rd,,regular,\r\nveram,2nd,active,indicative,pluperfect,singular,1st,,regular,\r\nverās,2nd,active,indicative,pluperfect,singular,2nd,,regular,\r\nverat,2nd,active,indicative,pluperfect,singular,3rd,,regular,\r\nverāmus,2nd,active,indicative,pluperfect,plural,1st,,regular,\r\nverātis,2nd,active,indicative,pluperfect,plural,2nd,,regular,\r\nverant,2nd,active,indicative,pluperfect,plural,3rd,,regular,\r\nvissem,2nd,active,subjunctive,pluperfect,singular,1st,,regular,\r\nvissēs,2nd,active,subjunctive,pluperfect,singular,2nd,,regular,\r\nvisset,2nd,active,subjunctive,pluperfect,singular,3rd,,regular,\r\nvissēmus,2nd,active,subjunctive,pluperfect,plural,1st,,regular,\r\nvissētis,2nd,active,subjunctive,pluperfect,plural,2nd,,regular,\r\nvissent,2nd,active,subjunctive,pluperfect,plural,3rd,,regular,\r\neram,3rd,active,indicative,pluperfect,singular,1st,,regular,\r\nerās,3rd,active,indicative,pluperfect,singular,2nd,,regular,\r\nerat,3rd,active,indicative,pluperfect,singular,3rd,,regular,\r\nerāmus,3rd,active,indicative,pluperfect,plural,1st,,regular,\r\nerātis,3rd,active,indicative,pluperfect,plural,2nd,,regular,\r\nerant,3rd,active,indicative,pluperfect,plural,3rd,,regular,\r\nissem,3rd,active,subjunctive,pluperfect,singular,1st,,regular,\r\nissēs,3rd,active,subjunctive,pluperfect,singular,2nd,,regular,\r\nisset,3rd,active,subjunctive,pluperfect,singular,3rd,,regular,\r\nissēmus,3rd,active,subjunctive,pluperfect,plural,1st,,regular,\r\nissētis,3rd,active,subjunctive,pluperfect,plural,2nd,,regular,\r\nissent,3rd,active,subjunctive,pluperfect,plural,3rd,,regular,\r\nīveram,4th,active,indicative,pluperfect,singular,1st,,regular,\r\nīverās,4th,active,indicative,pluperfect,singular,2nd,,regular,\r\nīverat,4th,active,indicative,pluperfect,singular,3rd,,regular,\r\nīverāmus,4th,active,indicative,pluperfect,plural,1st,,regular,\r\nīverātis,4th,active,indicative,pluperfect,plural,2nd,,regular,\r\nīverant,4th,active,indicative,pluperfect,plural,3rd,,regular,\r\nīvissem,4th,active,subjunctive,pluperfect,singular,1st,,regular,\r\nīvissēs,4th,active,subjunctive,pluperfect,singular,2nd,,regular,\r\nīvisset,4th,active,subjunctive,pluperfect,singular,3rd,,regular,\r\nīvissēmus,4th,active,subjunctive,pluperfect,plural,1st,,regular,\r\nīvissētis,4th,active,subjunctive,pluperfect,plural,2nd,,regular,\r\nīvissent,4th,active,subjunctive,pluperfect,plural,3rd,,regular,\r\nāverō,1st,active,indicative,future_perfect,singular,1st,,regular,\r\nāveris,1st,active,indicative,future_perfect,singular,2nd,,regular,\r\nāverit,1st,active,indicative,future_perfect,singular,3rd,,regular,\r\nāverimus,1st,active,indicative,future_perfect,plural,1st,,regular,\r\nāveritis,1st,active,indicative,future_perfect,plural,2nd,,regular,\r\nāverint,1st,active,indicative,future_perfect,plural,3rd,,regular,\r\n,1st,active,subjunctive,future_perfect,singular,1st,,,\r\n,1st,active,subjunctive,future_perfect,singular,2nd,,,\r\n,1st,active,subjunctive,future_perfect,singular,3rd,,,\r\n,1st,active,subjunctive,future_perfect,plural,1st,,,\r\n,1st,active,subjunctive,future_perfect,plural,2nd,,,\r\n,1st,active,subjunctive,future_perfect,plural,3rd,,,\r\nverō,2nd,active,indicative,future_perfect,singular,1st,,regular,\r\nvēris,2nd,active,indicative,future_perfect,singular,2nd,,regular,\r\nvērit,2nd,active,indicative,future_perfect,singular,3rd,,regular,\r\nvērimus,2nd,active,indicative,future_perfect,plural,1st,,regular,\r\nvēritis,2nd,active,indicative,future_perfect,plural,2nd,,regular,\r\nvērint,2nd,active,indicative,future_perfect,plural,3rd,,regular,\r\n,2nd,active,subjunctive,future_perfect,singular,1st,,,\r\n,2nd,active,subjunctive,future_perfect,singular,2nd,,,\r\n,2nd,active,subjunctive,future_perfect,singular,3rd,,,\r\n,2nd,active,subjunctive,future_perfect,plural,1st,,,\r\n,2nd,active,subjunctive,future_perfect,plural,2nd,,,\r\n,2nd,active,subjunctive,future_perfect,plural,3rd,,,\r\nerō,3rd,active,indicative,future_perfect,singular,1st,,regular,\r\neris,3rd,active,indicative,future_perfect,singular,2nd,,regular,\r\nerit,3rd,active,indicative,future_perfect,singular,3rd,,regular,\r\nerimus,3rd,active,indicative,future_perfect,plural,1st,,regular,\r\neritis,3rd,active,indicative,future_perfect,plural,2nd,,regular,\r\nerint,3rd,active,indicative,future_perfect,plural,3rd,,regular,\r\n,3rd,active,subjunctive,future_perfect,singular,1st,,,\r\n,3rd,active,subjunctive,future_perfect,singular,2nd,,,\r\n,3rd,active,subjunctive,future_perfect,singular,3rd,,,\r\n,3rd,active,subjunctive,future_perfect,plural,1st,,,\r\n,3rd,active,subjunctive,future_perfect,plural,2nd,,,\r\n,3rd,active,subjunctive,future_perfect,plural,3rd,,,\r\nīverō,4th,active,indicative,future_perfect,singular,1st,,regular,\r\nīveris,4th,active,indicative,future_perfect,singular,2nd,,regular,\r\nīverit,4th,active,indicative,future_perfect,singular,3rd,,regular,\r\nīverimus,4th,active,indicative,future_perfect,plural,1st,,regular,\r\nīveritis,4th,active,indicative,future_perfect,plural,2nd,,regular,\r\nīverint,4th,active,indicative,future_perfect,plural,3rd,,regular,\r\n,4th,active,subjunctive,future_perfect,singular,1st,,,\r\n,4th,active,subjunctive,future_perfect,singular,2nd,,,\r\n,4th,active,subjunctive,future_perfect,singular,3rd,,,\r\n,4th,active,subjunctive,future_perfect,plural,1st,,,\r\n,4th,active,subjunctive,future_perfect,plural,2nd,,,\r\n,4th,active,subjunctive,future_perfect,plural,3rd,,,\r\nor,1st,passive,indicative,present,singular,1st,,regular,\r\nāris,1st,passive,indicative,present,singular,2nd,,regular,\r\nāre,1st,passive,indicative,present,singular,2nd,,irregular,5\r\nātur,1st,passive,indicative,present,singular,3rd,,regular,\r\nāmur,1st,passive,indicative,present,plural,1st,,regular,\r\nāminiī,1st,passive,indicative,present,plural,2nd,,regular,\r\nantur,1st,passive,indicative,present,plural,3rd,,regular,\r\ner,1st,passive,subjunctive,present,singular,1st,,regular,\r\nēris,1st,passive,subjunctive,present,singular,2nd,,regular,\r\nēre,1st,passive,subjunctive,present,singular,2nd,,regular,\r\nētur,1st,passive,subjunctive,present,singular,3rd,,regular,\r\nēmur,1st,passive,subjunctive,present,plural,1st,,regular,\r\nēminī,1st,passive,subjunctive,present,plural,2nd,,regular,\r\nentur,1st,passive,subjunctive,present,plural,3rd,,regular,\r\neor,2nd,passive,indicative,present,singular,1st,,regular,\r\nēris,2nd,passive,indicative,present,singular,2nd,,regular,\r\nēre,2nd,passive,indicative,present,singular,2nd,,regular,\r\nētur,2nd,passive,indicative,present,singular,3rd,,regular,\r\nēmur,2nd,passive,indicative,present,plural,1st,,regular,\r\nēmini,2nd,passive,indicative,present,plural,2nd,,regular,\r\nentur,2nd,passive,indicative,present,plural,3rd,,regular,\r\near,2nd,passive,subjunctive,present,singular,1st,,regular,\r\neāris,2nd,passive,subjunctive,present,singular,2nd,,regular,\r\neāre,2nd,passive,subjunctive,present,singular,2nd,,regular,\r\neātur,2nd,passive,subjunctive,present,singular,3rd,,regular,\r\neāmur,2nd,passive,subjunctive,present,plural,1st,,regular,\r\neāminī,2nd,passive,subjunctive,present,plural,2nd,,regular,\r\neantur,2nd,passive,subjunctive,present,plural,3rd,,regular,\r\nor,3rd,passive,indicative,present,singular,1st,,regular,\r\neris,3rd,passive,indicative,present,singular,2nd,,regular,\r\nere,3rd,passive,indicative,present,singular,2nd,,regular,\r\nitur,3rd,passive,indicative,present,singular,3rd,,regular,\r\nimur,3rd,passive,indicative,present,plural,1st,,regular,\r\niminī,3rd,passive,indicative,present,plural,2nd,,regular,\r\nuntur,3rd,passive,indicative,present,plural,3rd,,regular,\r\nar,3rd,passive,subjunctive,present,singular,1st,,regular,\r\nāris,3rd,passive,subjunctive,present,singular,2nd,,regular,\r\nāre,3rd,passive,subjunctive,present,singular,2nd,,regular,\r\nātur,3rd,passive,subjunctive,present,singular,3rd,,regular,\r\nāmur,3rd,passive,subjunctive,present,plural,1st,,regular,\r\nāminī,3rd,passive,subjunctive,present,plural,2nd,,regular,\r\nantur,3rd,passive,subjunctive,present,plural,3rd,,regular,\r\nior,4th,passive,indicative,present,singular,1st,,regular,\r\nīris,4th,passive,indicative,present,singular,2nd,,regular,\r\nīre,4th,passive,indicative,present,singular,2nd,,regular,\r\nītur,4th,passive,indicative,present,singular,3rd,,regular,\r\nīmur,4th,passive,indicative,present,plural,1st,,regular,\r\nīminī,4th,passive,indicative,present,plural,2nd,,regular,\r\niuntur,4th,passive,indicative,present,plural,3rd,,regular,\r\niar,4th,passive,subjunctive,present,singular,1st,,regular,\r\niāris,4th,passive,subjunctive,present,singular,2nd,,regular,\r\niāre,4th,passive,subjunctive,present,singular,2nd,,regular,\r\niātur,4th,passive,subjunctive,present,singular,3rd,,regular,\r\niāmur,4th,passive,subjunctive,present,plural,1st,,regular,\r\niāminī,4th,passive,subjunctive,present,plural,2nd,,regular,\r\niantur,4th,passive,subjunctive,present,plural,3rd,,regular,\r\nābar,1st,passive,indicative,imperfect,singular,1st,,regular,\r\nābāaris,1st,passive,indicative,imperfect,singular,2nd,,regular,\r\nābāre,1st,passive,indicative,imperfect,singular,2nd,,regular,\r\nābātur,1st,passive,indicative,imperfect,singular,3rd,,regular,\r\nābāmur,1st,passive,indicative,imperfect,plural,1st,,regular,\r\nābāminī,1st,passive,indicative,imperfect,plural,2nd,,regular,\r\nābantur,1st,passive,indicative,imperfect,plural,3rd,,regular,\r\nārer,1st,passive,subjunctive,imperfect,singular,1st,,regular,\r\nārēris,1st,passive,subjunctive,imperfect,singular,2nd,,regular,\r\nārēre,1st,passive,subjunctive,imperfect,singular,2nd,,regular,\r\nārētur,1st,passive,subjunctive,imperfect,singular,3rd,,regular,\r\nārēmur,1st,passive,subjunctive,imperfect,plural,1st,,regular,\r\nārēminī,1st,passive,subjunctive,imperfect,plural,2nd,,regular,\r\nārentur,1st,passive,subjunctive,imperfect,plural,3rd,,regular,\r\nēbar,2nd,passive,indicative,imperfect,singular,1st,,regular,\r\nēbāris,2nd,passive,indicative,imperfect,singular,2nd,,regular,\r\nēbāre,2nd,passive,indicative,imperfect,singular,2nd,,regular,\r\nēbātur,2nd,passive,indicative,imperfect,singular,3rd,,regular,\r\nēbāmur,2nd,passive,indicative,imperfect,plural,1st,,regular,\r\nēbāmini,2nd,passive,indicative,imperfect,plural,2nd,,regular,\r\nēbantur,2nd,passive,indicative,imperfect,plural,3rd,,regular,\r\nērer,2nd,passive,subjunctive,imperfect,singular,1st,,regular,\r\nērēris,2nd,passive,subjunctive,imperfect,singular,2nd,,regular,\r\nērēre,2nd,passive,subjunctive,imperfect,singular,2nd,,regular,\r\nērētur,2nd,passive,subjunctive,imperfect,singular,3rd,,regular,\r\nērēmur,2nd,passive,subjunctive,imperfect,plural,1st,,regular,\r\nērēminī,2nd,passive,subjunctive,imperfect,plural,2nd,,regular,\r\nērentur,2nd,passive,subjunctive,imperfect,plural,3rd,,regular,\r\nēbar,3rd,passive,indicative,imperfect,singular,1st,,regular,\r\nēbāris,3rd,passive,indicative,imperfect,singular,2nd,,regular,\r\nēbāre,3rd,passive,indicative,imperfect,singular,2nd,,regular,\r\nēbatur,3rd,passive,indicative,imperfect,singular,3rd,,regular,\r\nēbāmur,3rd,passive,indicative,imperfect,plural,1st,,regular,\r\nēbāminī,3rd,passive,indicative,imperfect,plural,2nd,,regular,\r\nēbantur,3rd,passive,indicative,imperfect,plural,3rd,,regular,\r\nerer,3rd,passive,subjunctive,imperfect,singular,1st,,regular,\r\nerēris,3rd,passive,subjunctive,imperfect,singular,2nd,,regular,\r\nerēre,3rd,passive,subjunctive,imperfect,singular,2nd,,regular,\r\nerētur,3rd,passive,subjunctive,imperfect,singular,3rd,,regular,\r\nerēmur,3rd,passive,subjunctive,imperfect,plural,1st,,regular,\r\nerēminī,3rd,passive,subjunctive,imperfect,plural,2nd,,regular,\r\nerentur,3rd,passive,subjunctive,imperfect,plural,3rd,,regular,\r\niēbar,4th,passive,indicative,imperfect,singular,1st,,regular,\r\niēbāris,4th,passive,indicative,imperfect,singular,2nd,,regular,\r\niēbāre,4th,passive,indicative,imperfect,singular,2nd,,regular,\r\niēbātur,4th,passive,indicative,imperfect,singular,3rd,,regular,\r\niēbāmur,4th,passive,indicative,imperfect,plural,1st,,regular,\r\niēbāminī,4th,passive,indicative,imperfect,plural,2nd,,regular,\r\niēbantur,4th,passive,indicative,imperfect,plural,3rd,,regular,\r\nīrer,4th,passive,subjunctive,imperfect,singular,1st,,regular,\r\nīrēris,4th,passive,subjunctive,imperfect,singular,2nd,,regular,\r\nīrēre,4th,passive,subjunctive,imperfect,singular,2nd,,regular,\r\nīrētur,4th,passive,subjunctive,imperfect,singular,3rd,,regular,\r\nīrēmur,4th,passive,subjunctive,imperfect,plural,1st,,regular,\r\nīrēminī,4th,passive,subjunctive,imperfect,plural,2nd,,regular,\r\nīrentur,4th,passive,subjunctive,imperfect,plural,3rd,,regular,\r\nābor,1st,passive,indicative,future,singular,1st,,regular,\r\nāberis,1st,passive,indicative,future,singular,2nd,,regular,\r\nābere,1st,passive,indicative,future,singular,2nd,,irregular,\r\nābitur,1st,passive,indicative,future,singular,3rd,,regular,\r\nābimur,1st,passive,indicative,future,plural,1st,,regular,\r\nābiminī,1st,passive,indicative,future,plural,2nd,,regular,\r\nābuntur,1st,passive,indicative,future,plural,3rd,,regular,\r\n,1st,passive,subjunctive,future,singular,1st,,,\r\n,1st,passive,subjunctive,future,singular,2nd,,,\r\n,1st,passive,subjunctive,future,singular,3rd,,,\r\n,1st,passive,subjunctive,future,plural,1st,,,\r\n,1st,passive,subjunctive,future,plural,2nd,,,\r\n,1st,passive,subjunctive,future,plural,3rd,,,\r\nēbor,2nd,passive,indicative,future,singular,1st,,regular,\r\nēberis,2nd,passive,indicative,future,singular,2nd,,regular,\r\nēbere,2nd,passive,indicative,future,singular,2nd,,regular,\r\nēbitur,2nd,passive,indicative,future,singular,3rd,,regular,\r\nēbimur,2nd,passive,indicative,future,plural,1st,,regular,\r\nēbiminī,2nd,passive,indicative,future,plural,2nd,,regular,\r\nēbuntur,2nd,passive,indicative,future,plural,3rd,,regular,\r\n,2nd,passive,subjunctive,future,singular,1st,,,\r\n,2nd,passive,subjunctive,future,singular,2nd,,,\r\n,2nd,passive,subjunctive,future,singular,3rd,,,\r\n,2nd,passive,subjunctive,future,plural,1st,,,\r\n,2nd,passive,subjunctive,future,plural,2nd,,,\r\n,2nd,passive,subjunctive,future,plural,3rd,,,\r\nar,3rd,passive,indicative,future,singular,1st,,regular,\r\nēris,3rd,passive,indicative,future,singular,2nd,,regular,\r\nēre,3rd,passive,indicative,future,singular,2nd,,irregular,\r\nētur,3rd,passive,indicative,future,singular,3rd,,regular,\r\nēmur,3rd,passive,indicative,future,plural,1st,,regular,\r\nēminī,3rd,passive,indicative,future,plural,2nd,,regular,\r\nentur,3rd,passive,indicative,future,plural,3rd,,regular,\r\n,3rd,passive,subjunctive,future,singular,1st,,,\r\n,3rd,passive,subjunctive,future,singular,2nd,,,\r\n,3rd,passive,subjunctive,future,singular,3rd,,,\r\n,3rd,passive,subjunctive,future,plural,1st,,,\r\n,3rd,passive,subjunctive,future,plural,2nd,,,\r\n,3rd,passive,subjunctive,future,plural,3rd,,,\r\niar,4th,passive,indicative,future,singular,1st,,regular,\r\niēris,4th,passive,indicative,future,singular,2nd,,regular,\r\nīēre,4th,passive,indicative,future,singular,2nd,,irregular,\r\niētur,4th,passive,indicative,future,singular,3rd,,regular,\r\niēmur,4th,passive,indicative,future,plural,1st,,regular,\r\niēminī,4th,passive,indicative,future,plural,2nd,,regular,\r\nientur,4th,passive,indicative,future,plural,3rd,,regular,\r\n,4th,passive,subjunctive,future,singular,1st,,,\r\n,4th,passive,subjunctive,future,singular,2nd,,,\r\n,4th,passive,subjunctive,future,singular,3rd,,,\r\n,4th,passive,subjunctive,future,plural,1st,,,\r\n,4th,passive,subjunctive,future,plural,2nd,,,\r\n,4th,passive,subjunctive,future,plural,3rd,,,\r\nātus sum,1st,passive,indicative,perfect,singular,1st,,regular,\r\nātus fui,1st,passive,indicative,perfect,singular,1st,,regular,\r\nātus es,1st,passive,indicative,perfect,singular,2nd,,regular,\r\nātus fuisti,1st,passive,indicative,perfect,singular,2nd,,regular,\r\nātus est,1st,passive,indicative,perfect,singular,3rd,,regular,\r\nātus fuit,1st,passive,indicative,perfect,singular,3rd,,regular,\r\nāti sumus,1st,passive,indicative,perfect,plural,1st,,regular,\r\nāti fuimus,1st,passive,indicative,perfect,plural,1st,,irregular,\r\nāti estis,1st,passive,indicative,perfect,plural,2nd,,regular,\r\nāti fuistis,1st,passive,indicative,perfect,plural,2nd,,irregular,\r\nāti sunt,1st,passive,indicative,perfect,plural,3rd,,regular,\r\nāti fuerunt,1st,passive,indicative,perfect,plural,3rd,,irregular,\r\nātus sim,1st,passive,subjunctive,perfect,singular,1st,,regular,\r\nātus fuerim,1st,passive,subjunctive,perfect,singular,1st,,irregular,\r\nātus sis,1st,passive,subjunctive,perfect,singular,2nd,,regular,\r\nātus fueris,1st,passive,subjunctive,perfect,singular,2nd,,irregular,\r\nātus sit,1st,passive,subjunctive,perfect,singular,3rd,,regular,\r\nātus fuerit,1st,passive,subjunctive,perfect,singular,3rd,,regular,\r\nāti sīmus,1st,passive,subjunctive,perfect,plural,1st,,regular,\r\nāti fuerimus,1st,passive,subjunctive,perfect,plural,1st,,irregular,\r\nāti sītis,1st,passive,subjunctive,perfect,plural,2nd,,regular,\r\nāti fueritis,1st,passive,subjunctive,perfect,plural,2nd,,irregular,\r\nāti sint,1st,passive,subjunctive,perfect,plural,3rd,,regular,\r\nāti fuerint,1st,passive,subjunctive,perfect,plural,3rd,,irregular,\r\nitus sum,2nd,passive,indicative,perfect,singular,1st,,regular,\r\nitus es,2nd,passive,indicative,perfect,singular,2nd,,regular,\r\nitus est,2nd,passive,indicative,perfect,singular,3rd,,regular,\r\nitī sumus,2nd,passive,indicative,perfect,plural,1st,,regular,\r\nitī estis,2nd,passive,indicative,perfect,plural,2nd,,regular,\r\nitī sunt,2nd,passive,indicative,perfect,plural,3rd,,regular,\r\nitus sim,2nd,passive,subjunctive,perfect,singular,1st,,regular,\r\nitus sīs,2nd,passive,subjunctive,perfect,singular,2nd,,regular,\r\nitus sit,2nd,passive,subjunctive,perfect,singular,3rd,,regular,\r\nitī sīmus,2nd,passive,subjunctive,perfect,plural,1st,,regular,\r\nitī sītis,2nd,passive,subjunctive,perfect,plural,2nd,,regular,\r\nitī sint,2nd,passive,subjunctive,perfect,plural,3rd,,regular,\r\nus sum,3rd,passive,indicative,perfect,singular,1st,,regular,\r\nus es,3rd,passive,indicative,perfect,singular,2nd,,regular,\r\nus est,3rd,passive,indicative,perfect,singular,3rd,,regular,\r\nī sumus,3rd,passive,indicative,perfect,plural,1st,,regular,\r\nī estis,3rd,passive,indicative,perfect,plural,2nd,,regular,\r\nī sunt,3rd,passive,indicative,perfect,plural,3rd,,regular,\r\nus sim,3rd,passive,subjunctive,perfect,singular,1st,,regular,\r\nus sīs,3rd,passive,subjunctive,perfect,singular,2nd,,regular,\r\nus sit,3rd,passive,subjunctive,perfect,singular,3rd,,regular,\r\nus sīmus,3rd,passive,subjunctive,perfect,plural,1st,,regular,\r\nus sītis,3rd,passive,subjunctive,perfect,plural,2nd,,regular,\r\nus sint,3rd,passive,subjunctive,perfect,plural,3rd,,regular,\r\nītus sum,4th,passive,indicative,perfect,singular,1st,,regular,\r\nītus es,4th,passive,indicative,perfect,singular,2nd,,regular,\r\nītus est,4th,passive,indicative,perfect,singular,3rd,,regular,\r\nītī sumus,4th,passive,indicative,perfect,plural,1st,,regular,\r\nīti estis,4th,passive,indicative,perfect,plural,2nd,,regular,\r\nīti sunt,4th,passive,indicative,perfect,plural,3rd,,regular,\r\nītus sim,4th,passive,subjunctive,perfect,singular,1st,,regular,\r\nītus sīs,4th,passive,subjunctive,perfect,singular,2nd,,regular,\r\nītus sit,4th,passive,subjunctive,perfect,singular,3rd,,regular,\r\nītī sīmus,4th,passive,subjunctive,perfect,plural,1st,,regular,\r\nīti sītis,4th,passive,subjunctive,perfect,plural,2nd,,regular,\r\nīti sint,4th,passive,subjunctive,perfect,plural,3rd,,regular,\r\nātus eram,1st,passive,indicative,pluperfect,singular,1st,,regular,\r\nātus fueram,1st,passive,indicative,pluperfect,singular,1st,,irregular,\r\nātus eras,1st,passive,indicative,pluperfect,singular,2nd,,regular,\r\nātus fueras,1st,passive,indicative,pluperfect,singular,2nd,,irregular,\r\nātus erat,1st,passive,indicative,pluperfect,singular,3rd,,regular,\r\nātus fuerat,1st,passive,indicative,pluperfect,singular,3rd,,irregular,\r\nātī erāmus,1st,passive,indicative,pluperfect,plural,1st,,regular,\r\nātī fueramus,1st,passive,indicative,pluperfect,plural,1st,,irregular,\r\nātī erātis,1st,passive,indicative,pluperfect,plural,2nd,,regular,\r\nātī fueratis,1st,passive,indicative,pluperfect,plural,2nd,,irregular,\r\nātī erant,1st,passive,indicative,pluperfect,plural,3rd,,regular,\r\nātī fuerant,1st,passive,indicative,pluperfect,plural,3rd,,irregular,\r\nātus essem,1st,passive,subjunctive,pluperfect,singular,1st,,regular,\r\nātus fuissem,1st,passive,subjunctive,pluperfect,singular,1st,,irregular,\r\nātus esses,1st,passive,subjunctive,pluperfect,singular,2nd,,regular,\r\nātus fuissēs,1st,passive,subjunctive,pluperfect,singular,2nd,,irregular,\r\nātus esset,1st,passive,subjunctive,pluperfect,singular,3rd,,regular,\r\nātus fuisset,1st,passive,subjunctive,pluperfect,singular,3rd,,irregular,\r\nāti essēmus,1st,passive,subjunctive,pluperfect,plural,1st,,regular,\r\nāti fuissēmus,1st,passive,subjunctive,pluperfect,plural,1st,,irregular,\r\nāti essētis,1st,passive,subjunctive,pluperfect,plural,2nd,,regular,\r\nāti fuissētis,1st,passive,subjunctive,pluperfect,plural,2nd,,regular,\r\nāti essent,1st,passive,subjunctive,pluperfect,plural,3rd,,regular,\r\nāti fuissent,1st,passive,subjunctive,pluperfect,plural,3rd,,regular,\r\nitus eram,2nd,passive,indicative,pluperfect,singular,1st,,regular,\r\nitus erās,2nd,passive,indicative,pluperfect,singular,2nd,,regular,\r\nitus erat,2nd,passive,indicative,pluperfect,singular,3rd,,regular,\r\nitī erāmus,2nd,passive,indicative,pluperfect,plural,1st,,regular,\r\nitī erātis,2nd,passive,indicative,pluperfect,plural,2nd,,regular,\r\nitī erant,2nd,passive,indicative,pluperfect,plural,3rd,,regular,\r\nitus essem,2nd,passive,subjunctive,pluperfect,singular,1st,,regular,\r\nitus essēs,2nd,passive,subjunctive,pluperfect,singular,2nd,,regular,\r\nitus esset,2nd,passive,subjunctive,pluperfect,singular,3rd,,regular,\r\nitī essēmus,2nd,passive,subjunctive,pluperfect,plural,1st,,regular,\r\nīti essētis,2nd,passive,subjunctive,pluperfect,plural,2nd,,regular,\r\nīti essent,2nd,passive,subjunctive,pluperfect,plural,3rd,,regular,\r\nus eram,3rd,passive,indicative,pluperfect,singular,1st,,regular,\r\nus erās,3rd,passive,indicative,pluperfect,singular,2nd,,regular,\r\nus erat,3rd,passive,indicative,pluperfect,singular,3rd,,regular,\r\nī erāmus,3rd,passive,indicative,pluperfect,plural,1st,,regular,\r\nī erātis,3rd,passive,indicative,pluperfect,plural,2nd,,regular,\r\nī erant,3rd,passive,indicative,pluperfect,plural,3rd,,regular,\r\nus essem,3rd,passive,subjunctive,pluperfect,singular,1st,,regular,\r\nus essēs,3rd,passive,subjunctive,pluperfect,singular,2nd,,regular,\r\nus esset,3rd,passive,subjunctive,pluperfect,singular,3rd,,regular,\r\nī essēmus,3rd,passive,subjunctive,pluperfect,plural,1st,,regular,\r\nī essētis,3rd,passive,subjunctive,pluperfect,plural,2nd,,regular,\r\nī essent,3rd,passive,subjunctive,pluperfect,plural,3rd,,regular,\r\nītus eram,4th,passive,indicative,pluperfect,singular,1st,,regular,\r\nītus erās,4th,passive,indicative,pluperfect,singular,2nd,,regular,\r\nītus erat,4th,passive,indicative,pluperfect,singular,3rd,,regular,\r\nītī erāmus,4th,passive,indicative,pluperfect,plural,1st,,regular,\r\nīti erātis,4th,passive,indicative,pluperfect,plural,2nd,,regular,\r\nītī erant,4th,passive,indicative,pluperfect,plural,3rd,,regular,\r\nītus essem,4th,passive,subjunctive,pluperfect,singular,1st,,regular,\r\nītus essēs,4th,passive,subjunctive,pluperfect,singular,2nd,,regular,\r\nītus esset,4th,passive,subjunctive,pluperfect,singular,3rd,,regular,\r\nītī essēmus,4th,passive,subjunctive,pluperfect,plural,1st,,regular,\r\nīti essētis,4th,passive,subjunctive,pluperfect,plural,2nd,,regular,\r\nīti essent,4th,passive,subjunctive,pluperfect,plural,3rd,,regular,\r\nātus erō,1st,passive,indicative,future_perfect,singular,1st,,regular,\r\nātus eris,1st,passive,indicative,future_perfect,singular,2nd,,regular,\r\nātus erit,1st,passive,indicative,future_perfect,singular,3rd,,regular,\r\nāti erimus,1st,passive,indicative,future_perfect,plural,1st,,regular,\r\nāti eritis,1st,passive,indicative,future_perfect,plural,2nd,,regular,\r\nāti erunt,1st,passive,indicative,future_perfect,plural,3rd,,regular,\r\n,1st,passive,subjunctive,future_perfect,singular,1st,,,\r\n,1st,passive,subjunctive,future_perfect,singular,2nd,,,\r\n,1st,passive,subjunctive,future_perfect,singular,3rd,,,\r\n,1st,passive,subjunctive,future_perfect,plural,1st,,,\r\n,1st,passive,subjunctive,future_perfect,plural,2nd,,,\r\n,1st,passive,subjunctive,future_perfect,plural,3rd,,,\r\nitus erō,2nd,passive,indicative,future_perfect,singular,1st,,regular,\r\nitus eris,2nd,passive,indicative,future_perfect,singular,2nd,,regular,\r\nitus erit,2nd,passive,indicative,future_perfect,singular,3rd,,regular,\r\nitī erimus,2nd,passive,indicative,future_perfect,plural,1st,,regular,\r\nitī eritis,2nd,passive,indicative,future_perfect,plural,2nd,,regular,\r\nitī erunt,2nd,passive,indicative,future_perfect,plural,3rd,,regular,\r\n,2nd,passive,subjunctive,future_perfect,singular,1st,,,\r\n,2nd,passive,subjunctive,future_perfect,singular,2nd,,,\r\n,2nd,passive,subjunctive,future_perfect,singular,3rd,,,\r\n,2nd,passive,subjunctive,future_perfect,plural,1st,,,\r\n,2nd,passive,subjunctive,future_perfect,plural,2nd,,,\r\n,2nd,passive,subjunctive,future_perfect,plural,3rd,,,\r\nus erō,3rd,passive,indicative,future_perfect,singular,1st,,regular,\r\nus eris,3rd,passive,indicative,future_perfect,singular,2nd,,regular,\r\nus erit,3rd,passive,indicative,future_perfect,singular,3rd,,regular,\r\nī erimus,3rd,passive,indicative,future_perfect,plural,1st,,regular,\r\nī eritis,3rd,passive,indicative,future_perfect,plural,2nd,,regular,\r\nī erunt,3rd,passive,indicative,future_perfect,plural,3rd,,regular,\r\n,3rd,passive,subjunctive,future_perfect,singular,1st,,,\r\n,3rd,passive,subjunctive,future_perfect,singular,2nd,,,\r\n,3rd,passive,subjunctive,future_perfect,singular,3rd,,,\r\n,3rd,passive,subjunctive,future_perfect,plural,1st,,,\r\n,3rd,passive,subjunctive,future_perfect,plural,2nd,,,\r\n,3rd,passive,subjunctive,future_perfect,plural,3rd,,,\r\nītus erō,4th,passive,indicative,future_perfect,singular,1st,,regular,\r\nītus eris,4th,passive,indicative,future_perfect,singular,2nd,,regular,\r\nītus erit,4th,passive,indicative,future_perfect,singular,3rd,,regular,\r\nītī erimus,4th,passive,indicative,future_perfect,plural,1st,,regular,\r\nītī eritis,4th,passive,indicative,future_perfect,plural,2nd,,regular,\r\nītī erunt,4th,passive,indicative,future_perfect,plural,3rd,,regular,\r\n,4th,passive,subjunctive,future_perfect,singular,1st,,,\r\n,4th,passive,subjunctive,future_perfect,singular,2nd,,,\r\n,4th,passive,subjunctive,future_perfect,singular,3rd,,,\r\n,4th,passive,subjunctive,future_perfect,plural,1st,,,\r\n,4th,passive,subjunctive,future_perfect,plural,2nd,,,\r\n,4th,passive,subjunctive,future_perfect,plural,3rd,,,\r\nā,1st,active,imperative,present,singular,2nd,,regular,3\r\nāte,1st,active,imperative,present,plural,2nd,,regular,\r\nāre,1st,passive,imperative,present,singular,2nd,,regular,\r\nāminī,1st,passive,imperative,present,plural,2nd,,regular,\r\nē,2nd,active,imperative,present,singular,2nd,,regular,3\r\nēte,2nd,active,imperative,present,plural,2nd,,regular,\r\nēre,2nd,passive,imperative,present,singular,2nd,,regular,\r\nēminī,2nd,passive,imperative,present,plural,2nd,,regular,\r\ne,3rd,active,imperative,present,singular,2nd,,regular,3\r\nīte,3rd,active,imperative,present,plural,2nd,,regular,\r\nere,3rd,passive,imperative,present,singular,2nd,,regular,\r\niminī,3rd,passive,imperative,present,plural,2nd,,regular,\r\nī,4th,active,imperative,present,singular,2nd,,regular,3\r\nīte,4th,active,imperative,present,plural,2nd,,regular,\r\nīre,4th,passive,imperative,present,singular,2nd,,regular,\r\nīminī,4th,passive,imperative,present,plural,2nd,,regular,\r\nātō,1st,active,imperative,future,singular,2nd,,regular,\r\nātō,1st,active,imperative,future,singular,3rd,,regular,\r\nātote,1st,active,imperative,future,plural,2nd,,regular,\r\nantō,1st,active,imperative,future,plural,3rd,,regular,\r\nātōr,1st,passive,imperative,future,singular,2nd,,regular,\r\n,1st,passive,imperative,future,singular,3rd,,,\r\nātor,1st,passive,imperative,future,plural,2nd,,regular,\r\namantor,1st,passive,imperative,future,plural,3rd,,regular,\r\nētō,2nd,active,imperative,future,singular,2nd,,regular,\r\nētō,2nd,active,imperative,future,singular,3rd,,regular,\r\nētōte,2nd,active,imperative,future,plural,2nd,,regular,\r\nentō,2nd,active,imperative,future,plural,3rd,,regular,\r\nētor,2nd,passive,imperative,future,singular,2nd,,regular,\r\n,2nd,passive,imperative,future,singular,3rd,,,\r\nētor,2nd,passive,imperative,future,plural,2nd,,regular,\r\nentor,2nd,passive,imperative,future,plural,3rd,,regular,\r\nitō,3rd,active,imperative,future,singular,2nd,,regular,\r\nitō,3rd,active,imperative,future,singular,3rd,,regular,\r\nitōte,3rd,active,imperative,future,plural,2nd,,regular,\r\nuntō,3rd,active,imperative,future,plural,3rd,,regular,\r\nitor,3rd,passive,imperative,future,singular,2nd,,regular,\r\n,3rd,passive,imperative,future,singular,3rd,,,\r\nitor,3rd,passive,imperative,future,plural,2nd,,regular,\r\nuntor,3rd,passive,imperative,future,plural,3rd,,regular,\r\nītō,4th,active,imperative,future,singular,2nd,,regular,\r\nītō,4th,active,imperative,future,singular,3rd,,regular,\r\nītōte,4th,active,imperative,future,plural,2nd,,regular,\r\niuntō,4th,active,imperative,future,plural,3rd,,regular,\r\nītor,4th,passive,imperative,future,singular,2nd,,regular,\r\n,4th,passive,imperative,future,singular,3rd,,,\r\nītor,4th,passive,imperative,future,plural,2nd,,regular,\r\niuntor,4th,passive,imperative,future,plural,3rd,,regular,\r\nāre,1st,active,infinitive,present,,,,regular,\r\nēre,2nd,active,infinitive,present,,,,regular,\r\nere,3rd,active,infinitive,present,,,,regular,\r\nīre,4th,active,infinitive,present,,,,regular,\r\nāvisse,1st,active,infinitive,perfect,,,,regular,\r\nvisse,2nd,active,infinitive,perfect,,,,regular,\r\nisse,3rd,active,infinitive,perfect,,,,regular,\r\nīvisse,4th,active,infinitive,perfect,,,,regular,\r\nāturus esse,1st,active,infinitive,future,,,,regular,\r\ntūrus esse,2nd,active,infinitive,future,,,,regular,\r\ntūrus esse,3rd,active,infinitive,future,,,,regular,\r\nītūrus esse,4th,active,infinitive,future,,,,regular,\r\nārī,1st,passive,infinitive,present,,,,regular,\r\nērī,2nd,passive,infinitive,present,,,,regular,\r\nī,3rd,passive,infinitive,present,,,,regular,\r\nīrī,4th,passive,infinitive,present,,,,regular,\r\nāus esse,1st,passive,infinitive,perfect,,,,regular,\r\nitus esse,2nd,passive,infinitive,perfect,,,,regular,\r\ntus esse,3rd,passive,infinitive,perfect,,,,regular,\r\nītus esse,4th,passive,infinitive,perfect,,,,regular,\r\nātum īrī,1st,passive,infinitive,future,,,,regular,\r\nitum īrī,2nd,passive,infinitive,future,,,,regular,\r\ntum īri,3rd,passive,infinitive,future,,,,regular,\r\nītum īrī,4th,passive,infinitive,future,,,,regular,\r\nandī,1st,active,gerundive,,,,genitive,regular,\r\nendī,2nd,active,gerundive,,,,genitive,regular,\r\nendī,3rd,active,gerundive,,,,genitive,regular,\r\niendī,4th,active,gerundive,,,,genitive,regular,\r\nandō,1st,active,gerundive,,,,dative,regular,\r\nendō,2nd,active,gerundive,,,,dative,regular,\r\nendō,3rd,active,gerundive,,,,dative,regular,\r\niendō,4th,active,gerundive,,,,dative,regular,\r\nandum,1st,active,gerundive,,,,accusative,regular,\r\nendum,2nd,active,gerundive,,,,accusative,regular,\r\nendum,3rd,active,gerundive,,,,accusative,regular,\r\niendum,4th,active,gerundive,,,,accusative,regular,\r\nandō,1st,active,gerundive,,,,ablative,regular,\r\nendō,2nd,active,gerundive,,,,ablative,regular,\r\nendō,3rd,active,gerundive,,,,ablative,regular,\r\niendō,4th,active,gerundive,,,,ablative,regular,\r\n,1st,passive,gerundive,,,,genitive,,\r\n,2nd,passive,gerundive,,,,genitive,,\r\n,3rd,passive,gerundive,,,,genitive,,\r\n,4th,passive,gerundive,,,,genitive,,\r\n,1st,passive,gerundive,,,,dative,,\r\n,2nd,passive,gerundive,,,,dative,,\r\n,3rd,passive,gerundive,,,,dative,,\r\n,4th,passive,gerundive,,,,dative,,\r\n,1st,passive,gerundive,,,,accusative,,\r\n,2nd,passive,gerundive,,,,accusative,,\r\n,3rd,passive,gerundive,,,,accusative,,\r\n,4th,passive,gerundive,,,,accusative,,\r\n,1st,passive,gerundive,,,,ablative,,\r\n,2nd,passive,gerundive,,,,ablative,,\r\n,3rd,passive,gerundive,,,,ablative,,\r\n,4th,passive,gerundive,,,,ablative,,\r\n";
 
@@ -32105,9 +32228,9 @@ var verbFormsCSV = "Lemma,PrincipalParts,Form,Voice,Mood,Tense,Number,Person,Foo
 
 var verbFormFootnotesCSV = "Index,Text\r\n1,Old forms.\r\n2,Alternate forms.\r\n3,\"The original forms of ferrem and ferre are fer-sēm and fer-se, respectively.\"\r\n4,Gerundive (Future Passive Participle)\r\n5,singular\r\n6,\"The verbs nōlō and malō are compounds of volo. They therefore attach nō- or mā- to the beginning of each verb, in place of vo- or vu-. Exceptions to this are found in the present tense: nōlō nōlumus mālō mālumus nōn vīs nōn vultis māvīs māvultis nōn vult nōlunt māvult mālunt In addition, nōlō is the only verb of the three that has present and future tense imperative forms of the verb: nōlī, nōlīte, and nōlītō, nōlītōte, respectively.\"\r\n7,An earlier form.\r\n8,\"The perfect passive participle ending will change according to its subject's gender, number and case. Endings shown here are the masculine, feminine and neuter nominative singular.\"\r\n9,A passive form of the verb that is used impersonally is itum est.\r\n10,\"While the perfect form of this verb is regular, ii usually contracts to i when it is followed by an s. Thus, īstī, īstis and īsse\"\r\n11,It is rare that the “v” appear as a form.\r\n12,Used by early writers.";
 
-var verbParticipleSuffixesCSV = "Ending,Conjugation,Voice,Mood,Tense,Number,Person,Case,Type,Footnote\r\nāns,1st,active,verb participle,present,,,,regular,\r\nantis,1st,active,verb participle,present,,,,irregular,\r\nēns,2nd,active,verb participle,present,,,,regular,\r\nventis,2nd,active,verb participle,present,,,,irregular,\r\nēns,3rd,active,verb participle,present,,,,regular,\r\nentis,3rd,active,verb participle,present,,,,irregular,\r\niēns,4th,active,verb participle,present,,,,regular,\r\nientis,4th,active,verb participle,present,,,,irregular,\r\n,1st,active,verb participle,perfect,,,,,\r\n,2nd,active,verb participle,perfect,,,,,\r\n,3rd,active,verb participle,perfect,,,,,\r\n,4th,active,verb participle,perfect,,,,,\r\nātūrus,1st,active,verb participle,future,,,,regular,\r\na,1st,active,verb participle,future,,,,irregular,\r\num,1st,active,verb participle,future,,,,irregular,\r\ntūrus,2nd,active,verb participle,future,,,,regular,\r\na,2nd,active,verb participle,future,,,,irregular,\r\num,2nd,active,verb participle,future,,,,irregular,\r\ntūrus,3rd,active,verb participle,future,,,,regular,\r\na,3rd,active,verb participle,future,,,,irregular,\r\num,3rd,active,verb participle,future,,,,irregular,\r\nītūrus esse,4th,active,verb participle,future,,,,regular,\r\n,1st,passive,verb participle,present,,,,,\r\n,2nd,passive,verb participle,present,,,,,\r\n,3rd,passive,verb participle,present,,,,,\r\n,4th,passive,verb participle,present,,,,,\r\nātus,1st,passive,verb participle,perfect,,,,regular,\r\na,1st,passive,verb participle,perfect,,,,irregular,\r\num,1st,passive,verb participle,perfect,,,,irregular,\r\nitus,2nd,passive,verb participle,perfect,,,,regular,\r\na,2nd,passive,verb participle,perfect,,,,irregular,\r\num,2nd,passive,verb participle,perfect,,,,irregular,\r\ntus,3rd,passive,verb participle,perfect,,,,regular,\r\na,3rd,passive,verb participle,perfect,,,,irregular,\r\num,3rd,passive,verb participle,perfect,,,,irregular,\r\nītus,4th,passive,verb participle,perfect,,,,regular,\r\na,4th,passive,verb participle,perfect,,,,irregular,\r\num,4th,passive,verb participle,perfect,,,,irregular,\r\nandus,1st,passive,verb participle,future,,,,regular,\r\na,1st,passive,verb participle,future,,,,irregular,\r\num,1st,passive,verb participle,future,,,,irregular,\r\nendus,2nd,passive,verb participle,future,,,,regular,\r\na,2nd,passive,verb participle,future,,,,irregular,\r\num,2nd,passive,verb participle,future,,,,irregular,\r\nendus,3rd,passive,verb participle,future,,,,regular,\r\niendus,4th,passive,verb participle,future,,,,regular,\r\na,4th,passive,verb participle,future,,,,irregular,\r\num,4th,passive,verb participle,future,,,,irregular,\r\n";
+var verbParticipleSuffixesCSV = "Ending,Conjugation,Voice,Mood,Tense,Number,Person,Case,Type,Footnote\nāns,1st,active,verb participle,present,,,,regular,\nantis,1st,active,verb participle,present,,,,irregular,\nēns,2nd,active,verb participle,present,,,,regular,\nventis,2nd,active,verb participle,present,,,,irregular,\nēns,3rd,active,verb participle,present,,,,regular,\nentis,3rd,active,verb participle,present,,,,irregular,\niēns,4th,active,verb participle,present,,,,regular,\nientis,4th,active,verb participle,present,,,,irregular,\n,1st,active,verb participle,perfect,,,,,\n,2nd,active,verb participle,perfect,,,,,\n,3rd,active,verb participle,perfect,,,,,\n,4th,active,verb participle,perfect,,,,,\nātūrus,1st,active,verb participle,future,,,,regular,\na,1st,active,verb participle,future,,,,irregular,\num,1st,active,verb participle,future,,,,irregular,\ntūrus,2nd,active,verb participle,future,,,,regular,\na,2nd,active,verb participle,future,,,,irregular,\num,2nd,active,verb participle,future,,,,irregular,\ntūrus,3rd,active,verb participle,future,,,,regular,\na,3rd,active,verb participle,future,,,,irregular,\num,3rd,active,verb participle,future,,,,irregular,\nītūrus esse,4th,active,verb participle,future,,,,regular,\n,1st,passive,verb participle,present,,,,,\n,2nd,passive,verb participle,present,,,,,\n,3rd,passive,verb participle,present,,,,,\n,4th,passive,verb participle,present,,,,,\nātus,1st,passive,verb participle,perfect,,,,regular,\na,1st,passive,verb participle,perfect,,,,irregular,\num,1st,passive,verb participle,perfect,,,,irregular,\nitus,2nd,passive,verb participle,perfect,,,,regular,\na,2nd,passive,verb participle,perfect,,,,irregular,\num,2nd,passive,verb participle,perfect,,,,irregular,\ntus,3rd,passive,verb participle,perfect,,,,regular,\na,3rd,passive,verb participle,perfect,,,,irregular,\num,3rd,passive,verb participle,perfect,,,,irregular,\nītus,4th,passive,verb participle,perfect,,,,regular,\na,4th,passive,verb participle,perfect,,,,irregular,\num,4th,passive,verb participle,perfect,,,,irregular,\nandus,1st,passive,verb participle,future,,,,regular,\na,1st,passive,verb participle,future,,,,irregular,\num,1st,passive,verb participle,future,,,,irregular,\nendus,2nd,passive,verb participle,future,,,,regular,\na,2nd,passive,verb participle,future,,,,irregular,\num,2nd,passive,verb participle,future,,,,irregular,\nendus,3rd,passive,verb participle,future,,,,regular,\niendus,4th,passive,verb participle,future,,,,regular,\na,4th,passive,verb participle,future,,,,irregular,\num,4th,passive,verb participle,future,,,,irregular,\n";
 
-var verbSupineSuffixesCSV = "Ending,Conjugation,Voice,Mood,Tense,Number,Person,Case,Type,Footnote\r\nātum,1st,active,supine,,,,accusative,regular,\r\nitum,2nd,active,supine,,,,accusative,regular,\r\ntum,3rd,active,supine,,,,accusative,regular,\r\nītum,4th,active,supine,,,,accusative,regular,\r\nātū,1st,active,supine,,,,ablative,regular,\r\nitū,2nd,active,supine,,,,ablative,regular,\r\ntū,3rd,active,supine,,,,ablative,regular,\r\nītū,4th,active,supine,,,,ablative,regular,\r\n,1st,passive,supine,,,,accusative,,\r\n,2nd,passive,supine,,,,accusative,,\r\n,3rd,passive,supine,,,,accusative,,\r\n,4th,passive,supine,,,,accusative,,\r\n,1st,passive,supine,,,,ablative,,\r\n,2nd,passive,supine,,,,ablative,,\r\n,3rd,passive,supine,,,,ablative,,\r\n,4th,passive,supine,,,,ablative,,\r\n";
+var verbSupineSuffixesCSV = "Ending,Conjugation,Voice,Mood,Tense,Number,Person,Case,Type,Footnote\nātum,1st,active,supine,,,,accusative,regular,\nitum,2nd,active,supine,,,,accusative,regular,\ntum,3rd,active,supine,,,,accusative,regular,\nītum,4th,active,supine,,,,accusative,regular,\nātū,1st,active,supine,,,,ablative,regular,\nitū,2nd,active,supine,,,,ablative,regular,\ntū,3rd,active,supine,,,,ablative,regular,\nītū,4th,active,supine,,,,ablative,regular,\n,1st,passive,supine,,,,accusative,,\n,2nd,passive,supine,,,,accusative,,\n,3rd,passive,supine,,,,accusative,,\n,4th,passive,supine,,,,accusative,,\n,1st,passive,supine,,,,ablative,,\n,2nd,passive,supine,,,,ablative,,\n,3rd,passive,supine,,,,ablative,,\n,4th,passive,supine,,,,ablative,,\n";
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
@@ -34146,9 +34269,9 @@ class ExtendedGreekData extends ExtendedLanguageData {
   }
 }
 
-var nounSuffixesCSV$1 = "Ending,Number,Case,Declension,Gender,Type,Primary,Footnote\r\nα,dual,accusative,1st,feminine,regular,primary,\r\nά,dual,accusative,1st,feminine,regular,,\r\nᾶ,dual,accusative,1st,feminine,regular,,2\r\nαιν,dual,dative,1st,feminine,regular,primary,\r\nαῖν,dual,dative,1st,feminine,regular,,\r\nαιιν,dual,dative,1st,feminine,irregular,,\r\nαιν,dual,genitive,1st,feminine,regular,primary,\r\nαῖν,dual,genitive,1st,feminine,regular,,\r\nαιιν,dual,genitive,1st,feminine,irregular,,\r\nα,dual,nominative,1st,feminine,regular,primary,\r\nά,dual,nominative,1st,feminine,regular,,\r\nᾶ,dual,nominative,1st,feminine,regular,,2\r\nα,dual,vocative,1st,feminine,regular,primary,\r\nά,dual,vocative,1st,feminine,regular,,\r\nᾶ,dual,vocative,1st,feminine,regular,,2\r\nα,dual,accusative,1st,masculine,regular,primary,\r\nά,dual,accusative,1st,masculine,regular,,\r\nᾶ,dual,accusative,1st,masculine,regular,,2\r\nαιν,dual,dative,1st,masculine,regular,primary,\r\nαῖν,dual,dative,1st,masculine,regular,,\r\nαιιν,dual,dative,1st,masculine,irregular,,\r\nαιν,dual,genitive,1st,masculine,regular,primary,\r\nαῖν,dual,genitive,1st,masculine,regular,,\r\nαιιν,dual,genitive,1st,masculine,irregular,,\r\nα,dual,nominative,1st,masculine,regular,primary,\r\nά,dual,nominative,1st,masculine,regular,,\r\nᾶ,dual,nominative,1st,masculine,regular,,2\r\nα,dual,vocative,1st,masculine,regular,primary,\r\nά,dual,vocative,1st,masculine,regular,,\r\nᾶ,dual,vocative,1st,masculine,regular,,2\r\nας,plural,accusative,1st,feminine,regular,primary,\r\nάς,plural,accusative,1st,feminine,regular,,\r\nᾶς,plural,accusative,1st,feminine,regular,,2\r\nανς,plural,accusative,1st,feminine,irregular,,\r\nαις,plural,accusative,1st,feminine,irregular,,\r\nαις,plural,dative,1st,feminine,regular,primary,\r\nαῖς,plural,dative,1st,feminine,regular,,\r\nῃσι,plural,dative,1st,feminine,irregular,,44\r\nῃσιν,plural,dative,1st,feminine,irregular,,4 44\r\nῃς,plural,dative,1st,feminine,irregular,,44\r\nαισι,plural,dative,1st,feminine,irregular,,44\r\nαισιν,plural,dative,1st,feminine,irregular,,4 44\r\nῶν,plural,genitive,1st,feminine,regular,primary,\r\nάων,plural,genitive,1st,feminine,irregular,,\r\nέων,plural,genitive,1st,feminine,irregular,,\r\nήων,plural,genitive,1st,feminine,irregular,,\r\nᾶν,plural,genitive,1st,feminine,irregular,,\r\nαι,plural,nominative,1st,feminine,regular,primary,\r\nαί,plural,nominative,1st,feminine,regular,,\r\nαῖ,plural,nominative,1st,feminine,regular,,2\r\nαι,plural,vocative,1st,feminine,regular,primary,\r\nαί,plural,vocative,1st,feminine,regular,,\r\nαῖ,plural,vocative,1st,feminine,regular,,2\r\nας,plural,accusative,1st,masculine,regular,primary,\r\nάς,plural,accusative,1st,masculine,regular,,\r\nᾶς,plural,accusative,1st,masculine,regular,,3\r\nανς,plural,accusative,1st,masculine,irregular,,\r\nαις,plural,accusative,1st,masculine,irregular,,\r\nαις,plural,dative,1st,masculine,regular,primary,\r\nαῖς,plural,dative,1st,masculine,regular,,\r\nῃσι,plural,dative,1st,masculine,irregular,,44\r\nῃσιν,plural,dative,1st,masculine,irregular,,4 44\r\nῃς,plural,dative,1st,masculine,irregular,,44\r\nαισι,plural,dative,1st,masculine,irregular,,44\r\nαισιν,plural,dative,1st,masculine,irregular,,4 44\r\nῶν,plural,genitive,1st,masculine,regular,primary,\r\nάων,plural,genitive,1st,masculine,irregular,,\r\nέων,plural,genitive,1st,masculine,irregular,,\r\nήων,plural,genitive,1st,masculine,irregular,,\r\nᾶν,plural,genitive,1st,masculine,irregular,,\r\nαι,plural,nominative,1st,masculine,regular,primary,\r\nαί,plural,nominative,1st,masculine,regular,,\r\nαῖ,plural,nominative,1st,masculine,regular,,3\r\nαι,plural,vocative,1st,masculine,regular,primary,\r\nαί,plural,vocative,1st,masculine,regular,,\r\nαῖ,plural,vocative,1st,masculine,regular,,3\r\nαν,singular,accusative,1st,feminine,regular,primary,\r\nην,singular,accusative,1st,feminine,regular,primary,\r\nήν,singular,accusative,1st,feminine,regular,,\r\nᾶν,singular,accusative,1st,feminine,regular,,2\r\nῆν,singular,accusative,1st,feminine,regular,,2\r\nάν,singular,accusative,1st,feminine,irregular,,63\r\nᾳ,singular,dative,1st,feminine,regular,primary,\r\nῃ,singular,dative,1st,feminine,regular,primary,\r\nῇ,singular,dative,1st,feminine,regular,,2\r\nᾷ,singular,dative,1st,feminine,regular,,2\r\nηφι,singular,dative,1st,feminine,irregular,,45\r\nηφιν,singular,dative,1st,feminine,irregular,,4 45\r\nῆφι,singular,dative,1st,feminine,irregular,,45\r\nῆφιv,singular,dative,1st,feminine,irregular,,4 45\r\nας,singular,genitive,1st,feminine,regular,primary,\r\nης,singular,genitive,1st,feminine,regular,primary,\r\nῆs,singular,genitive,1st,feminine,regular,,\r\nᾶs,singular,genitive,1st,feminine,regular,,2\r\nηφι,singular,genitive,1st,feminine,irregular,,45\r\nηφιν,singular,genitive,1st,feminine,irregular,,4 45\r\nῆφι,singular,genitive,1st,feminine,irregular,,45\r\nῆφιv,singular,genitive,1st,feminine,irregular,,4 45\r\nα,singular,nominative,1st,feminine,regular,primary,\r\nη,singular,nominative,1st,feminine,regular,primary,1\r\nή,singular,nominative,1st,feminine,regular,,\r\nᾶ,singular,nominative,1st,feminine,regular,,2\r\nῆ,singular,nominative,1st,feminine,regular,,2\r\nά,singular,nominative,1st,feminine,irregular,,63\r\nα,singular,vocative,1st,feminine,regular,primary,\r\nη,singular,vocative,1st,feminine,regular,primary,\r\nή,singular,vocative,1st,feminine,regular,,\r\nᾶ,singular,vocative,1st,feminine,regular,,2\r\nῆ,singular,vocative,1st,feminine,regular,,2\r\nά,singular,vocative,1st,feminine,irregular,,63\r\nαν,singular,accusative,1st,masculine,regular,primary,\r\nην,singular,accusative,1st,masculine,regular,primary,3\r\nήν,singular,accusative,1st,masculine,regular,,\r\nᾶν,singular,accusative,1st,masculine,regular,,3\r\nῆν,singular,accusative,1st,masculine,regular,,3\r\nεα,singular,accusative,1st,masculine,irregular,,\r\nᾳ,singular,dative,1st,masculine,regular,primary,\r\nῃ,singular,dative,1st,masculine,regular,primary,\r\nῇ,singular,dative,1st,masculine,regular,,\r\nᾷ,singular,dative,1st,masculine,regular,,3\r\nῆ,singular,dative,1st,masculine,regular,,3\r\nηφι,singular,dative,1st,masculine,irregular,,45\r\nηφιν,singular,dative,1st,masculine,irregular,,4 45\r\nῆφι,singular,dative,1st,masculine,irregular,,45\r\nῆφιv,singular,dative,1st,masculine,irregular,,4 45\r\nου,singular,genitive,1st,masculine,regular,primary,\r\nοῦ,singular,genitive,1st,masculine,regular,,\r\nαο,singular,genitive,1st,masculine,irregular,,\r\nεω,singular,genitive,1st,masculine,irregular,,\r\nηφι,singular,genitive,1st,masculine,irregular,,45\r\nηφιν,singular,genitive,1st,masculine,irregular,,4 45\r\nῆφι,singular,genitive,1st,masculine,irregular,,45\r\nῆφιv,singular,genitive,1st,masculine,irregular,,4 45\r\nω,singular,genitive,1st,masculine,irregular,,\r\nα,singular,genitive,1st,masculine,irregular,,\r\nας,singular,nominative,1st,masculine,regular,primary,\r\nης,singular,nominative,1st,masculine,regular,primary,\r\nής,singular,nominative,1st,masculine,regular,,\r\nᾶs,singular,nominative,1st,masculine,regular,,3\r\nῆs,singular,nominative,1st,masculine,regular,,3\r\nα,singular,vocative,1st,masculine,regular,primary,\r\nη,singular,vocative,1st,masculine,regular,primary,\r\nά,singular,vocative,1st,masculine,regular,,\r\nᾶ,singular,vocative,1st,masculine,regular,,3\r\nῆ,singular,vocative,1st,masculine,regular,,3\r\nω,dual,accusative,2nd,masculine feminine,regular,primary,\r\nώ,dual,accusative,2nd,masculine feminine,regular,,5\r\nοιν,dual,dative,2nd,masculine feminine,regular,primary,\r\nοῖν,dual,dative,2nd,masculine feminine,regular,,5\r\nοιιν,dual,dative,2nd,masculine feminine,irregular,,\r\nῴν,dual,dative,2nd,masculine feminine,irregular,,7\r\nοιν,dual,genitive,2nd,masculine feminine,regular,primary,\r\nοῖν,dual,genitive,2nd,masculine feminine,regular,,5\r\nοιιν,dual,genitive,2nd,masculine feminine,irregular,,\r\nῴν,dual,genitive,2nd,masculine feminine,irregular,,7\r\nω,dual,nominative,2nd,masculine feminine,regular,primary,60\r\nώ,dual,nominative,2nd,masculine feminine,regular,,60\r\nω,dual,vocative,2nd,masculine feminine,regular,primary,\r\nώ,dual,vocative,2nd,masculine feminine,regular,,5\r\nω,dual,accusative,2nd,neuter,regular,primary,\r\nώ,dual,accusative,2nd,neuter,regular,,6\r\nοιν,dual,dative,2nd,neuter,regular,primary,\r\nοῖν,dual,dative,2nd,neuter,regular,,6\r\nοιιν,dual,dative,2nd,neuter,irregular,,\r\nοιν,dual,genitive,2nd,neuter,regular,primary,\r\nοῖν,dual,genitive,2nd,neuter,regular,,6\r\nοιιν,dual,genitive,2nd,neuter,irregular,,\r\nω,dual,nominative,2nd,neuter,regular,primary,\r\nώ,dual,nominative,2nd,neuter,regular,,6\r\nω,dual,vocative,2nd,neuter,regular,primary,\r\nώ,dual,vocative,2nd,neuter,regular,,6\r\nους,plural,accusative,2nd,masculine feminine,regular,primary,\r\nούς,plural,accusative,2nd,masculine feminine,regular,,41\r\nοῦς,plural,accusative,2nd,masculine feminine,regular,,5\r\nονς,plural,accusative,2nd,masculine feminine,irregular,,\r\nος,plural,accusative,2nd,masculine feminine,irregular,,\r\nως,plural,accusative,2nd,masculine feminine,irregular,,\r\nοις,plural,accusative,2nd,masculine feminine,irregular,,\r\nώς,plural,accusative,2nd,masculine feminine,irregular,,7\r\nοις,plural,dative,2nd,masculine feminine,regular,primary,\r\nοῖς,plural,dative,2nd,masculine feminine,regular,,5\r\nοισι,plural,dative,2nd,masculine feminine,irregular,,\r\nοισιν,plural,dative,2nd,masculine feminine,irregular,,4\r\nῴς,plural,dative,2nd,masculine feminine,irregular,,7\r\nόφι,plural,dative,2nd,masculine feminine,irregular,,45\r\nόφιv,plural,dative,2nd,masculine feminine,irregular,,4 45\r\nων,plural,genitive,2nd,masculine feminine,regular,primary,\r\nῶν,plural,genitive,2nd,masculine feminine,regular,,5\r\nών,plural,genitive,2nd,masculine feminine,irregular,,7\r\nόφι,plural,genitive,2nd,masculine feminine,irregular,,45\r\nόφιv,plural,genitive,2nd,masculine feminine,irregular,,4 45\r\nοι,plural,nominative,2nd,masculine feminine,regular,primary,\r\nοί,plural,nominative,2nd,masculine feminine,regular,,41\r\nοῖ,plural,nominative,2nd,masculine feminine,regular,,5\r\nῴ,plural,nominative,2nd,masculine feminine,irregular,,7\r\nοι,plural,vocative,2nd,masculine feminine,regular,primary,\r\nοί,plural,vocative,2nd,masculine feminine,regular,,41\r\nοῖ,plural,vocative,2nd,masculine feminine,regular,,5\r\nα,plural,accusative,2nd,neuter,regular,primary,\r\nᾶ,plural,accusative,2nd,neuter,regular,,6\r\nοις,plural,dative,2nd,neuter,regular,primary,\r\nοῖς,plural,dative,2nd,neuter,regular,,6\r\nοισι,plural,dative,2nd,neuter,irregular,,\r\nοισιν,plural,dative,2nd,neuter,irregular,,4\r\nόφι,plural,dative,2nd,neuter,irregular,,45\r\nόφιv,plural,dative,2nd,neuter,irregular,,4 45\r\nων,plural,genitive,2nd,neuter,regular,primary,\r\nῶν,plural,genitive,2nd,neuter,regular,,6\r\nόφι,plural,genitive,2nd,neuter,irregular,,45\r\nόφιv,plural,genitive,2nd,neuter,irregular,,4 45\r\nα,plural,nominative,2nd,neuter,regular,primary,\r\nᾶ,plural,nominative,2nd,neuter,regular,,6\r\nα,plural,vocative,2nd,neuter,regular,primary,\r\nᾶ,plural,vocative,2nd,neuter,regular,,6\r\nον,singular,accusative,2nd,masculine feminine,regular,primary,\r\nόν,singular,accusative,2nd,masculine feminine,regular,primary,41\r\nουν,singular,accusative,2nd,masculine feminine,regular,,5\r\nοῦν,singular,accusative,2nd,masculine feminine,regular,,5\r\nω,singular,accusative,2nd,masculine feminine,irregular,,7 5\r\nωv,singular,accusative,2nd,masculine feminine,irregular,,7 59\r\nώ,singular,accusative,2nd,masculine feminine,irregular,,7 42 59\r\nών,singular,accusative,2nd,masculine feminine,irregular,,7 59\r\nῳ,singular,dative,2nd,masculine feminine,regular,primary,\r\nῷ,singular,dative,2nd,masculine feminine,regular,,5\r\nῴ,singular,dative,2nd,masculine feminine,irregular,,7\r\nόφι,singular,dative,2nd,masculine feminine,irregular,,45\r\nόφιv,singular,dative,2nd,masculine feminine,irregular,,4 45\r\nου,singular,genitive,2nd,masculine feminine,regular,primary,\r\nοῦ,singular,genitive,2nd,masculine feminine,regular,,5\r\nοιο,singular,genitive,2nd,masculine feminine,irregular,,\r\nοο,singular,genitive,2nd,masculine feminine,irregular,,\r\nω,singular,genitive,2nd,masculine feminine,irregular,,\r\nώ,singular,genitive,2nd,masculine feminine,irregular,,7\r\nόφι,singular,genitive,2nd,masculine feminine,irregular,,45\r\nόφιv,singular,genitive,2nd,masculine feminine,irregular,,4 45\r\nος,singular,nominative,2nd,masculine feminine,regular,primary,\r\nους,singular,nominative,2nd,masculine feminine,regular,,5\r\noῦς,singular,nominative,2nd,masculine feminine,regular,,5\r\nός,singular,nominative,2nd,masculine feminine,regular,,\r\nώς,singular,nominative,2nd,masculine feminine,irregular,,7 42\r\nως,singular,nominative,2nd,masculine feminine,irregular,,\r\nε,singular,vocative,2nd,masculine feminine,regular,primary,\r\nέ,singular,vocative,2nd,masculine feminine,regular,,\r\nοu,singular,vocative,2nd,masculine feminine,regular,,5\r\nοῦ,singular,vocative,2nd,masculine feminine,regular,,42\r\nός,singular,vocative,2nd,masculine feminine,irregular,,57\r\nον,singular,accusative,2nd,neuter,regular,primary,\r\nοῦν,singular,accusative,2nd,neuter,regular,,6\r\nῳ,singular,dative,2nd,neuter,regular,primary,\r\nῷ,singular,dative,2nd,neuter,regular,,6\r\nόφι,singular,dative,2nd,neuter,irregular,,45\r\nόφιv,singular,dative,2nd,neuter,irregular,,4 45\r\nου,singular,genitive,2nd,neuter,regular,primary,\r\nοῦ,singular,genitive,2nd,neuter,regular,,6\r\nοο,singular,genitive,2nd,neuter,irregular,,\r\nοιο,singular,genitive,2nd,neuter,irregular,,\r\nω,singular,genitive,2nd,neuter,irregular,,\r\nόφι,singular,genitive,2nd,neuter,irregular,,45\r\nόφιv,singular,genitive,2nd,neuter,irregular,,4 45\r\nον,singular,nominative,2nd,neuter,regular,primary,\r\nοῦν,singular,nominative,2nd,neuter,regular,,6\r\nον,singular,vocative,2nd,neuter,regular,primary,\r\nοῦν,singular,vocative,2nd,neuter,regular,,6\r\nε,dual,accusative,3rd,masculine feminine,regular,primary,\r\nει,dual,accusative,3rd,masculine feminine,regular,,\r\nῆ,dual,accusative,3rd,masculine feminine,regular,,18\r\nω,dual,accusative,3rd,masculine feminine,irregular,,32\r\nῖ,dual,accusative,3rd,masculine feminine,irregular,,33\r\nεε,dual,accusative,3rd,masculine feminine,irregular,,16 55 61\r\nοιν,dual,dative,3rd,masculine feminine,regular,primary,\r\nοῖν,dual,dative,3rd,masculine feminine,regular,,\r\nοιιν,dual,dative,3rd,masculine feminine,irregular,,54\r\nσι,dual,dative,3rd,masculine feminine,irregular,,33 37\r\nεσσι,dual,dative,3rd,masculine feminine,irregular,,33\r\nεσι,dual,dative,3rd,masculine feminine,irregular,,33\r\nέοιν,dual,dative,3rd,masculine feminine,irregular,,16 61\r\nῳν,dual,dative,3rd,masculine feminine,irregular,,49\r\nοιν,dual,genitive,3rd,masculine feminine,regular,primary,\r\nοῖν,dual,genitive,3rd,masculine feminine,regular,,\r\nοιιν,dual,genitive,3rd,masculine feminine,irregular,,54\r\nέοιν,dual,genitive,3rd,masculine feminine,irregular,,16 61\r\nῳν,dual,genitive,3rd,masculine feminine,irregular,,49\r\nε,dual,nominative,3rd,masculine feminine,regular,primary,\r\nει,dual,nominative,3rd,masculine feminine,regular,,\r\nῆ,dual,nominative,3rd,masculine feminine,regular,,18\r\nω,dual,nominative,3rd,masculine feminine,irregular,,32\r\nῖ,dual,nominative,3rd,masculine feminine,irregular,,33\r\nεε,dual,nominative,3rd,masculine feminine,irregular,,16 55 61\r\nε,dual,vocative,3rd,masculine feminine,regular,primary,\r\nει,dual,vocative,3rd,masculine feminine,regular,,\r\nῆ,dual,vocative,3rd,masculine feminine,regular,,18\r\nω,dual,vocative,3rd,masculine feminine,irregular,,32\r\nῖ,dual,vocative,3rd,masculine feminine,irregular,,33\r\nεε,dual,vocative,3rd,masculine feminine,irregular,,16 55 61\r\nε,dual,accusative,3rd,neuter,regular,primary,\r\nει,dual,accusative,3rd,neuter,regular,,\r\nα,dual,accusative,3rd,neuter,regular,,\r\nεε,dual,accusative,3rd,neuter,irregular,,16 61\r\nαε,dual,accusative,3rd,neuter,irregular,,16 61\r\nοιν,dual,dative,3rd,neuter,regular,primary,\r\nῷν,dual,dative,3rd,neuter,regular,,\r\nοις,dual,dative,3rd,neuter,irregular,,33 38\r\nοισι,dual,dative,3rd,neuter,irregular,,33 38\r\nοισι(ν),dual,dative,3rd,neuter,irregular,,4 33 38\r\nοιιν,dual,dative,3rd,neuter,irregular,,\r\nέοιν,dual,dative,3rd,neuter,irregular,,16 61\r\nάοιν,dual,dative,3rd,neuter,irregular,,16 61\r\nοιν,dual,genitive,3rd,neuter,regular,primary,\r\nῷν,dual,genitive,3rd,neuter,regular,,\r\nων,dual,genitive,3rd,neuter,irregular,,33 38\r\nοιιν,dual,genitive,3rd,neuter,irregular,,\r\nέοιν,dual,genitive,3rd,neuter,irregular,,16 61\r\nάοιν,dual,genitive,3rd,neuter,irregular,,16 61\r\nε,dual,nominative,3rd,neuter,regular,primary,\r\nει,dual,nominative,3rd,neuter,regular,,\r\nα,dual,nominative,3rd,neuter,regular,,\r\nεε,dual,nominative,3rd,neuter,irregular,,16 61\r\nαε,dual,nominative,3rd,neuter,irregular,,16 61\r\nε,dual,vocative,3rd,neuter,regular,primary,\r\nει,dual,vocative,3rd,neuter,regular,,\r\nα,dual,vocative,3rd,neuter,regular,,\r\nεε,dual,vocative,3rd,neuter,irregular,,16 61\r\nαε,dual,vocative,3rd,neuter,irregular,,16 61\r\nας,plural,accusative,3rd,masculine feminine,regular,primary,\r\nεις,plural,accusative,3rd,masculine feminine,regular,,17 41\r\nες,plural,accusative,3rd,masculine feminine,regular,,\r\nς,plural,accusative,3rd,masculine feminine,regular,,\r\nῦς,plural,accusative,3rd,masculine feminine,regular,,17 18 48\r\nως,plural,accusative,3rd,masculine feminine,regular,,30\r\nῆς,plural,accusative,3rd,masculine feminine,irregular,,56\r\nέας,plural,accusative,3rd,masculine feminine,irregular,,\r\nέος,plural,accusative,3rd,masculine feminine,irregular,,\r\nῆος,plural,accusative,3rd,masculine feminine,irregular,,\r\nῆες,plural,accusative,3rd,masculine feminine,irregular,,\r\nῆας,plural,accusative,3rd,masculine feminine,irregular,,\r\nους,plural,accusative,3rd,masculine feminine,irregular,,32\r\nούς,plural,accusative,3rd,masculine feminine,irregular,,32\r\nεῖς,plural,accusative,3rd,masculine feminine,irregular,,31 41\r\nεες,plural,accusative,3rd,masculine feminine,irregular,,55 61\r\nις,plural,accusative,3rd,masculine feminine,irregular,,\r\nινς,plural,accusative,3rd,masculine feminine,irregular,,\r\nῶς,plural,accusative,3rd,masculine feminine,irregular,,48\r\nσι,plural,dative,3rd,masculine feminine,regular,primary,\r\nσιν,plural,dative,3rd,masculine feminine,regular,primary,4\r\nσί,plural,dative,3rd,masculine feminine,regular,,41\r\nσίν,plural,dative,3rd,masculine feminine,regular,,4 41\r\nεσι,plural,dative,3rd,masculine feminine,regular,,41\r\nεσιν,plural,dative,3rd,masculine feminine,regular,,4 41\r\nέσι,plural,dative,3rd,masculine feminine,regular,,\r\nέσιν,plural,dative,3rd,masculine feminine,regular,,4\r\nψι,plural,dative,3rd,masculine feminine,regular,,\r\nψιν,plural,dative,3rd,masculine feminine,regular,,4\r\nψί,plural,dative,3rd,masculine feminine,regular,,\r\nψίν,plural,dative,3rd,masculine feminine,regular,,4\r\nξι,plural,dative,3rd,masculine feminine,regular,,\r\nξιν,plural,dative,3rd,masculine feminine,regular,,4\r\nξί,plural,dative,3rd,masculine feminine,regular,,\r\nξίν,plural,dative,3rd,masculine feminine,regular,,4\r\nφι,plural,dative,3rd,masculine feminine,irregular,,45\r\nφιν,plural,dative,3rd,masculine feminine,irregular,,4 45\r\nηφι,plural,dative,3rd,masculine feminine,irregular,,45\r\nηφιv,plural,dative,3rd,masculine feminine,irregular,,4 45\r\nῆφι,plural,dative,3rd,masculine feminine,irregular,,45\r\nῆφιν,plural,dative,3rd,masculine feminine,irregular,,4 45\r\nόφι,plural,dative,3rd,masculine feminine,irregular,,45\r\nόφιν,plural,dative,3rd,masculine feminine,irregular,,4 45\r\nαις,plural,dative,3rd,masculine feminine,irregular,,33 41\r\nοῖσι,plural,dative,3rd,masculine feminine,irregular,,33\r\nοῖσιv,plural,dative,3rd,masculine feminine,irregular,,4 33\r\nεσσι,plural,dative,3rd,masculine feminine,irregular,,16 61\r\nεσσιv,plural,dative,3rd,masculine feminine,irregular,,4 16 61\r\nυσσι,plural,dative,3rd,masculine feminine,irregular,,54\r\nυσσιv,plural,dative,3rd,masculine feminine,irregular,,4 54\r\nσσί,plural,dative,3rd,masculine feminine,irregular,,54\r\nσσίv,plural,dative,3rd,masculine feminine,irregular,,4 54\r\nων,plural,genitive,3rd,masculine feminine,regular,primary,\r\nῶν,plural,genitive,3rd,masculine feminine,regular,,\r\n-,plural,genitive,3rd,masculine feminine,irregular,,41\r\nφι,plural,genitive,3rd,masculine feminine,irregular,,45\r\nφιν,plural,genitive,3rd,masculine feminine,irregular,,4 45\r\nηφι,plural,genitive,3rd,masculine feminine,irregular,,45\r\nηφιv,plural,genitive,3rd,masculine feminine,irregular,,4 45\r\nῆφι,plural,genitive,3rd,masculine feminine,irregular,,45\r\nῆφιν,plural,genitive,3rd,masculine feminine,irregular,,4 45\r\nόφι,plural,genitive,3rd,masculine feminine,irregular,,45\r\nόφιν,plural,genitive,3rd,masculine feminine,irregular,,4 45\r\nέων,plural,genitive,3rd,masculine feminine,irregular,,16 61\r\nες,plural,nominative,3rd,masculine feminine,regular,primary,\r\nως,plural,nominative,3rd,masculine feminine,regular,,30\r\nεις,plural,nominative,3rd,masculine feminine,regular,,17\r\nεῖς,plural,nominative,3rd,masculine feminine,regular,,18\r\nοί,plural,nominative,3rd,masculine feminine,irregular,,32\r\nαί,plural,nominative,3rd,masculine feminine,irregular,,33\r\nῆς,plural,nominative,3rd,masculine feminine,irregular,,18\r\nῄς,plural,nominative,3rd,masculine feminine,irregular,,31 41\r\nεες,plural,nominative,3rd,masculine feminine,irregular,,16 55 61\r\nοι,plural,nominative,3rd,masculine feminine,irregular,,33\r\nες,plural,vocative,3rd,masculine feminine,regular,primary,\r\nεις,plural,vocative,3rd,masculine feminine,regular,,17\r\nεῖς,plural,vocative,3rd,masculine feminine,regular,,18\r\nῆς,plural,vocative,3rd,masculine feminine,regular,,18\r\nως,plural,vocative,3rd,masculine feminine,regular,,30\r\nεες,plural,vocative,3rd,masculine feminine,irregular,,16 55 61\r\nα,plural,accusative,3rd,neuter,regular,primary,\r\nη,plural,accusative,3rd,neuter,regular,,\r\nς,plural,accusative,3rd,neuter,regular,,\r\nά,plural,accusative,3rd,neuter,irregular,,33\r\nαα,plural,accusative,3rd,neuter,irregular,,16 61\r\nεα,plural,accusative,3rd,neuter,irregular,,16 61\r\nσι,plural,dative,3rd,neuter,regular,primary,\r\nσιν,plural,dative,3rd,neuter,regular,primary,4\r\nσί,plural,dative,3rd,neuter,regular,,\r\nσίv,plural,dative,3rd,neuter,regular,,4\r\nασι,plural,dative,3rd,neuter,regular,,\r\nασιν,plural,dative,3rd,neuter,regular,,4\r\nεσι,plural,dative,3rd,neuter,regular,,\r\nεσιν,plural,dative,3rd,neuter,regular,,4\r\nέσι,plural,dative,3rd,neuter,regular,,\r\nέσιv,plural,dative,3rd,neuter,regular,,4\r\nεσσι,plural,dative,3rd,neuter,irregular,,54\r\nεσσιν,plural,dative,3rd,neuter,irregular,,4 54\r\nσσί,plural,dative,3rd,neuter,irregular,,54\r\nσσίv,plural,dative,3rd,neuter,irregular,,4 54\r\nασσι,plural,dative,3rd,neuter,irregular,,54\r\nασσιν,plural,dative,3rd,neuter,irregular,,4 54\r\nφι,plural,dative,3rd,neuter,irregular,,45\r\nφιν,plural,dative,3rd,neuter,irregular,,4 45\r\nηφι,plural,dative,3rd,neuter,irregular,,45\r\nηφιv,plural,dative,3rd,neuter,irregular,,4 45\r\nῆφι,plural,dative,3rd,neuter,irregular,,45\r\nῆφιν,plural,dative,3rd,neuter,irregular,,4 45\r\nόφι,plural,dative,3rd,neuter,irregular,,45\r\nόφιν,plural,dative,3rd,neuter,irregular,,4 45\r\nων,plural,genitive,3rd,neuter,regular,primary,\r\nῶν,plural,genitive,3rd,neuter,regular,primary,\r\nφι,plural,genitive,3rd,neuter,irregular,,\r\nφιν,plural,genitive,3rd,neuter,irregular,,4 45\r\nηφι,plural,genitive,3rd,neuter,irregular,,45\r\nηφιv,plural,genitive,3rd,neuter,irregular,,4 45\r\nῆφι,plural,genitive,3rd,neuter,irregular,,45\r\nῆφιν,plural,genitive,3rd,neuter,irregular,,4 45\r\nόφι,plural,genitive,3rd,neuter,irregular,,45\r\nόφιν,plural,genitive,3rd,neuter,irregular,,4 45\r\nέων,plural,genitive,3rd,neuter,irregular,,16 61\r\nάων,plural,genitive,3rd,neuter,irregular,,16 61\r\nα,plural,nominative,3rd,neuter,regular,primary,\r\nη,plural,nominative,3rd,neuter,regular,,\r\nες,plural,nominative,3rd,neuter,regular,,\r\nά,plural,nominative,3rd,neuter,irregular,,33\r\nεα,plural,nominative,3rd,neuter,irregular,,16 61\r\nαα,plural,nominative,3rd,neuter,irregular,,16 61\r\nα,plural,vocative,3rd,neuter,regular,primary,\r\nη,plural,vocative,3rd,neuter,regular,,\r\nες,plural,vocative,3rd,neuter,regular,,\r\nαα,plural,vocative,3rd,neuter,irregular,,16 61\r\nεα,plural,vocative,3rd,neuter,irregular,,16 61\r\nα,singular,accusative,3rd,masculine feminine,regular,primary,\r\nη,singular,accusative,3rd,masculine feminine,regular,,16\r\nν,singular,accusative,3rd,masculine feminine,regular,,\r\nιν,singular,accusative,3rd,masculine feminine,regular,,41\r\nῦν,singular,accusative,3rd,masculine feminine,regular,,18\r\nῶ,singular,accusative,3rd,masculine feminine,regular,,23\r\nυν,singular,accusative,3rd,masculine feminine,regular,,\r\nῦν,singular,accusative,3rd,masculine feminine,regular,,17\r\nύν,singular,accusative,3rd,masculine feminine,regular,,17\r\nέα,singular,accusative,3rd,masculine feminine,regular,,20\r\nην,singular,accusative,3rd,masculine feminine,regular,,24\r\nώ,singular,accusative,3rd,masculine feminine,regular,,19 41\r\nω,singular,accusative,3rd,masculine feminine,regular,,23\r\nεῖν,singular,accusative,3rd,masculine feminine,irregular,,31 41\r\nων,singular,accusative,3rd,masculine feminine,irregular,,33 41 49\r\nαν,singular,accusative,3rd,masculine feminine,irregular,,33 41\r\nον,singular,accusative,3rd,masculine feminine,irregular,,39\r\nῖς,singular,accusative,3rd,masculine feminine,irregular,,33\r\nεα,singular,accusative,3rd,masculine feminine,irregular,,61\r\nι,singular,dative,3rd,masculine feminine,regular,primary,\r\nί,singular,dative,3rd,masculine feminine,regular,,\r\nϊ,singular,dative,3rd,masculine feminine,regular,,17\r\nΐ,singular,dative,3rd,masculine feminine,regular,,40\r\nει,singular,dative,3rd,masculine feminine,regular,,16 17\r\nεῖ,singular,dative,3rd,masculine feminine,regular,,18\r\nαι,singular,dative,3rd,masculine feminine,regular,,\r\noῖ,singular,dative,3rd,masculine feminine,regular,,28 41\r\nῖ,singular,dative,3rd,masculine feminine,irregular,,33 46\r\nῆι,singular,dative,3rd,masculine feminine,irregular,,18\r\nᾳ,singular,dative,3rd,masculine feminine,irregular,,25\r\nῳ,singular,dative,3rd,masculine feminine,irregular,,33 34\r\nῷ,singular,dative,3rd,masculine feminine,irregular,,33\r\nιί,singular,dative,3rd,masculine feminine,irregular,,62\r\nυί,singular,dative,3rd,masculine feminine,irregular,,62\r\nέϊ,singular,dative,3rd,masculine feminine,irregular,,18 61\r\nος,singular,genitive,3rd,masculine feminine,regular,primary,\r\nός,singular,genitive,3rd,masculine feminine,regular,,\r\nους,singular,genitive,3rd,masculine feminine,regular,,16\r\nοῦς,singular,genitive,3rd,masculine feminine,regular,,19 46\r\nως,singular,genitive,3rd,masculine feminine,regular,,17 18\r\nώς,singular,genitive,3rd,masculine feminine,regular,,17 18 41\r\nῶς,singular,genitive,3rd,masculine feminine,regular,,47\r\nεως,singular,genitive,3rd,masculine feminine,regular,,17\r\nέως,singular,genitive,3rd,masculine feminine,regular,,\r\nεώς,singular,genitive,3rd,masculine feminine,regular,,\r\nέους,singular,genitive,3rd,masculine feminine,regular,,20\r\nω,singular,genitive,3rd,masculine feminine,irregular,,\r\nεος,singular,genitive,3rd,masculine feminine,irregular,,61\r\nΰς,singular,genitive,3rd,masculine feminine,irregular,,41 48\r\nῦς,singular,genitive,3rd,masculine feminine,irregular,,48\r\nνος,singular,genitive,3rd,masculine feminine,irregular,,22\r\nοῦ,singular,genitive,3rd,masculine feminine,irregular,,33\r\nηος,singular,genitive,3rd,masculine feminine,irregular,,55\r\nιός,singular,genitive,3rd,masculine feminine,irregular,,62\r\nuός,singular,genitive,3rd,masculine feminine,irregular,,62\r\nς,singular,nominative,3rd,masculine feminine,regular,primary,\r\n-,singular,nominative,3rd,masculine feminine,regular,primary,\r\nηρ,singular,nominative,3rd,masculine feminine,regular,,41\r\nις,singular,nominative,3rd,masculine feminine,regular,,\r\nϊς,singular,nominative,3rd,masculine feminine,regular,,\r\nώ,singular,nominative,3rd,masculine feminine,regular,,41\r\nψ,singular,nominative,3rd,masculine feminine,regular,,\r\nξ,singular,nominative,3rd,masculine feminine,regular,,\r\nρ,singular,nominative,3rd,masculine feminine,regular,,\r\nήρ,singular,nominative,3rd,masculine feminine,regular,,\r\nήν,singular,nominative,3rd,masculine feminine,regular,,50\r\nν,singular,nominative,3rd,masculine feminine,regular,,\r\nωρ,singular,nominative,3rd,masculine feminine,regular,,\r\nων,singular,nominative,3rd,masculine feminine,regular,,\r\nών,singular,nominative,3rd,masculine feminine,regular,,\r\nης,singular,nominative,3rd,masculine feminine,regular,,\r\nῆς,singular,nominative,3rd,masculine feminine,regular,,\r\nυς,singular,nominative,3rd,masculine feminine,regular,,\r\nῦς,singular,nominative,3rd,masculine feminine,regular,,\r\nεῦς,singular,nominative,3rd,masculine feminine,regular,,\r\nύς,singular,nominative,3rd,masculine feminine,regular,,\r\nής,singular,nominative,3rd,masculine feminine,regular,,33\r\nας,singular,nominative,3rd,masculine feminine,irregular,,\r\nῴ,singular,nominative,3rd,masculine feminine,irregular,,29 41\r\nώς,singular,nominative,3rd,masculine feminine,irregular,,27 41\r\nϋς,singular,nominative,3rd,masculine feminine,irregular,,41\r\nῄς,singular,nominative,3rd,masculine feminine,irregular,,31 41\r\nῖς,singular,nominative,3rd,masculine feminine,irregular,,\r\nεῖς,singular,nominative,3rd,masculine feminine,irregular,,31 41\r\nῶς,singular,nominative,3rd,masculine feminine,irregular,,48\r\nος,singular,nominative,3rd,masculine feminine,irregular,,33\r\n-,singular,vocative,3rd,masculine feminine,regular,primary,52\r\nς,singular,vocative,3rd,masculine feminine,regular,,30\r\nι,singular,vocative,3rd,masculine feminine,regular,,41\r\nῦ,singular,vocative,3rd,masculine feminine,regular,,15 17 18\r\nοῖ,singular,vocative,3rd,masculine feminine,regular,,19 41\r\nψ,singular,vocative,3rd,masculine feminine,regular,,\r\nξ,singular,vocative,3rd,masculine feminine,regular,,\r\nν,singular,vocative,3rd,masculine feminine,regular,,\r\nρ,singular,vocative,3rd,masculine feminine,regular,,\r\nων,singular,vocative,3rd,masculine feminine,regular,,50\r\nών,singular,vocative,3rd,masculine feminine,regular,,\r\nήν,singular,vocative,3rd,masculine feminine,regular,,\r\nερ,singular,vocative,3rd,masculine feminine,regular,,\r\nες,singular,vocative,3rd,masculine feminine,regular,,\r\nί,singular,vocative,3rd,masculine feminine,regular,,\r\nως,singular,vocative,3rd,masculine feminine,regular,,\r\nἶ,singular,vocative,3rd,masculine feminine,regular,,\r\nούς,singular,vocative,3rd,masculine feminine,regular,,51\r\nύ,singular,vocative,3rd,masculine feminine,regular,,15\r\nυ,singular,vocative,3rd,masculine feminine,regular,,51\r\nεις,singular,vocative,3rd,masculine feminine,regular,,20\r\nαν,singular,vocative,3rd,masculine feminine,regular,,\r\nώς,singular,vocative,3rd,masculine feminine,irregular,,27 41 46\r\nον,singular,vocative,3rd,masculine feminine,irregular,,\r\nυς,singular,vocative,3rd,masculine feminine,irregular,,33\r\nα,singular,accusative,3rd,neuter,regular,primary,15\r\n-,singular,accusative,3rd,neuter,regular,,33\r\nος,singular,accusative,3rd,neuter,regular,,\r\nας,singular,accusative,3rd,neuter,regular,,\r\nαρ,singular,accusative,3rd,neuter,regular,,21\r\nυ,singular,accusative,3rd,neuter,regular,,\r\nι,singular,dative,3rd,neuter,regular,primary,\r\nει,singular,dative,3rd,neuter,regular,,16\r\nαι,singular,dative,3rd,neuter,regular,,16 21\r\nϊ,singular,dative,3rd,neuter,irregular,,17\r\nᾳ,singular,dative,3rd,neuter,irregular,,25 33\r\nυϊ,singular,dative,3rd,neuter,irregular,,17\r\nαϊ,singular,dative,3rd,neuter,irregular,,21 61\r\nος,singular,genitive,3rd,neuter,regular,primary,\r\nους,singular,genitive,3rd,neuter,regular,,16\r\nως,singular,genitive,3rd,neuter,regular,,16\r\nεως,singular,genitive,3rd,neuter,regular,,17\r\nυς,singular,genitive,3rd,neuter,irregular,,26\r\nου,singular,genitive,3rd,neuter,irregular,,33\r\nαος,singular,genitive,3rd,neuter,irregular,,21 61\r\nα,singular,nominative,3rd,neuter,regular,primary,\r\n-,singular,nominative,3rd,neuter,regular,,33\r\nος,singular,nominative,3rd,neuter,regular,,\r\nαρ,singular,nominative,3rd,neuter,regular,,\r\nας,singular,nominative,3rd,neuter,regular,,16 21\r\nυ,singular,nominative,3rd,neuter,regular,,\r\nον,singular,nominative,3rd,neuter,irregular,,33\r\nα,singular,vocative,3rd,neuter,regular,primary,15\r\n-,singular,vocative,3rd,neuter,regular,,\r\nος,singular,vocative,3rd,neuter,regular,,\r\nας,singular,vocative,3rd,neuter,regular,,\r\nαρ,singular,vocative,3rd,neuter,regular,,21\r\nυ,singular,vocative,3rd,neuter,regular,,";
+var nounSuffixesCSV$1 = "Ending,Number,Case,Declension,Gender,Type,Primary,Footnote\nα,dual,accusative,1st,feminine,regular,primary,\nά,dual,accusative,1st,feminine,regular,,\nᾶ,dual,accusative,1st,feminine,regular,,2\nαιν,dual,dative,1st,feminine,regular,primary,\nαῖν,dual,dative,1st,feminine,regular,,\nαιιν,dual,dative,1st,feminine,irregular,,\nαιν,dual,genitive,1st,feminine,regular,primary,\nαῖν,dual,genitive,1st,feminine,regular,,\nαιιν,dual,genitive,1st,feminine,irregular,,\nα,dual,nominative,1st,feminine,regular,primary,\nά,dual,nominative,1st,feminine,regular,,\nᾶ,dual,nominative,1st,feminine,regular,,2\nα,dual,vocative,1st,feminine,regular,primary,\nά,dual,vocative,1st,feminine,regular,,\nᾶ,dual,vocative,1st,feminine,regular,,2\nα,dual,accusative,1st,masculine,regular,primary,\nά,dual,accusative,1st,masculine,regular,,\nᾶ,dual,accusative,1st,masculine,regular,,2\nαιν,dual,dative,1st,masculine,regular,primary,\nαῖν,dual,dative,1st,masculine,regular,,\nαιιν,dual,dative,1st,masculine,irregular,,\nαιν,dual,genitive,1st,masculine,regular,primary,\nαῖν,dual,genitive,1st,masculine,regular,,\nαιιν,dual,genitive,1st,masculine,irregular,,\nα,dual,nominative,1st,masculine,regular,primary,\nά,dual,nominative,1st,masculine,regular,,\nᾶ,dual,nominative,1st,masculine,regular,,2\nα,dual,vocative,1st,masculine,regular,primary,\nά,dual,vocative,1st,masculine,regular,,\nᾶ,dual,vocative,1st,masculine,regular,,2\nας,plural,accusative,1st,feminine,regular,primary,\nάς,plural,accusative,1st,feminine,regular,,\nᾶς,plural,accusative,1st,feminine,regular,,2\nανς,plural,accusative,1st,feminine,irregular,,\nαις,plural,accusative,1st,feminine,irregular,,\nαις,plural,dative,1st,feminine,regular,primary,\nαῖς,plural,dative,1st,feminine,regular,,\nῃσι,plural,dative,1st,feminine,irregular,,44\nῃσιν,plural,dative,1st,feminine,irregular,,4 44\nῃς,plural,dative,1st,feminine,irregular,,44\nαισι,plural,dative,1st,feminine,irregular,,44\nαισιν,plural,dative,1st,feminine,irregular,,4 44\nῶν,plural,genitive,1st,feminine,regular,primary,\nάων,plural,genitive,1st,feminine,irregular,,\nέων,plural,genitive,1st,feminine,irregular,,\nήων,plural,genitive,1st,feminine,irregular,,\nᾶν,plural,genitive,1st,feminine,irregular,,\nαι,plural,nominative,1st,feminine,regular,primary,\nαί,plural,nominative,1st,feminine,regular,,\nαῖ,plural,nominative,1st,feminine,regular,,2\nαι,plural,vocative,1st,feminine,regular,primary,\nαί,plural,vocative,1st,feminine,regular,,\nαῖ,plural,vocative,1st,feminine,regular,,2\nας,plural,accusative,1st,masculine,regular,primary,\nάς,plural,accusative,1st,masculine,regular,,\nᾶς,plural,accusative,1st,masculine,regular,,3\nανς,plural,accusative,1st,masculine,irregular,,\nαις,plural,accusative,1st,masculine,irregular,,\nαις,plural,dative,1st,masculine,regular,primary,\nαῖς,plural,dative,1st,masculine,regular,,\nῃσι,plural,dative,1st,masculine,irregular,,44\nῃσιν,plural,dative,1st,masculine,irregular,,4 44\nῃς,plural,dative,1st,masculine,irregular,,44\nαισι,plural,dative,1st,masculine,irregular,,44\nαισιν,plural,dative,1st,masculine,irregular,,4 44\nῶν,plural,genitive,1st,masculine,regular,primary,\nάων,plural,genitive,1st,masculine,irregular,,\nέων,plural,genitive,1st,masculine,irregular,,\nήων,plural,genitive,1st,masculine,irregular,,\nᾶν,plural,genitive,1st,masculine,irregular,,\nαι,plural,nominative,1st,masculine,regular,primary,\nαί,plural,nominative,1st,masculine,regular,,\nαῖ,plural,nominative,1st,masculine,regular,,3\nαι,plural,vocative,1st,masculine,regular,primary,\nαί,plural,vocative,1st,masculine,regular,,\nαῖ,plural,vocative,1st,masculine,regular,,3\nαν,singular,accusative,1st,feminine,regular,primary,\nην,singular,accusative,1st,feminine,regular,primary,\nήν,singular,accusative,1st,feminine,regular,,\nᾶν,singular,accusative,1st,feminine,regular,,2\nῆν,singular,accusative,1st,feminine,regular,,2\nάν,singular,accusative,1st,feminine,irregular,,63\nᾳ,singular,dative,1st,feminine,regular,primary,\nῃ,singular,dative,1st,feminine,regular,primary,\nῇ,singular,dative,1st,feminine,regular,,2\nᾷ,singular,dative,1st,feminine,regular,,2\nηφι,singular,dative,1st,feminine,irregular,,45\nηφιν,singular,dative,1st,feminine,irregular,,4 45\nῆφι,singular,dative,1st,feminine,irregular,,45\nῆφιv,singular,dative,1st,feminine,irregular,,4 45\nας,singular,genitive,1st,feminine,regular,primary,\nης,singular,genitive,1st,feminine,regular,primary,\nῆs,singular,genitive,1st,feminine,regular,,\nᾶs,singular,genitive,1st,feminine,regular,,2\nηφι,singular,genitive,1st,feminine,irregular,,45\nηφιν,singular,genitive,1st,feminine,irregular,,4 45\nῆφι,singular,genitive,1st,feminine,irregular,,45\nῆφιv,singular,genitive,1st,feminine,irregular,,4 45\nα,singular,nominative,1st,feminine,regular,primary,\nη,singular,nominative,1st,feminine,regular,primary,1\nή,singular,nominative,1st,feminine,regular,,\nᾶ,singular,nominative,1st,feminine,regular,,2\nῆ,singular,nominative,1st,feminine,regular,,2\nά,singular,nominative,1st,feminine,irregular,,63\nα,singular,vocative,1st,feminine,regular,primary,\nη,singular,vocative,1st,feminine,regular,primary,\nή,singular,vocative,1st,feminine,regular,,\nᾶ,singular,vocative,1st,feminine,regular,,2\nῆ,singular,vocative,1st,feminine,regular,,2\nά,singular,vocative,1st,feminine,irregular,,63\nαν,singular,accusative,1st,masculine,regular,primary,\nην,singular,accusative,1st,masculine,regular,primary,3\nήν,singular,accusative,1st,masculine,regular,,\nᾶν,singular,accusative,1st,masculine,regular,,3\nῆν,singular,accusative,1st,masculine,regular,,3\nεα,singular,accusative,1st,masculine,irregular,,\nᾳ,singular,dative,1st,masculine,regular,primary,\nῃ,singular,dative,1st,masculine,regular,primary,\nῇ,singular,dative,1st,masculine,regular,,\nᾷ,singular,dative,1st,masculine,regular,,3\nῆ,singular,dative,1st,masculine,regular,,3\nηφι,singular,dative,1st,masculine,irregular,,45\nηφιν,singular,dative,1st,masculine,irregular,,4 45\nῆφι,singular,dative,1st,masculine,irregular,,45\nῆφιv,singular,dative,1st,masculine,irregular,,4 45\nου,singular,genitive,1st,masculine,regular,primary,\nοῦ,singular,genitive,1st,masculine,regular,,\nαο,singular,genitive,1st,masculine,irregular,,\nεω,singular,genitive,1st,masculine,irregular,,\nηφι,singular,genitive,1st,masculine,irregular,,45\nηφιν,singular,genitive,1st,masculine,irregular,,4 45\nῆφι,singular,genitive,1st,masculine,irregular,,45\nῆφιv,singular,genitive,1st,masculine,irregular,,4 45\nω,singular,genitive,1st,masculine,irregular,,\nα,singular,genitive,1st,masculine,irregular,,\nας,singular,nominative,1st,masculine,regular,primary,\nης,singular,nominative,1st,masculine,regular,primary,\nής,singular,nominative,1st,masculine,regular,,\nᾶs,singular,nominative,1st,masculine,regular,,3\nῆs,singular,nominative,1st,masculine,regular,,3\nα,singular,vocative,1st,masculine,regular,primary,\nη,singular,vocative,1st,masculine,regular,primary,\nά,singular,vocative,1st,masculine,regular,,\nᾶ,singular,vocative,1st,masculine,regular,,3\nῆ,singular,vocative,1st,masculine,regular,,3\nω,dual,accusative,2nd,masculine feminine,regular,primary,\nώ,dual,accusative,2nd,masculine feminine,regular,,5\nοιν,dual,dative,2nd,masculine feminine,regular,primary,\nοῖν,dual,dative,2nd,masculine feminine,regular,,5\nοιιν,dual,dative,2nd,masculine feminine,irregular,,\nῴν,dual,dative,2nd,masculine feminine,irregular,,7\nοιν,dual,genitive,2nd,masculine feminine,regular,primary,\nοῖν,dual,genitive,2nd,masculine feminine,regular,,5\nοιιν,dual,genitive,2nd,masculine feminine,irregular,,\nῴν,dual,genitive,2nd,masculine feminine,irregular,,7\nω,dual,nominative,2nd,masculine feminine,regular,primary,60\nώ,dual,nominative,2nd,masculine feminine,regular,,60\nω,dual,vocative,2nd,masculine feminine,regular,primary,\nώ,dual,vocative,2nd,masculine feminine,regular,,5\nω,dual,accusative,2nd,neuter,regular,primary,\nώ,dual,accusative,2nd,neuter,regular,,6\nοιν,dual,dative,2nd,neuter,regular,primary,\nοῖν,dual,dative,2nd,neuter,regular,,6\nοιιν,dual,dative,2nd,neuter,irregular,,\nοιν,dual,genitive,2nd,neuter,regular,primary,\nοῖν,dual,genitive,2nd,neuter,regular,,6\nοιιν,dual,genitive,2nd,neuter,irregular,,\nω,dual,nominative,2nd,neuter,regular,primary,\nώ,dual,nominative,2nd,neuter,regular,,6\nω,dual,vocative,2nd,neuter,regular,primary,\nώ,dual,vocative,2nd,neuter,regular,,6\nους,plural,accusative,2nd,masculine feminine,regular,primary,\nούς,plural,accusative,2nd,masculine feminine,regular,,41\nοῦς,plural,accusative,2nd,masculine feminine,regular,,5\nονς,plural,accusative,2nd,masculine feminine,irregular,,\nος,plural,accusative,2nd,masculine feminine,irregular,,\nως,plural,accusative,2nd,masculine feminine,irregular,,\nοις,plural,accusative,2nd,masculine feminine,irregular,,\nώς,plural,accusative,2nd,masculine feminine,irregular,,7\nοις,plural,dative,2nd,masculine feminine,regular,primary,\nοῖς,plural,dative,2nd,masculine feminine,regular,,5\nοισι,plural,dative,2nd,masculine feminine,irregular,,\nοισιν,plural,dative,2nd,masculine feminine,irregular,,4\nῴς,plural,dative,2nd,masculine feminine,irregular,,7\nόφι,plural,dative,2nd,masculine feminine,irregular,,45\nόφιv,plural,dative,2nd,masculine feminine,irregular,,4 45\nων,plural,genitive,2nd,masculine feminine,regular,primary,\nῶν,plural,genitive,2nd,masculine feminine,regular,,5\nών,plural,genitive,2nd,masculine feminine,irregular,,7\nόφι,plural,genitive,2nd,masculine feminine,irregular,,45\nόφιv,plural,genitive,2nd,masculine feminine,irregular,,4 45\nοι,plural,nominative,2nd,masculine feminine,regular,primary,\nοί,plural,nominative,2nd,masculine feminine,regular,,41\nοῖ,plural,nominative,2nd,masculine feminine,regular,,5\nῴ,plural,nominative,2nd,masculine feminine,irregular,,7\nοι,plural,vocative,2nd,masculine feminine,regular,primary,\nοί,plural,vocative,2nd,masculine feminine,regular,,41\nοῖ,plural,vocative,2nd,masculine feminine,regular,,5\nα,plural,accusative,2nd,neuter,regular,primary,\nᾶ,plural,accusative,2nd,neuter,regular,,6\nοις,plural,dative,2nd,neuter,regular,primary,\nοῖς,plural,dative,2nd,neuter,regular,,6\nοισι,plural,dative,2nd,neuter,irregular,,\nοισιν,plural,dative,2nd,neuter,irregular,,4\nόφι,plural,dative,2nd,neuter,irregular,,45\nόφιv,plural,dative,2nd,neuter,irregular,,4 45\nων,plural,genitive,2nd,neuter,regular,primary,\nῶν,plural,genitive,2nd,neuter,regular,,6\nόφι,plural,genitive,2nd,neuter,irregular,,45\nόφιv,plural,genitive,2nd,neuter,irregular,,4 45\nα,plural,nominative,2nd,neuter,regular,primary,\nᾶ,plural,nominative,2nd,neuter,regular,,6\nα,plural,vocative,2nd,neuter,regular,primary,\nᾶ,plural,vocative,2nd,neuter,regular,,6\nον,singular,accusative,2nd,masculine feminine,regular,primary,\nόν,singular,accusative,2nd,masculine feminine,regular,primary,41\nουν,singular,accusative,2nd,masculine feminine,regular,,5\nοῦν,singular,accusative,2nd,masculine feminine,regular,,5\nω,singular,accusative,2nd,masculine feminine,irregular,,7 5\nωv,singular,accusative,2nd,masculine feminine,irregular,,7 59\nώ,singular,accusative,2nd,masculine feminine,irregular,,7 42 59\nών,singular,accusative,2nd,masculine feminine,irregular,,7 59\nῳ,singular,dative,2nd,masculine feminine,regular,primary,\nῷ,singular,dative,2nd,masculine feminine,regular,,5\nῴ,singular,dative,2nd,masculine feminine,irregular,,7\nόφι,singular,dative,2nd,masculine feminine,irregular,,45\nόφιv,singular,dative,2nd,masculine feminine,irregular,,4 45\nου,singular,genitive,2nd,masculine feminine,regular,primary,\nοῦ,singular,genitive,2nd,masculine feminine,regular,,5\nοιο,singular,genitive,2nd,masculine feminine,irregular,,\nοο,singular,genitive,2nd,masculine feminine,irregular,,\nω,singular,genitive,2nd,masculine feminine,irregular,,\nώ,singular,genitive,2nd,masculine feminine,irregular,,7\nόφι,singular,genitive,2nd,masculine feminine,irregular,,45\nόφιv,singular,genitive,2nd,masculine feminine,irregular,,4 45\nος,singular,nominative,2nd,masculine feminine,regular,primary,\nους,singular,nominative,2nd,masculine feminine,regular,,5\noῦς,singular,nominative,2nd,masculine feminine,regular,,5\nός,singular,nominative,2nd,masculine feminine,regular,,\nώς,singular,nominative,2nd,masculine feminine,irregular,,7 42\nως,singular,nominative,2nd,masculine feminine,irregular,,\nε,singular,vocative,2nd,masculine feminine,regular,primary,\nέ,singular,vocative,2nd,masculine feminine,regular,,\nοu,singular,vocative,2nd,masculine feminine,regular,,5\nοῦ,singular,vocative,2nd,masculine feminine,regular,,42\nός,singular,vocative,2nd,masculine feminine,irregular,,57\nον,singular,accusative,2nd,neuter,regular,primary,\nοῦν,singular,accusative,2nd,neuter,regular,,6\nῳ,singular,dative,2nd,neuter,regular,primary,\nῷ,singular,dative,2nd,neuter,regular,,6\nόφι,singular,dative,2nd,neuter,irregular,,45\nόφιv,singular,dative,2nd,neuter,irregular,,4 45\nου,singular,genitive,2nd,neuter,regular,primary,\nοῦ,singular,genitive,2nd,neuter,regular,,6\nοο,singular,genitive,2nd,neuter,irregular,,\nοιο,singular,genitive,2nd,neuter,irregular,,\nω,singular,genitive,2nd,neuter,irregular,,\nόφι,singular,genitive,2nd,neuter,irregular,,45\nόφιv,singular,genitive,2nd,neuter,irregular,,4 45\nον,singular,nominative,2nd,neuter,regular,primary,\nοῦν,singular,nominative,2nd,neuter,regular,,6\nον,singular,vocative,2nd,neuter,regular,primary,\nοῦν,singular,vocative,2nd,neuter,regular,,6\nε,dual,accusative,3rd,masculine feminine,regular,primary,\nει,dual,accusative,3rd,masculine feminine,regular,,\nῆ,dual,accusative,3rd,masculine feminine,regular,,18\nω,dual,accusative,3rd,masculine feminine,irregular,,32\nῖ,dual,accusative,3rd,masculine feminine,irregular,,33\nεε,dual,accusative,3rd,masculine feminine,irregular,,16 55 61\nοιν,dual,dative,3rd,masculine feminine,regular,primary,\nοῖν,dual,dative,3rd,masculine feminine,regular,,\nοιιν,dual,dative,3rd,masculine feminine,irregular,,54\nσι,dual,dative,3rd,masculine feminine,irregular,,33 37\nεσσι,dual,dative,3rd,masculine feminine,irregular,,33\nεσι,dual,dative,3rd,masculine feminine,irregular,,33\nέοιν,dual,dative,3rd,masculine feminine,irregular,,16 61\nῳν,dual,dative,3rd,masculine feminine,irregular,,49\nοιν,dual,genitive,3rd,masculine feminine,regular,primary,\nοῖν,dual,genitive,3rd,masculine feminine,regular,,\nοιιν,dual,genitive,3rd,masculine feminine,irregular,,54\nέοιν,dual,genitive,3rd,masculine feminine,irregular,,16 61\nῳν,dual,genitive,3rd,masculine feminine,irregular,,49\nε,dual,nominative,3rd,masculine feminine,regular,primary,\nει,dual,nominative,3rd,masculine feminine,regular,,\nῆ,dual,nominative,3rd,masculine feminine,regular,,18\nω,dual,nominative,3rd,masculine feminine,irregular,,32\nῖ,dual,nominative,3rd,masculine feminine,irregular,,33\nεε,dual,nominative,3rd,masculine feminine,irregular,,16 55 61\nε,dual,vocative,3rd,masculine feminine,regular,primary,\nει,dual,vocative,3rd,masculine feminine,regular,,\nῆ,dual,vocative,3rd,masculine feminine,regular,,18\nω,dual,vocative,3rd,masculine feminine,irregular,,32\nῖ,dual,vocative,3rd,masculine feminine,irregular,,33\nεε,dual,vocative,3rd,masculine feminine,irregular,,16 55 61\nε,dual,accusative,3rd,neuter,regular,primary,\nει,dual,accusative,3rd,neuter,regular,,\nα,dual,accusative,3rd,neuter,regular,,\nεε,dual,accusative,3rd,neuter,irregular,,16 61\nαε,dual,accusative,3rd,neuter,irregular,,16 61\nοιν,dual,dative,3rd,neuter,regular,primary,\nῷν,dual,dative,3rd,neuter,regular,,\nοις,dual,dative,3rd,neuter,irregular,,33 38\nοισι,dual,dative,3rd,neuter,irregular,,33 38\nοισι(ν),dual,dative,3rd,neuter,irregular,,4 33 38\nοιιν,dual,dative,3rd,neuter,irregular,,\nέοιν,dual,dative,3rd,neuter,irregular,,16 61\nάοιν,dual,dative,3rd,neuter,irregular,,16 61\nοιν,dual,genitive,3rd,neuter,regular,primary,\nῷν,dual,genitive,3rd,neuter,regular,,\nων,dual,genitive,3rd,neuter,irregular,,33 38\nοιιν,dual,genitive,3rd,neuter,irregular,,\nέοιν,dual,genitive,3rd,neuter,irregular,,16 61\nάοιν,dual,genitive,3rd,neuter,irregular,,16 61\nε,dual,nominative,3rd,neuter,regular,primary,\nει,dual,nominative,3rd,neuter,regular,,\nα,dual,nominative,3rd,neuter,regular,,\nεε,dual,nominative,3rd,neuter,irregular,,16 61\nαε,dual,nominative,3rd,neuter,irregular,,16 61\nε,dual,vocative,3rd,neuter,regular,primary,\nει,dual,vocative,3rd,neuter,regular,,\nα,dual,vocative,3rd,neuter,regular,,\nεε,dual,vocative,3rd,neuter,irregular,,16 61\nαε,dual,vocative,3rd,neuter,irregular,,16 61\nας,plural,accusative,3rd,masculine feminine,regular,primary,\nεις,plural,accusative,3rd,masculine feminine,regular,,17 41\nες,plural,accusative,3rd,masculine feminine,regular,,\nς,plural,accusative,3rd,masculine feminine,regular,,\nῦς,plural,accusative,3rd,masculine feminine,regular,,17 18 48\nως,plural,accusative,3rd,masculine feminine,regular,,30\nῆς,plural,accusative,3rd,masculine feminine,irregular,,56\nέας,plural,accusative,3rd,masculine feminine,irregular,,\nέος,plural,accusative,3rd,masculine feminine,irregular,,\nῆος,plural,accusative,3rd,masculine feminine,irregular,,\nῆες,plural,accusative,3rd,masculine feminine,irregular,,\nῆας,plural,accusative,3rd,masculine feminine,irregular,,\nους,plural,accusative,3rd,masculine feminine,irregular,,32\nούς,plural,accusative,3rd,masculine feminine,irregular,,32\nεῖς,plural,accusative,3rd,masculine feminine,irregular,,31 41\nεες,plural,accusative,3rd,masculine feminine,irregular,,55 61\nις,plural,accusative,3rd,masculine feminine,irregular,,\nινς,plural,accusative,3rd,masculine feminine,irregular,,\nῶς,plural,accusative,3rd,masculine feminine,irregular,,48\nσι,plural,dative,3rd,masculine feminine,regular,primary,\nσιν,plural,dative,3rd,masculine feminine,regular,primary,4\nσί,plural,dative,3rd,masculine feminine,regular,,41\nσίν,plural,dative,3rd,masculine feminine,regular,,4 41\nεσι,plural,dative,3rd,masculine feminine,regular,,41\nεσιν,plural,dative,3rd,masculine feminine,regular,,4 41\nέσι,plural,dative,3rd,masculine feminine,regular,,\nέσιν,plural,dative,3rd,masculine feminine,regular,,4\nψι,plural,dative,3rd,masculine feminine,regular,,\nψιν,plural,dative,3rd,masculine feminine,regular,,4\nψί,plural,dative,3rd,masculine feminine,regular,,\nψίν,plural,dative,3rd,masculine feminine,regular,,4\nξι,plural,dative,3rd,masculine feminine,regular,,\nξιν,plural,dative,3rd,masculine feminine,regular,,4\nξί,plural,dative,3rd,masculine feminine,regular,,\nξίν,plural,dative,3rd,masculine feminine,regular,,4\nφι,plural,dative,3rd,masculine feminine,irregular,,45\nφιν,plural,dative,3rd,masculine feminine,irregular,,4 45\nηφι,plural,dative,3rd,masculine feminine,irregular,,45\nηφιv,plural,dative,3rd,masculine feminine,irregular,,4 45\nῆφι,plural,dative,3rd,masculine feminine,irregular,,45\nῆφιν,plural,dative,3rd,masculine feminine,irregular,,4 45\nόφι,plural,dative,3rd,masculine feminine,irregular,,45\nόφιν,plural,dative,3rd,masculine feminine,irregular,,4 45\nαις,plural,dative,3rd,masculine feminine,irregular,,33 41\nοῖσι,plural,dative,3rd,masculine feminine,irregular,,33\nοῖσιv,plural,dative,3rd,masculine feminine,irregular,,4 33\nεσσι,plural,dative,3rd,masculine feminine,irregular,,16 61\nεσσιv,plural,dative,3rd,masculine feminine,irregular,,4 16 61\nυσσι,plural,dative,3rd,masculine feminine,irregular,,54\nυσσιv,plural,dative,3rd,masculine feminine,irregular,,4 54\nσσί,plural,dative,3rd,masculine feminine,irregular,,54\nσσίv,plural,dative,3rd,masculine feminine,irregular,,4 54\nων,plural,genitive,3rd,masculine feminine,regular,primary,\nῶν,plural,genitive,3rd,masculine feminine,regular,,\n-,plural,genitive,3rd,masculine feminine,irregular,,41\nφι,plural,genitive,3rd,masculine feminine,irregular,,45\nφιν,plural,genitive,3rd,masculine feminine,irregular,,4 45\nηφι,plural,genitive,3rd,masculine feminine,irregular,,45\nηφιv,plural,genitive,3rd,masculine feminine,irregular,,4 45\nῆφι,plural,genitive,3rd,masculine feminine,irregular,,45\nῆφιν,plural,genitive,3rd,masculine feminine,irregular,,4 45\nόφι,plural,genitive,3rd,masculine feminine,irregular,,45\nόφιν,plural,genitive,3rd,masculine feminine,irregular,,4 45\nέων,plural,genitive,3rd,masculine feminine,irregular,,16 61\nες,plural,nominative,3rd,masculine feminine,regular,primary,\nως,plural,nominative,3rd,masculine feminine,regular,,30\nεις,plural,nominative,3rd,masculine feminine,regular,,17\nεῖς,plural,nominative,3rd,masculine feminine,regular,,18\nοί,plural,nominative,3rd,masculine feminine,irregular,,32\nαί,plural,nominative,3rd,masculine feminine,irregular,,33\nῆς,plural,nominative,3rd,masculine feminine,irregular,,18\nῄς,plural,nominative,3rd,masculine feminine,irregular,,31 41\nεες,plural,nominative,3rd,masculine feminine,irregular,,16 55 61\nοι,plural,nominative,3rd,masculine feminine,irregular,,33\nες,plural,vocative,3rd,masculine feminine,regular,primary,\nεις,plural,vocative,3rd,masculine feminine,regular,,17\nεῖς,plural,vocative,3rd,masculine feminine,regular,,18\nῆς,plural,vocative,3rd,masculine feminine,regular,,18\nως,plural,vocative,3rd,masculine feminine,regular,,30\nεες,plural,vocative,3rd,masculine feminine,irregular,,16 55 61\nα,plural,accusative,3rd,neuter,regular,primary,\nη,plural,accusative,3rd,neuter,regular,,\nς,plural,accusative,3rd,neuter,regular,,\nά,plural,accusative,3rd,neuter,irregular,,33\nαα,plural,accusative,3rd,neuter,irregular,,16 61\nεα,plural,accusative,3rd,neuter,irregular,,16 61\nσι,plural,dative,3rd,neuter,regular,primary,\nσιν,plural,dative,3rd,neuter,regular,primary,4\nσί,plural,dative,3rd,neuter,regular,,\nσίv,plural,dative,3rd,neuter,regular,,4\nασι,plural,dative,3rd,neuter,regular,,\nασιν,plural,dative,3rd,neuter,regular,,4\nεσι,plural,dative,3rd,neuter,regular,,\nεσιν,plural,dative,3rd,neuter,regular,,4\nέσι,plural,dative,3rd,neuter,regular,,\nέσιv,plural,dative,3rd,neuter,regular,,4\nεσσι,plural,dative,3rd,neuter,irregular,,54\nεσσιν,plural,dative,3rd,neuter,irregular,,4 54\nσσί,plural,dative,3rd,neuter,irregular,,54\nσσίv,plural,dative,3rd,neuter,irregular,,4 54\nασσι,plural,dative,3rd,neuter,irregular,,54\nασσιν,plural,dative,3rd,neuter,irregular,,4 54\nφι,plural,dative,3rd,neuter,irregular,,45\nφιν,plural,dative,3rd,neuter,irregular,,4 45\nηφι,plural,dative,3rd,neuter,irregular,,45\nηφιv,plural,dative,3rd,neuter,irregular,,4 45\nῆφι,plural,dative,3rd,neuter,irregular,,45\nῆφιν,plural,dative,3rd,neuter,irregular,,4 45\nόφι,plural,dative,3rd,neuter,irregular,,45\nόφιν,plural,dative,3rd,neuter,irregular,,4 45\nων,plural,genitive,3rd,neuter,regular,primary,\nῶν,plural,genitive,3rd,neuter,regular,primary,\nφι,plural,genitive,3rd,neuter,irregular,,\nφιν,plural,genitive,3rd,neuter,irregular,,4 45\nηφι,plural,genitive,3rd,neuter,irregular,,45\nηφιv,plural,genitive,3rd,neuter,irregular,,4 45\nῆφι,plural,genitive,3rd,neuter,irregular,,45\nῆφιν,plural,genitive,3rd,neuter,irregular,,4 45\nόφι,plural,genitive,3rd,neuter,irregular,,45\nόφιν,plural,genitive,3rd,neuter,irregular,,4 45\nέων,plural,genitive,3rd,neuter,irregular,,16 61\nάων,plural,genitive,3rd,neuter,irregular,,16 61\nα,plural,nominative,3rd,neuter,regular,primary,\nη,plural,nominative,3rd,neuter,regular,,\nες,plural,nominative,3rd,neuter,regular,,\nά,plural,nominative,3rd,neuter,irregular,,33\nεα,plural,nominative,3rd,neuter,irregular,,16 61\nαα,plural,nominative,3rd,neuter,irregular,,16 61\nα,plural,vocative,3rd,neuter,regular,primary,\nη,plural,vocative,3rd,neuter,regular,,\nες,plural,vocative,3rd,neuter,regular,,\nαα,plural,vocative,3rd,neuter,irregular,,16 61\nεα,plural,vocative,3rd,neuter,irregular,,16 61\nα,singular,accusative,3rd,masculine feminine,regular,primary,\nη,singular,accusative,3rd,masculine feminine,regular,,16\nν,singular,accusative,3rd,masculine feminine,regular,,\nιν,singular,accusative,3rd,masculine feminine,regular,,41\nῦν,singular,accusative,3rd,masculine feminine,regular,,18\nῶ,singular,accusative,3rd,masculine feminine,regular,,23\nυν,singular,accusative,3rd,masculine feminine,regular,,\nῦν,singular,accusative,3rd,masculine feminine,regular,,17\nύν,singular,accusative,3rd,masculine feminine,regular,,17\nέα,singular,accusative,3rd,masculine feminine,regular,,20\nην,singular,accusative,3rd,masculine feminine,regular,,24\nώ,singular,accusative,3rd,masculine feminine,regular,,19 41\nω,singular,accusative,3rd,masculine feminine,regular,,23\nεῖν,singular,accusative,3rd,masculine feminine,irregular,,31 41\nων,singular,accusative,3rd,masculine feminine,irregular,,33 41 49\nαν,singular,accusative,3rd,masculine feminine,irregular,,33 41\nον,singular,accusative,3rd,masculine feminine,irregular,,39\nῖς,singular,accusative,3rd,masculine feminine,irregular,,33\nεα,singular,accusative,3rd,masculine feminine,irregular,,61\nι,singular,dative,3rd,masculine feminine,regular,primary,\nί,singular,dative,3rd,masculine feminine,regular,,\nϊ,singular,dative,3rd,masculine feminine,regular,,17\nΐ,singular,dative,3rd,masculine feminine,regular,,40\nει,singular,dative,3rd,masculine feminine,regular,,16 17\nεῖ,singular,dative,3rd,masculine feminine,regular,,18\nαι,singular,dative,3rd,masculine feminine,regular,,\noῖ,singular,dative,3rd,masculine feminine,regular,,28 41\nῖ,singular,dative,3rd,masculine feminine,irregular,,33 46\nῆι,singular,dative,3rd,masculine feminine,irregular,,18\nᾳ,singular,dative,3rd,masculine feminine,irregular,,25\nῳ,singular,dative,3rd,masculine feminine,irregular,,33 34\nῷ,singular,dative,3rd,masculine feminine,irregular,,33\nιί,singular,dative,3rd,masculine feminine,irregular,,62\nυί,singular,dative,3rd,masculine feminine,irregular,,62\nέϊ,singular,dative,3rd,masculine feminine,irregular,,18 61\nος,singular,genitive,3rd,masculine feminine,regular,primary,\nός,singular,genitive,3rd,masculine feminine,regular,,\nους,singular,genitive,3rd,masculine feminine,regular,,16\nοῦς,singular,genitive,3rd,masculine feminine,regular,,19 46\nως,singular,genitive,3rd,masculine feminine,regular,,17 18\nώς,singular,genitive,3rd,masculine feminine,regular,,17 18 41\nῶς,singular,genitive,3rd,masculine feminine,regular,,47\nεως,singular,genitive,3rd,masculine feminine,regular,,17\nέως,singular,genitive,3rd,masculine feminine,regular,,\nεώς,singular,genitive,3rd,masculine feminine,regular,,\nέους,singular,genitive,3rd,masculine feminine,regular,,20\nω,singular,genitive,3rd,masculine feminine,irregular,,\nεος,singular,genitive,3rd,masculine feminine,irregular,,61\nΰς,singular,genitive,3rd,masculine feminine,irregular,,41 48\nῦς,singular,genitive,3rd,masculine feminine,irregular,,48\nνος,singular,genitive,3rd,masculine feminine,irregular,,22\nοῦ,singular,genitive,3rd,masculine feminine,irregular,,33\nηος,singular,genitive,3rd,masculine feminine,irregular,,55\nιός,singular,genitive,3rd,masculine feminine,irregular,,62\nuός,singular,genitive,3rd,masculine feminine,irregular,,62\nς,singular,nominative,3rd,masculine feminine,regular,primary,\n-,singular,nominative,3rd,masculine feminine,regular,primary,\nηρ,singular,nominative,3rd,masculine feminine,regular,,41\nις,singular,nominative,3rd,masculine feminine,regular,,\nϊς,singular,nominative,3rd,masculine feminine,regular,,\nώ,singular,nominative,3rd,masculine feminine,regular,,41\nψ,singular,nominative,3rd,masculine feminine,regular,,\nξ,singular,nominative,3rd,masculine feminine,regular,,\nρ,singular,nominative,3rd,masculine feminine,regular,,\nήρ,singular,nominative,3rd,masculine feminine,regular,,\nήν,singular,nominative,3rd,masculine feminine,regular,,50\nν,singular,nominative,3rd,masculine feminine,regular,,\nωρ,singular,nominative,3rd,masculine feminine,regular,,\nων,singular,nominative,3rd,masculine feminine,regular,,\nών,singular,nominative,3rd,masculine feminine,regular,,\nης,singular,nominative,3rd,masculine feminine,regular,,\nῆς,singular,nominative,3rd,masculine feminine,regular,,\nυς,singular,nominative,3rd,masculine feminine,regular,,\nῦς,singular,nominative,3rd,masculine feminine,regular,,\nεῦς,singular,nominative,3rd,masculine feminine,regular,,\nύς,singular,nominative,3rd,masculine feminine,regular,,\nής,singular,nominative,3rd,masculine feminine,regular,,33\nας,singular,nominative,3rd,masculine feminine,irregular,,\nῴ,singular,nominative,3rd,masculine feminine,irregular,,29 41\nώς,singular,nominative,3rd,masculine feminine,irregular,,27 41\nϋς,singular,nominative,3rd,masculine feminine,irregular,,41\nῄς,singular,nominative,3rd,masculine feminine,irregular,,31 41\nῖς,singular,nominative,3rd,masculine feminine,irregular,,\nεῖς,singular,nominative,3rd,masculine feminine,irregular,,31 41\nῶς,singular,nominative,3rd,masculine feminine,irregular,,48\nος,singular,nominative,3rd,masculine feminine,irregular,,33\n-,singular,vocative,3rd,masculine feminine,regular,primary,52\nς,singular,vocative,3rd,masculine feminine,regular,,30\nι,singular,vocative,3rd,masculine feminine,regular,,41\nῦ,singular,vocative,3rd,masculine feminine,regular,,15 17 18\nοῖ,singular,vocative,3rd,masculine feminine,regular,,19 41\nψ,singular,vocative,3rd,masculine feminine,regular,,\nξ,singular,vocative,3rd,masculine feminine,regular,,\nν,singular,vocative,3rd,masculine feminine,regular,,\nρ,singular,vocative,3rd,masculine feminine,regular,,\nων,singular,vocative,3rd,masculine feminine,regular,,50\nών,singular,vocative,3rd,masculine feminine,regular,,\nήν,singular,vocative,3rd,masculine feminine,regular,,\nερ,singular,vocative,3rd,masculine feminine,regular,,\nες,singular,vocative,3rd,masculine feminine,regular,,\nί,singular,vocative,3rd,masculine feminine,regular,,\nως,singular,vocative,3rd,masculine feminine,regular,,\nἶ,singular,vocative,3rd,masculine feminine,regular,,\nούς,singular,vocative,3rd,masculine feminine,regular,,51\nύ,singular,vocative,3rd,masculine feminine,regular,,15\nυ,singular,vocative,3rd,masculine feminine,regular,,51\nεις,singular,vocative,3rd,masculine feminine,regular,,20\nαν,singular,vocative,3rd,masculine feminine,regular,,\nώς,singular,vocative,3rd,masculine feminine,irregular,,27 41 46\nον,singular,vocative,3rd,masculine feminine,irregular,,\nυς,singular,vocative,3rd,masculine feminine,irregular,,33\nα,singular,accusative,3rd,neuter,regular,primary,15\n-,singular,accusative,3rd,neuter,regular,,33\nος,singular,accusative,3rd,neuter,regular,,\nας,singular,accusative,3rd,neuter,regular,,\nαρ,singular,accusative,3rd,neuter,regular,,21\nυ,singular,accusative,3rd,neuter,regular,,\nι,singular,dative,3rd,neuter,regular,primary,\nει,singular,dative,3rd,neuter,regular,,16\nαι,singular,dative,3rd,neuter,regular,,16 21\nϊ,singular,dative,3rd,neuter,irregular,,17\nᾳ,singular,dative,3rd,neuter,irregular,,25 33\nυϊ,singular,dative,3rd,neuter,irregular,,17\nαϊ,singular,dative,3rd,neuter,irregular,,21 61\nος,singular,genitive,3rd,neuter,regular,primary,\nους,singular,genitive,3rd,neuter,regular,,16\nως,singular,genitive,3rd,neuter,regular,,16\nεως,singular,genitive,3rd,neuter,regular,,17\nυς,singular,genitive,3rd,neuter,irregular,,26\nου,singular,genitive,3rd,neuter,irregular,,33\nαος,singular,genitive,3rd,neuter,irregular,,21 61\nα,singular,nominative,3rd,neuter,regular,primary,\n-,singular,nominative,3rd,neuter,regular,,33\nος,singular,nominative,3rd,neuter,regular,,\nαρ,singular,nominative,3rd,neuter,regular,,\nας,singular,nominative,3rd,neuter,regular,,16 21\nυ,singular,nominative,3rd,neuter,regular,,\nον,singular,nominative,3rd,neuter,irregular,,33\nα,singular,vocative,3rd,neuter,regular,primary,15\n-,singular,vocative,3rd,neuter,regular,,\nος,singular,vocative,3rd,neuter,regular,,\nας,singular,vocative,3rd,neuter,regular,,\nαρ,singular,vocative,3rd,neuter,regular,,21\nυ,singular,vocative,3rd,neuter,regular,,";
 
-var nounFootnotesCSV$1 = "Index,Text\r\n1,See  for Rules of variance within regular endings\r\n2,See  for Table of α- and ε- stem feminine 1st declension contracts\r\n3,See  for Table of α- and ε- stem masculine 1st declension contracts\r\n4,\"Previous, with (ν)\"\r\n5,See  for Table of o- and ε- stem masculine  2nd declension contracts\r\n6,See  for Table of o- and ε- stem neuter 2nd declension contracts\r\n7,(Attic) contracts of o-stems preceded by a long vowel\r\n15,\"This is not actually an “ending,” but the last letter of the “pure stem”. See\"\r\n16,\"See  &  for Table of Sigma (ες,ας,ος) stem contracts\"\r\n17,See  for Table of  ι and υ - stem contracts\r\n18,\"See  for Table of  ευ,αυ,and ου - stem contracts\"\r\n19,See  for stems in οι feminine 3rd declension contracts\r\n20,See  for Table of 3rd declension contracts of stems in -εσ- preceded by ε\r\n21,See  for Table of stems in τ and ατ neuter 3rd declension contracts\r\n22,\"On stem ending in ν, ν doubled in gen. Sing Aeolic (e.g. μῆνς,μῆννος...)\"\r\n23,Also in inscriptions and expressions of swearing\r\n24,(Borrowed from 1st decl) Sometimes in proper names whose nominative ends in -ης\r\n25,From -ας-stems (properly αι)\r\n26,(ε)υς instead of (ε)ος or ους (gen) for (3rd decl) words whose nominative ends in -ος\r\n27,In 3rd decl. Only in the words αἰδώς (Attic) and ἠώς (Homer and Ionic)\r\n28,Contraction of a stem in οι  and an ι-ending\r\n29,Stronger form of Ionic contractions of οι-stems (in the nominative)\r\n30,See  for Table of ω - stem contracts (masculine only)\r\n31,Nominative plural contraction of  -ειδ+ες  after dropping the δ (used for accusative too). See .a\r\n32,\"Plurals & duals occur rarely (and w/ 2nd decl endings) for 3rd decl οι-stem nouns. See .D.a,b,c\"\r\n33,See  for description and examples of Irreg. Decl involving 3rd decl endings\r\n34,(Homer)  for Attic  (ῳτ)ι\r\n35,(Homer) for Cretan ινς\r\n36,Also an irregular ending for other stem(s)\r\n37,In inscriptions\r\n38,\"Plural endings for otherwise dual noun,οσσε (eyes)\"\r\n39,\"“Poetical” (acc for ἔρως). See ,11\"\r\n40,\"Poetic for χρωτι,dat. of ὁ χρως\"\r\n41,No Masculine of this Form\r\n42,No Feminine of this Form\r\n44,See  D.9 and #215 regarding dialectic alternate forms of the Dative Plural\r\n45,\"Surviving in Homer (See ) Not truly genitive or dative, but instrumental/locative/ablative, associated with the remaining oblique cases (genitive & dative) only after being lost as cases themselves in Greek\"\r\n46,See Smyth # 266 for only surviving ος-stem in Attic (fem. singular of αἰδως)\r\n47,See  for Substantives in -εύς preceded by a vowel.\r\n48,\"See Smyth,  #275 D.1,2,3\"\r\n49,\"See , List of Principal Irregular Substantives\"\r\n50,\"See  for Table of stems in a Liquid (λ,ρ) or a Nasal (ν), and Note #259D for variants including Κρονίων...\"\r\n51,\"See  for Table of stems in a Dental (τ,δ,θ) or a Nasal (ν), and its notes including Ν.κόρυς (Voc. Κόρυ) & ὀδούς\"\r\n52,See  for general rule re 3rd Declension Masc/Fem Singular Vocative\r\n54,See  D\r\n55,See\r\n56,\"See  for other forms of endings for contracts of ευ,αυ,and ου - stems\"\r\n57,Nominative form used as Vocative. See\r\n58,\"See ,b\"\r\n59,\"See ,d\"\r\n60,This (Feminine or Masculine) Form only Masculine when derived from ε- or ο- contraction\r\n61,See Smyth Note 264 D.1 regarding Homer's use of Open Forms\r\n62,See Smyth Note 269 for alternate i-stem and u-stem endings\r\n63,See  D.2\r\n64,See  D.1";
+var nounFootnotesCSV$1 = "Index,Text\n1,See  for Rules of variance within regular endings\n2,See  for Table of α- and ε- stem feminine 1st declension contracts\n3,See  for Table of α- and ε- stem masculine 1st declension contracts\n4,\"Previous, with (ν)\"\n5,See  for Table of o- and ε- stem masculine  2nd declension contracts\n6,See  for Table of o- and ε- stem neuter 2nd declension contracts\n7,(Attic) contracts of o-stems preceded by a long vowel\n15,\"This is not actually an “ending,” but the last letter of the “pure stem”. See\"\n16,\"See  &  for Table of Sigma (ες,ας,ος) stem contracts\"\n17,See  for Table of  ι and υ - stem contracts\n18,\"See  for Table of  ευ,αυ,and ου - stem contracts\"\n19,See  for stems in οι feminine 3rd declension contracts\n20,See  for Table of 3rd declension contracts of stems in -εσ- preceded by ε\n21,See  for Table of stems in τ and ατ neuter 3rd declension contracts\n22,\"On stem ending in ν, ν doubled in gen. Sing Aeolic (e.g. μῆνς,μῆννος...)\"\n23,Also in inscriptions and expressions of swearing\n24,(Borrowed from 1st decl) Sometimes in proper names whose nominative ends in -ης\n25,From -ας-stems (properly αι)\n26,(ε)υς instead of (ε)ος or ους (gen) for (3rd decl) words whose nominative ends in -ος\n27,In 3rd decl. Only in the words αἰδώς (Attic) and ἠώς (Homer and Ionic)\n28,Contraction of a stem in οι  and an ι-ending\n29,Stronger form of Ionic contractions of οι-stems (in the nominative)\n30,See  for Table of ω - stem contracts (masculine only)\n31,Nominative plural contraction of  -ειδ+ες  after dropping the δ (used for accusative too). See .a\n32,\"Plurals & duals occur rarely (and w/ 2nd decl endings) for 3rd decl οι-stem nouns. See .D.a,b,c\"\n33,See  for description and examples of Irreg. Decl involving 3rd decl endings\n34,(Homer)  for Attic  (ῳτ)ι\n35,(Homer) for Cretan ινς\n36,Also an irregular ending for other stem(s)\n37,In inscriptions\n38,\"Plural endings for otherwise dual noun,οσσε (eyes)\"\n39,\"“Poetical” (acc for ἔρως). See ,11\"\n40,\"Poetic for χρωτι,dat. of ὁ χρως\"\n41,No Masculine of this Form\n42,No Feminine of this Form\n44,See  D.9 and #215 regarding dialectic alternate forms of the Dative Plural\n45,\"Surviving in Homer (See ) Not truly genitive or dative, but instrumental/locative/ablative, associated with the remaining oblique cases (genitive & dative) only after being lost as cases themselves in Greek\"\n46,See Smyth # 266 for only surviving ος-stem in Attic (fem. singular of αἰδως)\n47,See  for Substantives in -εύς preceded by a vowel.\n48,\"See Smyth,  #275 D.1,2,3\"\n49,\"See , List of Principal Irregular Substantives\"\n50,\"See  for Table of stems in a Liquid (λ,ρ) or a Nasal (ν), and Note #259D for variants including Κρονίων...\"\n51,\"See  for Table of stems in a Dental (τ,δ,θ) or a Nasal (ν), and its notes including Ν.κόρυς (Voc. Κόρυ) & ὀδούς\"\n52,See  for general rule re 3rd Declension Masc/Fem Singular Vocative\n54,See  D\n55,See\n56,\"See  for other forms of endings for contracts of ευ,αυ,and ου - stems\"\n57,Nominative form used as Vocative. See\n58,\"See ,b\"\n59,\"See ,d\"\n60,This (Feminine or Masculine) Form only Masculine when derived from ε- or ο- contraction\n61,See Smyth Note 264 D.1 regarding Homer's use of Open Forms\n62,See Smyth Note 269 for alternate i-stem and u-stem endings\n63,See  D.2\n64,See  D.1";
 
 /*
  * Latin language data module
@@ -38493,17 +38616,13 @@ const VOICE_CIRCUMSTANTIAL = 'circumstantial';
 const VOICE_DEPONENT = 'deponent';
 const TYPE_IRREGULAR = 'irregular';
 const TYPE_REGULAR = 'regular';
-// Classes
+// Classes (of pronouns in Latin)
 const CLASS_PERSONAL = 'personal';
 const CLASS_REFLEXIVE = 'reflexive';
 const CLASS_POSSESSIVE = 'possessive';
 const CLASS_DEMONSTRATIVE = 'demonstrative';
 const CLASS_RELATIVE = 'relative';
 const CLASS_INTERROGATIVE = 'interrogative';
-const CLASS_GENERAL_RELATIVE = 'general relative';
-const CLASS_INDEFINITE = 'indefinite';
-const CLASS_INTENSIVE = 'intensive';
-const CLASS_RECIPROCAL = 'reciprocal';
 /* eslit-enable no-unused-vars */
 
 
@@ -38710,11 +38829,7 @@ var constants = Object.freeze({
 	CLASS_POSSESSIVE: CLASS_POSSESSIVE,
 	CLASS_DEMONSTRATIVE: CLASS_DEMONSTRATIVE,
 	CLASS_RELATIVE: CLASS_RELATIVE,
-	CLASS_INTERROGATIVE: CLASS_INTERROGATIVE,
-	CLASS_GENERAL_RELATIVE: CLASS_GENERAL_RELATIVE,
-	CLASS_INDEFINITE: CLASS_INDEFINITE,
-	CLASS_INTENSIVE: CLASS_INTENSIVE,
-	CLASS_RECIPROCAL: CLASS_RECIPROCAL
+	CLASS_INTERROGATIVE: CLASS_INTERROGATIVE
 });
 
 /**
@@ -41513,7 +41628,7 @@ class StoredRequest {
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__message_message__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__request_message__ = __webpack_require__(17);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(2);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__content_tab_script__ = __webpack_require__(3);
 
 
 

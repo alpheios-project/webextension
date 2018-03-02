@@ -1,11 +1,14 @@
+import {UIStateAPI} from 'alpheios-components'
+
 /**
  * Contains a state of a tab content script.
  * @property {Number} tabID - An ID of a tab where the content script is loaded
  * @property {Symbol} status - A status of a current script (Active, Deactivated, Pending)
  * @property {panelStatus} panelStatus
  */
-export default class TabScript {
+export default class TabScript extends UIStateAPI {
   constructor (tabID) {
+    super()
     this.tabID = tabID
     this.status = undefined
     this.panelStatus = undefined
@@ -57,6 +60,10 @@ export default class TabScript {
           INFO: 'info'
         },
         defaultValueIndex: 0
+      },
+      uiActive: {
+        name: 'uiActive',
+        valueType: Boolean
       }
     }
   }
@@ -181,7 +188,7 @@ export default class TabScript {
   }
 
   uiIsActive () {
-    return this.uiActive
+    return this[TabScript.props.uiActive.name]
   }
 
   activate () {
@@ -213,7 +220,8 @@ export default class TabScript {
   }
 
   activateUI () {
-    this.uiActive = true
+    this.setItem(TabScript.props.uiActive.name,true)
+    return this
   }
 
   changeTab (tabName) {
