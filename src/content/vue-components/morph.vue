@@ -3,10 +3,10 @@
     <div class="alpheios-morph__dictentry" v-for="lex in lexemes" v-show="showLexeme(lex)">
       <span class="alpheios-morph__formtext"
         v-if="! lex.lemma.principalParts.includes(lex.lemma.word)"
-        :lang="lex.lemma.language">{{ lex.lemma.word }}</span>
+        :lang="lex.lemma.languageCode">{{ lex.lemma.word }}</span>
       <span class="alpheios-morph__formtext">
         <span class="alpheios-morph__listitem"
-          v-for="part in lex.lemma.principalParts" :lang="lex.lemma.language">{{ part }}</span>
+          v-for="part in lex.lemma.principalParts" :lang="lex.lemma.languageCode">{{ part }}</span>
       </span> :
       <span :class="attributeClass(types.pronunciation)"
           v-for="pron in lex.lemma.features[types.pronunciation]"

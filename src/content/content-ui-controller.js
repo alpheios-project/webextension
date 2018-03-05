@@ -622,7 +622,7 @@ export default class ContentUIController {
     let enabled = true // For testing non-supported parts of speech TODO: Remove after testing is finished
     this.panel.enableInflections(enabled)
     this.panel.updateInflections(inflectionData, homonym)
-    this.popup.popupData.inflDataReady = enabled && inflectionData[Feature.types.part].length > 0 // TODO should be a method on InflectionData
+    this.popup.popupData.inflDataReady = enabled && inflectionData.hasInflectionSets
   }
 
   clear () {
