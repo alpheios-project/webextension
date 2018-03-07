@@ -15,7 +15,7 @@
             <div v-show="views.length > 1">
                 <label class="uk-form-label">View:</label>
                 <select v-model="viewSelector" class="uk-select">
-                    <option v-for="view in views">{{view.name}}</option>
+                    <option v-for="view in views" :value="view.id">{{view.name}}</option>
                 </select>
             </div>
 
@@ -63,7 +63,7 @@
         partsOfSpeech: [],
         selectedPartOfSpeech: [],
         views: [],
-        selectedViewName: '',
+        selectedViewID: '',
         selectedView: {},
         renderedView: {},
         elementIDs: {
@@ -95,7 +95,6 @@
         return this.data.enabled
       },
       isContentAvailable: function () {
-        console.log("Checking if content is available")
         console.log(this.data.enabled && Boolean(this.data.inflectionData))
         return this.data.enabled && Boolean(this.data.inflectionData)
       },
@@ -115,23 +114,23 @@
           this.selectedPartOfSpeech = newValue
           this.views = this.viewSet.getViews(this.selectedPartOfSpeech)
           this.selectedView = this.views[0]
-          this.selectedViewName = this.views[0].name
+          this.selectedViewID = this.views[0].id
           this.renderInflections().displayInflections()
         }
       },
       viewSelector: {
         get: function () {
-          return this.selectedViewName
+          return this.selectedViewID
         },
         set: function (newValue) {
-          console.log(`View changed to ${newValue}`)
-          this.selectedView = this.views.find(view => view.name === newValue)
+          this.selectedView = this.views.find(view => view.id === newValue)
+          console.log(`View ID changed to ${newValue}, view name is "${this.selectedView.name}"`)
           this.renderInflections().displayInflections()
-          this.selectedViewName = newValue
+          this.selectedViewID = newValue
         }
       },
       inflectionTable: function () {
-        return this.selectedView.name
+        return this.selectedView.id
       },
       footnotes: function () {
         let footnotes = []
@@ -173,11 +172,11 @@
           }
 
           if (this.views.length > 0) {
-            this.selectedViewName = this.views[0].name
+            this.selectedViewID = this.views[0].id
             this.selectedView = this.views[0]
             this.renderInflections().displayInflections()
           } else {
-            this.selectedViewName = ''
+            this.selectedViewID = ''
             this.selectedView = ''
           }
         }

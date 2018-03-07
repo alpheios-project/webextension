@@ -3806,6 +3806,96 @@ class ExtendedLanguageData {
   } */
 }
 
+function createCommonjsModule(fn, module) {
+	return module = { exports: {} }, fn(module, module.exports), module.exports;
+}
+
+var rngBrowser = createCommonjsModule(function (module) {
+// Unique ID creation requires a high quality random # generator.  In the
+// browser this is a little complicated due to unknown quality of Math.random()
+// and inconsistent support for the `crypto` API.  We do the best we can via
+// feature-detection
+
+// getRandomValues needs to be invoked in a context where "this" is a Crypto implementation.
+var getRandomValues = (typeof(crypto) != 'undefined' && crypto.getRandomValues.bind(crypto)) ||
+                      (typeof(msCrypto) != 'undefined' && msCrypto.getRandomValues.bind(msCrypto));
+if (getRandomValues) {
+  // WHATWG crypto RNG - http://wiki.whatwg.org/wiki/Crypto
+  var rnds8 = new Uint8Array(16); // eslint-disable-line no-undef
+
+  module.exports = function whatwgRNG() {
+    getRandomValues(rnds8);
+    return rnds8;
+  };
+} else {
+  // Math.random()-based (RNG)
+  //
+  // If all else fails, use Math.random().  It's fast, but is of unspecified
+  // quality.
+  var rnds = new Array(16);
+
+  module.exports = function mathRNG() {
+    for (var i = 0, r; i < 16; i++) {
+      if ((i & 0x03) === 0) r = Math.random() * 0x100000000;
+      rnds[i] = r >>> ((i & 0x03) << 3) & 0xff;
+    }
+
+    return rnds;
+  };
+}
+});
+
+/**
+ * Convert array of 16 byte values to UUID string format of the form:
+ * XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
+ */
+var byteToHex = [];
+for (var i = 0; i < 256; ++i) {
+  byteToHex[i] = (i + 0x100).toString(16).substr(1);
+}
+
+function bytesToUuid(buf, offset) {
+  var i = offset || 0;
+  var bth = byteToHex;
+  return bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] + '-' +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]] +
+          bth[buf[i++]] + bth[buf[i++]];
+}
+
+var bytesToUuid_1 = bytesToUuid;
+
+function v4(options, buf, offset) {
+  var i = buf && offset || 0;
+
+  if (typeof(options) == 'string') {
+    buf = options === 'binary' ? new Array(16) : null;
+    options = null;
+  }
+  options = options || {};
+
+  var rnds = options.random || (options.rng || rngBrowser)();
+
+  // Per 4.4, set bits for version and `clock_seq_hi_and_reserved`
+  rnds[6] = (rnds[6] & 0x0f) | 0x40;
+  rnds[8] = (rnds[8] & 0x3f) | 0x80;
+
+  // Copy bytes to buffer, if provided
+  if (buf) {
+    for (var ii = 0; ii < 16; ++ii) {
+      buf[i + ii] = rnds[ii];
+    }
+  }
+
+  return buf || bytesToUuid_1(rnds);
+}
+
+var v4_1 = v4;
+
 /**
  * Suffix is an ending of a word with none or any grammatical features associated with it.
  * Features are stored in properties whose names are type of a grammatical feature (i.e. case, gender, etc.)
@@ -3821,6 +3911,7 @@ class Morpheme {
     if (morphemeValue === undefined) {
       throw new Error('Morpheme value should not be empty.')
     }
+    this.id = v4_1();
     this.value = morphemeValue;
     this.features = {};
     this.featureGroups = {};
@@ -3836,7 +3927,7 @@ class Morpheme {
   }
 
   static get ClassType () {
-    return Morpheme
+    return this
   }
 
   static readObject (jsonObject) {
@@ -4085,15 +4176,9 @@ class Morpheme {
 }
 
 class Suffix extends Morpheme {
-  static get ClassType () {
-    return Suffix
-  }
 }
 
 class Form extends Morpheme {
-  static get ClassType () {
-    return Form
-  }
 }
 
 class Footnote {
@@ -4205,12 +4290,13 @@ class ParadigmRule {
 
 class Paradigm {
   constructor (tableHTML) {
+    this.id = v4_1();
     this.html = tableHTML;
     this.rules = [];
   }
 
   static get ClassType () {
-    return Paradigm
+    return this
   }
 
   addRule (matchOrder, features, lemma, morphFlags) {
@@ -4308,9 +4394,11 @@ class InflectionSet {
   }
 
   getMatchingParadigms (inflection) {
+    console.log(`Matching paradigms`);
     if (this.types.has(Paradigm)) {
       const paradigms = this.types.get(Paradigm);
-      return paradigms.getMatches(inflection).map(o => o.paradigm)
+      // return paradigms.getMatches(inflection).map(o => o.paradigm)
+      return paradigms.items // Testing only
     }
     return []
   }
@@ -4734,14 +4822,10 @@ var verbParticipleSuffixesCSV = "Ending,Conjugation,Voice,Mood,Tense,Number,Pers
 
 var verbSupineSuffixesCSV = "Ending,Conjugation,Voice,Mood,Tense,Number,Person,Case,Type,Footnote\r\nātum,1st,active,supine,,,,accusative,regular,\r\nitum,2nd,active,supine,,,,accusative,regular,\r\ntum,3rd,active,supine,,,,accusative,regular,\r\nītum,4th,active,supine,,,,accusative,regular,\r\nātū,1st,active,supine,,,,ablative,regular,\r\nitū,2nd,active,supine,,,,ablative,regular,\r\ntū,3rd,active,supine,,,,ablative,regular,\r\nītū,4th,active,supine,,,,ablative,regular,\r\n,1st,passive,supine,,,,accusative,,\r\n,2nd,passive,supine,,,,accusative,,\r\n,3rd,passive,supine,,,,accusative,,\r\n,4th,passive,supine,,,,accusative,,\r\n,1st,passive,supine,,,,ablative,,\r\n,2nd,passive,supine,,,,ablative,,\r\n,3rd,passive,supine,,,,ablative,,\r\n,4th,passive,supine,,,,ablative,,\r\n";
 
-function createCommonjsModule(fn, module) {
-	return module = { exports: {} }, fn(module, module.exports), module.exports;
-}
-
 var papaparse = createCommonjsModule(function (module, exports) {
 /*!
 	Papa Parse
-	v4.3.6
+	v4.3.7
 	https://github.com/mholt/PapaParse
 	License: MIT
 */
@@ -5447,7 +5531,7 @@ var papaparse = createCommonjsModule(function (module, exports) {
 
 		this._chunkError = function()
 		{
-			this._sendError(reader.error);
+			this._sendError(reader.error.message);
 		};
 
 	}
@@ -5887,7 +5971,12 @@ var papaparse = createCommonjsModule(function (module, exports) {
 		var step = config.step;
 		var preview = config.preview;
 		var fastMode = config.fastMode;
-		var quoteChar = config.quoteChar || '"';
+		/** Allows for no quoteChar by setting quoteChar to undefined in config */
+		if (config.quoteChar === undefined){
+			var quoteChar = '"';
+		} else {
+			var quoteChar = config.quoteChar;
+		}
 
 		// Delimiter must be valid
 		if (typeof delim !== 'string'
@@ -6336,17 +6425,17 @@ let types = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */
  */
 const importerName = 'csv';
 __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.declension).addImporter(importerName)
-    .map('1st 2nd',
-  [ __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.declension)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_1ST],
-    __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.declension)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_2ND]
-  ]);
+  .map('1st 2nd',
+    [ __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.declension)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_1ST],
+      __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.declension)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].ORD_2ND]
+    ]);
 __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.gender).addImporter(importerName)
-    .map('masculine feminine',
-  [ __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.gender)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_MASCULINE],
-    __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.gender)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_FEMININE]
-  ]);
+  .map('masculine feminine',
+    [ __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.gender)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_MASCULINE],
+      __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.gender)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].GEND_FEMININE]
+    ]);
 __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.tense).addImporter(importerName)
-    .map('future_perfect', __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.tense)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE_PERFECT]);
+  .map('future_perfect', __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["l" /* LatinLanguageModel */].getFeatureType(types.tense)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].TENSE_FUTURE_PERFECT]);
 const footnotes = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["g" /* FeatureType */](types.footnote, [], __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_LATIN);
 
 // endregion Definition of grammatical features
@@ -6360,7 +6449,7 @@ class LatinLanguageDataset extends LanguageDataset {
     return __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_LATIN
   }
 
-// For noun and adjectives
+  // For noun and adjectives
   addSuffixes (partOfSpeech, data) {
     // Some suffix values will mean a lack of suffix, they will be mapped to a null
     let noSuffixValue = '-';
@@ -6390,16 +6479,16 @@ class LatinLanguageDataset extends LanguageDataset {
     }
   }
 
-// For pronouns
+  // For pronouns
   addPronounForms (partOfSpeech, data) {
     // First row are headers
     for (let i = 1; i < data.length; i++) {
       let features = [partOfSpeech];
-//    if (data[i][0]) {
-//      features.push(languageModel.features[types.formSet].getFromImporter('csv', data[i][0]))
-//    }
+      //    if (data[i][0]) {
+      //      features.push(languageModel.features[types.formSet].getFromImporter('csv', data[i][0]))
+      //    }
       // TODO read a headword into a principalPars array
-//  if (data[i][1]) { }
+      //  if (data[i][1]) { }
       if (data[i][2]) {
         features.push(this.model.getFeatureType(types.grmClass).getFromImporter('csv', data[i][2]));
       }
@@ -6429,7 +6518,7 @@ class LatinLanguageDataset extends LanguageDataset {
     }
   }
 
-// For verbs
+  // For verbs
   addVerbSuffixes (partOfSpeech, data) {
     // Some suffix values will mean a lack of suffix, they will be mapped to a null
     let noSuffixValue = '-';
@@ -6531,7 +6620,7 @@ class LatinLanguageDataset extends LanguageDataset {
     }
   }
 
-// for Lemmas
+  // for Lemmas
   addVerbForms (partOfSpeech, data) {
     // First row are headers
     for (let i = 1; i < data.length; i++) {
@@ -6792,6 +6881,10 @@ var paradigm52 = "<title>\r\n    <span xml:lang=\"grc\">δύω</span>: Aorist S
 
 var paradigm53 = "<title>\r\n    <span xml:lang=\"grc\">οἶδα</span>: Perfect System</title>\r\n<table>\r\n    <row role=\"label\">\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\"/>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\"/>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\" mood=\"indicative\">indicative</cell>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\" mood=\"subjunctive\">subjunctive</cell>\r\n        <cell role=\"label\" tense=\"present\" voice=\"active\" mood=\"optative\">present optative</cell>\r\n        <cell role=\"label\" tense=\"present\" voice=\"active\" mood=\"optative\"/>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\" mood=\"imperative\">imperative</cell>\r\n        <cell role=\"label\" tense=\"pluperfect\" voice=\"active\" mood=\"indicative\">pluperfect indicative</cell>\r\n        <cell role=\"label\" tense=\"pluperfect\" voice=\"active\" mood=\"indicative\"/>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\">singular</cell>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\" num=\"singular\">1st</cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"singular\" pers=\"1st\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">οἶδα</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"singular\" pers=\"1st\" mood=\"subjunctive\">\r\n            <span xml:lang=\"grc\">εἰδῶ</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"singular\" pers=\"1st\" mood=\"optative\">\r\n            <span xml:lang=\"grc\">εἰδείην</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"singular\" pers=\"1st\" mood=\"optative\">\r\n            <span xml:lang=\"grc\"/>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"singular\" pers=\"1st\" mood=\"imperative\">\r\n            <span xml:lang=\"grc\"/>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"singular\" pers=\"1st\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾔδη</span></cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"singular\" pers=\"1st\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾔδειν</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\"/>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\" num=\"singular\">2nd</cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"singular\" pers=\"2nd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">οἶσθα</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"singular\" pers=\"2nd\" mood=\"subjunctive\">\r\n            <span xml:lang=\"grc\">εἰδῇς</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"singular\" pers=\"2nd\" mood=\"optative\">\r\n            <span xml:lang=\"grc\">εἰδείης</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"singular\" pers=\"2nd\" mood=\"optative\">\r\n            <span xml:lang=\"grc\"/>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"singular\" pers=\"2nd\" mood=\"imperative\">\r\n            <span xml:lang=\"grc\">ἴσθι</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"singular\" pers=\"2nd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾔδησθα</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"singular\" pers=\"2nd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾔδεις</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\"/>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\" num=\"singular\">3rd</cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"singular\" pers=\"3rd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">οἶδε(ν)</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"singular\" pers=\"3rd\" mood=\"subjunctive\">\r\n            <span xml:lang=\"grc\">εἰδῇ</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"singular\" pers=\"3rd\" mood=\"optative\">\r\n            <span xml:lang=\"grc\">εἰδείη</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"singular\" pers=\"3rd\" mood=\"optative\">\r\n            <span xml:lang=\"grc\"/>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"singular\" pers=\"3rd\" mood=\"imperative\">\r\n            <span xml:lang=\"grc\">ἴστω</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"singular\" pers=\"3rd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾔδειν</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"singular\" pers=\"3rd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾔδει</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\">dual</cell>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\" num=\"dual\">2nd</cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"dual\" pers=\"2nd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ἴστον</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"dual\" pers=\"2nd\" mood=\"subjunctive\">\r\n            <span xml:lang=\"grc\">εἰδῆτον</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"dual\" pers=\"2nd\" mood=\"optative\">\r\n            <span xml:lang=\"grc\">εἰδεῖτον</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"dual\" pers=\"2nd\" mood=\"optative\">\r\n            <span xml:lang=\"grc\"/>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"dual\" pers=\"2nd\" mood=\"imperative\">\r\n            <span xml:lang=\"grc\">ἴστον</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"dual\" pers=\"2nd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾔδετον</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"dual\" pers=\"2nd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\"/>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\"/>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\" num=\"dual\">3rd</cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"dual\" pers=\"3rd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ἴστον</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"dual\" pers=\"3rd\" mood=\"subjunctive\">\r\n            <span xml:lang=\"grc\">εἰδῆτον</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"dual\" pers=\"3rd\" mood=\"optative\">\r\n            <span xml:lang=\"grc\">εἰδείτην</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"dual\" pers=\"3rd\" mood=\"optative\">\r\n            <span xml:lang=\"grc\"/>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"dual\" pers=\"3rd\" mood=\"imperative\">\r\n            <span xml:lang=\"grc\">ἴστων</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"dual\" pers=\"3rd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾐδέτην</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"dual\" pers=\"3rd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\"/>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\">plural</cell>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\" num=\"plural\">1st</cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"plural\" pers=\"1st\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ἴσμεν</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"plural\" pers=\"1st\" mood=\"subjunctive\">\r\n            <span xml:lang=\"grc\">εἰδῶμεν</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"plural\" pers=\"1st\" mood=\"optative\">\r\n            <span xml:lang=\"grc\">εἰδεῖμεν</span></cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"plural\" pers=\"1st\" mood=\"optative\">\r\n            <span xml:lang=\"grc\">εἰδείημεν</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"plural\" pers=\"1st\" mood=\"imperative\">\r\n            <span xml:lang=\"grc\"/>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"plural\" pers=\"1st\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾔδεμεν</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"plural\" pers=\"1st\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾖσμεν</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\"/>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\" num=\"plural\">2nd</cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"plural\" pers=\"2nd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ἴστε</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"plural\" pers=\"2nd\" mood=\"subjunctive\">\r\n            <span xml:lang=\"grc\">εἰδῆτε</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"plural\" pers=\"2nd\" mood=\"optative\">\r\n            <span xml:lang=\"grc\">εἰδεῖτε</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"plural\" pers=\"2nd\" mood=\"optative\">\r\n            <span xml:lang=\"grc\">εἰδείητε</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"plural\" pers=\"2nd\" mood=\"imperative\">\r\n            <span xml:lang=\"grc\">ἴστε</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"plural\" pers=\"2nd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾔδετε</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"plural\" pers=\"2nd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾖστε</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\"/>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\" num=\"plural\">3rd</cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"plural\" pers=\"3rd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ἴσᾱσι(ν)</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"plural\" pers=\"3rd\" mood=\"subjunctive\">\r\n            <span xml:lang=\"grc\">εἰδῶσῐ(ν)</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"plural\" pers=\"3rd\" mood=\"optative\">\r\n            <span xml:lang=\"grc\">εἰδεῖεν</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"present\" voice=\"active\" num=\"plural\" pers=\"3rd\" mood=\"optative\">\r\n            <span xml:lang=\"grc\">εἰδείησαν</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" num=\"plural\" pers=\"3rd\" mood=\"imperative\">\r\n            <span xml:lang=\"grc\">ἴστων</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"plural\" pers=\"3rd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾔδεσαν</span>\r\n        </cell>\r\n        <cell role=\"data\" tense=\"pluperfect\" voice=\"active\" num=\"plural\" pers=\"3rd\" mood=\"indicative\">\r\n            <span xml:lang=\"grc\">ᾖσαν</span>\r\n        </cell>\r\n    </row>\r\n</table>\r\n<table role=\"sub\">\r\n    <row role=\"data\">\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\"/>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\">infinitive</cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" mood=\"infinitive\">\r\n            <span xml:lang=\"grc\">εἰδέναι</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\"/>\r\n        <cell role=\"label\" tense=\"perfect\" voice=\"active\">participles</cell>\r\n        <cell role=\"data\" tense=\"perfect\" voice=\"active\" pofs=\"verb_participle\">\r\n            <span xml:lang=\"grc\">εἰδώς, εἰδυῖᾰ, εἰδός</span>\r\n            <reflink xmlns:xlink=\"http://www.w3.org/1999/xlink\"\r\n                     xlink:href=\"inflect:#verb|type:paradigm|paradigm_id:verbpdgm63\">(see declension)\r\n            </reflink>\r\n        </cell>\r\n    </row>\r\n</table>\r\n";
 
+var verbParadigmRulesCSV = "ID ref,Match order,Part of speech,Stem type,Voice,Mood,Tense,Lemma,Morph flags,Dialect\r\nverbpdgm1,2,verb,w_stem,active,,,,,\r\nverbpdgm2,2,verb,w_stem,mediopassive,,,,,\r\nverbpdgm2,2,verb,w_stem,middle,,,,,\r\nverbpdgm3,1,verb,reg_fut,,,,,,\r\nverbpdgm4,3,verb,reg_fut,,,,,contr,\r\nverbpdgm3,1,verb,aw_fut,,,,,,\r\nverbpdgm4,2,verb,aw_fut,,,,,contr,\r\nverbpdgm3,1,verb,ew_fut,,,,,,\r\nverbpdgm4,2,verb,ew_fut,,,,,contr,\r\nverbpdgm5,3,verb,aw_fut,,,,,contr,doric\r\nverbpdgm5,3,verb,aw_fut,,,,,contr,aeolic\r\nverbpdgm6,1,verb,aor2,active,,,,,\r\nverbpdgm7,1,verb,aor2,middle,,,,,\r\nverbpdgm8,1,verb,aor1,active,,,,,\r\nverbpdgm9,1,verb,aor1,middle,,,,,\r\nverbpdgm10,1,verb,aor_pass,,,,,,\r\nverbpdgm10,1,verb,aor2_pass,,,,,,\r\nverbpdgm3,3,verb,aor_pass,passive,,future,,,\r\nverbpdgm11,1,verb,perf_act,,,,,,\r\nverbpdgm15,3,verb,perf_act,active,,pluperfect,,,\r\nverbpdgm12,1,verb,,mediopassive,indicative,perfect,,,\r\nverbpdgm12,1,verb,,mediopassive,infinitive,perfect,,,\r\nverbpdgm13,1,verb,,mediopassive,subjunctive,perfect,,,\r\nverbpdgm13,1,verb,,middle,subjunctive,perfect,,,\r\nverbpdgm13,1,verb,,mediopassive,optative,perfect,,,\r\nverbpdgm13,1,verb,,middle,optative,perfect,,,\r\nverbpdgm13,1,verb,,mediopassive,imperative,perfect,,,\r\nverbpdgm13,1,verb,,middle,imperative,perfect,,,\r\nverbpdgm14,1,verb,,mediopassive,subjunctive,perfect,,,\r\nverbpdgm14,1,verb,,middle,subjunctive,perfect,,,\r\nverbpdgm14,1,verb,,mediopassive,optative,perfect,,,\r\nverbpdgm14,1,verb,,middle,optative,perfect,,,\r\nverbpdgm14,1,verb,,mediopassive,imperative,perfect,,,\r\nverbpdgm14,1,verb,,middle,imperative,perfect,,,\r\nverbpdgm15,1,verb,,mediopassive,indicative,pluperfect,,,\r\nverbpdgm16,1,verb,fut_perf,,,,,,\r\nverbpdgm17,1,verb,perf2_act,,,,,,\r\nverbpdgm18,1,verb,ew_pr,active,,,,,\r\nverbpdgm20,1,verb,ew_pr,mediopassive,,,,,\r\nverbpdgm20,1,verb,ew_pr,middle,,,,,\r\nverbpdgm19,1,verb,evw_pr,,,,,,\r\nverbpdgm21,2,verb,evw_pr,mediopassive,,,,,\r\nverbpdgm21,2,verb,evw_pr,middle,,,,,\r\nverbpdgm22,2,verb,aw_pr,,,,,,\r\nverbpdgm23,1,verb,ajw_pr,,,,,,\r\nverbpdgm24,2,verb,aw_pr,mediopassive,,,,,\r\nverbpdgm24,2,verb,aw_pr,middle,,,,,\r\nverbpdgm25,2,verb,ajw_pr,mediopassive,,,,,\r\nverbpdgm25,2,verb,ajw_pr,middle,,,,,\r\nverbpdgm26,2,verb,ow_pr,active,,,,,\r\nverbpdgm27,2,verb,ow_pr,mediopassive,,,,,\r\nverbpdgm27,2,verb,ow_pr,middle,,,,,\r\nverbpdgm26,2,verb,ww_pr,active,,,,,\r\nverbpdgm27,2,verb,ww_pr,mediopassive,,,,,\r\nverbpdgm27,2,verb,ww_pr,middle,,,,,\r\nverbpdgm28,2,verb,emi_pr,active,,,,,\r\nverbpdgm29,2,verb,emi_pr,mediopassive,,,,,\r\nverbpdgm29,2,verb,emi_pr,middle,,,,,\r\nverbpdgm30,2,verb,emi_or,active,,,,,\r\nverbpdgm31,2,verb,emi_or,middle,,,,,\r\nverbpdgm32,2,verb,,active,,,ἵημι,,\r\nverbpdgm33,2,verb,,mediopassive,,,ἵημι,,\r\nverbpdgm33,2,verb,,middle,,,ἵημι,,\r\nverbpdgm34,3,verb,,acive,,aorist,ἵημι,,\r\nverbpdgm35,3,verb,,middle,,aorist,ἵημι,,\r\nverbpdgm35,3,verb,,middle,,aorist,ἵημι,,\r\nverbpdgm36,2,verb,omi_pr,active,,,,,\r\nverbpdgm37,2,verb,omi_pr,mediopassive,,,,,\r\nverbpdgm37,2,verb,omi_pr,middle,,,,,\r\nverbpdgm38,2,verb,omi_aor,active,,,,,\r\nverbpdgm39,2,verb,omi_aor,middle,,,,,\r\nverbpdgm40,2,verb,ami_pr,active,,,,,\r\nverbpdgm41,2,verb,ami_pr,mediopassive,,,,,\r\nverbpdgm41,2,verb,ami_pr,middle,,,,,\r\nverbpdgm42,2,verb,ami_aor,active,,,,,\r\nverbpdgm43,1,verb,ami_short,,,,,,\r\nverbpdgm44,2,verb,umi_pr,active,,,,,\r\nverbpdgm45,2,verb,umi_pr,mediopassive,,,,,\r\nverbpdgm45,2,verb,umi_pr,middle,,,,,\r\nverbpdgm46,2,verb,irreg_mi,,,,εἰμί,,\r\nverbpdgm47,2,verb,irreg_mi,,,,εἶμι,,\r\nverbpdgm48,2,verb,ath_primary,active,,present,,,\r\nverbpdgm48,2,verb,ath_primary,active,,imperfect,,,\r\nverbpdgm49,1,verb,ath_h_aor,,,,,,\r\nverbpdgm50,1,verb,ath_w_aor,,,,,,\r\nverbpdgm51,1,verb,ath_w_aor,,,,,,\r\nverbpdgm52,1,verb,ath_u_aor,,,,,,\r\nverbpdgm53,2,verb,ath_primary,,,perfect,,,\r\nverbpdgm53,3,verb,perf_act,active,,pluperfect,,,";
+
+var verbParadigmFootnotesCSV = "Index,Text\r\n1,\"With neuter plural subject, periphrastic forms are sometimes found in the indicative, but more commonly the 3rd singular form is used instead.\"\r\n2,\"thus is late Greek with a neuter plural subject, but in classical Attic the 3rd singular form is used with neuter plural subject.\"";
+
 var paradigm54 = "<title>Participles in <span xml:lang=\"grc\">-ων, -ουσα, -ον</span> (present and future active, uncontracted)</title>\r\n<table>\r\n    <row role=\"label\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" gend=\"masculine\">masculine</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" gend=\"feminine\">feminine</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" gend=\"neuter\">neuter</cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\">singular</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">n.v.</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"nominative vocative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">ἄγων</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"nominative vocative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">ἄγουσᾰ</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"nominative vocative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">ἄγον</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">genitive</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"genitive\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">ἄγοντος</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"genitive\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">ἀγούσης</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"genitive\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">ἄγοντος</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">dative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"dative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">ἄγοντι</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"dative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">ἀγούσῃ</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"dative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">ἄγοντι</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">accusative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"accusative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">ἄγοντᾰ</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"accusative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">ἄγουσᾰν</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"accusative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">ἄγον</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\">dual</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"dual\">n.a.v.</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"nominative accusative vocative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">ἄγοντε</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"nominative accusative vocative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">ἀγούσᾱ</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"nominative accusative vocative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">ἄγοντε</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"dual\">g.d.</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"genitive dative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">ἀγόντοιν</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"genitive dative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">ἀγούσαιν</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"genitive dative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">ἀγόντοιν</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\">plural</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"plural\">n.v.</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"nominative vocative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">ἄγοντες</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"nominative vocative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">ἄγουσαι</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"nominative vocative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">ἄγοντᾰ</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"plural\">genitive</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"genitive\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">ἀγόντων</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"genitive\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">ἀγουσῶν</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"genitive\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">ἀγόντων</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"plural\">dative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"dative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">ἄγουσῐ(ν)</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"dative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">ἀγούσαις</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"dative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">ἄγουσῐ(ν)</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"plural\">accusative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"accusative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">ἄγοντᾰς</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"accusative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">ἀγούσᾱς</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"accusative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">ἄγοντᾰ</span>\r\n        </cell>\r\n    </row>\r\n</table>\r\n";
 
 var paradigm55 = "<title>Participles in <span xml:lang=\"grc\">-ῶν, -οῦσα, -οῦν</span> (present and future active, <span\r\n        xml:lang=\"grc\">ε</span>- and <span xml:lang=\"grc\">ο</span>-contract)</title>\r\n<table>\r\n    <row role=\"label\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" gend=\"masculine\">masculine</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" gend=\"feminine\">feminine</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" gend=\"neuter\">neuter</cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\">singular</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">n.v.</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"nominative vocative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">μενῶν</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"nominative vocative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">μενοῦσᾰ</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"nominative vocative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">μενοῦν</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">genitive</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"genitive\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">μενοῦντος</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"genitive\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">μενούσης</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"genitive\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">μενοῦντος</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">dative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"dative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">μενοῦντι</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"dative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">μενούσῃ</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"dative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">μενοῦντι</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">accusative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"accusative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">μενοῦντᾰ</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"accusative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">μενοῦσᾰν</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"accusative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">μενοῦν</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\">dual</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"dual\">n.a.v.</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"nominative accusative vocative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">μενοῦντε</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"nominative accusative vocative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">μενούσᾱ</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"nominative accusative vocative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">μενοῦντε</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"dual\">g.d.</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"genitive dative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">μενούντοιν</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"genitive dative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">μενούσαιν</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"genitive dative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">μενούντοιν</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\">plural</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"plural\">n.v.</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"nominative vocative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">μενοῦντες</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"nominative vocative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">μενοῦσαι</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"nominative vocative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">μενοῦντᾰ</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"plural\">genitive</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"genitive\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">μενούντων</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"genitive\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">μενουσῶν</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"genitive\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">μενούντων</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"plural\">dative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"dative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">μενοῦσῐ(ν)</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"dative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">μενούσαις</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"dative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">μενοῦσῐ(ν)</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"plural\">accusative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"accusative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">μενοῦντᾰς</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"accusative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">μενούσᾱς</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"accusative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">μενοῦντᾰ</span>\r\n        </cell>\r\n    </row>\r\n</table>\r\n";
@@ -6818,9 +6911,7 @@ var paradigm65 = "<title>Participles in <span xml:lang=\"grc\">-μενος, -μ�
 
 var paradigm66 = "<title>Participles in <span xml:lang=\"grc\">-μένος, -μένη, -μένον</span> (perfect middle-passive)</title>\r\n<table>\r\n    <row role=\"label\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" gend=\"masculine\">masculine</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" gend=\"feminine\">feminine</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" gend=\"neuter\">neuter</cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\">singular</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">nominative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"nominative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">γεγραμμένος</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"nominative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">γεγραμμένη</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"nominative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">γεγραμμένον</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">genitive</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"genitive\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">γεγραμμένου</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"genitive\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">γεγραμμένης</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"genitive\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">γεγραμμένου</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">dative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"dative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">γεγραμμένῳ</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"dative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">γεγραμμένῃ</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"dative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">γεγραμμένῳ</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">accusative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"accusative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">γεγραμμένον</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"accusative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">γεγραμμένην</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"accusative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">γεγραμμένον</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"singular\">vocative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"vocative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">γεγραμμένε</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"vocative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">γεγραμμένη</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"singular\" case=\"vocative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">γεγραμμένον</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\">dual</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"dual\">n.a.v.</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"nominative accusative vocative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">γεγραμμένω</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"nominative accusative vocative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">γεγραμμένᾱ</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"nominative accusative vocative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">γεγραμμένω</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"dual\">g.d.</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"genitive dative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">γεγραμμένοιν</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"genitive dative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">γεγραμμέναιν</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"dual\" case=\"genitive dative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">γεγραμμένοιν</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\">plural</cell>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"plural\">n.v.</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"nominative vocative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">γεγραμμένοι</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"nominative vocative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">γεγραμμέναι</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"nominative vocative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">γεγραμμένᾰ</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"plural\">genitive</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"genitive\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">γεγραμμένων</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"genitive\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">γεγραμμένων</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"genitive\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">γεγραμμένων</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"plural\">dative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"dative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">γεγραμμένοις</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"dative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">γεγραμμέναις</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"dative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">γεγραμμένοις</span>\r\n        </cell>\r\n    </row>\r\n    <row role=\"data\">\r\n        <cell role=\"label\" pofs=\"verb_participle\"/>\r\n        <cell role=\"label\" pofs=\"verb_participle\" num=\"plural\">accusative</cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"accusative\" gend=\"masculine\">\r\n            <span xml:lang=\"grc\">γεγραμμένους</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"accusative\" gend=\"feminine\">\r\n            <span xml:lang=\"grc\">γεγραμμένᾱς</span>\r\n        </cell>\r\n        <cell role=\"data\" pofs=\"verb_participle\" num=\"plural\" case=\"accusative\" gend=\"neuter\">\r\n            <span xml:lang=\"grc\">γεγραμμένᾰ</span>\r\n        </cell>\r\n    </row>\r\n</table>\r\n";
 
-var paradigmRulesCSV = "ID ref,Match order,Part of speech,Stem type,Voice,Mood,Tense,Lemma,Morph flags,Dialect\r\nverbpdgm1,2,,w_stem,active,,,,,\r\nverbpdgm2,2,,w_stem,mediopassive,,,,,\r\nverbpdgm2,2,,w_stem,middle,,,,,\r\nverbpdgm3,1,,reg_fut,,,,,,\r\nverbpdgm4,3,,reg_fut,,,,,contr,\r\nverbpdgm3,1,,aw_fut,,,,,,\r\nverbpdgm4,2,,aw_fut,,,,,contr,\r\nverbpdgm3,1,,ew_fut,,,,,,\r\nverbpdgm4,2,,ew_fut,,,,,contr,\r\nverbpdgm5,3,,aw_fut,,,,,contr,doric\r\nverbpdgm5,3,,aw_fut,,,,,contr,aeolic\r\nverbpdgm6,1,,aor2,active,,,,,\r\nverbpdgm7,1,,aor2,middle,,,,,\r\nverbpdgm8,1,,aor1,active,,,,,\r\nverbpdgm9,1,,aor1,middle,,,,,\r\nverbpdgm10,1,,aor_pass,,,,,,\r\nverbpdgm10,1,,aor2_pass,,,,,,\r\nverbpdgm3,3,,aor_pass,passive,,future,,,\r\nverbpdgm11,1,,perf_act,,,,,,\r\nverbpdgm15,3,,perf_act,active,,pluperfect,,,\r\nverbpdgm12,1,,,mediopassive,indicative,perfect,,,\r\nverbpdgm12,1,,,mediopassive,infinitive,perfect,,,\r\nverbpdgm13,1,,,mediopassive,subjunctive,perfect,,,\r\nverbpdgm13,1,,,middle,subjunctive,perfect,,,\r\nverbpdgm13,1,,,mediopassive,optative,perfect,,,\r\nverbpdgm13,1,,,middle,optative,perfect,,,\r\nverbpdgm13,1,,,mediopassive,imperative,perfect,,,\r\nverbpdgm13,1,,,middle,imperative,perfect,,,\r\nverbpdgm14,1,,,mediopassive,subjunctive,perfect,,,\r\nverbpdgm14,1,,,middle,subjunctive,perfect,,,\r\nverbpdgm14,1,,,mediopassive,optative,perfect,,,\r\nverbpdgm14,1,,,middle,optative,perfect,,,\r\nverbpdgm14,1,,,mediopassive,imperative,perfect,,,\r\nverbpdgm14,1,,,middle,imperative,perfect,,,\r\nverbpdgm15,1,,,mediopassive,indicative,pluperfect,,,\r\nverbpdgm16,1,,fut_perf,,,,,,\r\nverbpdgm17,1,,perf2_act,,,,,,\r\nverbpdgm18,1,,ew_pr,active,,,,,\r\nverbpdgm20,1,,ew_pr,mediopassive,,,,,\r\nverbpdgm20,1,,ew_pr,middle,,,,,\r\nverbpdgm19,1,,evw_pr,,,,,,\r\nverbpdgm21,2,,evw_pr,mediopassive,,,,,\r\nverbpdgm21,2,,evw_pr,middle,,,,,\r\nverbpdgm22,2,,aw_pr,,,,,,\r\nverbpdgm23,1,,ajw_pr,,,,,,\r\nverbpdgm24,2,,aw_pr,mediopassive,,,,,\r\nverbpdgm24,2,,aw_pr,middle,,,,,\r\nverbpdgm25,2,,ajw_pr,mediopassive,,,,,\r\nverbpdgm25,2,,ajw_pr,middle,,,,,\r\nverbpdgm26,2,,ow_pr,active,,,,,\r\nverbpdgm27,2,,ow_pr,mediopassive,,,,,\r\nverbpdgm27,2,,ow_pr,middle,,,,,\r\nverbpdgm26,2,,ww_pr,active,,,,,\r\nverbpdgm27,2,,ww_pr,mediopassive,,,,,\r\nverbpdgm27,2,,ww_pr,middle,,,,,\r\nverbpdgm28,2,,emi_pr,active,,,,,\r\nverbpdgm29,2,,emi_pr,mediopassive,,,,,\r\nverbpdgm29,2,,emi_pr,middle,,,,,\r\nverbpdgm30,2,,emi_or,active,,,,,\r\nverbpdgm31,2,,emi_or,middle,,,,,\r\nverbpdgm32,2,,,active,,,ἵημι,,\r\nverbpdgm33,2,,,mediopassive,,,ἵημι,,\r\nverbpdgm33,2,,,middle,,,ἵημι,,\r\nverbpdgm34,3,,,acive,,aorist,ἵημι,,\r\nverbpdgm35,3,,,middle,,aorist,ἵημι,,\r\nverbpdgm35,3,,,middle,,aorist,ἵημι,,\r\nverbpdgm36,2,,omi_pr,active,,,,,\r\nverbpdgm37,2,,omi_pr,mediopassive,,,,,\r\nverbpdgm37,2,,omi_pr,middle,,,,,\r\nverbpdgm38,2,,omi_aor,active,,,,,\r\nverbpdgm39,2,,omi_aor,middle,,,,,\r\nverbpdgm40,2,,ami_pr,active,,,,,\r\nverbpdgm41,2,,ami_pr,mediopassive,,,,,\r\nverbpdgm41,2,,ami_pr,middle,,,,,\r\nverbpdgm42,2,,ami_aor,active,,,,,\r\nverbpdgm43,1,,ami_short,,,,,,\r\nverbpdgm44,2,,umi_pr,active,,,,,\r\nverbpdgm45,2,,umi_pr,mediopassive,,,,,\r\nverbpdgm45,2,,umi_pr,middle,,,,,\r\nverbpdgm46,2,,irreg_mi,,,,εἰμί,,\r\nverbpdgm47,2,,irreg_mi,,,,εἶμι,,\r\nverbpdgm48,2,,ath_primary,active,,present,,,\r\nverbpdgm48,2,,ath_primary,active,,imperfect,,,\r\nverbpdgm49,1,,ath_h_aor,,,,,,\r\nverbpdgm50,1,,ath_w_aor,,,,,,\r\nverbpdgm51,1,,ath_w_aor,,,,,,\r\nverbpdgm52,1,,ath_u_aor,,,,,,\r\nverbpdgm53,2,,ath_primary,,,perfect,,,\r\nverbpdgm53,3,,perf_act,active,,pluperfect,,,\r\nverbpdgm54,13,verb_participle,w_stem,active,,,,,\r\nverbpdgm54,12,verb_participle,reg_fut,,,,,,\r\nverbpdgm54,12,verb_participle,evw_pr,,,,,,\r\nverbpdgm55,12,verb_participle,ww_pr,,,,,,\r\nverbpdgm55,12,verb_participle,ew_fut,,,,,,\r\nverbpdgm55,12,verb_participle,ew_pr,,,,,,\r\nverbpdgm55,12,verb_participle,ow_pr,,,,,,\r\nverbpdgm56,12,verb_participle,aw_pr,,,,,,\r\nverbpdgm56,12,verb_participle,ajw_pr,,,,,,\r\nverbpdgm56,12,verb_participle,aw_fut,,,,,,\r\nverbpdgm57,12,verb_participle,aor2,,,,,,\r\nverbpdgm57,13,verb_participle,irreg_mi,,,present,εἰμί,,\r\nverbpdgm57,13,verb_participle,irreg_mi,,,present,εἶμι,,\r\nverbpdgm58,12,verb_participle,aor1,,,,,,\r\nverbpdgm59,12,verb_participle,ami_pr,,,,,,\r\nverbpdgm59,12,verb_participle,ath_h_aor,,,,,,\r\nverbpdgm59,12,verb_participle,ami_aor,,,,,,\r\nverbpdgm59,12,verb_participle,irreg_mi,,,,,,\r\nverbpdgm60,12,verb_participle,emi_pr,,,,,,\r\nverbpdgm60,13,verb_participle,emi_aor,active,,,,,\r\nverbpdgm60,12,verb_participle,aor_pass,,,,,,\r\nverbpdgm60,11,verb_participle,aor2_pass,,,,,,\r\nverbpdgm60,13,verb_participle,irreg_mi,active,,,,,\r\nverbpdgm61,12,verb_participle,omi_pr,,,,,,\r\nverbpdgm61,12,verb_participle,omi_aor,,,,,,\r\nverbpdgm61,12,verb_participle,ath_w_aor,,,,,,\r\nverbpdgm62,12,verb_participle,umi_pr,,,,,,\r\nverbpdgm62,12,verb_participle,ath_u_aor,,,,,,\r\nverbpdgm63,12,verb_participle,perf_act,,,,,,\r\nverbpdgm64,12,verb_participle,perf2_act,,,,,,\r\nverbpdgm65,13,verb_participle,w_stem,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,w_stem,middle,,,,,\r\nverbpdgm65,13,verb_participle,aor2,middle,,,,,\r\nverbpdgm65,13,verb_participle,aor1,middle,,,,,\r\nverbpdgm65,13,verb_participle,reg_fut,middle,,,,,\r\nverbpdgm65,13,verb_participle,ew_fut,middle,,,,,\r\nverbpdgm65,12,verb_participle,fut_perf,,,,,,\r\nverbpdgm65,13,verb_participle,ow_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,ow_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,ew_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,ew_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,evw_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,evw_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,aw_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,aw_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,ajw_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,ajw_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,ow_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,ow_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,emi_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,emi_pr,passive,,,,,\r\nverbpdgm65,13,verb_participle,emi_aor,middle,,,,,\r\nverbpdgm65,13,verb_participle,irreg_mi,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,irreg_mi,middle,,,,,\r\nverbpdgm65,13,verb_participle,omi_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,omi_pr,midle,,,,,\r\nverbpdgm65,13,verb_participle,omi_aor,middle,,,,,\r\nverbpdgm65,13,verb_participle,ami_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,ami_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,ami_short,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,ami_short,middle,,,,,\r\nverbpdgm65,13,verb_participle,ami_aor,middle,,,,,\r\nverbpdgm65,13,verb_participle,umi_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,umi_pr,middle,,,,,\r\nverbpdgm66,12,verb_participle,perfp_vow,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_d,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_mp,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_g,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_l,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_gx,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_p,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_n,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_un,,,,,,";
-
-var paradigmFootnotesCSV = "Index,Text\r\n1,\"With neuter plural subject, periphrastic forms are sometimes found in the indicative, but more commonly the 3rd singular form is used instead.\"\r\n2,\"thus is late Greek with a neuter plural subject, but in classical Attic the 3rd singular form is used with neuter plural subject.\"";
+var verbParticipleParadigmRulesCSV = "ID ref,Match order,Part of speech,Stem type,Voice,Mood,Tense,Lemma,Morph flags,Dialect\r\nverbpdgm54,13,verb_participle,w_stem,active,,,,,\r\nverbpdgm54,12,verb_participle,reg_fut,,,,,,\r\nverbpdgm54,12,verb_participle,evw_pr,,,,,,\r\nverbpdgm55,12,verb_participle,ww_pr,,,,,,\r\nverbpdgm55,12,verb_participle,ew_fut,,,,,,\r\nverbpdgm55,12,verb_participle,ew_pr,,,,,,\r\nverbpdgm55,12,verb_participle,ow_pr,,,,,,\r\nverbpdgm56,12,verb_participle,aw_pr,,,,,,\r\nverbpdgm56,12,verb_participle,ajw_pr,,,,,,\r\nverbpdgm56,12,verb_participle,aw_fut,,,,,,\r\nverbpdgm57,12,verb_participle,aor2,,,,,,\r\nverbpdgm57,13,verb_participle,irreg_mi,,,present,εἰμί,,\r\nverbpdgm57,13,verb_participle,irreg_mi,,,present,εἶμι,,\r\nverbpdgm58,12,verb_participle,aor1,,,,,,\r\nverbpdgm59,12,verb_participle,ami_pr,,,,,,\r\nverbpdgm59,12,verb_participle,ath_h_aor,,,,,,\r\nverbpdgm59,12,verb_participle,ami_aor,,,,,,\r\nverbpdgm59,12,verb_participle,irreg_mi,,,,,,\r\nverbpdgm60,12,verb_participle,emi_pr,,,,,,\r\nverbpdgm60,13,verb_participle,emi_aor,active,,,,,\r\nverbpdgm60,12,verb_participle,aor_pass,,,,,,\r\nverbpdgm60,11,verb_participle,aor2_pass,,,,,,\r\nverbpdgm60,13,verb_participle,irreg_mi,active,,,,,\r\nverbpdgm61,12,verb_participle,omi_pr,,,,,,\r\nverbpdgm61,12,verb_participle,omi_aor,,,,,,\r\nverbpdgm61,12,verb_participle,ath_w_aor,,,,,,\r\nverbpdgm62,12,verb_participle,umi_pr,,,,,,\r\nverbpdgm62,12,verb_participle,ath_u_aor,,,,,,\r\nverbpdgm63,12,verb_participle,perf_act,,,,,,\r\nverbpdgm64,12,verb_participle,perf2_act,,,,,,\r\nverbpdgm65,13,verb_participle,w_stem,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,w_stem,middle,,,,,\r\nverbpdgm65,13,verb_participle,aor2,middle,,,,,\r\nverbpdgm65,13,verb_participle,aor1,middle,,,,,\r\nverbpdgm65,13,verb_participle,reg_fut,middle,,,,,\r\nverbpdgm65,13,verb_participle,ew_fut,middle,,,,,\r\nverbpdgm65,12,verb_participle,fut_perf,,,,,,\r\nverbpdgm65,13,verb_participle,ow_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,ow_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,ew_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,ew_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,evw_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,evw_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,aw_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,aw_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,ajw_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,ajw_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,ow_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,ow_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,emi_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,emi_pr,passive,,,,,\r\nverbpdgm65,13,verb_participle,emi_aor,middle,,,,,\r\nverbpdgm65,13,verb_participle,irreg_mi,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,irreg_mi,middle,,,,,\r\nverbpdgm65,13,verb_participle,omi_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,omi_pr,midle,,,,,\r\nverbpdgm65,13,verb_participle,omi_aor,middle,,,,,\r\nverbpdgm65,13,verb_participle,ami_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,ami_pr,middle,,,,,\r\nverbpdgm65,13,verb_participle,ami_short,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,ami_short,middle,,,,,\r\nverbpdgm65,13,verb_participle,ami_aor,middle,,,,,\r\nverbpdgm65,13,verb_participle,umi_pr,mediopassive,,,,,\r\nverbpdgm65,13,verb_participle,umi_pr,middle,,,,,\r\nverbpdgm66,12,verb_participle,perfp_vow,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_d,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_mp,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_g,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_l,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_gx,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_p,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_n,,,,,,\r\nverbpdgm66,12,verb_participle,perfp_un,,,,,,";
 
 /*
  * Greek language data module
@@ -6829,6 +6920,11 @@ var paradigmFootnotesCSV = "Index,Text\r\n1,\"With neuter plural subject, periph
 import adjectiveFootnotesCSV from './data/adjective/footnotes.csv';
 import verbSuffixesCSV from './data/verb/suffixes.csv';
 import verbFootnotesCSV from './data/verb/footnotes.csv'; */
+
+// Verb paradigm tables
+// Verb paradigm rules and footnotes
+// Verb participle paradigm tables
+// Verb participle rules
 // Create a language data set that will keep all language-related information
 // let dataSet = new LanguageDataset(Constants.LANG_GREEK)
 let fTypes = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types;
@@ -6975,9 +7071,8 @@ class GreekLanguageDataset extends LanguageDataset {
     }
   }
 
-  getParadigms (partOfSpeech) {
-    // Paradigm tables
-    let paradigms = new Map([
+  static get verbParadigmTables () {
+    return new Map([
       ['verbpdgm1', new Paradigm(paradigm01)],
       ['verbpdgm2', new Paradigm(paradigm02)],
       ['verbpdgm3', new Paradigm(paradigm03)],
@@ -7030,7 +7125,12 @@ class GreekLanguageDataset extends LanguageDataset {
       ['verbpdgm50', new Paradigm(paradigm50)],
       ['verbpdgm51', new Paradigm(paradigm51)],
       ['verbpdgm52', new Paradigm(paradigm52)],
-      ['verbpdgm53', new Paradigm(paradigm53)],
+      ['verbpdgm53', new Paradigm(paradigm53)]
+    ])
+  }
+
+  static get verbParticipleParadigmTables () {
+    return new Map([
       ['verbpdgm54', new Paradigm(paradigm54)],
       ['verbpdgm55', new Paradigm(paradigm55)],
       ['verbpdgm56', new Paradigm(paradigm56)],
@@ -7044,13 +7144,15 @@ class GreekLanguageDataset extends LanguageDataset {
       ['verbpdgm64', new Paradigm(paradigm64)],
       ['verbpdgm65', new Paradigm(paradigm65)],
       ['verbpdgm66', new Paradigm(paradigm66)]
-    ]);
+    ])
+  }
 
+  getParadigms (partOfSpeech, paradigms, rulesData) {
     // An order of columns in a data CSV file
     const n = {
       id: 0,
       matchOrder: 1,
-      partOfSpeech: 2,
+      partOfSpeech: 2, // Ignored, an argument value will be used
       stemtype: 3,
       voice: 4,
       mood: 5,
@@ -7059,17 +7161,15 @@ class GreekLanguageDataset extends LanguageDataset {
       morphFlags: 8,
       dialect: 9
     };
-    const data = papaparse.parse(paradigmRulesCSV, {}).data;
 
     // First row contains headers
-    for (let i = 1; i < data.length; i++) {
-      let item = data[i];
+    for (let i = 1; i < rulesData.length; i++) {
+      let item = rulesData[i];
       let id = item[n.id];
       let matchOrder = Number.parseInt(item[n.matchOrder]);
 
-      let features = [];
+      let features = [partOfSpeech];
 
-      if (item[n.partOfSpeech]) { features.push(this.model.getFeatureType(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.part).getFromImporter(impName, item[n.partOfSpeech])); }
       if (item[n.stemtype]) { features.push(this.model.getFeatureType(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.stemtype).getFromImporter(impName, item[n.stemtype])); }
       if (item[n.voice]) { features.push(this.model.getFeatureType(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.voice).getFromImporter(impName, item[n.voice])); }
       if (item[n.mood]) { features.push(this.model.getFeatureType(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["d" /* Feature */].types.mood).getFromImporter(impName, item[n.mood])); }
@@ -7109,6 +7209,7 @@ class GreekLanguageDataset extends LanguageDataset {
     let partOfSpeech;
     let suffixes;
     let forms;
+    let paradigms;
     let footnotes;
 
     // Nouns
@@ -7128,10 +7229,17 @@ class GreekLanguageDataset extends LanguageDataset {
     // Verbs
     // Paradigms
     partOfSpeech = this.model.getFeatureType(fTypes.part)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_VERB];
-    let paradigms = this.getParadigms(partOfSpeech);
+    paradigms = this.getParadigms(
+      partOfSpeech, this.constructor.verbParadigmTables, papaparse.parse(verbParadigmRulesCSV, {}).data);
     this.addParadigms(partOfSpeech, paradigms);
-    footnotes = papaparse.parse(paradigmFootnotesCSV, {});
-    this.addFootnotes(partOfSpeech, Paradigm, footnotes.data);
+    this.addFootnotes(partOfSpeech, Paradigm, papaparse.parse(verbParadigmFootnotesCSV, {}).data);
+
+    // Verb Participles
+    // Paradigms
+    partOfSpeech = this.model.getFeatureType(fTypes.part)[__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].POFS_VERB_PARTICIPLE];
+    paradigms = this.getParadigms(
+      partOfSpeech, this.constructor.verbParticipleParadigmTables, papaparse.parse(verbParticipleParadigmRulesCSV, {}).data);
+    this.addParadigms(partOfSpeech, paradigms);
 
     this.dataLoaded = true;
     return this
@@ -9328,7 +9436,7 @@ class View {
     this.container = undefined;
 
     // Must be implemented in a descendant
-    this.id = 'baseView';
+    this.id = v4_1(); // A unique ID of a view instance. Can be used as a value in view selectors.
     this.name = 'base view';
     this.title = 'Base View';
     // this.partOfSpeech = undefined
@@ -9371,6 +9479,22 @@ class View {
     if (__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["k" /* LanguageModelFactory */].compareLanguages(View.languageID, inflectionData.languageID)) {
       return inflectionData.partsOfSpeech.includes(View.partOfSpeech) && View.enabledForLexemes(inflectionData.homonym.lexemes)
     }
+  }
+
+  /**
+   * Finds out what views match inflection data and return initialized instances of those views.
+   * By default only one instance of the view is returned, by views can override this method
+   * to return multiple views if necessary (e.g. paradigm view can return multiple instances of the view
+   * with different data).
+   * @param {InflectionData} inflectionData
+   * @param {MessageBundle} messages
+   * @return {View[] | []} Array of view instances or an empty array if view instance does not match inflection data.
+   */
+  static getMatchingInstances (inflectionData, messages) {
+    if (this.matchFilter(inflectionData)) {
+      return [new this(inflectionData, messages)]
+    }
+    return []
   }
 
   /**
@@ -11078,7 +11202,7 @@ class LatinView extends View {
           __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].MOOD_SUBJUNCTIVE
         ], LatinView.languageID);
 
-        /*
+    /*
         Default grammatical features of a view. It child views need to have different feature values, redefine
         those values in child objects.
          */
@@ -11100,7 +11224,7 @@ class LatinView extends View {
     return __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["b" /* Constants */].LANG_LATIN
   }
 
-    /*
+  /*
     Creates and initializes an inflection table. Redefine this method in child objects in order to create
     an inflection table differently
      */
@@ -14171,11 +14295,12 @@ class GreekParadigmView extends GreekView {
    * @param {MessageBundle} messages
    * @param {string} grammarClass - For what pronoun class a view will be created
    */
-  constructor (inflectionData, messages, grammarClass = 'Greek') {
+  constructor (paradigm, inflectionData, messages, grammarClass = 'Greek') {
     super(inflectionData, messages);
-    this.id = GreekParadigmView.getID(grammarClass);
+    this.id = paradigm.id;
     this.name = GreekParadigmView.getName(grammarClass);
     this.title = GreekParadigmView.getTitle(grammarClass);
+    this.paradigm = paradigm;
     this.featureTypes = {};
 
     const GEND_MASCULINE_FEMININE = 'masculine feminine';
@@ -14278,10 +14403,16 @@ class GreekParadigmView extends GreekView {
     return false
   }
 
+  static getMatchingInstances (inflectionData, messages) {
+    console.log(`Get matching instances`);
+    if (this.matchFilter(inflectionData)) {
+      let paradigms = inflectionData.pos.get(this.partOfSpeech).types.get(this.inflectionType).items;
+      return paradigms.map(paradigm => new this(paradigm, inflectionData, messages))
+    }
+    return []
+  }
+
   render () {
-    console.log(`render`);
-    // Take a fist paradigm for now
-    this.paradigm = this.inflectionData.pos.get(this.constructor.partOfSpeech).types.get(this.constructor.inflectionType).items[0];
     this.nodes = document.createElement('div');
     this.nodes.innerHTML = this.paradigm.html;
 
@@ -14355,10 +14486,8 @@ class ViewSet {
     this.matchingViews = [];
 
     if (this.views.has(this.languageID)) {
-      for (let ViewConstructor of this.views.get(this.languageID)) {
-        if (ViewConstructor.matchFilter(this.inflectionData)) {
-          this.matchingViews.push(new ViewConstructor(this.inflectionData, this.messages));
-        }
+      for (let view of this.views.get(this.languageID)) {
+        this.matchingViews.push(...view.getMatchingInstances(this.inflectionData, this.messages));
       }
     }
     this.partsOfSpeech = Array.from(new Set(this.matchingViews.map(view => view.constructor.partOfSpeech)));
@@ -15495,7 +15624,7 @@ class Query {
       partsOfSpeech: [],
       selectedPartOfSpeech: [],
       views: [],
-      selectedViewName: '',
+      selectedViewID: '',
       selectedView: {},
       renderedView: {},
       elementIDs: {
@@ -15527,7 +15656,6 @@ class Query {
       return this.data.enabled;
     },
     isContentAvailable: function () {
-      console.log("Checking if content is available");
       console.log(this.data.enabled && Boolean(this.data.inflectionData));
       return this.data.enabled && Boolean(this.data.inflectionData);
     },
@@ -15547,23 +15675,23 @@ class Query {
         this.selectedPartOfSpeech = newValue;
         this.views = this.viewSet.getViews(this.selectedPartOfSpeech);
         this.selectedView = this.views[0];
-        this.selectedViewName = this.views[0].name;
+        this.selectedViewID = this.views[0].id;
         this.renderInflections().displayInflections();
       }
     },
     viewSelector: {
       get: function () {
-        return this.selectedViewName;
+        return this.selectedViewID;
       },
       set: function (newValue) {
-        console.log(`View changed to ${newValue}`);
-        this.selectedView = this.views.find(view => view.name === newValue);
+        this.selectedView = this.views.find(view => view.id === newValue);
+        console.log(`View ID changed to ${newValue}, view name is "${this.selectedView.name}"`);
         this.renderInflections().displayInflections();
-        this.selectedViewName = newValue;
+        this.selectedViewID = newValue;
       }
     },
     inflectionTable: function () {
-      return this.selectedView.name;
+      return this.selectedView.id;
     },
     footnotes: function () {
       let footnotes = [];
@@ -15605,11 +15733,11 @@ class Query {
         }
 
         if (this.views.length > 0) {
-          this.selectedViewName = this.views[0].name;
+          this.selectedViewID = this.views[0].id;
           this.selectedView = this.views[0];
           this.renderInflections().displayInflections();
         } else {
-          this.selectedViewName = '';
+          this.selectedViewID = '';
           this.selectedView = '';
         }
       }
@@ -39977,7 +40105,9 @@ var render = function() {
                     }
                   },
                   _vm._l(_vm.views, function(view) {
-                    return _c("option", [_vm._v(_vm._s(view.name))])
+                    return _c("option", { domProps: { value: view.id } }, [
+                      _vm._v(_vm._s(view.name))
+                    ])
                   })
                 )
               ]
