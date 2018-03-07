@@ -17201,7 +17201,7 @@ const languageNames = new Map([
 class UIController {
   /**
    * @constructor
-   * @param {Object} state - State object for the parent application  (API definiition pending)
+   * @param {UIStateAPI} state - State object for the parent application
    * @param {ContentOptions} options - content options  (API definition pending)
    * @param {ResourceOptions} resourceOptions - resource options  (API definition pending)
    * @param {Object} manifest - parent application info details  (API definition pending)
@@ -29467,7 +29467,12 @@ class HTMLSelector extends __WEBPACK_IMPORTED_MODULE_3__media_selector__["a" /* 
     let anchorText = anchor.data
     let ro
     let invalidAnchor = false
-    if (focus.data && !anchorText.match(this._escapeRegExp(focus.data))) {
+    // firefox's implementation of getSelection is buggy and can result
+    // in incomplete data - sometimes the anchor text doesn't contain the focus data
+    // and sometimes the focus data and anchor text is just whitespaces
+    // in these cases we just use the target textContent
+    if ((focus.data && !anchorText.match(this._escapeRegExp(focus.data))) ||
+      (focus.data && focus.data.match(/^\s*$/))) {
       anchorText = this.target.textContent
       ro = 0
       invalidAnchor = true

@@ -1,7 +1,7 @@
 /* global browser */
 import {LanguageDataList} from 'alpheios-inflection-tables'
 import {Constants} from 'alpheios-data-models'
-import AlpheiosTuftsAdapter from 'alpheios-tufts-adapter'
+import {AlpheiosTuftsAdapter} from 'alpheios-morph-client'
 import {Lexicons} from 'alpheios-lexicon-client'
 import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
 import Message from '../lib/messaging/message/message'
