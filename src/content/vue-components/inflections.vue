@@ -1,51 +1,69 @@
 <template>
     <div>
-      <div v-show="! isEnabled">Inflection data is unavailable.</div>
-      <div v-show="isEnabled && ! isContentAvailable">Lookup a word to show inflections...</div>
-      <div v-show="isContentAvailable">
-        <h3>{{selectedView.title}}</h3>
-        <div class="alpheios-inflections__view-selector-cont uk-margin">
-            <div v-show="partsOfSpeech.length > 1">
-                <label class="uk-form-label">Part of speech:</label>
-                <select v-model="partOfSpeechSelector" class="uk-select">
-                    <option v-for="partOfSpeech in partsOfSpeech">{{partOfSpeech}}</option>
-                </select>
-            </div>
+        <div v-show="! isEnabled">Inflection data is unavailable.</div>
+        <div v-show="isEnabled && ! isContentAvailable">Lookup a word to show inflections...</div>
+        <template v-show="isContentAvailable">
+            <h3>{{selectedView.title}}</h3>
+            <div class="alpheios-inflections__view-selector-cont uk-margin">
+                <div v-show="partsOfSpeech.length > 1">
+                    <label class="uk-form-label">Part of speech:</label>
+                    <select v-model="partOfSpeechSelector" class="uk-select">
+                        <option v-for="partOfSpeech in partsOfSpeech">{{partOfSpeech}}</option>
+                    </select>
+                </div>
 
-            <div v-show="views.length > 1">
-                <label class="uk-form-label">View:</label>
-                <select v-model="viewSelector" class="uk-select">
-                    <option v-for="view in views" :value="view.id">{{view.name}}</option>
-                </select>
+                <div v-show="views.length > 1">
+                    <label class="uk-form-label">View:</label>
+                    <select v-model="viewSelector" class="uk-select">
+                        <option v-for="view in views" :value="view.id">{{view.name}}</option>
+                    </select>
+                </div>
             </div>
+            <div class="alpheios-inflections__control-btn-cont uk-button-group uk-margin">
+                <button v-show="false"
+                        class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
+                        @click="hideEmptyColsClick">
+                    {{buttons.hideEmptyCols.text}}
+                </button>
+                <button v-if="canCollapse"
+                        class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
+                        @click="hideNoSuffixGroupsClick">
+                    {{buttons.hideNoSuffixGroups.text}}
+                </button>
+            </div>
+            <div class="alpheios-inflections__forms uk-margin" v-for="form in forms">{{form}}</div>
 
-        </div>
-        <div class="alpheios-inflections__control-btn-cont uk-button-group uk-margin">
-            <button v-show="false" class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
-                    @click="hideEmptyColsClick">
-                {{buttons.hideEmptyCols.text}}
-            </button>
-            <button v-if="canCollapse" class="uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn"
-                    @click="hideNoSuffixGroupsClick">
-                {{buttons.hideNoSuffixGroups.text}}
-            </button>
-        </div>
-        <div class="alpheios-inflections__forms uk-margin" v-for="form in forms">{{form}}</div>
-        <div :id="elementIDs.wideView" class="uk-margin"></div>
-        <div :id="elementIDs.footnotes" class="alpheios-inflections__footnotes uk-margin uk-text-small">
-            <template v-for="footnote in footnotes">
-                <dt>{{footnote.index}}</dt>
-                <dd>{{footnote.text}}</dd>
+            <template v-if="selectedView.hasComponentData">
+                <widetable :data="selectedView.wideTable"></widetable>
+                <widesubtables :data="selectedView.wideSubTables"></widesubtables>
             </template>
-        </div>
-      </div>
+            <template v-else>
+                <div :id="elementIDs.wideView" class="uk-margin"></div>
+                <div :id="elementIDs.footnotes" class="alpheios-inflections__footnotes uk-margin uk-text-small">
+                    <template v-for="footnote in footnotes">
+                        <dt>{{footnote.index}}</dt>
+                        <dd>{{footnote.text}}</dd>
+                    </template>
+                </div>
+            </template>
+        </template>
     </div>
 </template>
 <script>
-  import { ViewSet, L10n, L10nMessages } from 'alpheios-inflection-tables'
+  // Subcomponents
+  import WideTable from './inflections-table-wide.vue'
+  import WideSubTables from './inflections-subtables-wide.vue'
+
+  // Other dependencies
+  import { ViewSet, L10n} from 'alpheios-inflection-tables'
 
   export default {
     name: 'Inflections',
+    components: {
+      widetable: WideTable,
+      widesubtables: WideSubTables
+    },
+
     props: {
       // This will be an InflectionData object
       data: {
@@ -91,11 +109,10 @@
     },
 
     computed: {
-      isEnabled: function() {
+      isEnabled: function () {
         return this.data.enabled
       },
       isContentAvailable: function () {
-        console.log(this.data.enabled && Boolean(this.data.inflectionData))
         return this.data.enabled && Boolean(this.data.inflectionData)
       },
       inflectionData: function () {
@@ -115,7 +132,10 @@
           this.views = this.viewSet.getViews(this.selectedPartOfSpeech)
           this.selectedView = this.views[0]
           this.selectedViewID = this.views[0].id
-          this.renderInflections().displayInflections()
+          if (!this.selectedView.hasComponentData) {
+            // Rendering is not required for component-enabled views
+            this.renderInflections().displayInflections()
+          }
         }
       },
       viewSelector: {
@@ -125,7 +145,9 @@
         set: function (newValue) {
           this.selectedView = this.views.find(view => view.id === newValue)
           console.log(`View ID changed to ${newValue}, view name is "${this.selectedView.name}"`)
-          this.renderInflections().displayInflections()
+          if (!this.selectedView.hasComponentData) {
+            this.renderInflections().displayInflections()
+          }
           this.selectedViewID = newValue
         }
       },
@@ -139,14 +161,14 @@
         }
         return footnotes
       },
-      forms: function() {
+      forms: function () {
         let forms = []
         if (this.selectedView && this.selectedView.forms) {
           forms = Array.from(this.selectedView.forms.values())
         }
         return forms
       },
-      canCollapse: function() {
+      canCollapse: function () {
         if (this.data.inflectionData && this.selectedView && this.selectedView.table) {
           return this.selectedView.table.canCollapse
         } else {
@@ -160,7 +182,7 @@
       inflectionData: function (inflectionData) {
         console.log(`Inflection data changed`)
         if (inflectionData) {
-          this.viewSet = new ViewSet(inflectionData, this.l10n.messages(this.locale))
+          this.viewSet = new ViewSet(inflectionData, this.locale)
 
           this.partsOfSpeech = this.viewSet.partsOfSpeech
           if (this.partsOfSpeech.length > 0) {
@@ -174,7 +196,10 @@
           if (this.views.length > 0) {
             this.selectedViewID = this.views[0].id
             this.selectedView = this.views[0]
-            this.renderInflections().displayInflections()
+            if (!this.selectedView.hasComponentData) {
+              // Rendering is not required for component-enabled views
+              this.renderInflections().displayInflections()
+            }
           } else {
             this.selectedViewID = ''
             this.selectedView = ''
@@ -199,8 +224,11 @@
       locale: function (locale) {
         console.log(`locale changed to ${locale}`)
         if (this.data.inflectionData) {
-          this.viewSet.updateMessages(this.l10n.messages(this.locale))
-          this.renderInflections().displayInflections() // Re-render inflections for a different locale
+          this.viewSet.setLocale(this.locale)
+          if (!this.selectedView.hasComponentData) {
+            // Rendering is not required for component-enabled views
+            this.renderInflections().displayInflections() // Re-render inflections for a different locale
+          }
         }
       }
     },
@@ -310,10 +338,6 @@
       }
     },
 
-    created: function () {
-      this.l10n = new L10n(L10nMessages)
-    },
-
     mounted: function () {
       this.htmlElements.wideView = this.$el.querySelector(`#${this.elementIDs.wideView}`)
     }
@@ -378,6 +402,7 @@
         font-weight: 700;
         text-transform: capitalize;
     }
+
     .infl-cell--hdr .infl-cell__conj-stem {
         text-transform: none;
     }
@@ -426,6 +451,7 @@
         background-color: rgb(255, 238, 119);
         font-weight: 700;
     }
+
     // endregion Tables
 
     // region Footnotes
@@ -491,9 +517,10 @@
         fill: $alpheios-link-hover-color;
         stroke: $alpheios-link-hover-color;
     }
+
     // endregion Footnotes
 
     .alpheios-inflections__forms {
-      font-weight: bold;
+        font-weight: bold;
     }
 </style>
