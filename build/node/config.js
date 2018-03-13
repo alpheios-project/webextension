@@ -2,12 +2,7 @@ const path = require('path')
 
 module.exports = {
   pathToProjectRoot: '../..',
-  style: [
-    { source: 'src/content/styles/style.scss', target: 'dist/styles/style.css', style: 'compressed', sourceMap: true }
-  ],
-  image: [
-    { source: 'src/content/images', target: 'dist/images', extensions: ['jpg', 'png', 'svg'], excludedDirs: ['inline-icons'] }
-  ],
+  styles: { source: 'node_modules/alpheios-components/dist/styles/*', target: 'dist/styles' },
   webpack: {
     common: {
       resolve: {

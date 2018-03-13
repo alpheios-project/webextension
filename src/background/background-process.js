@@ -1,9 +1,10 @@
 /* global browser */
+import { enUS, enGB, Locales, L10n } from 'alpheios-components'
 import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
 import ContextMenuItem from './context-menu-item.js'
-import ContentMenuSeprator from './context-menu-separator.js'
+import ContentMenuSeparator from './context-menu-separator.js'
 import TabScript from '../lib/content/tab-script.js'
 import {
   Transporter,
@@ -26,18 +27,27 @@ export default class BackgroundProcess {
   }
 
   static get defaults () {
+    let l10n = new L10n()
+      .addMessages(enUS, Locales.en_US)
+      .addMessages(enGB, Locales.en_GB)
+      .setLocale(Locales.en_US)
     return {
+      activateBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_ACTIVATE,
+      deactivateBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_DEACTIVATE,
+      disabledBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_DISABLED,
       activateMenuItemId: 'activate-alpheios-content',
-      activateMenuItemText: 'Activate',
+      activateMenuItemText: l10n.messages.LABEL_CTXTMENU_ACTIVATE,
       deactivateMenuItemId: 'deactivate-alpheios-content',
-      deactivateMenuItemText: 'Deactivate',
+      deactivateMenuItemText: l10n.messages.LABEL_CTXTMENU_DEACTIVATE,
+      disabledMenuItemId: 'disabled-alpheios-content',
+      disabledMenuItemText: l10n.messages.LABEL_CTXTMENU_DISABLED,
       openPanelMenuItemId: 'open-alpheios-panel',
-      openPanelMenuItemText: 'Open Panel',
+      openPanelMenuItemText: l10n.messages.LABEL_CTXTMENU_OPENPANEL,
       infoMenuItemId: 'show-alpheios-panel-info',
-      infoMenuItemText: 'Info',
+      infoMenuItemText: l10n.messages.LABEL_CTXTMENU_INFO,
       separatorOneId: 'separator-one',
       sendExperiencesMenuItemId: 'send-experiences',
-      sendExperiencesMenuItemText: 'Send Experiences to a remote server',
+      sendExperiencesMenuItemText: l10n.messages.LABEL_CTXTMENU_SENDEXP,
       contentCSSFileName: 'styles/style.min.css',
       contentScriptFileName: 'content.js',
       browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
@@ -63,8 +73,9 @@ export default class BackgroundProcess {
       activate: new ContextMenuItem(BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
       deactivate: new ContextMenuItem(BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
       openPanel: new ContextMenuItem(BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText),
-      separatorOne: new ContentMenuSeprator(BackgroundProcess.defaults.separatorOneId),
-      info: new ContextMenuItem(BackgroundProcess.defaults.infoMenuItemId, BackgroundProcess.defaults.infoMenuItemText)
+      separatorOne: new ContentMenuSeparator(BackgroundProcess.defaults.separatorOneId),
+      info: new ContextMenuItem(BackgroundProcess.defaults.infoMenuItemId, BackgroundProcess.defaults.infoMenuItemText),
+      disabled: new ContextMenuItem(BackgroundProcess.defaults.disabledMenuItemId, BackgroundProcess.defaults.disabledMenuItemText)
     }
     this.menuItems.activate.enable() // This one will be enabled by default
 
@@ -104,6 +115,7 @@ export default class BackgroundProcess {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
     let tab = TabScript.create(this.tabs.get(tabID)).activate().setPanelOpen()
     this.setContentState(tab)
+    this.checkEmbeddedContent(tabID)
   }
 
   async deactivateContent (tabID) {
@@ -230,14 +242,27 @@ export default class BackgroundProcess {
     if (this.tabs.has(details.tabId) && details.frameId === 0) {
       // If content script was loaded to that tab, restore it to the state it had before
       let tab = this.tabs.get(details.tabId)
+      tab.restore()
       try {
         await this.loadContentData(tab)
         this.setContentState(tab)
+        this.checkEmbeddedContent(details.tabId)
       } catch (error) {
         console.error(`Cannot load content script for a tab with an ID of ${details.tabId}`)
       }
     }
   }
+
+  checkEmbeddedContent (tabID) {
+    try {
+      browser.tabs.executeScript(tabID, {
+        code: "document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))"
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
 
   /**
    * Listen to extension updates. Need to define to prevent the browser
@@ -277,7 +302,20 @@ export default class BackgroundProcess {
     let tab = this.tabs.get(tabID).update(newState)
 
     // Menu state should reflect a status of a content script
+    this.updateBrowserActionForTab(tab)
     this.setMenuForTab(tab)
+  }
+
+  updateBrowserActionForTab(tab) {
+    if (tab && tab.hasOwnProperty('status')) {
+      if (tab.isActive()) {
+        browser.browserAction.setTitle({title:BackgroundProcess.defaults.deactivateBrowserActionTitle,tabId:tab.tabID})
+      } else if (tab.isDeactivated()) {
+        browser.browserAction.setTitle({title:BackgroundProcess.defaults.activateBrowserActionTitle,tabId:tab.tabID})
+      } else if (tab.isDisabled()) {
+        browser.browserAction.setTitle({title:BackgroundProcess.defaults.disabledBrowserActionTitle,tabId:tab.tabID})
+      }
+    }
   }
 
   setMenuForTab (tab) {
@@ -287,6 +325,7 @@ export default class BackgroundProcess {
     this.menuItems.openPanel.disable()
     this.menuItems.separatorOne.disable()
     this.menuItems.info.disable()
+    this.menuItems.disabled.disable()
 
     if (tab) {
       // Menu state should reflect a status of a content script
@@ -295,10 +334,18 @@ export default class BackgroundProcess {
           this.menuItems.activate.disable()
           this.menuItems.deactivate.enable()
           this.menuItems.openPanel.enable()
+          this.menuItems.info.enable()
         } else if (tab.isDeactivated()) {
           this.menuItems.deactivate.disable()
           this.menuItems.activate.enable()
           this.menuItems.openPanel.disable()
+          this.menuItems.info.enable()
+        } else if (tab.isDisabled()) {
+          this.menuItems.activate.disable()
+          this.menuItems.deactivate.disable()
+          this.menuItems.disabled.enable()
+          this.menuItems.openPanel.disable()
+          this.menuItems.info.disable()
         }
       }
 
@@ -311,7 +358,6 @@ export default class BackgroundProcess {
       }
 
       this.menuItems.separatorOne.enable()
-      this.menuItems.info.enable()
     } else {
       // If tab is not provided will set menu do an initial state
       this.menuItems.activate.enable()

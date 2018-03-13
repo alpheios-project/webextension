@@ -1,15 +1,20 @@
+import {UIStateAPI} from 'alpheios-components'
+
 /**
  * Contains a state of a tab content script.
  * @property {Number} tabID - An ID of a tab where the content script is loaded
  * @property {Symbol} status - A status of a current script (Active, Deactivated, Pending)
  * @property {panelStatus} panelStatus
  */
-export default class TabScript {
+export default class TabScript extends UIStateAPI {
   constructor (tabID) {
+    super()
     this.tabID = tabID
     this.status = undefined
     this.panelStatus = undefined
     this.tab = undefined
+    this.savedStatus = undefined
+    this.uiActive = false
 
     this.watchers = new Map()
   }
@@ -30,9 +35,14 @@ export default class TabScript {
         values: {
           PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
           ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
-          DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated') // Content script has been loaded, but is deactivated
+          DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
+          DISABLED: Symbol.for('Alpheios_Status_Disabled'), // Content script has been loaded, but it is disabled
         },
         defaultValueIndex: 0
+      },
+      savedStatus: {
+        name: 'savedStatus',
+        valueType: Boolean
       },
       panelStatus: {
         name: 'panelStatus',
@@ -50,6 +60,10 @@ export default class TabScript {
           INFO: 'info'
         },
         defaultValueIndex: 0
+      },
+      uiActive: {
+        name: 'uiActive',
+        valueType: Boolean
       }
     }
   }
@@ -62,6 +76,10 @@ export default class TabScript {
     return [TabScript.props.tab.name]
   }
 
+  static get booleanProps () {
+    return [TabScript.props.savedStatus.name]
+  }
+
   /**
    * Only certain features will be stored within a serialized version of a TabScript. This is done
    * to prevent context-specific features (such as local event handlers) to be passed over the network
@@ -69,7 +87,7 @@ export default class TabScript {
    * @return {String[]}
    */
   static get dataProps () {
-    return TabScript.symbolProps.concat(TabScript.stringProps)
+    return TabScript.symbolProps.concat(TabScript.stringProps).concat(TabScript.booleanProps)
   }
 
   /**
@@ -97,7 +115,8 @@ export default class TabScript {
       script: {
         PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
         ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
-        DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated') // Content script has been loaded, but is deactivated
+        DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
+        DISABLED: Symbol.for('Alpheios_Status_Disabled') // Content script has been loaded, but it is disabled
       },
       panel: {
         OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
@@ -164,6 +183,14 @@ export default class TabScript {
     return this.status === TabScript.statuses.script.DEACTIVATED
   }
 
+  isDisabled () {
+    return this.status === TabScript.statuses.script.DISABLED
+  }
+
+  uiIsActive () {
+    return this[TabScript.props.uiActive.name]
+  }
+
   activate () {
     this.status = TabScript.statuses.script.ACTIVE
     return this
@@ -171,6 +198,29 @@ export default class TabScript {
 
   deactivate () {
     this.status = TabScript.statuses.script.DEACTIVATED
+    return this
+  }
+
+  disable () {
+    this.status = TabScript.statuses.script.DISABLED
+    return this
+  }
+
+  save () {
+    this.savedStatus = this.status
+    return this
+  }
+
+  restore () {
+    if (this.savedStatus) {
+      this.status = this.savedStatus
+      this.savedStatus = undefined
+    }
+    return this
+  }
+
+  activateUI () {
+    this.setItem(TabScript.props.uiActive.name,true)
     return this
   }
 
@@ -266,6 +316,10 @@ export default class TabScript {
     }
 
     for (let prop of TabScript.stringProps) {
+      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
+    }
+
+    for (let prop of TabScript.booleanProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
     }
 
