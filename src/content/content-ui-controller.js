@@ -703,7 +703,7 @@ export default class ContentUIController {
     let enabled = LanguageModelFactory.getLanguageForCode(homonym.language).canInflect()
     this.panel.enableInflections(enabled)
     this.panel.updateInflections(inflectionData, homonym)
-    this.popup.popupData.inflDataReady = enabled && inflectionData[Feature.types.part].length > 0 // TODO should be a method on InflectionData
+    this.popup.popupData.inflDataReady = enabled && inflectionData.hasInflectionSets
   }
 
   clear () {

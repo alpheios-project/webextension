@@ -82,6 +82,8 @@
                 </div>
             </div>
             <div v-show="data.tabs.options" class="alpheios-panel__tab-panel">
+                <setting :data="data.settings.locale" @change="settingChanged"
+                         :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="data.settings.preferredLanguage" @change="settingChanged"
                          :classes="['alpheios-panel__options-item']"></setting>
                 <setting :data="data.settings.panelPosition" @change="settingChanged"
