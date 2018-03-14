@@ -1,5 +1,4 @@
 /* global browser */
-import {LanguageDataList} from 'alpheios-inflection-tables'
 import {Constants} from 'alpheios-data-models'
 import {AlpheiosTuftsAdapter} from 'alpheios-morph-client'
 import {Lexicons} from 'alpheios-lexicon-client'
@@ -18,12 +17,11 @@ export default class ContentProcess {
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
-    this.options = new ContentOptions(browser.storage.sync.get,browser.storage.sync.set)
-    this.resourceOptions = new ResourceOptions(browser.storage.sync.get,browser.storage.sync.set)
+    this.options = new ContentOptions(browser.storage.sync.get, browser.storage.sync.set)
+    this.resourceOptions = new ResourceOptions(browser.storage.sync.get, browser.storage.sync.set)
     this.messagingService = new MessagingService()
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
-    this.langData = new LanguageDataList().loadData()
-    this.ui = new UIController(this.state, this.options, this.resourceOptions,  browser.runtime.getManifest())
+    this.ui = new UIController(this.state, this.options, this.resourceOptions, browser.runtime.getManifest())
   }
 
   initialize () {
@@ -45,7 +43,7 @@ export default class ContentProcess {
     return this.state.uiIsActive()
   }
 
-  disableContent() {
+  disableContent () {
     console.log('Alpheios is embedded.')
     // if we weren't already disabled, remember the current state
     // and then deactivate before disabling
@@ -163,7 +161,6 @@ export default class ContentProcess {
             htmlSelector: htmlSelector,
             uiController: this.ui,
             maAdapter: this.maAdapter,
-            // langData: this.langData,
             lexicons: Lexicons,
             resourceOptions: this.resourceOptions,
             langOpts: { [Constants.LANG_PERSIAN]: { lookupMorphLast: true } } // TODO this should be externalized
