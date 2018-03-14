@@ -1255,7 +1255,7 @@ class LanguageModel {
   }
 
   /**
-   * Return alternate encodings for a word
+   * Returns alternate encodings for a word
    * @param {string} word the word
    * @param {string} preceding optional preceding word
    * @param {string} following optional following word
@@ -1622,6 +1622,19 @@ class LatinLanguageModel extends LanguageModel {
       word = word.replace(/[\u0153]/g, 'oe');
     }
     return word
+  }
+
+  /**
+   * Returns alternate encodings for a word
+   * @param {string} word the word
+   * @param {string} preceding optional preceding word
+   * @param {string} following optional following word
+   * @param {string} encoding optional encoding name to filter the response to
+   * @returns {Array} an array of alternate encodings
+   */
+  static alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
+    // Not implemented yet
+    return []
   }
 
   /**
@@ -2006,6 +2019,19 @@ class PersianLanguageModel extends LanguageModel {
    */
   static canInflect (node) {
     return false
+  }
+
+  /**
+   * Returns alternate encodings for a word
+   * @param {string} word the word
+   * @param {string} preceding optional preceding word
+   * @param {string} following optional following word
+   * @param {string} encoding optional encoding name to filter the response to
+   * @returns {Array} an array of alternate encodings
+   */
+  static alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
+    // Not implemented yet
+    return []
   }
 
   /**
@@ -5225,6 +5251,9 @@ exports.default = {
       return list.length > 0 ? '(' + list.map(function (f) {
         return f.toString();
       }).join(', ') + ')' : '';
+    },
+    languageCode: function languageCode(languageID) {
+      return _alpheiosDataModels.LanguageModelFactory.getLanguageCodeFromId(languageID);
     }
   }
 };
@@ -13134,7 +13163,6 @@ exports.default = {
         return this.selectedPartOfSpeech;
       },
       set: function set(newValue) {
-        console.log('Part of speech changed to ' + newValue);
         this.selectedPartOfSpeech = newValue;
         this.views = this.viewSet.getViews(this.selectedPartOfSpeech);
         this.selectedView = this.views[0];
@@ -13146,15 +13174,12 @@ exports.default = {
     },
     viewSelector: {
       get: function get() {
-        console.log('Selected view ID is', this.selectedView);
         return this.selectedView ? this.selectedView.id : '';
       },
       set: function set(newValue) {
-        console.log('View selector set, value is ' + newValue);
         this.selectedView = this.views.find(function (view) {
           return view.id === newValue;
         });
-        console.log('View ID changed to ' + newValue + ', view name is "' + this.selectedView.name + '"');
         if (!this.selectedView.hasComponentData) {
           this.renderInflections().displayInflections();
         }
@@ -13189,7 +13214,6 @@ exports.default = {
   watch: {
 
     inflectionData: function inflectionData(_inflectionData) {
-      console.log('Inflection data changed');
       if (_inflectionData) {
         this.viewSet = new _alpheiosInflectionTables.ViewSet(_inflectionData, this.locale);
 
@@ -13229,7 +13253,6 @@ exports.default = {
       }
     },
     locale: function locale(_locale) {
-      console.log('locale changed to ' + _locale);
       if (this.data.inflectionData) {
         this.viewSet.setLocale(this.locale);
         if (!this.selectedView.hasComponentData) {
@@ -14192,7 +14215,7 @@ var render = function() {
                 "span",
                 {
                   staticClass: "alpheios-morph__formtext",
-                  attrs: { lang: lex.lemma.language }
+                  attrs: { lang: _vm.languageCode(lex.lemma.languageID) }
                 },
                 [_vm._v(_vm._s(lex.lemma.word))]
               )
@@ -14206,7 +14229,7 @@ var render = function() {
                 "span",
                 {
                   staticClass: "alpheios-morph__listitem",
-                  attrs: { lang: lex.lemma.language }
+                  attrs: { lang: _vm.languageCode(lex.lemma.languageID) }
                 },
                 [_vm._v(_vm._s(part))]
               )
@@ -19735,7 +19758,7 @@ class UIController {
     this.popup.lexemes = homonym.lexemes
     if (homonym.lexemes.length > 0) {
       // TODO we could really move this into the morph component and have it be calculated for each lemma in case languages are multiple
-      this.popup.linkedFeatures = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageForCode(homonym.lexemes[0].lemma.language).grammarFeatures()
+      this.popup.linkedFeatures = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageModel(homonym.lexemes[0].lemma.languageID).grammarFeatures()
     }
     this.popup.popupData.morphDataReady = true
     this.panel.panelData.lexemes = homonym.lexemes
@@ -19807,13 +19830,13 @@ class UIController {
     this.state.setItem('currentLanguage', currentLanguage)
     let languageID = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageIdFromCode(currentLanguage)
     this.panel.requestGrammar({ type: 'table-of-contents', value: '', languageID: languageID })
-    this.panel.enableInflections(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageForCode(currentLanguage).canInflect())
+    this.panel.enableInflections(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageModel(languageID).canInflect())
     this.panel.panelData.infoComponentData.languageName = UIController.getLanguageName(languageID)
     console.log(`Current language is ${this.state.currentLanguage}`)
   }
 
   updateInflections (inflectionData, homonym) {
-    let enabled = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageForCode(homonym.language).canInflect()
+    let enabled = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageModel(homonym.languageID).canInflect()
     this.panel.enableInflections(enabled)
     this.panel.updateInflections(inflectionData, homonym)
     this.popup.popupData.inflDataReady = enabled && inflectionData.hasInflectionSets
@@ -32598,7 +32621,7 @@ class BaseAdapter {
    * @returns {string} the url for the request
    */
   prepareRequestUrl (lang, word) {
-      /** must be overridden in the adapter implementation class **/
+    /** must be overridden in the adapter implementation class **/
     return null
   }
 
@@ -32626,21 +32649,21 @@ class BaseAdapter {
     return new Promise((resolve, reject) => {
       if (url) {
         window.fetch(url).then(
-            function (response) {
-              try {
-                if (response.ok) {
-                  let json = response.json()
-                  resolve(json)
-                } else {
-                  reject(response.statusText)
-                }
-              } catch (error) {
-                reject(error)
+          function (response) {
+            try {
+              if (response.ok) {
+                let json = response.json()
+                resolve(json)
+              } else {
+                reject(response.statusText)
               }
+            } catch (error) {
+              reject(error)
             }
-          ).catch((error) => {
-            reject(error)
           }
+        ).catch((error) => {
+          reject(error)
+        }
         )
       } else {
         reject(new Error(`Unable to prepare parser request url for ${lang}`))
@@ -32685,22 +32708,22 @@ Objects of a morphology analyzer's library
  * library standards. There is one ImportData object per language.
  */
 class ImportData {
-    /**
+  /**
      * Creates an InmportData object for the language provided.
-     * @param {Models.LanguageModel} language - A language of the import data.
+     * @param {Function<LanguageModel>} language - A language of the import data.
      * @param {string} engine - engine code
      */
-  constructor (language, engine) {
+  constructor (model, engine) {
     'use strict'
-    this.language = language
+    this.model = model
     this.engine = engine
     // add all the features that the language supports so that we
     // can return the default values if we don't need to import a mapping
-    for (let featureName of Object.keys(language.features)) {
+    for (let featureName of Object.keys(this.model.features)) {
       this.addFeature(featureName)
     }
     // may be overridden by specific engine use via setLemmaParser
-    this.parseLemma = function (lemma) { return new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Lemma"](lemma, this.language.toCode()) }
+    this.parseLemma = function (lemma) { return new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Lemma"](lemma, this.model.languageID) }
     // may be overridden by specific engine use via setPropertyParser - default just returns the property value
     // as a list
     this.parseProperty = function (propertyName, propertyValue) {
@@ -32720,14 +32743,14 @@ class ImportData {
     }
   }
 
-    /**
+  /**
      * Adds a grammatical feature whose values to be mapped.
      * @param {string} featureName - A name of a grammatical feature (i.e. declension, number, etc.)
      * @return {Object} An object that represent a newly created grammatical feature.
      */
   addFeature (featureName) {
     this[featureName] = {}
-    let language = this.language
+    let model = this.model
 
     this[featureName].add = function add (providerValue, alpheiosValue) {
       this[providerValue] = alpheiosValue
@@ -32739,14 +32762,14 @@ class ImportData {
       if (!this.importer.has(providerValue)) {
         // if the providerValue matches the model value or the model value
         // is unrestricted, return a feature with the providerValue and order
-        if (language.features[featureName][providerValue] ||
-            language.features[featureName].hasUnrestrictedValue()) {
-          mappedValue = language.features[featureName].get(providerValue, sortOrder)
+        if (model.features[featureName][providerValue] ||
+            model.features[featureName].hasUnrestrictedValue()) {
+          mappedValue = model.features[featureName].get(providerValue, sortOrder)
         } else {
-          let message = `Unknown value "${providerValue}" of feature "${featureName}" for ${language} (allowed = ${allowUnknownValues})`
+          let message = `Unknown value "${providerValue}" of feature "${featureName}" for ${model.languageCode} (allowed = ${allowUnknownValues})`
           if (allowUnknownValues) {
             console.log(message)
-            mappedValue = language.features[featureName].get(providerValue, sortOrder)
+            mappedValue = model.features[featureName].get(providerValue, sortOrder)
           } else {
             throw new Error(message)
           }
@@ -32756,10 +32779,10 @@ class ImportData {
         if (Array.isArray(tempValue)) {
           mappedValue = []
           for (let feature of tempValue) {
-            mappedValue.push(language.features[featureName].get(feature.value, sortOrder))
+            mappedValue.push(model.features[featureName].get(feature.value, sortOrder))
           }
         } else {
-          mappedValue = language.features[featureName].get(tempValue.value, sortOrder)
+          mappedValue = model.features[featureName].get(tempValue.value, sortOrder)
         }
       }
       return mappedValue
@@ -32826,7 +32849,7 @@ class ImportData {
   }
 }
 
-let data = new ImportData(new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LatinLanguageModel"](), 'whitakerLat')
+let data = new ImportData(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LatinLanguageModel"], 'whitakerLat')
 let types = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Feature"].types
 
 /*
@@ -32837,22 +32860,22 @@ data.addFeature(typeName).add(providerValueName, LibValueName);
 Types and values that are unknown (undefined) will be skipped during parsing.
  */
 
- // TODO  - per inflections.xsd
- // Whitakers Words uses packon and tackon in POFS, not sure how
+// TODO  - per inflections.xsd
+// Whitakers Words uses packon and tackon in POFS, not sure how
 
 data.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Feature"].types.gender).importer
-    .map('common',
-  [ data.language.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_MASCULINE],
-    data.language.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_FEMININE]
-  ])
-    .map('all',
-  [ data.language.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_MASCULINE],
-    data.language.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_FEMININE],
-    data.language.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_NEUTER]
-  ])
+  .map('common',
+    [ data.model.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_MASCULINE],
+      data.model.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_FEMININE]
+    ])
+  .map('all',
+    [ data.model.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_MASCULINE],
+      data.model.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_FEMININE],
+      data.model.features[types.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_NEUTER]
+    ])
 
 data.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Feature"].types.tense).importer
-    .map('future_perfect', data.language.features[types.tense][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].TENSE_FUTURE_PERFECT])
+  .map('future_perfect', data.model.features[types.tense][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].TENSE_FUTURE_PERFECT])
 
 data.setLemmaParser(function (lemma) {
   // Whitaker's Words returns principal parts for some words
@@ -32868,13 +32891,13 @@ data.setLemmaParser(function (lemma) {
     parts.push(normalized)
   }
   if (primary) {
-    parsed = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Lemma"](primary, this.language.toCode(), parts)
+    parsed = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Lemma"](primary, this.model.languageCode, parts)
   }
 
   return parsed
 })
 
-let data$1 = new ImportData(new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["GreekLanguageModel"](), 'morpheusgrc')
+let data$1 = new ImportData(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["GreekLanguageModel"], 'morpheusgrc')
 let types$1 = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Feature"].types
 
 /*
@@ -32886,39 +32909,39 @@ Types and values that are unknown (undefined) will be skipped during parsing.
  */
 
 data$1.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Feature"].types.gender).importer
-    .map('masculine feminine',
-  [ data$1.language.features[types$1.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_MASCULINE],
-    data$1.language.features[types$1.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_FEMININE]
-  ])
+  .map('masculine feminine',
+    [ data$1.model.features[types$1.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_MASCULINE],
+      data$1.model.features[types$1.gender][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].GEND_FEMININE]
+    ])
 
 data$1.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Feature"].types.declension).importer
-    .map('1st & 2nd',
-  [ data$1.language.features[types$1.declension][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].ORD_1ST],
-    data$1.language.features[types$1.declension][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].ORD_2ND]
-  ])
+  .map('1st & 2nd',
+    [ data$1.model.features[types$1.declension][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].ORD_1ST],
+      data$1.model.features[types$1.declension][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].ORD_2ND]
+    ])
 
-let data$2 = new ImportData(new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["ArabicLanguageModel"](), 'aramorph')
+let data$2 = new ImportData(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["ArabicLanguageModel"], 'aramorph')
 let types$2 = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Feature"].types
 
 data$2.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Feature"].types.part).importer
-    .map('proper noun', [data$2.language.features[types$2.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].POFS_NOUN]])
+  .map('proper noun', [data$2.model.features[types$2.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].POFS_NOUN]])
 
-let data$3 = new ImportData(new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["PersianLanguageModel"](), 'hazm')
+let data$3 = new ImportData(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["PersianLanguageModel"], 'hazm')
 let types$3 = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Feature"].types
 
 data$3.addFeature(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Feature"].types.part).importer
-    .map('proper noun', [data$3.language.features[types$3.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].POFS_NOUN]])
+  .map('proper noun', [data$3.model.features[types$3.part][__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Constants"].POFS_NOUN]])
 
 // hazm allow all lemmas in without respect features as all we use it for is lemmatizing
 data$3.setLexemeFilter(function (lexeme) { return Boolean(lexeme.lemma.word) })
 
-var Cupidinibus = '{\n  "RDF": {\n    "Annotation": {\n      "about": "urn:TuftsMorphologyService:cupidinibus:whitakerLat",\n      "creator": {\n        "Agent": {\n          "about": "net.alpheios:tools:wordsxml.v1"\n        }\n      },\n      "created": {\n        "$": "2017-08-10T23:15:29.185581"\n      },\n      "hasTarget": {\n        "Description": {\n          "about": "urn:word:cupidinibus"\n        }\n      },\n      "title": {},\n      "hasBody": [\n        {\n          "resource": "urn:uuid:idm140578094883136"\n        },\n        {\n          "resource": "urn:uuid:idm140578158026160"\n        }\n      ],\n      "Body": [\n        {\n          "about": "urn:uuid:idm140578094883136",\n          "type": {\n            "resource": "cnt:ContentAsXML"\n          },\n          "rest": {\n            "entry": {\n              "infl": [\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "cupidin"\n                    },\n                    "suff": {\n                      "$": "ibus"\n                    }\n                  },\n                  "pofs": {\n                    "order": 5,\n                    "$": "noun"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "var": {\n                    "$": "1st"\n                  },\n                  "case": {\n                    "order": 2,\n                    "$": "locative"\n                  },\n                  "num": {\n                    "$": "plural"\n                  },\n                  "gend": {\n                    "$": "masculine"\n                  }\n                },\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "cupidin"\n                    },\n                    "suff": {\n                      "$": "ibus"\n                    }\n                  },\n                  "pofs": {\n                    "order": 5,\n                    "$": "noun"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "var": {\n                    "$": "1st"\n                  },\n                  "case": {\n                    "order": 5,\n                    "$": "dative"\n                  },\n                  "num": {\n                    "$": "plural"\n                  },\n                  "gend": {\n                    "$": "masculine"\n                  }\n                },\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "cupidin"\n                    },\n                    "suff": {\n                      "$": "ibus"\n                    }\n                  },\n                  "pofs": {\n                    "order": 5,\n                    "$": "noun"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "var": {\n                    "$": "1st"\n                  },\n                  "case": {\n                    "order": 3,\n                    "$": "ablative"\n                  },\n                  "num": {\n                    "$": "plural"\n                  },\n                  "gend": {\n                    "$": "masculine"\n                  }\n                }\n              ],\n              "dict": {\n                "hdwd": {\n                  "lang": "lat",\n                  "$": "Cupido, Cupidinis"\n                },\n                "pofs": {\n                  "order": 5,\n                  "$": "noun"\n                },\n                "decl": {\n                  "$": "3rd"\n                },\n                "gend": {\n                  "$": "masculine"\n                },\n                "area": {\n                  "$": "religion"\n                },\n                "freq": {\n                  "order": 4,\n                  "$": "common"\n                },\n                "src": {\n                  "$": "Ox.Lat.Dict."\n                }\n              },\n              "mean": {\n                "$": "Cupid, son of Venus; personification of carnal desire;"\n              }\n            }\n          }\n        },\n        {\n          "about": "urn:uuid:idm140578158026160",\n          "type": {\n            "resource": "cnt:ContentAsXML"\n          },\n          "rest": {\n            "entry": {\n              "infl": [\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "cupidin"\n                    },\n                    "suff": {\n                      "$": "ibus"\n                    }\n                  },\n                  "pofs": {\n                    "order": 5,\n                    "$": "noun"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "var": {\n                    "$": "1st"\n                  },\n                  "case": {\n                    "order": 2,\n                    "$": "locative"\n                  },\n                  "num": {\n                    "$": "plural"\n                  },\n                  "gend": {\n                    "$": "common"\n                  }\n                },\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "cupidin"\n                    },\n                    "suff": {\n                      "$": "ibus"\n                    }\n                  },\n                  "pofs": {\n                    "order": 5,\n                    "$": "noun"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "var": {\n                    "$": "1st"\n                  },\n                  "case": {\n                    "order": 5,\n                    "$": "dative"\n                  },\n                  "num": {\n                    "$": "plural"\n                  },\n                  "gend": {\n                    "$": "common"\n                  }\n                },\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "cupidin"\n                    },\n                    "suff": {\n                      "$": "ibus"\n                    }\n                  },\n                  "pofs": {\n                    "order": 5,\n                    "$": "noun"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "var": {\n                    "$": "1st"\n                  },\n                  "case": {\n                    "order": 3,\n                    "$": "ablative"\n                  },\n                  "num": {\n                    "$": "plural"\n                  },\n                  "gend": {\n                    "$": "common"\n                  }\n                }\n              ],\n              "dict": {\n                "hdwd": {\n                  "lang": "lat",\n                  "$": "cupido, cupidinis"\n                },\n                "pofs": {\n                  "order": 5,\n                  "$": "noun"\n                },\n                "decl": {\n                  "$": "3rd"\n                },\n                "gend": {\n                  "$": "common"\n                },\n                "freq": {\n                  "order": 5,\n                  "$": "frequent"\n                },\n                "src": {\n                  "$": "Ox.Lat.Dict."\n                }\n              },\n              "mean": {\n                "$": "desire/love/wish/longing (passionate); lust; greed, appetite; desire for gain;"\n              }\n            }\n          }\n        }\n      ]\n    }\n  }\n}\n'
+var Cupidinibus = '{\r\n  "RDF": {\r\n    "Annotation": {\r\n      "about": "urn:TuftsMorphologyService:cupidinibus:whitakerLat",\r\n      "creator": {\r\n        "Agent": {\r\n          "about": "net.alpheios:tools:wordsxml.v1"\r\n        }\r\n      },\r\n      "created": {\r\n        "$": "2017-08-10T23:15:29.185581"\r\n      },\r\n      "hasTarget": {\r\n        "Description": {\r\n          "about": "urn:word:cupidinibus"\r\n        }\r\n      },\r\n      "title": {},\r\n      "hasBody": [\r\n        {\r\n          "resource": "urn:uuid:idm140578094883136"\r\n        },\r\n        {\r\n          "resource": "urn:uuid:idm140578158026160"\r\n        }\r\n      ],\r\n      "Body": [\r\n        {\r\n          "about": "urn:uuid:idm140578094883136",\r\n          "type": {\r\n            "resource": "cnt:ContentAsXML"\r\n          },\r\n          "rest": {\r\n            "entry": {\r\n              "infl": [\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "cupidin"\r\n                    },\r\n                    "suff": {\r\n                      "$": "ibus"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 5,\r\n                    "$": "noun"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "var": {\r\n                    "$": "1st"\r\n                  },\r\n                  "case": {\r\n                    "order": 2,\r\n                    "$": "locative"\r\n                  },\r\n                  "num": {\r\n                    "$": "plural"\r\n                  },\r\n                  "gend": {\r\n                    "$": "masculine"\r\n                  }\r\n                },\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "cupidin"\r\n                    },\r\n                    "suff": {\r\n                      "$": "ibus"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 5,\r\n                    "$": "noun"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "var": {\r\n                    "$": "1st"\r\n                  },\r\n                  "case": {\r\n                    "order": 5,\r\n                    "$": "dative"\r\n                  },\r\n                  "num": {\r\n                    "$": "plural"\r\n                  },\r\n                  "gend": {\r\n                    "$": "masculine"\r\n                  }\r\n                },\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "cupidin"\r\n                    },\r\n                    "suff": {\r\n                      "$": "ibus"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 5,\r\n                    "$": "noun"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "var": {\r\n                    "$": "1st"\r\n                  },\r\n                  "case": {\r\n                    "order": 3,\r\n                    "$": "ablative"\r\n                  },\r\n                  "num": {\r\n                    "$": "plural"\r\n                  },\r\n                  "gend": {\r\n                    "$": "masculine"\r\n                  }\r\n                }\r\n              ],\r\n              "dict": {\r\n                "hdwd": {\r\n                  "lang": "lat",\r\n                  "$": "Cupido, Cupidinis"\r\n                },\r\n                "pofs": {\r\n                  "order": 5,\r\n                  "$": "noun"\r\n                },\r\n                "decl": {\r\n                  "$": "3rd"\r\n                },\r\n                "gend": {\r\n                  "$": "masculine"\r\n                },\r\n                "area": {\r\n                  "$": "religion"\r\n                },\r\n                "freq": {\r\n                  "order": 4,\r\n                  "$": "common"\r\n                },\r\n                "src": {\r\n                  "$": "Ox.Lat.Dict."\r\n                }\r\n              },\r\n              "mean": {\r\n                "$": "Cupid, son of Venus; personification of carnal desire;"\r\n              }\r\n            }\r\n          }\r\n        },\r\n        {\r\n          "about": "urn:uuid:idm140578158026160",\r\n          "type": {\r\n            "resource": "cnt:ContentAsXML"\r\n          },\r\n          "rest": {\r\n            "entry": {\r\n              "infl": [\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "cupidin"\r\n                    },\r\n                    "suff": {\r\n                      "$": "ibus"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 5,\r\n                    "$": "noun"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "var": {\r\n                    "$": "1st"\r\n                  },\r\n                  "case": {\r\n                    "order": 2,\r\n                    "$": "locative"\r\n                  },\r\n                  "num": {\r\n                    "$": "plural"\r\n                  },\r\n                  "gend": {\r\n                    "$": "common"\r\n                  }\r\n                },\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "cupidin"\r\n                    },\r\n                    "suff": {\r\n                      "$": "ibus"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 5,\r\n                    "$": "noun"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "var": {\r\n                    "$": "1st"\r\n                  },\r\n                  "case": {\r\n                    "order": 5,\r\n                    "$": "dative"\r\n                  },\r\n                  "num": {\r\n                    "$": "plural"\r\n                  },\r\n                  "gend": {\r\n                    "$": "common"\r\n                  }\r\n                },\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "cupidin"\r\n                    },\r\n                    "suff": {\r\n                      "$": "ibus"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 5,\r\n                    "$": "noun"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "var": {\r\n                    "$": "1st"\r\n                  },\r\n                  "case": {\r\n                    "order": 3,\r\n                    "$": "ablative"\r\n                  },\r\n                  "num": {\r\n                    "$": "plural"\r\n                  },\r\n                  "gend": {\r\n                    "$": "common"\r\n                  }\r\n                }\r\n              ],\r\n              "dict": {\r\n                "hdwd": {\r\n                  "lang": "lat",\r\n                  "$": "cupido, cupidinis"\r\n                },\r\n                "pofs": {\r\n                  "order": 5,\r\n                  "$": "noun"\r\n                },\r\n                "decl": {\r\n                  "$": "3rd"\r\n                },\r\n                "gend": {\r\n                  "$": "common"\r\n                },\r\n                "freq": {\r\n                  "order": 5,\r\n                  "$": "frequent"\r\n                },\r\n                "src": {\r\n                  "$": "Ox.Lat.Dict."\r\n                }\r\n              },\r\n              "mean": {\r\n                "$": "desire/love/wish/longing (passionate); lust; greed, appetite; desire for gain;"\r\n              }\r\n            }\r\n          }\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}\r\n'
 
-var Mare = '{\n  "RDF": {\n    "Annotation": {\n      "about": "urn:TuftsMorphologyService:mare:morpheuslat",\n      "creator": {\n        "Agent": {\n          "about": "org.perseus:tools:morpheus.v1"\n        }\n      },\n      "created": {\n        "$": "2017-09-08T06:59:48.639180"\n      },\n      "rights": {\n        "$": "Morphology provided by Morpheus from the Perseus Digital Library at Tufts University."\n      },\n      "hasTarget": {\n        "Description": {\n          "about": "urn:word:mare"\n        }\n      },\n      "title": {},\n      "hasBody": [\n        {\n          "resource": "urn:uuid:idm140446402389888"\n        },\n        {\n          "resource": "urn:uuid:idm140446402332400"\n        },\n        {\n          "resource": "urn:uuid:idm140446402303648"\n        }\n      ],\n      "Body": [\n        {\n          "about": "urn:uuid:idm140446402389888",\n          "type": {\n            "resource": "cnt:ContentAsXML"\n          },\n          "rest": {\n            "entry": {\n              "uri": "http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34070.1",\n              "dict": {\n                "hdwd": {\n                  "lang": "lat",\n                  "$": "mare"\n                },\n                "pofs": {\n                  "order": 3,\n                  "$": "noun"\n                },\n                "decl": {\n                  "$": "3rd"\n                },\n                "gend": {\n                  "$": "neuter"\n                }\n              },\n              "infl": [\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "mar"\n                    },\n                    "suff": {\n                      "$": "e"\n                    }\n                  },\n                  "pofs": {\n                    "order": 3,\n                    "$": "noun"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "case": {\n                    "order": 3,\n                    "$": "ablative"\n                  },\n                  "gend": {\n                    "$": "neuter"\n                  },\n                  "num": {\n                    "$": "singular"\n                  },\n                  "stemtype": {\n                    "$": "is_is"\n                  }\n                },\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "mar"\n                    },\n                    "suff": {\n                      "$": "e"\n                    }\n                  },\n                  "pofs": {\n                    "order": 3,\n                    "$": "noun"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "case": {\n                    "order": 7,\n                    "$": "nominative"\n                  },\n                  "gend": {\n                    "$": "neuter"\n                  },\n                  "num": {\n                    "$": "singular"\n                  },\n                  "stemtype": {\n                    "$": "is_is"\n                  }\n                },\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "mar"\n                    },\n                    "suff": {\n                      "$": "e"\n                    }\n                  },\n                  "pofs": {\n                    "order": 3,\n                    "$": "noun"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "case": {\n                    "order": 1,\n                    "$": "vocative"\n                  },\n                  "gend": {\n                    "$": "neuter"\n                  },\n                  "num": {\n                    "$": "singular"\n                  },\n                  "stemtype": {\n                    "$": "is_is"\n                  }\n                },\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "mar"\n                    },\n                    "suff": {\n                      "$": "e"\n                    }\n                  },\n                  "pofs": {\n                    "order": 3,\n                    "$": "noun"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "case": {\n                    "order": 4,\n                    "$": "accusative"\n                  },\n                  "gend": {\n                    "$": "neuter"\n                  },\n                  "num": {\n                    "$": "singular"\n                  },\n                  "stemtype": {\n                    "$": "is_is"\n                  }\n                }\n              ],\n              "mean": {\n                "$": "the sea"\n              }\n            }\n          }\n        },\n        {\n          "about": "urn:uuid:idm140446402332400",\n          "type": {\n            "resource": "cnt:ContentAsXML"\n          },\n          "rest": {\n            "entry": {\n              "uri": "http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34118.1",\n              "dict": {\n                "hdwd": {\n                  "lang": "lat",\n                  "$": "marum"\n                },\n                "pofs": {\n                  "order": 3,\n                  "$": "noun"\n                },\n                "decl": {\n                  "$": "2nd"\n                },\n                "gend": {\n                  "$": "neuter"\n                }\n              },\n              "infl": {\n                "term": {\n                  "lang": "lat",\n                  "stem": {\n                    "$": "mar"\n                  },\n                  "suff": {\n                    "$": "e"\n                  }\n                },\n                "pofs": {\n                  "order": 3,\n                  "$": "noun"\n                },\n                "decl": {\n                  "$": "2nd"\n                },\n                "case": {\n                  "order": 1,\n                  "$": "vocative"\n                },\n                "gend": {\n                  "$": "neuter"\n                },\n                "num": {\n                  "$": "singular"\n                },\n                "stemtype": {\n                  "$": "us_i"\n                }\n              }\n            }\n          }\n        },\n        {\n          "about": "urn:uuid:idm140446402303648",\n          "type": {\n            "resource": "cnt:ContentAsXML"\n          },\n          "rest": {\n            "entry": {\n              "uri": "http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34119.1",\n              "dict": {\n                "hdwd": {\n                  "lang": "lat",\n                  "$": "mas"\n                },\n                "pofs": {\n                  "order": 2,\n                  "$": "adjective"\n                },\n                "decl": {\n                  "$": "3rd"\n                }\n              },\n              "infl": [\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "mare"\n                    }\n                  },\n                  "pofs": {\n                    "order": 2,\n                    "$": "adjective"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "case": {\n                    "order": 3,\n                    "$": "ablative"\n                  },\n                  "gend": {\n                    "$": "masculine"\n                  },\n                  "num": {\n                    "$": "singular"\n                  },\n                  "stemtype": {\n                    "$": "irreg_adj3"\n                  },\n                  "morph": {\n                    "$": "indeclform"\n                  }\n                },\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "mare"\n                    }\n                  },\n                  "pofs": {\n                    "order": 2,\n                    "$": "adjective"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "case": {\n                    "order": 3,\n                    "$": "ablative"\n                  },\n                  "gend": {\n                    "$": "feminine"\n                  },\n                  "num": {\n                    "$": "singular"\n                  },\n                  "stemtype": {\n                    "$": "irreg_adj3"\n                  },\n                  "morph": {\n                    "$": "indeclform"\n                  }\n                },\n                {\n                  "term": {\n                    "lang": "lat",\n                    "stem": {\n                      "$": "mare"\n                    }\n                  },\n                  "pofs": {\n                    "order": 2,\n                    "$": "adjective"\n                  },\n                  "decl": {\n                    "$": "3rd"\n                  },\n                  "case": {\n                    "order": 3,\n                    "$": "ablative"\n                  },\n                  "gend": {\n                    "$": "neuter"\n                  },\n                  "num": {\n                    "$": "singular"\n                  },\n                  "stemtype": {\n                    "$": "irreg_adj3"\n                  },\n                  "morph": {\n                    "$": "indeclform"\n                  }\n                }\n              ]\n            }\n          }\n        }\n      ]\n    }\n  }\n}\n'
+var Mare = '{\r\n  "RDF": {\r\n    "Annotation": {\r\n      "about": "urn:TuftsMorphologyService:mare:morpheuslat",\r\n      "creator": {\r\n        "Agent": {\r\n          "about": "org.perseus:tools:morpheus.v1"\r\n        }\r\n      },\r\n      "created": {\r\n        "$": "2017-09-08T06:59:48.639180"\r\n      },\r\n      "rights": {\r\n        "$": "Morphology provided by Morpheus from the Perseus Digital Library at Tufts University."\r\n      },\r\n      "hasTarget": {\r\n        "Description": {\r\n          "about": "urn:word:mare"\r\n        }\r\n      },\r\n      "title": {},\r\n      "hasBody": [\r\n        {\r\n          "resource": "urn:uuid:idm140446402389888"\r\n        },\r\n        {\r\n          "resource": "urn:uuid:idm140446402332400"\r\n        },\r\n        {\r\n          "resource": "urn:uuid:idm140446402303648"\r\n        }\r\n      ],\r\n      "Body": [\r\n        {\r\n          "about": "urn:uuid:idm140446402389888",\r\n          "type": {\r\n            "resource": "cnt:ContentAsXML"\r\n          },\r\n          "rest": {\r\n            "entry": {\r\n              "uri": "http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34070.1",\r\n              "dict": {\r\n                "hdwd": {\r\n                  "lang": "lat",\r\n                  "$": "mare"\r\n                },\r\n                "pofs": {\r\n                  "order": 3,\r\n                  "$": "noun"\r\n                },\r\n                "decl": {\r\n                  "$": "3rd"\r\n                },\r\n                "gend": {\r\n                  "$": "neuter"\r\n                }\r\n              },\r\n              "infl": [\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "mar"\r\n                    },\r\n                    "suff": {\r\n                      "$": "e"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 3,\r\n                    "$": "noun"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "case": {\r\n                    "order": 3,\r\n                    "$": "ablative"\r\n                  },\r\n                  "gend": {\r\n                    "$": "neuter"\r\n                  },\r\n                  "num": {\r\n                    "$": "singular"\r\n                  },\r\n                  "stemtype": {\r\n                    "$": "is_is"\r\n                  }\r\n                },\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "mar"\r\n                    },\r\n                    "suff": {\r\n                      "$": "e"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 3,\r\n                    "$": "noun"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "case": {\r\n                    "order": 7,\r\n                    "$": "nominative"\r\n                  },\r\n                  "gend": {\r\n                    "$": "neuter"\r\n                  },\r\n                  "num": {\r\n                    "$": "singular"\r\n                  },\r\n                  "stemtype": {\r\n                    "$": "is_is"\r\n                  }\r\n                },\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "mar"\r\n                    },\r\n                    "suff": {\r\n                      "$": "e"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 3,\r\n                    "$": "noun"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "case": {\r\n                    "order": 1,\r\n                    "$": "vocative"\r\n                  },\r\n                  "gend": {\r\n                    "$": "neuter"\r\n                  },\r\n                  "num": {\r\n                    "$": "singular"\r\n                  },\r\n                  "stemtype": {\r\n                    "$": "is_is"\r\n                  }\r\n                },\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "mar"\r\n                    },\r\n                    "suff": {\r\n                      "$": "e"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 3,\r\n                    "$": "noun"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "case": {\r\n                    "order": 4,\r\n                    "$": "accusative"\r\n                  },\r\n                  "gend": {\r\n                    "$": "neuter"\r\n                  },\r\n                  "num": {\r\n                    "$": "singular"\r\n                  },\r\n                  "stemtype": {\r\n                    "$": "is_is"\r\n                  }\r\n                }\r\n              ],\r\n              "mean": {\r\n                "$": "the sea"\r\n              }\r\n            }\r\n          }\r\n        },\r\n        {\r\n          "about": "urn:uuid:idm140446402332400",\r\n          "type": {\r\n            "resource": "cnt:ContentAsXML"\r\n          },\r\n          "rest": {\r\n            "entry": {\r\n              "uri": "http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34118.1",\r\n              "dict": {\r\n                "hdwd": {\r\n                  "lang": "lat",\r\n                  "$": "marum"\r\n                },\r\n                "pofs": {\r\n                  "order": 3,\r\n                  "$": "noun"\r\n                },\r\n                "decl": {\r\n                  "$": "2nd"\r\n                },\r\n                "gend": {\r\n                  "$": "neuter"\r\n                }\r\n              },\r\n              "infl": {\r\n                "term": {\r\n                  "lang": "lat",\r\n                  "stem": {\r\n                    "$": "mar"\r\n                  },\r\n                  "suff": {\r\n                    "$": "e"\r\n                  }\r\n                },\r\n                "pofs": {\r\n                  "order": 3,\r\n                  "$": "noun"\r\n                },\r\n                "decl": {\r\n                  "$": "2nd"\r\n                },\r\n                "case": {\r\n                  "order": 1,\r\n                  "$": "vocative"\r\n                },\r\n                "gend": {\r\n                  "$": "neuter"\r\n                },\r\n                "num": {\r\n                  "$": "singular"\r\n                },\r\n                "stemtype": {\r\n                  "$": "us_i"\r\n                }\r\n              }\r\n            }\r\n          }\r\n        },\r\n        {\r\n          "about": "urn:uuid:idm140446402303648",\r\n          "type": {\r\n            "resource": "cnt:ContentAsXML"\r\n          },\r\n          "rest": {\r\n            "entry": {\r\n              "uri": "http://data.perseus.org/collections/urn:cite:perseus:latlexent.lex34119.1",\r\n              "dict": {\r\n                "hdwd": {\r\n                  "lang": "lat",\r\n                  "$": "mas"\r\n                },\r\n                "pofs": {\r\n                  "order": 2,\r\n                  "$": "adjective"\r\n                },\r\n                "decl": {\r\n                  "$": "3rd"\r\n                }\r\n              },\r\n              "infl": [\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "mare"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 2,\r\n                    "$": "adjective"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "case": {\r\n                    "order": 3,\r\n                    "$": "ablative"\r\n                  },\r\n                  "gend": {\r\n                    "$": "masculine"\r\n                  },\r\n                  "num": {\r\n                    "$": "singular"\r\n                  },\r\n                  "stemtype": {\r\n                    "$": "irreg_adj3"\r\n                  },\r\n                  "morph": {\r\n                    "$": "indeclform"\r\n                  }\r\n                },\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "mare"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 2,\r\n                    "$": "adjective"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "case": {\r\n                    "order": 3,\r\n                    "$": "ablative"\r\n                  },\r\n                  "gend": {\r\n                    "$": "feminine"\r\n                  },\r\n                  "num": {\r\n                    "$": "singular"\r\n                  },\r\n                  "stemtype": {\r\n                    "$": "irreg_adj3"\r\n                  },\r\n                  "morph": {\r\n                    "$": "indeclform"\r\n                  }\r\n                },\r\n                {\r\n                  "term": {\r\n                    "lang": "lat",\r\n                    "stem": {\r\n                      "$": "mare"\r\n                    }\r\n                  },\r\n                  "pofs": {\r\n                    "order": 2,\r\n                    "$": "adjective"\r\n                  },\r\n                  "decl": {\r\n                    "$": "3rd"\r\n                  },\r\n                  "case": {\r\n                    "order": 3,\r\n                    "$": "ablative"\r\n                  },\r\n                  "gend": {\r\n                    "$": "neuter"\r\n                  },\r\n                  "num": {\r\n                    "$": "singular"\r\n                  },\r\n                  "stemtype": {\r\n                    "$": "irreg_adj3"\r\n                  },\r\n                  "morph": {\r\n                    "$": "indeclform"\r\n                  }\r\n                }\r\n              ]\r\n            }\r\n          }\r\n        }\r\n      ]\r\n    }\r\n  }\r\n}\r\n'
 
-var Cepit = '{\n  "RDF": {\n    "Annotation": {\n      "about": "urn:TuftsMorphologyService:cepit:whitakerLat",\n      "creator": {\n        "Agent": {\n          "about": "net.alpheios:tools:wordsxml.v1"\n        }\n      },\n      "created": {\n        "$": "2017-08-10T23:16:53.672068"\n      },\n      "hasTarget": {\n        "Description": {\n          "about": "urn:word:cepit"\n        }\n      },\n      "title": {},\n      "hasBody": {\n        "resource": "urn:uuid:idm140578133848416"\n      },\n      "Body": {\n        "about": "urn:uuid:idm140578133848416",\n        "type": {\n          "resource": "cnt:ContentAsXML"\n        },\n        "rest": {\n          "entry": {\n            "infl": {\n              "term": {\n                "lang": "lat",\n                "stem": {\n                  "$": "cep"\n                },\n                "suff": {\n                  "$": "it"\n                }\n              },\n              "pofs": {\n                "order": 3,\n                "$": "verb"\n              },\n              "conj": {\n                "$": "3rd"\n              },\n              "var": {\n                "$": "1st"\n              },\n              "tense": {\n                "$": "perfect"\n              },\n              "voice": {\n                "$": "active"\n              },\n              "mood": {\n                "$": "indicative"\n              },\n              "pers": {\n                "$": "3rd"\n              },\n              "num": {\n                "$": "singular"\n              }\n            },\n            "dict": {\n              "hdwd": {\n                "lang": "lat",\n                "$": "capio, capere, cepi, captus"\n              },\n              "pofs": {\n                "order": 3,\n                "$": "verb"\n              },\n              "conj": {\n                "$": "3rd"\n              },\n              "kind": {\n                "$": "transitive"\n              },\n              "freq": {\n                "order": 6,\n                "$": "very frequent"\n              },\n              "src": {\n                "$": "Ox.Lat.Dict."\n              }\n            },\n            "mean": {\n              "$": "take hold, seize; grasp; take bribe; arrest/capture; put on; occupy; captivate;"\n            }\n          }\n        }\n      }\n    }\n  }\n}\n'
+var Cepit = '{\r\n  "RDF": {\r\n    "Annotation": {\r\n      "about": "urn:TuftsMorphologyService:cepit:whitakerLat",\r\n      "creator": {\r\n        "Agent": {\r\n          "about": "net.alpheios:tools:wordsxml.v1"\r\n        }\r\n      },\r\n      "created": {\r\n        "$": "2017-08-10T23:16:53.672068"\r\n      },\r\n      "hasTarget": {\r\n        "Description": {\r\n          "about": "urn:word:cepit"\r\n        }\r\n      },\r\n      "title": {},\r\n      "hasBody": {\r\n        "resource": "urn:uuid:idm140578133848416"\r\n      },\r\n      "Body": {\r\n        "about": "urn:uuid:idm140578133848416",\r\n        "type": {\r\n          "resource": "cnt:ContentAsXML"\r\n        },\r\n        "rest": {\r\n          "entry": {\r\n            "infl": {\r\n              "term": {\r\n                "lang": "lat",\r\n                "stem": {\r\n                  "$": "cep"\r\n                },\r\n                "suff": {\r\n                  "$": "it"\r\n                }\r\n              },\r\n              "pofs": {\r\n                "order": 3,\r\n                "$": "verb"\r\n              },\r\n              "conj": {\r\n                "$": "3rd"\r\n              },\r\n              "var": {\r\n                "$": "1st"\r\n              },\r\n              "tense": {\r\n                "$": "perfect"\r\n              },\r\n              "voice": {\r\n                "$": "active"\r\n              },\r\n              "mood": {\r\n                "$": "indicative"\r\n              },\r\n              "pers": {\r\n                "$": "3rd"\r\n              },\r\n              "num": {\r\n                "$": "singular"\r\n              }\r\n            },\r\n            "dict": {\r\n              "hdwd": {\r\n                "lang": "lat",\r\n                "$": "capio, capere, cepi, captus"\r\n              },\r\n              "pofs": {\r\n                "order": 3,\r\n                "$": "verb"\r\n              },\r\n              "conj": {\r\n                "$": "3rd"\r\n              },\r\n              "kind": {\r\n                "$": "transitive"\r\n              },\r\n              "freq": {\r\n                "order": 6,\r\n                "$": "very frequent"\r\n              },\r\n              "src": {\r\n                "$": "Ox.Lat.Dict."\r\n              }\r\n            },\r\n            "mean": {\r\n              "$": "take hold, seize; grasp; take bribe; arrest/capture; put on; occupy; captivate;"\r\n            }\r\n          }\r\n        }\r\n      }\r\n    }\r\n  }\r\n}\r\n'
 
-var Pilsopo = '{\n  "RDF": {\n    "Annotation": {\n      "about": "urn:TuftsMorphologyService:φιλόσοφος:morpheuslat",\n      "creator": {\n        "Agent": {\n          "about": "org.perseus:tools:morpheus.v1"\n        }\n      },\n      "created": {\n        "$": "2017-10-15T14:06:40.522369"\n      },\n      "hasTarget": {\n        "Description": {\n          "about": "urn:word:φιλόσοφος"\n        }\n      },\n      "title": {},\n      "hasBody": {\n        "resource": "urn:uuid:idm140446394225264"\n      },\n      "Body": {\n        "about": "urn:uuid:idm140446394225264",\n        "type": {\n          "resource": "cnt:ContentAsXML"\n        },\n        "rest": {\n          "entry": {\n            "uri": "http://data.perseus.org/collections/urn:cite:perseus:grclexent.lex78378.1",\n            "dict": {\n              "hdwd": {\n                "lang": "grc",\n                "$": "φιλόσοφος"\n              },\n              "pofs": {\n                "order": 3,\n                "$": "noun"\n              },\n              "decl": {\n                "$": "2nd"\n              },\n              "gend": {\n                "$": "masculine"\n              }\n            },\n            "infl": {\n              "term": {\n                "lang": "grc",\n                "stem": {\n                  "$": "φιλοσοφ"\n                },\n                "suff": {\n                  "$": "ος"\n                }\n              },\n              "pofs": {\n                "order": 3,\n                "$": "noun"\n              },\n              "decl": {\n                "$": "2nd"\n              },\n              "case": {\n                "order": 7,\n                "$": "nominative"\n              },\n              "gend": {\n                "$": "masculine"\n              },\n              "num": {\n                "$": "singular"\n              },\n              "stemtype": {\n                "$": "os_ou"\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n}'
+var Pilsopo = '{\r\n  "RDF": {\r\n    "Annotation": {\r\n      "about": "urn:TuftsMorphologyService:φιλόσοφος:morpheuslat",\r\n      "creator": {\r\n        "Agent": {\r\n          "about": "org.perseus:tools:morpheus.v1"\r\n        }\r\n      },\r\n      "created": {\r\n        "$": "2017-10-15T14:06:40.522369"\r\n      },\r\n      "hasTarget": {\r\n        "Description": {\r\n          "about": "urn:word:φιλόσοφος"\r\n        }\r\n      },\r\n      "title": {},\r\n      "hasBody": {\r\n        "resource": "urn:uuid:idm140446394225264"\r\n      },\r\n      "Body": {\r\n        "about": "urn:uuid:idm140446394225264",\r\n        "type": {\r\n          "resource": "cnt:ContentAsXML"\r\n        },\r\n        "rest": {\r\n          "entry": {\r\n            "uri": "http://data.perseus.org/collections/urn:cite:perseus:grclexent.lex78378.1",\r\n            "dict": {\r\n              "hdwd": {\r\n                "lang": "grc",\r\n                "$": "φιλόσοφος"\r\n              },\r\n              "pofs": {\r\n                "order": 3,\r\n                "$": "noun"\r\n              },\r\n              "decl": {\r\n                "$": "2nd"\r\n              },\r\n              "gend": {\r\n                "$": "masculine"\r\n              }\r\n            },\r\n            "infl": {\r\n              "term": {\r\n                "lang": "grc",\r\n                "stem": {\r\n                  "$": "φιλοσοφ"\r\n                },\r\n                "suff": {\r\n                  "$": "ος"\r\n                }\r\n              },\r\n              "pofs": {\r\n                "order": 3,\r\n                "$": "noun"\r\n              },\r\n              "decl": {\r\n                "$": "2nd"\r\n              },\r\n              "case": {\r\n                "order": 7,\r\n                "$": "nominative"\r\n              },\r\n              "gend": {\r\n                "$": "masculine"\r\n              },\r\n              "num": {\r\n                "$": "singular"\r\n              },\r\n              "stemtype": {\r\n                "$": "os_ou"\r\n              }\r\n            }\r\n          }\r\n        }\r\n      }\r\n    }\r\n  }\r\n}'
 
 class WordTestData {
   constructor () {
@@ -32938,7 +32961,7 @@ class WordTestData {
   }
 }
 
-var DefaultConfig = '{\n  "engine": {\n    "lat": ["whitakerLat"],\n    "grc": ["morpheusgrc"],\n    "ara": ["aramorph"],\n    "per": ["hazm"]\n  },\n  "url": "https://morph.alpheios.net/api/v1/analysis/word?word=r_WORD&engine=r_ENGINE&lang=r_LANG",\n  "allowUnknownValues": true\n}\n'
+var DefaultConfig = '{\r\n  "engine": {\r\n    "lat": ["whitakerLat"],\r\n    "grc": ["morpheusgrc"],\r\n    "ara": ["aramorph"],\r\n    "per": ["hazm"]\r\n  },\r\n  "url": "https://morph.alpheios.net/api/v1/analysis/word?word=r_WORD&engine=r_ENGINE&lang=r_LANG",\r\n  "allowUnknownValues": true\r\n}\r\n'
 
 class AlpheiosTuftsAdapter extends BaseAdapter {
   /**
@@ -32982,7 +33005,7 @@ class AlpheiosTuftsAdapter extends BaseAdapter {
         let json = JSON.parse(wordData)
         resolve(json)
       } catch (error) {
-                // Word is not found in test data
+        // Word is not found in test data
         reject(error)
       }
     })
@@ -32999,10 +33022,10 @@ class AlpheiosTuftsAdapter extends BaseAdapter {
     let lexemes = []
     let annotationBody = jsonObj.RDF.Annotation.Body
     if (!Array.isArray(annotationBody)) {
-            /*
-            If only one lexeme is returned, Annotation Body will not be an array but rather a single object.
-            Let's convert it to an array so we can work with it in the same way no matter what format it is.
-             */
+      /*
+      If only one lexeme is returned, Annotation Body will not be an array but rather a single object.
+      Let's convert it to an array so we can work with it in the same way no matter what format it is.
+      */
       if (annotationBody) {
         annotationBody = [annotationBody]
       } else {
@@ -33110,9 +33133,9 @@ class AlpheiosTuftsAdapter extends BaseAdapter {
       }
       let inflections = []
       for (let inflectionJSON of inflectionsJSON) {
-        let inflection = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Inflection"](inflectionJSON.term.stem.$, mappingData.language.toCode())
+        let inflection = new __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["Inflection"](inflectionJSON.term.stem.$, mappingData.model.languageID)
         if (inflectionJSON.term.suff) {
-                    // Set suffix if provided by a morphological analyzer
+          // Set suffix if provided by a morphological analyzer
           inflection.suffix = inflectionJSON.term.suff.$
         }
 
@@ -33192,7 +33215,7 @@ class AlpheiosTuftsAdapter extends BaseAdapter {
       let homonym = this.transform(jsonObj, word)
       return homonym
     } else {
-        // No data found for this word
+      // No data found for this word
       return undefined
     }
   }
@@ -33251,7 +33274,7 @@ function createCommonjsModule(fn, module) {
 var papaparse = createCommonjsModule(function (module, exports) {
 /*!
 	Papa Parse
-	v4.3.6
+	v4.3.7
 	https://github.com/mholt/PapaParse
 	License: MIT
 */
@@ -33957,7 +33980,7 @@ var papaparse = createCommonjsModule(function (module, exports) {
 
 		this._chunkError = function()
 		{
-			this._sendError(reader.error);
+			this._sendError(reader.error.message);
 		};
 
 	}
@@ -34397,7 +34420,12 @@ var papaparse = createCommonjsModule(function (module, exports) {
 		var step = config.step;
 		var preview = config.preview;
 		var fastMode = config.fastMode;
-		var quoteChar = config.quoteChar || '"';
+		/** Allows for no quoteChar by setting quoteChar to undefined in config */
+		if (config.quoteChar === undefined){
+			var quoteChar = '"';
+		} else {
+			var quoteChar = config.quoteChar;
+		}
 
 		// Delimiter must be valid
 		if (typeof delim !== 'string'
@@ -34834,7 +34862,7 @@ var papaparse = createCommonjsModule(function (module, exports) {
 }));
 });
 
-var DefaultConfig = "{\n  \"https://github.com/alpheios-project/lsj\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lsj&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\",\n    \"rights\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/aut\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/aut/dat/grc-aut-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/aut//dat/grc-aut-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=aut&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\",\n    \"rights\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth). Provided by the Perseus Digital Library at Tufts University\"\n  },\n  \"https://github.com/alpheios-project/ml\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ml&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Middle Liddell\\\"\",\n    \"rights\": \"\\\"An Intermediate Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott). Provided by the Perseus Digital Library at Tufts University\"\n  },\n  \"https://github.com/alpheios-project/as\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/as/dat/grc-as-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/as/dat/grc-as-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=as&lg=grc&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Manual Greek Lexicon of the New Testament\\\"\",\n    \"rights\": \"\\\"A Manual Greek Lexicon of the New Testament\\\" (G. Abbott-Smith). Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/dod\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-ids.dat\",\n      \"full\": null\n    },\n    \"langs\": {\n      \"source\": \"grc\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"Dodson\\\"\",\n    \"rights\": \"\\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Provided by biblicalhumanities.org.\"\n  },\n  \"https://github.com/alpheios-project/ls\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/ls/dat/lat-ls-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ls&lg=lat&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"lat\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\",\n    \"rights\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/lan\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/lan/dat/ara-lan-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lan&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane)\",\n    \"rights\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/sal\": {\n    \"urls\": {\n      \"short\": null,\n      \"index\": \"https://repos1.alpheios.net/lexdata/sal/dat/ara-sal-ids.dat\",\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=sal&lg=ara&out=html\"\n    },\n    \"langs\": {\n      \"source\": \"ara\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\",\n    \"rights\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone). Provided by the Perseus Digital Library at Tufts University.\"\n  },\n  \"https://github.com/alpheios-project/stg\": {\n    \"urls\": {\n      \"short\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-defs.dat\",\n      \"index\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-ids.dat\",\n      \"full\": null\n    },\n    \"langs\": {\n      \"source\": \"per\",\n      \"target\": \"en\"\n    },\n    \"description\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\",\n    \"rights\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass). Provided by the Center for Advanced Study of Language (CASL) at the University of Maryland, College Park.\"\n  }\n}\n";
+var DefaultConfig = "{\r\n  \"https://github.com/alpheios-project/lsj\": {\r\n    \"urls\": {\r\n      \"short\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-defs.dat\",\r\n      \"index\": \"https://repos1.alpheios.net/lexdata/lsj/dat/grc-lsj-ids.dat\",\r\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lsj&lg=grc&out=html\"\r\n    },\r\n    \"langs\": {\r\n      \"source\": \"grc\",\r\n      \"target\": \"en\"\r\n    },\r\n    \"description\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott)\",\r\n    \"rights\": \"\\\"A Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott). Provided by the Perseus Digital Library at Tufts University.\"\r\n  },\r\n  \"https://github.com/alpheios-project/aut\": {\r\n    \"urls\": {\r\n      \"short\": \"https://repos1.alpheios.net/lexdata/aut/dat/grc-aut-defs.dat\",\r\n      \"index\": \"https://repos1.alpheios.net/lexdata/aut//dat/grc-aut-ids.dat\",\r\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=aut&lg=grc&out=html\"\r\n    },\r\n    \"langs\": {\r\n      \"source\": \"grc\",\r\n      \"target\": \"en\"\r\n    },\r\n    \"description\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth)\",\r\n    \"rights\": \"\\\"Autenrieth Homeric Dictionary\\\" (Geoerge Autenrieth). Provided by the Perseus Digital Library at Tufts University\"\r\n  },\r\n  \"https://github.com/alpheios-project/ml\": {\r\n    \"urls\": {\r\n      \"short\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-defs.dat\",\r\n      \"index\": \"https://repos1.alpheios.net/lexdata/ml/dat/grc-ml-ids.dat\",\r\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ml&lg=grc&out=html\"\r\n    },\r\n    \"langs\": {\r\n      \"source\": \"grc\",\r\n      \"target\": \"en\"\r\n    },\r\n    \"description\": \"\\\"Middle Liddell\\\"\",\r\n    \"rights\": \"\\\"An Intermediate Greek-English Lexicon\\\" (Henry George Liddell, Robert Scott). Provided by the Perseus Digital Library at Tufts University\"\r\n  },\r\n  \"https://github.com/alpheios-project/as\": {\r\n    \"urls\": {\r\n      \"short\": \"https://repos1.alpheios.net/lexdata/as/dat/grc-as-defs.dat\",\r\n      \"index\": \"https://repos1.alpheios.net/lexdata/as/dat/grc-as-ids.dat\",\r\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=as&lg=grc&out=html\"\r\n    },\r\n    \"langs\": {\r\n      \"source\": \"grc\",\r\n      \"target\": \"en\"\r\n    },\r\n    \"description\": \"\\\"A Manual Greek Lexicon of the New Testament\\\"\",\r\n    \"rights\": \"\\\"A Manual Greek Lexicon of the New Testament\\\" (G. Abbott-Smith). Provided by biblicalhumanities.org.\"\r\n  },\r\n  \"https://github.com/alpheios-project/dod\": {\r\n    \"urls\": {\r\n      \"short\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-defs.dat\",\r\n      \"index\": \"https://repos1.alpheios.net/lexdata/dod/dat/grc-dod-ids.dat\",\r\n      \"full\": null\r\n    },\r\n    \"langs\": {\r\n      \"source\": \"grc\",\r\n      \"target\": \"en\"\r\n    },\r\n    \"description\": \"\\\"Dodson\\\"\",\r\n    \"rights\": \"\\\"A Public Domain lexicon by John Jeffrey Dodson (2010)\\\". Provided by biblicalhumanities.org.\"\r\n  },\r\n  \"https://github.com/alpheios-project/ls\": {\r\n    \"urls\": {\r\n      \"short\": null,\r\n      \"index\": \"https://repos1.alpheios.net/lexdata/ls/dat/lat-ls-ids.dat\",\r\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=ls&lg=lat&out=html\"\r\n    },\r\n    \"langs\": {\r\n      \"source\": \"lat\",\r\n      \"target\": \"en\"\r\n    },\r\n    \"description\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short)\",\r\n    \"rights\": \"\\\"A Latin Dictionary\\\" (Charlton T. Lewis, Charles Short). Provided by the Perseus Digital Library at Tufts University.\"\r\n  },\r\n  \"https://github.com/alpheios-project/lan\": {\r\n    \"urls\": {\r\n      \"short\": null,\r\n      \"index\": \"https://repos1.alpheios.net/lexdata/lan/dat/ara-lan-ids.dat\",\r\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=lan&lg=ara&out=html\"\r\n    },\r\n    \"langs\": {\r\n      \"source\": \"ara\",\r\n      \"target\": \"en\"\r\n    },\r\n    \"description\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane)\",\r\n    \"rights\": \"\\\"The Arabic-English Lexicon\\\" (Edward Lane). Provided by the Perseus Digital Library at Tufts University.\"\r\n  },\r\n  \"https://github.com/alpheios-project/sal\": {\r\n    \"urls\": {\r\n      \"short\": null,\r\n      \"index\": \"https://repos1.alpheios.net/lexdata/sal/dat/ara-sal-ids.dat\",\r\n      \"full\": \"https://repos1.alpheios.net/exist/rest/db/xq/lexi-get.xq?lx=sal&lg=ara&out=html\"\r\n    },\r\n    \"langs\": {\r\n      \"source\": \"ara\",\r\n      \"target\": \"en\"\r\n    },\r\n    \"description\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone)\",\r\n    \"rights\": \"\\\"An Advanced Learner's Arabic Dictionary\\\" (H. Anthony Salmone). Provided by the Perseus Digital Library at Tufts University.\"\r\n  },\r\n  \"https://github.com/alpheios-project/stg\": {\r\n    \"urls\": {\r\n      \"short\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-defs.dat\",\r\n      \"index\": \"https://repos1.alpheios.net/lexdata/stg/dat/per-stg-ids.dat\",\r\n      \"full\": null\r\n    },\r\n    \"langs\": {\r\n      \"source\": \"per\",\r\n      \"target\": \"en\"\r\n    },\r\n    \"description\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass)\",\r\n    \"rights\": \"\\\"A Comprehensive Persian-English Dictionary\\\" (Francis Joseph Steingass). Provided by the Center for Advanced Study of Language (CASL) at the University of Maryland, College Park.\"\r\n  }\r\n}\r\n";
 
 class AlpheiosLexAdapter extends BaseLexiconAdapter {
   /**
@@ -34880,7 +34908,7 @@ class AlpheiosLexAdapter extends BaseLexiconAdapter {
     }
     let ids;
     if (this.index) {
-      let model = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageForCode(lemma.language);
+      let model = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageModel(lemma.languageID);
       ids = this._lookupInDataIndex(this.index, lemma, model);
     }
     let url = this.getConfig('urls').full;
@@ -34898,13 +34926,13 @@ class AlpheiosLexAdapter extends BaseLexiconAdapter {
     for (let r of requests) {
       let p = new Promise((resolve, reject) => {
         window.fetch(r).then(
-            function (response) {
-              let text = response.text();
-              resolve(text);
-            }
-          ).catch((error) => {
-            reject(error);
-          });
+          function (response) {
+            let text = response.text();
+            resolve(text);
+          }
+        ).catch((error) => {
+          reject(error);
+        });
       }).then((result) => {
         if (result.match(/No entries found/)) {
           throw new Error('Not Found')
@@ -34946,7 +34974,7 @@ class AlpheiosLexAdapter extends BaseLexiconAdapter {
       let parsed = papaparse.parse(unparsed, {quoteChar: '\u{0000}', delimiter: '|'});
       this.data = this._fillMap(parsed.data);
     }
-    let model = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageForCode(lemma.language);
+    let model = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageModel(lemma.languageID);
     let deftexts = this._lookupInDataIndex(this.data, lemma, model);
     let promises = [];
     if (deftexts) {
@@ -35023,13 +35051,13 @@ class AlpheiosLexAdapter extends BaseLexiconAdapter {
     // TODO figure out best way to load this data
     return new Promise((resolve, reject) => {
       window.fetch(url).then(
-          function (response) {
-            let text = response.text();
-            resolve(text);
-          }
-        ).catch((error) => {
-          reject(error);
-        });
+        function (response) {
+          let text = response.text();
+          resolve(text);
+        }
+      ).catch((error) => {
+        reject(error);
+      });
     })
   }
 

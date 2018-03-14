@@ -1314,7 +1314,7 @@ class LanguageModel {
   }
 
   /**
-   * Return alternate encodings for a word
+   * Returns alternate encodings for a word
    * @param {string} word the word
    * @param {string} preceding optional preceding word
    * @param {string} following optional following word
@@ -1681,6 +1681,19 @@ class LatinLanguageModel extends LanguageModel {
       word = word.replace(/[\u0153]/g, 'oe');
     }
     return word
+  }
+
+  /**
+   * Returns alternate encodings for a word
+   * @param {string} word the word
+   * @param {string} preceding optional preceding word
+   * @param {string} following optional following word
+   * @param {string} encoding optional encoding name to filter the response to
+   * @returns {Array} an array of alternate encodings
+   */
+  static alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
+    // Not implemented yet
+    return []
   }
 
   /**
@@ -2065,6 +2078,19 @@ class PersianLanguageModel extends LanguageModel {
    */
   static canInflect (node) {
     return false
+  }
+
+  /**
+   * Returns alternate encodings for a word
+   * @param {string} word the word
+   * @param {string} preceding optional preceding word
+   * @param {string} following optional following word
+   * @param {string} encoding optional encoding name to filter the response to
+   * @returns {Array} an array of alternate encodings
+   */
+  static alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
+    // Not implemented yet
+    return []
   }
 
   /**
@@ -4308,6 +4334,9 @@ exports.default = {
       return list.length > 0 ? '(' + list.map(function (f) {
         return f.toString();
       }).join(', ') + ')' : '';
+    },
+    languageCode: function languageCode(languageID) {
+      return _alpheiosDataModels.LanguageModelFactory.getLanguageCodeFromId(languageID);
     }
   }
 };
@@ -12217,7 +12246,6 @@ exports.default = {
         return this.selectedPartOfSpeech;
       },
       set: function set(newValue) {
-        console.log('Part of speech changed to ' + newValue);
         this.selectedPartOfSpeech = newValue;
         this.views = this.viewSet.getViews(this.selectedPartOfSpeech);
         this.selectedView = this.views[0];
@@ -12229,15 +12257,12 @@ exports.default = {
     },
     viewSelector: {
       get: function get() {
-        console.log('Selected view ID is', this.selectedView);
         return this.selectedView ? this.selectedView.id : '';
       },
       set: function set(newValue) {
-        console.log('View selector set, value is ' + newValue);
         this.selectedView = this.views.find(function (view) {
           return view.id === newValue;
         });
-        console.log('View ID changed to ' + newValue + ', view name is "' + this.selectedView.name + '"');
         if (!this.selectedView.hasComponentData) {
           this.renderInflections().displayInflections();
         }
@@ -12272,7 +12297,6 @@ exports.default = {
   watch: {
 
     inflectionData: function inflectionData(_inflectionData) {
-      console.log('Inflection data changed');
       if (_inflectionData) {
         this.viewSet = new _alpheiosInflectionTables.ViewSet(_inflectionData, this.locale);
 
@@ -12312,7 +12336,6 @@ exports.default = {
       }
     },
     locale: function locale(_locale) {
-      console.log('locale changed to ' + _locale);
       if (this.data.inflectionData) {
         this.viewSet.setLocale(this.locale);
         if (!this.selectedView.hasComponentData) {
@@ -13275,7 +13298,7 @@ var render = function() {
                 "span",
                 {
                   staticClass: "alpheios-morph__formtext",
-                  attrs: { lang: lex.lemma.language }
+                  attrs: { lang: _vm.languageCode(lex.lemma.languageID) }
                 },
                 [_vm._v(_vm._s(lex.lemma.word))]
               )
@@ -13289,7 +13312,7 @@ var render = function() {
                 "span",
                 {
                   staticClass: "alpheios-morph__listitem",
-                  attrs: { lang: lex.lemma.language }
+                  attrs: { lang: _vm.languageCode(lex.lemma.languageID) }
                 },
                 [_vm._v(_vm._s(part))]
               )
@@ -18818,7 +18841,7 @@ class UIController {
     this.popup.lexemes = homonym.lexemes
     if (homonym.lexemes.length > 0) {
       // TODO we could really move this into the morph component and have it be calculated for each lemma in case languages are multiple
-      this.popup.linkedFeatures = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageForCode(homonym.lexemes[0].lemma.language).grammarFeatures()
+      this.popup.linkedFeatures = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageModel(homonym.lexemes[0].lemma.languageID).grammarFeatures()
     }
     this.popup.popupData.morphDataReady = true
     this.panel.panelData.lexemes = homonym.lexemes
@@ -18890,13 +18913,13 @@ class UIController {
     this.state.setItem('currentLanguage', currentLanguage)
     let languageID = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageIdFromCode(currentLanguage)
     this.panel.requestGrammar({ type: 'table-of-contents', value: '', languageID: languageID })
-    this.panel.enableInflections(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageForCode(currentLanguage).canInflect())
+    this.panel.enableInflections(__WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageModel(languageID).canInflect())
     this.panel.panelData.infoComponentData.languageName = UIController.getLanguageName(languageID)
     console.log(`Current language is ${this.state.currentLanguage}`)
   }
 
   updateInflections (inflectionData, homonym) {
-    let enabled = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageForCode(homonym.language).canInflect()
+    let enabled = __WEBPACK_IMPORTED_MODULE_0_alpheios_data_models__["LanguageModelFactory"].getLanguageModel(homonym.languageID).canInflect()
     this.panel.enableInflections(enabled)
     this.panel.updateInflections(inflectionData, homonym)
     this.popup.popupData.inflDataReady = enabled && inflectionData.hasInflectionSets
