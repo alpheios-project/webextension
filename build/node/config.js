@@ -16,6 +16,7 @@ module.exports = {
     },
     tasks: [
       {
+        mode: 'development',
         context: path.resolve(__dirname, '../../src/background'),
         entry: './background.js',
         output: {
@@ -51,6 +52,7 @@ module.exports = {
         }
       },
       {
+        mode: 'development',
         context: path.resolve(__dirname, '../../src/content'),
         entry: './content.js',
         output: {
