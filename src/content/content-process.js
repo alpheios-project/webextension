@@ -8,7 +8,7 @@ import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
 import TabScript from '../lib/content/tab-script'
-import { UIController, HTMLSelector, LexicalQuery, ResourceOptions, ContentOptions } from 'alpheios-components'
+import { UIController, HTMLSelector, LexicalQuery, LanguageOptionDefaults, ContentOptionDefaults, Options } from 'alpheios-components'
 
 export default class ContentProcess {
   constructor () {
@@ -17,8 +17,10 @@ export default class ContentProcess {
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
-    this.options = new ContentOptions(browser.storage.sync.get, browser.storage.sync.set)
-    this.resourceOptions = new ResourceOptions(browser.storage.sync.get, browser.storage.sync.set)
+    let contentDefs = new ContentOptionDefaults()
+    let resourceDefs = new LanguageOptionDefaults()
+    this.options = new Options(contentDefs,browser.storage.sync.get, browser.storage.sync.set)
+    this.resourceOptions = new Options(resourceDefs,browser.storage.sync.get, browser.storage.sync.set)
     this.messagingService = new MessagingService()
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
     this.ui = new UIController(this.state, this.options, this.resourceOptions, browser.runtime.getManifest())
