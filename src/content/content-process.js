@@ -8,22 +8,23 @@ import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
 import TabScript from '../lib/content/tab-script'
-import { UIController, HTMLSelector, LexicalQuery, LanguageOptionDefaults, ContentOptionDefaults, Options } from 'alpheios-components'
+import { UIController, HTMLSelector, LexicalQuery, DefaultsLoader, LanguageOptionDefaults, ContentOptionDefaults, UIOptionDefaults, Options, AnnotationQuery, ExtensionSyncStorage } from 'alpheios-components'
+import SiteOptions from '../lib/settings/site-options.json'
 
 export default class ContentProcess {
   constructor () {
     this.state = new TabScript()
     this.state.status = TabScript.statuses.script.PENDING
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
+    this.siteOptions = this.loadSiteOptions()
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
-    let contentDefs = new ContentOptionDefaults()
-    let resourceDefs = new LanguageOptionDefaults()
-    this.options = new Options(contentDefs,browser.storage.sync.get, browser.storage.sync.set)
-    this.resourceOptions = new Options(resourceDefs,browser.storage.sync.get, browser.storage.sync.set)
+    this.options = new Options(DefaultsLoader.fromJSON(ContentOptionDefaults),ExtensionSyncStorage)
+    this.resourceOptions = new Options(DefaultsLoader.fromJSON(LanguageOptionDefaults),ExtensionSyncStorage)
+    this.uiOptions = new Options(DefaultsLoader.fromJSON(UIOptionDefaults),ExtensionSyncStorage)
     this.messagingService = new MessagingService()
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
-    this.ui = new UIController(this.state, this.options, this.resourceOptions, browser.runtime.getManifest())
+    this.ui = new UIController(this.state, this.options, this.resourceOptions, this.uiOptions, browser.runtime.getManifest())
   }
 
   initialize () {
@@ -165,6 +166,7 @@ export default class ContentProcess {
             maAdapter: this.maAdapter,
             lexicons: Lexicons,
             resourceOptions: this.resourceOptions,
+            siteOptions: [],
             langOpts: { [Constants.LANG_PERSIAN]: { lookupMorphLast: true } } // TODO this should be externalized
           }),
           {
@@ -177,5 +179,27 @@ export default class ContentProcess {
         .getData()
       }
     }
+  }
+
+  loadSiteOptions() {
+    let allSiteOptions = []
+    let loaded = DefaultsLoader.fromJSON(SiteOptions)
+    console.log(loaded)
+    for (let site of loaded) {
+      for (let domain of site.options) {
+        let siteOpts = new Options(domain, ExtensionSyncStorage)
+        allSiteOptions.push({ uriMatch: site.uriMatch, resourceOptions: siteOpts })
+      }
+    }
+    return allSiteOptions
+  }
+
+  insertAnnotations () {
+    console.log(`Create an annotation query`, this.ui)
+    AnnotationQuery.create({
+      uiController: this.ui,
+      document:document,
+      siteOptions: this.siteOptions,
+    }).getData()
   }
 }
