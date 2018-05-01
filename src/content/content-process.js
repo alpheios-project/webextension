@@ -19,6 +19,7 @@ export default class ContentProcess {
     this.siteOptions = this.loadSiteOptions()
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
+    this.state.setWatcher('uiActive', this.updateAnnotations.bind(this))
     this.options = new Options(DefaultsLoader.fromJSON(ContentOptionDefaults),ExtensionSyncStorage)
     this.resourceOptions = new Options(DefaultsLoader.fromJSON(LanguageOptionDefaults),ExtensionSyncStorage)
     this.uiOptions = new Options(DefaultsLoader.fromJSON(UIOptionDefaults),ExtensionSyncStorage)
@@ -35,6 +36,7 @@ export default class ContentProcess {
     document.body.addEventListener('keydown', this.handleEscapeKey.bind(this))
     document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
     document.body.addEventListener('Alpheios_Embedded_Response', this.disableContent.bind(this))
+    document.body.addEventListener('Alpheios_Page_Load', this.updateAnnotations.bind(this))
     this.reactivate()
   }
 
@@ -181,10 +183,12 @@ export default class ContentProcess {
     }
   }
 
+  /**
+   * Load site-specific settings
+   */
   loadSiteOptions() {
     let allSiteOptions = []
     let loaded = DefaultsLoader.fromJSON(SiteOptions)
-    console.log(loaded)
     for (let site of loaded) {
       for (let domain of site.options) {
         let siteOpts = new Options(domain, ExtensionSyncStorage)
@@ -194,12 +198,16 @@ export default class ContentProcess {
     return allSiteOptions
   }
 
-  insertAnnotations () {
-    console.log(`Create an annotation query`, this.ui)
-    AnnotationQuery.create({
-      uiController: this.ui,
-      document:document,
-      siteOptions: this.siteOptions,
-    }).getData()
+  /**
+   * Issues an AnnotationQuery to find and apply annotations for the currently loaded document
+   */
+  updateAnnotations () {
+    if (this.isActive && this.uiIsActive) {
+      AnnotationQuery.create({
+        uiController: this.ui,
+        document:document,
+        siteOptions: this.siteOptions,
+      }).getData()
+    }
   }
 }

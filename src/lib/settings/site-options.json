@@ -7,10 +7,10 @@
         "items": {
           "treebanks": {
             "labelText": "Treebanks",
-            "defaultValue": "http://localhost:4000/alpheios-treebanks/tbext.html?owner=perseids-project&repos=harrington_trees&collid=lattb&objid=7229&doc=lattb.7229.1",
+            "defaultValue": "http://alpheios.net/alpheios-treebanks/tbext.html?owner=perseids-project&repos=harrington_trees&collid=lattb&objid=7229&doc=lattb.7229.1",
             "multiValue": false,
             "values": [
-                { "value": "http://localhost:4000/alpheios-treebanks/tbext.html?owner=perseids-project&repos=harrington_trees&collid=lattb&objid=7229&doc=lattb.7229.1",
+                { "value": "http://alpheios.net/alpheios-treebanks/tbext.html?owner=perseids-project&repos=harrington_trees&collid=lattb&objid=7229&doc=lattb.7229.1",
                   "test": "Example Site Treebank"
                 }
               ]
