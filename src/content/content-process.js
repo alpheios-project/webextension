@@ -8,7 +8,8 @@ import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
 import TabScript from '../lib/content/tab-script'
-import { UIController, HTMLSelector, LexicalQuery, DefaultsLoader, LanguageOptionDefaults, ContentOptionDefaults, UIOptionDefaults, Options, AnnotationQuery, ExtensionSyncStorage } from 'alpheios-components'
+import { UIController, HTMLSelector, LexicalQuery, DefaultsLoader, LanguageOptionDefaults, ContentOptionDefaults,
+  UIOptionDefaults, Options, AnnotationQuery, ExtensionSyncStorage } from 'alpheios-components'
 import SiteOptions from '../lib/settings/site-options.json'
 
 export default class ContentProcess {
@@ -16,13 +17,16 @@ export default class ContentProcess {
     this.state = new TabScript()
     this.state.status = TabScript.statuses.script.PENDING
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
+    console.log('Content process')
+    console.log(DefaultsLoader)
+    console.log(LexicalQuery)
     this.siteOptions = this.loadSiteOptions()
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
     this.state.setWatcher('uiActive', this.updateAnnotations.bind(this))
-    this.options = new Options(DefaultsLoader.fromJSON(ContentOptionDefaults),ExtensionSyncStorage)
-    this.resourceOptions = new Options(DefaultsLoader.fromJSON(LanguageOptionDefaults),ExtensionSyncStorage)
-    this.uiOptions = new Options(DefaultsLoader.fromJSON(UIOptionDefaults),ExtensionSyncStorage)
+    this.options = new Options(DefaultsLoader.fromJSON(ContentOptionDefaults), ExtensionSyncStorage)
+    this.resourceOptions = new Options(DefaultsLoader.fromJSON(LanguageOptionDefaults), ExtensionSyncStorage)
+    this.uiOptions = new Options(DefaultsLoader.fromJSON(UIOptionDefaults), ExtensionSyncStorage)
     this.messagingService = new MessagingService()
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
     this.ui = new UIController(this.state, this.options, this.resourceOptions, this.uiOptions, browser.runtime.getManifest())
@@ -178,7 +182,7 @@ export default class ContentProcess {
               { name: 'finalize', action: ExpObjMon.actions.STOP, event: ExpObjMon.events.GET }
             ]
           })
-        .getData()
+          .getData()
       }
     }
   }
@@ -186,7 +190,7 @@ export default class ContentProcess {
   /**
    * Load site-specific settings
    */
-  loadSiteOptions() {
+  loadSiteOptions () {
     let allSiteOptions = []
     let loaded = DefaultsLoader.fromJSON(SiteOptions)
     for (let site of loaded) {
@@ -205,8 +209,8 @@ export default class ContentProcess {
     if (this.isActive && this.uiIsActive) {
       AnnotationQuery.create({
         uiController: this.ui,
-        document:document,
-        siteOptions: this.siteOptions,
+        document: document,
+        siteOptions: this.siteOptions
       }).getData()
     }
   }
