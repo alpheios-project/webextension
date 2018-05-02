@@ -247,6 +247,7 @@ export default class BackgroundProcess {
         await this.loadContentData(tab)
         this.setContentState(tab)
         this.checkEmbeddedContent(details.tabId)
+        this.notifyPageLoad(details.tabId)
       } catch (error) {
         console.error(`Cannot load content script for a tab with an ID of ${details.tabId}`)
       }
@@ -257,6 +258,16 @@ export default class BackgroundProcess {
     try {
       browser.tabs.executeScript(tabID, {
         code: "document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))"
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  notifyPageLoad (tabID)   {
+    try {
+      browser.tabs.executeScript(tabID, {
+        code: "document.body.dispatchEvent(new Event('Alpheios_Page_Load'))"
       })
     } catch (e) {
       console.error(e)

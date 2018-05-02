@@ -2,7 +2,7 @@ const path = require('path')
 
 module.exports = {
   pathToProjectRoot: '../..',
-  styles: { source: 'node_modules/alpheios-components/dist/styles/*', target: 'dist/styles' },
+  styles: { source: 'node_modules/alpheios-components/dist/style/*', target: 'dist/styles' },
   webpack: {
     common: {
       resolve: {
@@ -31,7 +31,8 @@ module.exports = {
             },
             {
               test: /\.json$/,
-              use: 'raw-loader'
+              use: 'raw-loader',
+              type: 'javascript/auto' // To prevent running Webpack's default JSON parser on the output of raw-loader
             },
             {
               test: /\.htmlf$/,
@@ -67,7 +68,8 @@ module.exports = {
             },
             {
               test: /\.json$/,
-              use: 'raw-loader'
+              use: 'raw-loader',
+              type: 'javascript/auto' // To prevent running Webpack's default JSON parser on the output of raw-loader
             },
             {
               test: /\.(jpg|png)$/,
