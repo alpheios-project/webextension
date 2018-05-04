@@ -1,4 +1,5 @@
 const path = require('path')
+let projectRoot = process.cwd()
 
 module.exports = {
   pathToProjectRoot: '../..',
@@ -6,22 +7,30 @@ module.exports = {
   webpack: {
     common: {
       resolve: {
-        alias: {
-          // Below will force all imported modules with unresolved dependencies to use a single instance of that dependency
-          'alpheios-data-models': path.resolve(__dirname, '../../node_modules/alpheios-data-models/dist/alpheios-data-models.js')
-        },
         mainFields: ['moduleExternal', 'module', 'main']
-      },
-      devtool: 'source-map'
+      }
     },
     tasks: [
       {
         mode: 'development',
+        devtool: 'source-map',
         context: path.resolve(__dirname, '../../src/background'),
         entry: './background.js',
         output: {
           path: path.resolve(__dirname, '../../dist'),
           filename: 'background.js'
+        },
+        resolve: {
+          alias: {
+            'alpheios-data-models': path.join(projectRoot, 'node_modules/alpheios-data-models/dist/alpheios-data-models.js'),
+            'alpheios-experience': path.join(projectRoot, 'node_modules/alpheios-experience/dist/alpheios-experience.js'),
+            'alpheios-lexicon-client': path.join(projectRoot, 'node_modules/alpheios-lexicon-client/dist/alpheios-lexicon-client.js'),
+            'alpheios-res-client': path.join(projectRoot, 'node_modules/alpheios-res-client/dist/alpheios-res-client.js'),
+            'alpheios-lemma-client': path.join(projectRoot, 'node_modules/alpheios-lemma-client/dist/alpheios-lemma-client.js'),
+            'alpheios-components': path.join(projectRoot, 'node_modules/alpheios-components/dist/alpheios-components.js'),
+            'alpheios-inflection-tables': path.join(projectRoot, 'node_modules/alpheios-inflection-tables/dist/alpheios-inflection-tables.js'),
+            'alpheios-morph-client': path.join(projectRoot, 'node_modules/alpheios-morph-client/dist/alpheios-morph-client.js')
+          }
         },
         module: {
           rules: [
@@ -56,9 +65,22 @@ module.exports = {
         mode: 'development',
         context: path.resolve(__dirname, '../../src/content'),
         entry: './content.js',
+        devtool: 'source-map',
         output: {
           path: path.resolve(__dirname, '../../dist'),
           filename: 'content.js'
+        },
+        resolve: {
+          alias: {
+            'alpheios-data-models': path.join(projectRoot, 'node_modules/alpheios-data-models/dist/alpheios-data-models.js'),
+            'alpheios-experience': path.join(projectRoot, 'node_modules/alpheios-experience/dist/alpheios-experience.js'),
+            'alpheios-lexicon-client': path.join(projectRoot, 'node_modules/alpheios-lexicon-client/dist/alpheios-lexicon-client.js'),
+            'alpheios-res-client': path.join(projectRoot, 'node_modules/alpheios-res-client/dist/alpheios-res-client.js'),
+            'alpheios-lemma-client': path.join(projectRoot, 'node_modules/alpheios-lemma-client/dist/alpheios-lemma-client.js'),
+            'alpheios-components': path.join(projectRoot, 'node_modules/alpheios-components/dist/alpheios-components.js'),
+            'alpheios-inflection-tables': path.join(projectRoot, 'node_modules/alpheios-inflection-tables/dist/alpheios-inflection-tables.js'),
+            'alpheios-morph-client': path.join(projectRoot, 'node_modules/alpheios-morph-client/dist/alpheios-morph-client.js')
+          }
         },
         module: {
           rules: [
