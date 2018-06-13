@@ -192,8 +192,7 @@ export default class ContentProcess {
    */
   loadSiteOptions () {
     let allSiteOptions = []
-    let loaded = DefaultsLoader.fromJSON(SiteOptions)
-    for (let site of loaded) {
+    for (let site of SiteOptions) {
       for (let domain of site.options) {
         let siteOpts = new Options(domain, ExtensionSyncStorage)
         allSiteOptions.push({ uriMatch: site.uriMatch, resourceOptions: siteOpts })
