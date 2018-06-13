@@ -21,6 +21,9 @@ let run = function (version, zipfile) {
   })
 }
 
-module.exports = {
-  run: run
+let version = process.argv[2]
+if (! version) {
+  console.error("You must supply a version to the zip task")
+  process.exit(1)
 }
+run(version,'alpheios.zip')
