@@ -1,11 +1,12 @@
 /* global browser */
-import { enUS, enGB, Locales, L10n } from 'alpheios-components'
+import { enUS, enGB, Locales, L10n, DefaultsLoader } from 'alpheios-components'
 import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
 import ContextMenuItem from './context-menu-item.js'
 import ContentMenuSeparator from './context-menu-separator.js'
 import TabScript from '../lib/content/tab-script.js'
+
 import {
   Transporter,
   StorageAdapter as LocalExperienceStorage,
@@ -24,6 +25,17 @@ export default class BackgroundProcess {
     this.tab = undefined // A tab that is currently active in a browser window
 
     this.messagingService = new MessagingService()
+
+    this.browserIcons = {
+      active: {
+        16: 'icons/alpheios_16.png',
+        32: 'icons/alpheios_32.png'
+      },
+      nonactive: {
+        16: 'icons/alpheios_black_16.png',
+        32: 'icons/alpheios_black_32.png'
+      }
+    }
   }
 
   static get defaults () {
@@ -86,6 +98,11 @@ export default class BackgroundProcess {
       BackgroundProcess.defaults.experienceStorageThreshold, BackgroundProcess.defaults.experienceStorageCheckInterval)
   }
 
+  updateIcon (active) {
+    browser.browserAction.setIcon({
+      path: active ? this.browserIcons.active : this.browserIcons.nonactive
+    })
+  }
   /**
    * handler for the runtime.onInstalled event
    */
@@ -116,12 +133,14 @@ export default class BackgroundProcess {
     let tab = TabScript.create(this.tabs.get(tabID)).activate().setPanelOpen()
     this.setContentState(tab)
     this.checkEmbeddedContent(tabID)
+    this.updateIcon(true)
   }
 
   async deactivateContent (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
     let tab = TabScript.create(this.tabs.get(tabID)).deactivate().setPanelClosed()
     this.setContentState(tab)
+    this.updateIcon(false)
   }
 
   async openPanel (tabID) {
