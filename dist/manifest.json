@@ -22,7 +22,7 @@
     "webNavigation"
   ],
   "browser_action": {
-    "default_icon": "icons/alpheios_32.png",
+    "default_icon": "icons/alpheios_black_32.png",
     "default_title": "Activate Alpheios",
     "browser_style": true
   },
