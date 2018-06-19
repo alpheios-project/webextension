@@ -22,8 +22,8 @@ let run = function (version, zipfile) {
 }
 
 let version = process.argv[2]
-if (! version) {
-  console.error("You must supply a version to the zip task")
+if (!version) {
+  console.error('You must supply a version to the zip task')
   process.exit(1)
 }
-run(version,'alpheios.zip')
+run(version, 'alpheios.zip')
