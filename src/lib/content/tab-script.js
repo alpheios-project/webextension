@@ -36,7 +36,7 @@ export default class TabScript extends UIStateAPI {
           PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
           ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
           DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
-          DISABLED: Symbol.for('Alpheios_Status_Disabled'), // Content script has been loaded, but it is disabled
+          DISABLED: Symbol.for('Alpheios_Status_Disabled') // Content script has been loaded, but it is disabled
         },
         defaultValueIndex: 0
       },
@@ -220,7 +220,7 @@ export default class TabScript extends UIStateAPI {
   }
 
   activateUI () {
-    this.setItem(TabScript.props.uiActive.name,true)
+    this.setItem(TabScript.props.uiActive.name, true)
     return this
   }
 
