@@ -323,8 +323,10 @@ export default class BackgroundProcess {
   async browserActionListener (tab) {
     if (this.tabs.has(tab.id) && this.tabs.get(tab.id).isActive()) {
       this.deactivateContent(tab.id)
+      this.updateIcon(false)
     } else {
       this.activateContent(tab.id)
+      this.updateIcon(true)
     }
   }
 
@@ -365,17 +367,23 @@ export default class BackgroundProcess {
           this.menuItems.deactivate.enable()
           this.menuItems.openPanel.enable()
           this.menuItems.info.enable()
+
+          this.updateIcon(true)
         } else if (tab.isDeactivated()) {
           this.menuItems.deactivate.disable()
           this.menuItems.activate.enable()
           this.menuItems.openPanel.disable()
           this.menuItems.info.enable()
+
+          this.updateIcon(false)
         } else if (tab.isDisabled()) {
+
           this.menuItems.activate.disable()
           this.menuItems.deactivate.disable()
           this.menuItems.disabled.enable()
           this.menuItems.openPanel.disable()
           this.menuItems.info.disable()
+          this.updateIcon(false)
         }
       }
 
@@ -395,6 +403,8 @@ export default class BackgroundProcess {
       this.menuItems.openPanel.disable()
       this.menuItems.separatorOne.enable()
       this.menuItems.info.enable()
+
+      this.updateIcon(false)
     }
   }
 }
