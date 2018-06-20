@@ -15,6 +15,7 @@ export default class TabScript extends UIStateAPI {
     this.tab = undefined
     this.savedStatus = undefined
     this.uiActive = false
+    this.panelOnActivate = undefined
 
     this.watchers = new Map()
   }

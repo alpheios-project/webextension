@@ -27,6 +27,9 @@ export default class ContentProcess {
     this.options = new Options(DefaultsLoader.fromJSON(ContentOptionDefaults), ExtensionSyncStorage)
     this.resourceOptions = new Options(DefaultsLoader.fromJSON(LanguageOptionDefaults), ExtensionSyncStorage)
     this.uiOptions = new Options(DefaultsLoader.fromJSON(UIOptionDefaults), ExtensionSyncStorage)
+
+    this.state.panelOnActivate = (this.uiOptions.items.panelOnActivate.currentValue === 'open') ? TabScript.statuses.panel.OPEN : TabScript.statuses.panel.CLOSED
+
     this.messagingService = new MessagingService()
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
     this.ui = new UIController(this.state, this.options, this.resourceOptions, this.uiOptions, browser.runtime.getManifest())
