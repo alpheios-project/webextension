@@ -60,7 +60,7 @@ export default class BackgroundProcess {
       separatorOneId: 'separator-one',
       sendExperiencesMenuItemId: 'send-experiences',
       sendExperiencesMenuItemText: l10n.messages.LABEL_CTXTMENU_SENDEXP,
-      contentCSSFileName: 'styles/style.min.css',
+      contentCSSFileNames: ['style/style.min.css'],
       contentScriptFileName: 'content.js',
       browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
       experienceStorageCheckInterval: 10000,
@@ -106,7 +106,7 @@ export default class BackgroundProcess {
   /**
    * handler for the runtime.onInstalled event
    */
-  handleOnInstalled(details) {
+  handleOnInstalled (details) {
     // if this is an update versus a fresh install we need to trigger reloads
     // of the previously loaded content scripts. Only tabs with Alpheios loaded
     // will respond to this event. Messaging between the new background script and the
@@ -125,7 +125,6 @@ export default class BackgroundProcess {
         })
       })
     }
-
   }
 
   async activateContent (tabID) {
@@ -176,10 +175,10 @@ export default class BackgroundProcess {
     })
   }
 
-  loadContentCSS (tabID) {
+  loadContentCSS (tabID, fileName) {
     console.log('Loading CSS into a content tab')
     return browser.tabs.insertCSS(tabID, {
-      file: this.settings.contentCSSFileName
+      file: fileName
     })
   }
 
@@ -230,8 +229,11 @@ export default class BackgroundProcess {
   loadContentData (tabScript) {
     let polyfillScript = this.loadPolyfill(tabScript.tabID)
     let contentScript = this.loadContentScript(tabScript.tabID)
-    let contentCSS = this.loadContentCSS(tabScript.tabID)
-    return Promise.all([polyfillScript, contentScript, contentCSS])
+    let contentCSS = []
+    for (let fileName of this.settings.contentCSSFileNames) {
+      contentCSS.push(this.loadContentCSS(tabScript.tabID, fileName))
+    }
+    return Promise.all([polyfillScript, contentScript, ...contentCSS])
   }
 
   stateMessageHandler (message, sender) {
@@ -283,7 +285,7 @@ export default class BackgroundProcess {
     }
   }
 
-  notifyPageLoad (tabID)   {
+  notifyPageLoad (tabID) {
     try {
       browser.tabs.executeScript(tabID, {
         code: "document.body.dispatchEvent(new Event('Alpheios_Page_Load'))"
@@ -292,7 +294,6 @@ export default class BackgroundProcess {
       console.error(e)
     }
   }
-
 
   /**
    * Listen to extension updates. Need to define to prevent the browser
@@ -338,14 +339,14 @@ export default class BackgroundProcess {
     this.setMenuForTab(tab)
   }
 
-  updateBrowserActionForTab(tab) {
+  updateBrowserActionForTab (tab) {
     if (tab && tab.hasOwnProperty('status')) {
       if (tab.isActive()) {
-        browser.browserAction.setTitle({title:BackgroundProcess.defaults.deactivateBrowserActionTitle,tabId:tab.tabID})
+        browser.browserAction.setTitle({title: BackgroundProcess.defaults.deactivateBrowserActionTitle, tabId: tab.tabID})
       } else if (tab.isDeactivated()) {
-        browser.browserAction.setTitle({title:BackgroundProcess.defaults.activateBrowserActionTitle,tabId:tab.tabID})
+        browser.browserAction.setTitle({title: BackgroundProcess.defaults.activateBrowserActionTitle, tabId: tab.tabID})
       } else if (tab.isDisabled()) {
-        browser.browserAction.setTitle({title:BackgroundProcess.defaults.disabledBrowserActionTitle,tabId:tab.tabID})
+        browser.browserAction.setTitle({title: BackgroundProcess.defaults.disabledBrowserActionTitle, tabId: tab.tabID})
       }
     }
   }
@@ -377,7 +378,6 @@ export default class BackgroundProcess {
 
           this.updateIcon(false)
         } else if (tab.isDisabled()) {
-
           this.menuItems.activate.disable()
           this.menuItems.deactivate.disable()
           this.menuItems.disabled.enable()
