@@ -29,7 +29,7 @@
     "alpheios-lemma-client": "github:alpheios-project/lemma-client",
     "alpheios-lexicon-client": "github:alpheios-project/lexicon-client",
     "alpheios-morph-client": "github:alpheios-project/morph-client",
-    "alpheios-node-build": "file:../node-build",
+    "alpheios-node-build": "github:alpheios-project/node-build",
     "alpheios-res-client": "github:alpheios-project/res-client",
     "autoprefixer": "^8.6.2",
     "babel-core": "^6.26.3",
