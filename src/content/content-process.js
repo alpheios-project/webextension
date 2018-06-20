@@ -164,7 +164,6 @@ export default class ContentProcess {
       let textSelector = htmlSelector.createTextSelector()
 
       if (!textSelector.isEmpty()) {
-        this.ui.updateLanguage(textSelector.languageCode)
         ExpObjMon.track(
           LexicalQuery.create(textSelector, {
             htmlSelector: htmlSelector,
