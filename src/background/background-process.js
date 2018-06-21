@@ -129,7 +129,7 @@ export default class BackgroundProcess {
 
   async activateContent (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = TabScript.create(this.tabs.get(tabID)).activate().setPanelOpen()
+    let tab = TabScript.create(this.tabs.get(tabID)).activate()// .setPanelOpen()
     this.setContentState(tab)
     this.checkEmbeddedContent(tabID)
     this.updateIcon(true)
