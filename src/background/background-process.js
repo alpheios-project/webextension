@@ -6,6 +6,7 @@ import StateRequest from '../lib/messaging/request/state-request.js'
 import ContextMenuItem from './context-menu-item.js'
 import ContentMenuSeparator from './context-menu-separator.js'
 import TabScript from '../lib/content/tab-script.js'
+
 import {
   Transporter,
   StorageAdapter as LocalExperienceStorage,
@@ -24,6 +25,17 @@ export default class BackgroundProcess {
     this.tab = undefined // A tab that is currently active in a browser window
 
     this.messagingService = new MessagingService()
+
+    this.browserIcons = {
+      active: {
+        16: 'icons/alpheios_16.png',
+        32: 'icons/alpheios_32.png'
+      },
+      nonactive: {
+        16: 'icons/alpheios_black_16.png',
+        32: 'icons/alpheios_black_32.png'
+      }
+    }
   }
 
   static get defaults () {
@@ -48,7 +60,7 @@ export default class BackgroundProcess {
       separatorOneId: 'separator-one',
       sendExperiencesMenuItemId: 'send-experiences',
       sendExperiencesMenuItemText: l10n.messages.LABEL_CTXTMENU_SENDEXP,
-      contentCSSFileName: 'styles/style.min.css',
+      contentCSSFileNames: ['style/style.min.css'],
       contentScriptFileName: 'content.js',
       browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
       experienceStorageCheckInterval: 10000,
@@ -86,10 +98,15 @@ export default class BackgroundProcess {
       BackgroundProcess.defaults.experienceStorageThreshold, BackgroundProcess.defaults.experienceStorageCheckInterval)
   }
 
+  updateIcon (active) {
+    browser.browserAction.setIcon({
+      path: active ? this.browserIcons.active : this.browserIcons.nonactive
+    })
+  }
   /**
    * handler for the runtime.onInstalled event
    */
-  handleOnInstalled(details) {
+  handleOnInstalled (details) {
     // if this is an update versus a fresh install we need to trigger reloads
     // of the previously loaded content scripts. Only tabs with Alpheios loaded
     // will respond to this event. Messaging between the new background script and the
@@ -108,20 +125,21 @@ export default class BackgroundProcess {
         })
       })
     }
-
   }
 
   async activateContent (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
-    let tab = TabScript.create(this.tabs.get(tabID)).activate().setPanelOpen()
+    let tab = TabScript.create(this.tabs.get(tabID)).activate()
     this.setContentState(tab)
     this.checkEmbeddedContent(tabID)
+    this.updateIcon(true)
   }
 
   async deactivateContent (tabID) {
     if (!this.tabs.has(tabID)) { await this.createTab(tabID) }
     let tab = TabScript.create(this.tabs.get(tabID)).deactivate().setPanelClosed()
     this.setContentState(tab)
+    this.updateIcon(false)
   }
 
   async openPanel (tabID) {
@@ -157,10 +175,10 @@ export default class BackgroundProcess {
     })
   }
 
-  loadContentCSS (tabID) {
+  loadContentCSS (tabID, fileName) {
     console.log('Loading CSS into a content tab')
     return browser.tabs.insertCSS(tabID, {
-      file: this.settings.contentCSSFileName
+      file: fileName
     })
   }
 
@@ -211,8 +229,11 @@ export default class BackgroundProcess {
   loadContentData (tabScript) {
     let polyfillScript = this.loadPolyfill(tabScript.tabID)
     let contentScript = this.loadContentScript(tabScript.tabID)
-    let contentCSS = this.loadContentCSS(tabScript.tabID)
-    return Promise.all([polyfillScript, contentScript, contentCSS])
+    let contentCSS = []
+    for (let fileName of this.settings.contentCSSFileNames) {
+      contentCSS.push(this.loadContentCSS(tabScript.tabID, fileName))
+    }
+    return Promise.all([polyfillScript, contentScript, ...contentCSS])
   }
 
   stateMessageHandler (message, sender) {
@@ -264,7 +285,7 @@ export default class BackgroundProcess {
     }
   }
 
-  notifyPageLoad (tabID)   {
+  notifyPageLoad (tabID) {
     try {
       browser.tabs.executeScript(tabID, {
         code: "document.body.dispatchEvent(new Event('Alpheios_Page_Load'))"
@@ -273,7 +294,6 @@ export default class BackgroundProcess {
       console.error(e)
     }
   }
-
 
   /**
    * Listen to extension updates. Need to define to prevent the browser
@@ -304,8 +324,10 @@ export default class BackgroundProcess {
   async browserActionListener (tab) {
     if (this.tabs.has(tab.id) && this.tabs.get(tab.id).isActive()) {
       this.deactivateContent(tab.id)
+      this.updateIcon(false)
     } else {
       this.activateContent(tab.id)
+      this.updateIcon(true)
     }
   }
 
@@ -317,14 +339,14 @@ export default class BackgroundProcess {
     this.setMenuForTab(tab)
   }
 
-  updateBrowserActionForTab(tab) {
+  updateBrowserActionForTab (tab) {
     if (tab && tab.hasOwnProperty('status')) {
       if (tab.isActive()) {
-        browser.browserAction.setTitle({title:BackgroundProcess.defaults.deactivateBrowserActionTitle,tabId:tab.tabID})
+        browser.browserAction.setTitle({title: BackgroundProcess.defaults.deactivateBrowserActionTitle, tabId: tab.tabID})
       } else if (tab.isDeactivated()) {
-        browser.browserAction.setTitle({title:BackgroundProcess.defaults.activateBrowserActionTitle,tabId:tab.tabID})
+        browser.browserAction.setTitle({title: BackgroundProcess.defaults.activateBrowserActionTitle, tabId: tab.tabID})
       } else if (tab.isDisabled()) {
-        browser.browserAction.setTitle({title:BackgroundProcess.defaults.disabledBrowserActionTitle,tabId:tab.tabID})
+        browser.browserAction.setTitle({title: BackgroundProcess.defaults.disabledBrowserActionTitle, tabId: tab.tabID})
       }
     }
   }
@@ -346,17 +368,22 @@ export default class BackgroundProcess {
           this.menuItems.deactivate.enable()
           this.menuItems.openPanel.enable()
           this.menuItems.info.enable()
+
+          this.updateIcon(true)
         } else if (tab.isDeactivated()) {
           this.menuItems.deactivate.disable()
           this.menuItems.activate.enable()
           this.menuItems.openPanel.disable()
           this.menuItems.info.enable()
+
+          this.updateIcon(false)
         } else if (tab.isDisabled()) {
           this.menuItems.activate.disable()
           this.menuItems.deactivate.disable()
           this.menuItems.disabled.enable()
           this.menuItems.openPanel.disable()
           this.menuItems.info.disable()
+          this.updateIcon(false)
         }
       }
 
@@ -376,6 +403,8 @@ export default class BackgroundProcess {
       this.menuItems.openPanel.disable()
       this.menuItems.separatorOne.enable()
       this.menuItems.info.enable()
+
+      this.updateIcon(false)
     }
   }
 }

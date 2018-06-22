@@ -41,6 +41,8 @@ export default class ContentProcess {
     document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
     document.body.addEventListener('Alpheios_Embedded_Response', this.disableContent.bind(this))
     document.body.addEventListener('Alpheios_Page_Load', this.updateAnnotations.bind(this))
+
+    document.body.addEventListener('Alpheios_Options_Loaded', this.updatePanelOnActivation.bind(this))
     this.reactivate()
   }
 
@@ -164,7 +166,6 @@ export default class ContentProcess {
       let textSelector = htmlSelector.createTextSelector()
 
       if (!textSelector.isEmpty()) {
-        this.ui.updateLanguage(textSelector.languageCode)
         ExpObjMon.track(
           LexicalQuery.create(textSelector, {
             htmlSelector: htmlSelector,
@@ -192,8 +193,7 @@ export default class ContentProcess {
    */
   loadSiteOptions () {
     let allSiteOptions = []
-    let loaded = DefaultsLoader.fromJSON(SiteOptions)
-    for (let site of loaded) {
+    for (let site of SiteOptions) {
       for (let domain of site.options) {
         let siteOpts = new Options(domain, ExtensionSyncStorage)
         allSiteOptions.push({ uriMatch: site.uriMatch, resourceOptions: siteOpts })
@@ -212,6 +212,14 @@ export default class ContentProcess {
         document: document,
         siteOptions: this.siteOptions
       }).getData()
+    }
+  }
+
+  updatePanelOnActivation () {
+    if (this.ui.uiOptions.items.panelOnActivate.currentValue) {
+      this.ui.panel.open()
+    } else {
+      this.ui.panel.close()
     }
   }
 }
