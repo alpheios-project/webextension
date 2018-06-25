@@ -162,6 +162,16 @@ export default class ContentProcess {
       HTMLSelector conveys page-specific information, such as location of a selection on a page.
       It's probably better to keep them separated in order to follow a more abstract model.
        */
+      // TODO: This is a temporary fix. Remove when custom pointer events be ported to components
+      event.end = {
+        target: event.target,
+        client: {
+          x: event.clientX,
+          y: event.clientY
+        }
+      }
+      // End of fix
+
       let htmlSelector = new HTMLSelector(event, this.options.items.preferredLanguage.currentValue)
       let textSelector = htmlSelector.createTextSelector()
 
