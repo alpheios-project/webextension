@@ -9,7 +9,7 @@ import StateMessage from '../lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
 import TabScript from '../lib/content/tab-script'
 import { UIController, HTMLSelector, LexicalQuery, DefaultsLoader, LanguageOptionDefaults, ContentOptionDefaults,
-  UIOptionDefaults, Options, AnnotationQuery, ExtensionSyncStorage } from 'alpheios-components'
+  UIOptionDefaults, Options, AnnotationQuery, ExtensionSyncStorage, MouseDblClick } from 'alpheios-components'
 import SiteOptions from '../lib/settings/site-options.json'
 
 export default class ContentProcess {
@@ -36,7 +36,7 @@ export default class ContentProcess {
     // Adds message listeners
     this.messagingService.addHandler(Message.types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
-    document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
+    MouseDblClick.listen('body', evt => this.getSelectedText(evt))
     document.body.addEventListener('keydown', this.handleEscapeKey.bind(this))
     document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
     document.body.addEventListener('Alpheios_Embedded_Response', this.disableContent.bind(this))
@@ -162,16 +162,6 @@ export default class ContentProcess {
       HTMLSelector conveys page-specific information, such as location of a selection on a page.
       It's probably better to keep them separated in order to follow a more abstract model.
        */
-      // TODO: This is a temporary fix. Remove when custom pointer events be ported to components
-      event.end = {
-        target: event.target,
-        client: {
-          x: event.clientX,
-          y: event.clientY
-        }
-      }
-      // End of fix
-
       let htmlSelector = new HTMLSelector(event, this.options.items.preferredLanguage.currentValue)
       let textSelector = htmlSelector.createTextSelector()
 
