@@ -17,9 +17,6 @@ export default class ContentProcess {
     this.state = new TabScript()
     this.state.status = TabScript.statuses.script.PENDING
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
-    console.log('Content process')
-    console.log(DefaultsLoader)
-    console.log(LexicalQuery)
     this.siteOptions = this.loadSiteOptions()
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
@@ -136,7 +133,6 @@ export default class ContentProcess {
   }
 
   sendStateToBackground () {
-    console.log('send state to background', this.state)
     this.messagingService.sendMessageToBg(new StateMessage(this.state)).catch(
       (error) => {
         console.error('Unable to send a response to activation request', error)
