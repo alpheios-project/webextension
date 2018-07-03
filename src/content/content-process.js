@@ -9,7 +9,7 @@ import StateMessage from '../lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
 import TabScript from '../lib/content/tab-script'
 import { UIController, HTMLSelector, LexicalQuery, DefaultsLoader, LanguageOptionDefaults, ContentOptionDefaults,
-  UIOptionDefaults, Options, AnnotationQuery, ExtensionSyncStorage } from 'alpheios-components'
+  UIOptionDefaults, Options, AnnotationQuery, ExtensionSyncStorage, MouseDblClick } from 'alpheios-components'
 import SiteOptions from '../lib/settings/site-options.json'
 
 export default class ContentProcess {
@@ -17,9 +17,6 @@ export default class ContentProcess {
     this.state = new TabScript()
     this.state.status = TabScript.statuses.script.PENDING
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
-    console.log('Content process')
-    console.log(DefaultsLoader)
-    console.log(LexicalQuery)
     this.siteOptions = this.loadSiteOptions()
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
@@ -36,7 +33,7 @@ export default class ContentProcess {
     // Adds message listeners
     this.messagingService.addHandler(Message.types.STATE_REQUEST, this.handleStateRequest, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
-    document.body.addEventListener('dblclick', this.getSelectedText.bind(this))
+    MouseDblClick.listen('body', evt => this.getSelectedText(evt))
     document.body.addEventListener('keydown', this.handleEscapeKey.bind(this))
     document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
     document.body.addEventListener('Alpheios_Embedded_Response', this.disableContent.bind(this))
@@ -136,7 +133,6 @@ export default class ContentProcess {
   }
 
   sendStateToBackground () {
-    console.log('send state to background', this.state)
     this.messagingService.sendMessageToBg(new StateMessage(this.state)).catch(
       (error) => {
         console.error('Unable to send a response to activation request', error)

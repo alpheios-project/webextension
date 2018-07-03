@@ -4,7 +4,7 @@ const projectRoot = process.cwd()
 
 const webpack = {
   common: {
-    context: path.join(projectRoot,'src/content'),
+    context: path.join(projectRoot, 'src/content'),
     entry: './content.js',
     resolve: {
       alias: {
@@ -19,7 +19,7 @@ const webpack = {
       }
     },
     plugins: [
-      new VueLoaderPlugin(),
+      new VueLoaderPlugin()
     ]
   },
 
@@ -30,7 +30,7 @@ const webpack = {
 
   development: {
     mode: 'development',
-    output: {filename: 'content.js'},
+    output: {filename: 'content.js'}
   }
 }
 
