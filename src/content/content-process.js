@@ -17,6 +17,7 @@ export default class ContentProcess {
     this.state = new TabScript()
     this.state.status = TabScript.statuses.script.PENDING
     this.state.panelStatus = TabScript.statuses.panel.CLOSED
+
     this.siteOptions = this.loadSiteOptions()
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
@@ -94,6 +95,7 @@ export default class ContentProcess {
     // Send a status response
     console.log(`State request has been received`)
     let state = TabScript.readObject(request.body)
+
     let diff = this.state.diff(state)
     if (diff.has('tabID')) {
       if (!this.state.tabID) {
@@ -212,7 +214,7 @@ export default class ContentProcess {
   }
 
   updatePanelOnActivation () {
-    if (this.ui.uiOptions.items.panelOnActivate.currentValue) {
+    if (!this.state.isDeactivated() && this.ui.uiOptions.items.panelOnActivate.currentValue) {
       this.ui.panel.open()
     } else {
       this.ui.panel.close()
