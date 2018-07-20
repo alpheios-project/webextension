@@ -214,7 +214,7 @@ export default class ContentProcess {
   }
 
   updatePanelOnActivation () {
-    if (!this.state.isDeactivated() && this.ui.uiOptions.items.panelOnActivate.currentValue) {
+    if (this.isActive && this.ui.uiOptions.items.panelOnActivate.currentValue) {
       this.ui.panel.open()
     } else {
       this.ui.panel.close()
