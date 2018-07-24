@@ -8,7 +8,7 @@ import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
 import TabScript from '../lib/content/tab-script'
-import { UIController, HTMLSelector, LexicalQuery, DefaultsLoader, LanguageOptionDefaults, ContentOptionDefaults,
+import { UIController, HTMLSelector, LexicalQuery, LanguageOptionDefaults, ContentOptionDefaults,
   UIOptionDefaults, Options, AnnotationQuery, ExtensionSyncStorage, MouseDblClick } from 'alpheios-components'
 import SiteOptions from '../lib/settings/site-options.json'
 
@@ -22,9 +22,9 @@ export default class ContentProcess {
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
     this.state.setWatcher('uiActive', this.updateAnnotations.bind(this))
-    this.options = new Options(DefaultsLoader.fromJSON(ContentOptionDefaults), ExtensionSyncStorage)
-    this.resourceOptions = new Options(DefaultsLoader.fromJSON(LanguageOptionDefaults), ExtensionSyncStorage)
-    this.uiOptions = new Options(DefaultsLoader.fromJSON(UIOptionDefaults), ExtensionSyncStorage)
+    this.options = new Options(ContentOptionDefaults, ExtensionSyncStorage)
+    this.resourceOptions = new Options(LanguageOptionDefaults, ExtensionSyncStorage)
+    this.uiOptions = new Options(UIOptionDefaults, ExtensionSyncStorage)
     this.messagingService = new MessagingService()
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
     this.ui = new UIController(this.state, this.options, this.resourceOptions, this.uiOptions, browser.runtime.getManifest())

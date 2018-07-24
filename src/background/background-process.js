@@ -39,6 +39,7 @@ export default class BackgroundProcess {
   }
 
   static get defaults () {
+    console.log('add messages')
     let l10n = new L10n()
       .addMessages(enUS, Locales.en_US)
       .addMessages(enGB, Locales.en_GB)
