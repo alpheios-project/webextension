@@ -7,6 +7,8 @@ import ContextMenuItem from './context-menu-item.js'
 import ContentMenuSeparator from './context-menu-separator.js'
 import TabScript from '../lib/content/tab-script.js'
 
+import Tab from '@/lib/tab.js'
+
 import {
   Transporter,
   StorageAdapter as LocalExperienceStorage,
@@ -243,6 +245,8 @@ export default class BackgroundProcess {
   }
 
   tabActivationListener (info) {
+    console.info('********tabActivationListener1', JSON.stringify(info), navigator.userAgent)
+    this.tabObj = new Tab(info.tabId, info.windowId, navigator.userAgent)
     this.tab = info.tabId
     let tab = this.tabs.has(info.tabId) ? this.tabs.get(info.tabId) : undefined
     this.setMenuForTab(tab)
@@ -310,6 +314,8 @@ export default class BackgroundProcess {
   }
 
   async menuListener (info, tab) {
+    console.info('**********************menuListener1', JSON.stringify(info))
+    console.info('**********************menuListener2', JSON.stringify(tab))
     if (info.menuItemId === this.settings.activateMenuItemId) {
       this.activateContent(tab.id)
     } else if (info.menuItemId === this.settings.deactivateMenuItemId) {
