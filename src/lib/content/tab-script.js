@@ -1,5 +1,5 @@
 import {UIStateAPI} from 'alpheios-components'
-
+import Tab from '@/lib/tab.js'
 /**
  * Contains a state of a tab content script.
  * @property {Number} tabID - An ID of a tab where the content script is loaded
@@ -7,9 +7,10 @@ import {UIStateAPI} from 'alpheios-components'
  * @property {panelStatus} panelStatus
  */
 export default class TabScript extends UIStateAPI {
-  constructor (tabID) {
+  constructor (tabObj) {
     super()
-    this.tabID = tabID
+    this.tabID = tabObj ? tabObj.uniqueId : undefined
+    this.tabObj = tabObj
     this.status = undefined
     this.panelStatus = undefined
     this.tab = undefined
@@ -17,6 +18,24 @@ export default class TabScript extends UIStateAPI {
     this.uiActive = false
 
     this.watchers = new Map()
+  }
+
+  updateTabObject (tabId, windowId) {
+    this.tabObj = new Tab(tabId, windowId)
+    this.tabID = this.tabObj.uniqueId
+    return this
+  }
+
+  deattach () {
+    this.tabObj.deattach()
+  }
+
+  attach (newWinId) {
+    this.tabObj.attach(newWinId)
+  }
+
+  get isDeattached () {
+    return this.tabObj.status === 'deattached'
   }
 
   static get propTypes () {
@@ -309,10 +328,12 @@ export default class TabScript extends UIStateAPI {
   }
 
   static readObject (jsonObject) {
-    let tabScript = new TabScript(jsonObject.tabID)
+    let tabScript = new TabScript(jsonObject.tabObj)
 
     for (let prop of TabScript.symbolProps) {
-      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
+      if (jsonObject.hasOwnProperty(prop)) {
+        tabScript[prop] = (typeof jsonObject[prop] === 'symbol') ? jsonObject[prop] : Symbol.for(jsonObject[prop])
+      }
     }
 
     for (let prop of TabScript.stringProps) {

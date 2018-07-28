@@ -8,7 +8,7 @@ import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
 import TabScript from '../lib/content/tab-script'
-import { UIController, HTMLSelector, LexicalQuery, DefaultsLoader, LanguageOptionDefaults, ContentOptionDefaults,
+import { UIController, HTMLSelector, LexicalQuery, LanguageOptionDefaults, ContentOptionDefaults,
   UIOptionDefaults, Options, AnnotationQuery, ExtensionSyncStorage, MouseDblClick } from 'alpheios-components'
 import SiteOptions from '../lib/settings/site-options.json'
 
@@ -22,9 +22,9 @@ export default class ContentProcess {
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
     this.state.setWatcher('uiActive', this.updateAnnotations.bind(this))
-    this.options = new Options(DefaultsLoader.fromJSON(ContentOptionDefaults), ExtensionSyncStorage)
-    this.resourceOptions = new Options(DefaultsLoader.fromJSON(LanguageOptionDefaults), ExtensionSyncStorage)
-    this.uiOptions = new Options(DefaultsLoader.fromJSON(UIOptionDefaults), ExtensionSyncStorage)
+    this.options = new Options(ContentOptionDefaults, ExtensionSyncStorage)
+    this.resourceOptions = new Options(LanguageOptionDefaults, ExtensionSyncStorage)
+    this.uiOptions = new Options(UIOptionDefaults, ExtensionSyncStorage)
     this.messagingService = new MessagingService()
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
     this.ui = new UIController(this.state, this.options, this.resourceOptions, this.uiOptions, browser.runtime.getManifest())
@@ -97,6 +97,7 @@ export default class ContentProcess {
     let state = TabScript.readObject(request.body)
 
     let diff = this.state.diff(state)
+    console.info('**********************handleStateRequest', JSON.stringify(diff))
     if (diff.has('tabID')) {
       if (!this.state.tabID) {
         // Content script has been just loaded and does not have its tab ID yet
@@ -127,22 +128,24 @@ export default class ContentProcess {
         this.ui.changeTab(diff.tab)
       }
     }
-    this.messagingService.sendResponseToBg(new StateResponse(request, this.state)).catch(
+    this.messagingService.sendResponseToBg(new StateResponse(request, this.state))/* .catch(
       (error) => {
         console.error('Unable to send a response to a state request', error)
       }
-    )
+    ) */
   }
 
   sendStateToBackground () {
-    this.messagingService.sendMessageToBg(new StateMessage(this.state)).catch(
+    console.info('**********************sendStateToBackground')
+    this.messagingService.sendMessageToBg(new StateMessage(this.state))/* .catch(
       (error) => {
         console.error('Unable to send a response to activation request', error)
       }
-    )
+    ) */
   }
 
   handleEscapeKey (event) {
+    console.info('**********************handleEscapeKey')
     if (event.keyCode === 27 && this.isActive) {
       if (this.state.isPanelOpen()) {
         this.ui.panel.close()
@@ -154,6 +157,7 @@ export default class ContentProcess {
   }
 
   getSelectedText (event) {
+    console.info('***********************getSelectedText', event)
     if (this.isActive && this.uiIsActive) {
       /*
       TextSelector conveys text selection information. It is more generic of the two.
