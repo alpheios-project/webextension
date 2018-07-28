@@ -255,7 +255,7 @@ export default class BackgroundProcess {
     this.tab = tmpUniqueTabId
     let tab = this.tabs.has(tmpUniqueTabId) ? this.tabs.get(tmpUniqueTabId) : undefined
 
-    if (tab) { this.setMenuForTab(tab) }
+    this.setMenuForTab(tab)
   }
 
   tabDetachedListener (tabId, detachInfo) {
@@ -288,7 +288,7 @@ export default class BackgroundProcess {
       this.tabs.delete(keyForChange)
       let newKey = Tab.createUniqueId(tabId, attachInfo.newWindowId)
 
-      this.tabs.set(newKey, valueForChange.updateTabObject(newKey))
+      this.tabs.set(newKey, valueForChange.updateTabObject(tabId, attachInfo.newWindowId))
       this.setMenuForTab(valueForChange)
     }
   }
