@@ -1,5 +1,4 @@
 /* global browser */
-/* eslint-disable no-unused-vars */
 import { enUS, enGB, Locales, L10n } from 'alpheios-components'
 import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
