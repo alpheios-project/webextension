@@ -97,7 +97,6 @@ export default class ContentProcess {
     let state = TabScript.readObject(request.body)
 
     let diff = this.state.diff(state)
-    console.info('**********************handleStateRequest', JSON.stringify(diff))
     if (diff.has('tabID')) {
       if (!this.state.tabID) {
         // Content script has been just loaded and does not have its tab ID yet
@@ -128,24 +127,22 @@ export default class ContentProcess {
         this.ui.changeTab(diff.tab)
       }
     }
-    this.messagingService.sendResponseToBg(new StateResponse(request, this.state))/* .catch(
+    this.messagingService.sendResponseToBg(new StateResponse(request, this.state)).catch(
       (error) => {
         console.error('Unable to send a response to a state request', error)
       }
-    ) */
+    )
   }
 
   sendStateToBackground () {
-    console.info('**********************sendStateToBackground')
-    this.messagingService.sendMessageToBg(new StateMessage(this.state))/* .catch(
+    this.messagingService.sendMessageToBg(new StateMessage(this.state)).catch(
       (error) => {
         console.error('Unable to send a response to activation request', error)
       }
-    ) */
+    )
   }
 
   handleEscapeKey (event) {
-    console.info('**********************handleEscapeKey')
     if (event.keyCode === 27 && this.isActive) {
       if (this.state.isPanelOpen()) {
         this.ui.panel.close()
@@ -157,7 +154,6 @@ export default class ContentProcess {
   }
 
   getSelectedText (event) {
-    console.info('***********************getSelectedText', event)
     if (this.isActive && this.uiIsActive) {
       /*
       TextSelector conveys text selection information. It is more generic of the two.
