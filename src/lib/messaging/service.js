@@ -77,6 +77,7 @@ export default class Service {
 
   sendRequestToTab (request, timeout, tabID) {
     let promise = this.registerRequest(request, timeout)
+
     browser.tabs.sendMessage(tabID, request).then(
       () => { console.log(`Successfully sent a request to a tab`) },
       (error) => {

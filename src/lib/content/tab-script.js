@@ -35,7 +35,7 @@ export default class TabScript extends UIStateAPI {
   }
 
   get isDeattached () {
-    return this.tabObj.status === 'deattached'
+    return this.tabObj.isDeattached
   }
 
   static get propTypes () {
@@ -191,7 +191,7 @@ export default class TabScript extends UIStateAPI {
   }
 
   hasSameID (tabID) {
-    return this.tabID === tabID
+    return Symbol.keyFor(this.tabID) === Symbol.keyFor(tabID)
   }
 
   isActive () {
@@ -250,7 +250,9 @@ export default class TabScript extends UIStateAPI {
 
   update (source) {
     for (let key of Object.keys(source)) {
-      this[key] = source[key]
+      if (source[key]) {
+        this[key] = source[key]
+      }
     }
     return this
   }
@@ -262,6 +264,7 @@ export default class TabScript extends UIStateAPI {
     }
 
     // Check if there are any differences in tab IDs
+
     if (this.tabID !== state.tabID) {
       diff.tabID = state.tabID
       diff['_changedKeys'].push('tabID')
@@ -312,7 +315,9 @@ export default class TabScript extends UIStateAPI {
    */
   static serializable (source) {
     let serializable = {}
-    serializable.tabID = source.tabID
+    serializable.tabID = (typeof source.tabID === 'symbol') ? Symbol.keyFor(source.tabID) : source.tabID
+    serializable.tabObj = source.tabObj ? source.tabObj.clone() : undefined
+
     for (let key of Object.keys(source)) {
       if (TabScript.dataProps.includes(key)) {
         /*
@@ -328,11 +333,12 @@ export default class TabScript extends UIStateAPI {
   }
 
   static readObject (jsonObject) {
-    let tabScript = new TabScript(jsonObject.tabObj)
+    let tabObj = (jsonObject.tabObj && jsonObject.tabObj.tabId && jsonObject.tabObj.windowId) ? new Tab(jsonObject.tabObj.tabId, jsonObject.tabObj.windowId, jsonObject.tabObj.status) : undefined
+    let tabScript = new TabScript(tabObj)
 
     for (let prop of TabScript.symbolProps) {
       if (jsonObject.hasOwnProperty(prop)) {
-        tabScript[prop] = (typeof jsonObject[prop] === 'symbol') ? jsonObject[prop] : Symbol.for(jsonObject[prop])
+        tabScript[prop] = Symbol.for(jsonObject[prop])
       }
     }
 
@@ -343,7 +349,6 @@ export default class TabScript extends UIStateAPI {
     for (let prop of TabScript.booleanProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
     }
-
     return tabScript
   }
 }

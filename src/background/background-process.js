@@ -214,9 +214,9 @@ export default class BackgroundProcess {
    * @param {TabScript} tab - A TabScript object that represents a tab and it desired state
    */
   setContentState (tab) {
-    this.messagingService.sendRequestToTab(new StateRequest(tab), 10000, Tab.getTabIDfromUnique(tab.tabID)).then(
+    this.messagingService.sendRequestToTab(new StateRequest(tab), 10000, tab.tabObj.tabId).then(
       message => {
-        let contentState = TabScript.readObject(tab)
+        let contentState = TabScript.readObject(message.body)
         /*
         ContentState is an actual state content script is in. It may not match a desired state because
         content script may fail in one or several operations.
@@ -380,7 +380,8 @@ export default class BackgroundProcess {
   }
 
   updateTabState (tabID, newState) {
-    let tab = this.tabs.get(tabID).update(newState)
+    let tab = this.tabs.get(tabID)
+    tab.update(newState)
 
     // Menu state should reflect a status of a content script
     this.updateBrowserActionForTab(tab)
@@ -390,11 +391,11 @@ export default class BackgroundProcess {
   updateBrowserActionForTab (tab) {
     if (tab && tab.hasOwnProperty('status')) {
       if (tab.isActive()) {
-        browser.browserAction.setTitle({title: BackgroundProcess.defaults.deactivateBrowserActionTitle, tabId: Tab.getTabIDfromUnique(tab.tabID)})
+        browser.browserAction.setTitle({title: BackgroundProcess.defaults.deactivateBrowserActionTitle, tabId: tab.tabObj.tabId})
       } else if (tab.isDeactivated()) {
-        browser.browserAction.setTitle({title: BackgroundProcess.defaults.activateBrowserActionTitle, tabId: Tab.getTabIDfromUnique(tab.tabID)})
+        browser.browserAction.setTitle({title: BackgroundProcess.defaults.activateBrowserActionTitle, tabId: tab.tabObj.tabId})
       } else if (tab.isDisabled()) {
-        browser.browserAction.setTitle({title: BackgroundProcess.defaults.disabledBrowserActionTitle, tabId: Tab.getTabIDfromUnique(tab.tabID)})
+        browser.browserAction.setTitle({title: BackgroundProcess.defaults.disabledBrowserActionTitle, tabId: tab.tabObj.tabId})
       }
     }
   }
@@ -410,7 +411,7 @@ export default class BackgroundProcess {
     this.menuItems.disabled.disable()
 
     if (tab) {
-      let tabId = Tab.getTabIDfromUnique(tab.tabID)
+      let tabId = tab.tabObj.tabId
       // Menu state should reflect a status of a content script
       if (tab.hasOwnProperty('status')) {
         if (tab.isActive()) {
