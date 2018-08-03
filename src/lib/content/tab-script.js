@@ -1,5 +1,5 @@
 import {UIStateAPI} from 'alpheios-components'
-
+import Tab from '@/lib/tab.js'
 /**
  * Contains a state of a tab content script.
  * @property {Number} tabID - An ID of a tab where the content script is loaded
@@ -7,9 +7,10 @@ import {UIStateAPI} from 'alpheios-components'
  * @property {panelStatus} panelStatus
  */
 export default class TabScript extends UIStateAPI {
-  constructor (tabID) {
+  constructor (tabObj) {
     super()
-    this.tabID = tabID
+    this.tabID = tabObj ? tabObj.uniqueId : undefined
+    this.tabObj = tabObj
     this.status = undefined
     this.panelStatus = undefined
     this.tab = undefined
@@ -17,6 +18,24 @@ export default class TabScript extends UIStateAPI {
     this.uiActive = false
 
     this.watchers = new Map()
+  }
+
+  updateTabObject (tabId, windowId) {
+    this.tabObj = new Tab(tabId, windowId)
+    this.tabID = this.tabObj.uniqueId
+    return this
+  }
+
+  deattach () {
+    this.tabObj.deattach()
+  }
+
+  attach (newWinId) {
+    this.tabObj.attach(newWinId)
+  }
+
+  get isDeattached () {
+    return this.tabObj.isDeattached
   }
 
   static get propTypes () {
@@ -172,7 +191,7 @@ export default class TabScript extends UIStateAPI {
   }
 
   hasSameID (tabID) {
-    return this.tabID === tabID
+    return Symbol.keyFor(this.tabID) === Symbol.keyFor(tabID)
   }
 
   isActive () {
@@ -231,7 +250,9 @@ export default class TabScript extends UIStateAPI {
 
   update (source) {
     for (let key of Object.keys(source)) {
-      this[key] = source[key]
+      if (source[key]) {
+        this[key] = source[key]
+      }
     }
     return this
   }
@@ -243,6 +264,7 @@ export default class TabScript extends UIStateAPI {
     }
 
     // Check if there are any differences in tab IDs
+
     if (this.tabID !== state.tabID) {
       diff.tabID = state.tabID
       diff['_changedKeys'].push('tabID')
@@ -293,7 +315,9 @@ export default class TabScript extends UIStateAPI {
    */
   static serializable (source) {
     let serializable = {}
-    serializable.tabID = source.tabID
+    serializable.tabID = (typeof source.tabID === 'symbol') ? Symbol.keyFor(source.tabID) : source.tabID
+    serializable.tabObj = source.tabObj ? source.tabObj.clone() : undefined
+
     for (let key of Object.keys(source)) {
       if (TabScript.dataProps.includes(key)) {
         /*
@@ -309,10 +333,13 @@ export default class TabScript extends UIStateAPI {
   }
 
   static readObject (jsonObject) {
-    let tabScript = new TabScript(jsonObject.tabID)
+    let tabObj = (jsonObject.tabObj && jsonObject.tabObj.tabId && jsonObject.tabObj.windowId) ? new Tab(jsonObject.tabObj.tabId, jsonObject.tabObj.windowId, jsonObject.tabObj.status) : undefined
+    let tabScript = new TabScript(tabObj)
 
     for (let prop of TabScript.symbolProps) {
-      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = Symbol.for(jsonObject[prop]) }
+      if (jsonObject.hasOwnProperty(prop)) {
+        tabScript[prop] = Symbol.for(jsonObject[prop])
+      }
     }
 
     for (let prop of TabScript.stringProps) {
@@ -322,7 +349,6 @@ export default class TabScript extends UIStateAPI {
     for (let prop of TabScript.booleanProps) {
       if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
     }
-
     return tabScript
   }
 }
