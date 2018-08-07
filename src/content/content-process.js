@@ -101,11 +101,15 @@ export default class ContentProcess {
       if (!this.state.tabID) {
         // Content script has been just loaded and does not have its tab ID yet
         this.state.tabID = diff.tabID
+        this.state.tabObj = state.tabObj
       } else if (!this.state.hasSameID(diff.tabID)) {
-        console.warn(`State request with the wrong tab ID "${diff.tabID}" received. This tab ID is "${this.state.tabID}"`)
+        console.warn(`State request with the wrong tab ID "${Symbol.keyFor(diff.tabID)}" received. This tab ID is "${Symbol.keyFor(this.state.tabID)}"`)
         // TODO: Should we ignore such requests?
+        this.state.tabID = state.tabID
+        this.state.tabObj = state.tabObj
       }
     }
+
     if (diff.has('status')) {
       if (diff.status === TabScript.statuses.script.ACTIVE) {
         this.state.activate()
@@ -119,6 +123,7 @@ export default class ContentProcess {
         console.log('Content has been disabled')
       }
     }
+
     if (this.ui) {
       if (diff.has('panelStatus')) {
         if (diff.panelStatus === TabScript.statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
@@ -127,6 +132,7 @@ export default class ContentProcess {
         this.ui.changeTab(diff.tab)
       }
     }
+
     this.messagingService.sendResponseToBg(new StateResponse(request, this.state)).catch(
       (error) => {
         console.error('Unable to send a response to a state request', error)
