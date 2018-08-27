@@ -304,7 +304,10 @@ export default class BackgroundProcess {
    */
   async navigationCompletedListener (details) {
     // make sure this is a tab we know about AND that it's not an iframe event
-    let tmpTabUniqueId = Tab.createUniqueId(details.tabId, details.windowId)
+    let finalWindowId = this.defineCurrentWindowIdForActivation(details)
+
+    let tmpTabUniqueId = Tab.createUniqueId(details.tabId, finalWindowId)
+
     if (this.tabs.has(tmpTabUniqueId) && details.frameId === 0) {
       // If content script was loaded to that tab, restore it to the state it had before
       let tab = this.tabs.get(tmpTabUniqueId)
@@ -318,6 +321,25 @@ export default class BackgroundProcess {
         console.error(`Cannot load content script for a tab with an ID of tabId = ${details.tabId}, windowId = ${details.windowId}`)
       }
     }
+  }
+
+  defineCurrentWindowIdForActivation (details) {
+    // try to get windowId from arguments - from details
+    let finalWindowId = details.windowId
+
+    // try to get windowId from the tab with the same tabId
+    if (!finalWindowId && this.tabs.size > 0) {
+      finalWindowId = Array.from(this.tabs.values()).filter(el => el.tabObj.tabId === details.tabId)
+      finalWindowId = finalWindowId.length > 0 ? finalWindowId[0].windowId : null
+    }
+
+    // try to get windowId from the first tab from the saved tab array
+    if (!finalWindowId && this.tabs.size > 0) {
+      finalWindowId = this.tabs.values().next().value.tabObj.windowId
+    }
+
+    // if all tries fail get 0
+    return finalWindowId || 0
   }
 
   checkEmbeddedContent (tabId) {
