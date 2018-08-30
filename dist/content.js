@@ -8820,6 +8820,9 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 
 // Subcomponents
 
@@ -8846,9 +8849,15 @@ __webpack_require__.r(__webpack_exports__);
   },
 
   props: {
-    // This will be an InflectionData object
+    // Whether inflections component is enabled or not
+    inflectionsEnabled: {
+      type: Boolean,
+      default: false,
+      required: false
+    },
+
     data: {
-      type: [Object, Boolean],
+      type: Object,
       required: true
     },
     locale: {
@@ -8858,6 +8867,15 @@ __webpack_require__.r(__webpack_exports__);
     messages: {
       type: Object,
       required: true
+    },
+    /*
+    Inflections component is in a wait state while homonym data is retrieved from a morph analyzer and
+    inflections data is calculated
+    */
+    waitState: {
+      type: Boolean,
+      default: false,
+      required: false
     }
   },
 
@@ -8877,12 +8895,10 @@ __webpack_require__.r(__webpack_exports__);
       renderedView: {},
       elementIDs: {
         panelInner: 'alpheios-panel-inner',
-        content: 'alpheios-inflections__content',
-        wideView: 'alph-inflection-table-wide',
         footnotes: 'alph-inflection-footnotes'
       },
       htmlElements: {
-        wideView: undefined,
+        content: undefined,
       },
       buttons: {
         hideEmptyCols: {
@@ -8907,8 +8923,7 @@ __webpack_require__.r(__webpack_exports__);
         }
       },
       suppColors: ['rgb(208,255,254)', 'rgb(255,253,219)', 'rgb(228,255,222)', 'rgb(255,211,253)', 'rgb(255,231,211)'],
-      canCollapse: false, // Whether a selected view can be expanded or collapsed (it can't if has no suffix matches)
-      sfCollapsed: true
+      canCollapse: false // Whether a selected view can be expanded or collapsed (it can't if has no suffix matches)
     }
   },
 
@@ -8916,8 +8931,8 @@ __webpack_require__.r(__webpack_exports__);
     isEnabled: function () {
       return this.data.inflectionViewSet && this.data.inflectionViewSet.enabled
     },
-    isContentAvailable: function () {
-      return this.data.inflectionViewSet && this.data.inflectionViewSet.hasMatchingViews
+    hasMatchingViews: function () {
+      return this.data.inflectionViewSet && this.data.inflectionViewSet.enabled && this.data.inflectionViewSet.hasMatchingViews
     },
     inflectionViewSet: function () {
       return this.data.inflectionViewSet
@@ -8977,7 +8992,7 @@ __webpack_require__.r(__webpack_exports__);
 
   watch: {
     inflectionViewSet: function () {
-      this.clearInflections()
+      this.hasInflectionData = false
       if (this.data.inflectionViewSet && this.data.inflectionViewSet.hasMatchingViews) {
         // Set colors for supplemental paradigm tables
         for (let view of this.data.inflectionViewSet.getViews()) {
@@ -9032,12 +9047,12 @@ __webpack_require__.r(__webpack_exports__);
     as it won't be used by anything and thus will not be calculated by Vue.
      */
     isVisible: function (visibility) {
-      if (visibility) {
+      if (visibility && this.htmlElements.content) {
         // If container is become visible, update parent with its width
         this.$emit('contentwidth', this.htmlElements.content.offsetWidth)
       }
     },
-    locale: function (locale) {
+    locale: function () {
       if (this.data.inflectionData) {
         this.data.inflectionViewSet.setLocale(this.locale)
         if (!this.selectedView.hasPrerenderedTables) {
@@ -9049,12 +9064,6 @@ __webpack_require__.r(__webpack_exports__);
   },
 
   methods: {
-    clearInflections: function () {
-      // for (let element of Object.values(this.htmlElements)) { element.innerHTML = '' }
-      this.hasInflectionData = false
-      return this
-    },
-
     setDefaults () {
       this.buttons.hideEmptyCols.contentHidden = true
       this.buttons.hideEmptyCols.text = this.buttons.hideEmptyCols.hiddenText
@@ -9109,17 +9118,12 @@ __webpack_require__.r(__webpack_exports__);
           console.warn(`Cannot find #${reflink} element. Navigation cancelled`)
         }
       }
-    },
-
-    sfCollapse: function (currentState) {
-      this.sfCollapsed = currentState
     }
   },
 
   mounted: function () {
     if (typeof this.$el.querySelector === 'function') {
-      // this.htmlElements.wideView = this.$el.querySelector(`#${this.elementIDs.wideView}`)
-      this.htmlElements.content = this.$el.querySelector(`#${this.elementIDs.content}`)
+      this.htmlElements.content = this.$el
     }
   }
 });
@@ -9553,9 +9557,26 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   created: function () {
-    this.types = alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["GrmFeature"].types
+    this.types = alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types
   },
   computed: {
+    allLemmas () {
+      if (this.lex.altLemmas && this.lex.altLemmas.length > 0) {
+        return [this.lex.lemma, ...this.lex.altLemmas].sort((a,b) => {
+          if (a.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.frequency]) {
+            return a.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.frequency].compareTo(b.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.frequency])
+          } else if (b.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.frequency]) {
+            // frequency of a isn't defined so sort b first
+            return 1
+          } else {
+            // equal
+            return 0
+          }
+        })
+      } else {
+        return [this.lex.lemma]
+      }
+    },
     morphClass () {
       let c = "alpheios-morph__dictentry"
       if (this.lex.disambiguated) {
@@ -9595,7 +9616,7 @@ __webpack_require__.r(__webpack_exports__);
       return letters.substr(index, 1) + '.'
     },
     featureList(lemma,features,name) {
-      let list = features.map(i => lemma.features[i] ? alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["GrmFeature"].toFeature(lemma.features[i]): null).filter(i => i)
+      let list = features.map(i => lemma.features[i] ? lemma.features[i]: null).filter(i => i)
       list = list.length > 0 ? `(${list.map((f)=>f).join(', ')})` : ''
       let returnObj = {}
       returnObj[name] = { value: list }
@@ -11920,290 +11941,336 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _c("div", [
-    _c(
-      "div",
-      {
-        directives: [
-          {
-            name: "show",
-            rawName: "v-show",
-            value: !_vm.isEnabled,
-            expression: "! isEnabled"
-          }
-        ],
-        staticClass: "alpheios-inflections__placeholder"
-      },
-      [_vm._v(_vm._s(_vm.messages.PLACEHOLDER_INFLECT_UNAVAILABLE))]
-    ),
-    _vm._v(" "),
-    _c(
-      "div",
-      {
-        directives: [
-          {
-            name: "show",
-            rawName: "v-show",
-            value: _vm.isEnabled && !_vm.isContentAvailable,
-            expression: "isEnabled && ! isContentAvailable"
-          }
-        ],
-        staticClass: "alpheios-inflections__placeholder"
-      },
-      [_vm._v(_vm._s(_vm.messages.PLACEHOLDER_INFLECT))]
-    ),
-    _vm._v(" "),
-    _c(
-      "div",
-      {
-        directives: [
-          {
-            name: "show",
-            rawName: "v-show",
-            value: _vm.isContentAvailable && _vm.sfCollapsed,
-            expression: "isContentAvailable && sfCollapsed"
-          }
-        ],
-        staticClass: "alpheios-inflections__content",
-        attrs: { id: _vm.elementIDs.content }
-      },
-      [
-        _c(
-          "div",
-          {
-            directives: [
-              {
-                name: "show",
-                rawName: "v-show",
-                value: _vm.partsOfSpeech.length > 1,
-                expression: "partsOfSpeech.length > 1"
-              }
-            ]
-          },
-          [
-            _c("label", { staticClass: "uk-form-label" }, [
-              _vm._v(_vm._s(_vm.messages.LABEL_INFLECT_SELECT_POFS))
-            ]),
-            _vm._v(" "),
-            _c(
-              "select",
-              {
-                directives: [
-                  {
-                    name: "model",
-                    rawName: "v-model",
-                    value: _vm.partOfSpeechSelector,
-                    expression: "partOfSpeechSelector"
-                  }
-                ],
-                staticClass:
-                  "uk-select alpheios-inflections__view-selector alpheios-text__smallest",
-                on: {
-                  change: function($event) {
-                    var $$selectedVal = Array.prototype.filter
-                      .call($event.target.options, function(o) {
-                        return o.selected
-                      })
-                      .map(function(o) {
-                        var val = "_value" in o ? o._value : o.value
-                        return val
-                      })
-                    _vm.partOfSpeechSelector = $event.target.multiple
-                      ? $$selectedVal
-                      : $$selectedVal[0]
-                  }
-                }
-              },
-              _vm._l(_vm.partsOfSpeech, function(partOfSpeech) {
-                return _c("option", [_vm._v(_vm._s(partOfSpeech))])
-              })
-            )
-          ]
-        ),
-        _vm._v(" "),
-        _c(
-          "div",
-          { staticClass: "alpheios-inflections__actions" },
-          [
-            _vm.selectedView && _vm.selectedView.homonym
-              ? _c("word-forms", {
-                  attrs: {
-                    partOfSpeech: _vm.selectedView.constructor.mainPartOfSpeech,
-                    targetWord: _vm.selectedView.homonym.targetWord,
-                    lexemes: _vm.selectedView.homonym.lexemes
-                  }
-                })
-              : _vm._e(),
-            _vm._v(" "),
+  return _c("div", { attrs: { id: _vm.elementIDs.content } }, [
+    _vm.waitState
+      ? _c("div", { staticClass: "alpheios-inflections__placeholder" }, [
+          _c("div", { staticClass: "alpheios-inflections__progress-wrapper" }, [
             _c(
               "div",
-              {
-                directives: [
-                  {
-                    name: "show",
-                    rawName: "v-show",
-                    value: _vm.views.length > 1,
-                    expression: "views.length > 1"
-                  }
-                ]
-              },
+              { staticClass: "alpheios-inflections__progress-border" },
               [
                 _c(
-                  "select",
-                  {
-                    directives: [
-                      {
-                        name: "model",
-                        rawName: "v-model",
-                        value: _vm.viewSelector,
-                        expression: "viewSelector"
-                      }
-                    ],
-                    staticClass:
-                      "uk-select alpheios-inflections__view-selector alpheios-text__smallest",
-                    on: {
-                      change: function($event) {
-                        var $$selectedVal = Array.prototype.filter
-                          .call($event.target.options, function(o) {
-                            return o.selected
-                          })
-                          .map(function(o) {
-                            var val = "_value" in o ? o._value : o.value
-                            return val
-                          })
-                        _vm.viewSelector = $event.target.multiple
-                          ? $$selectedVal
-                          : $$selectedVal[0]
-                      }
-                    }
-                  },
-                  _vm._l(_vm.views, function(view) {
-                    return _c("option", { domProps: { value: view.id } }, [
-                      _vm._v(_vm._s(view.name))
-                    ])
-                  })
-                )
-              ]
-            ),
-            _vm._v(" "),
-            _c(
-              "div",
-              {
-                directives: [
-                  {
-                    name: "show",
-                    rawName: "v-show",
-                    value: _vm.hasInflectionData && _vm.canCollapse,
-                    expression: "hasInflectionData && canCollapse"
-                  }
-                ],
-                staticClass:
-                  "alpheios-inflections__control-btn-cont uk-button-group"
-              },
-              [
-                _c(
-                  "alph-tooltip",
-                  {
-                    attrs: {
-                      tooltipDirection: "bottom-right",
-                      tooltipText: _vm.buttons.hideNoSuffixGroups.tooltipText
-                    }
-                  },
+                  "div",
+                  { staticClass: "alpheios-inflections__progress-whitespace" },
                   [
+                    _c("div", {
+                      staticClass: "alpheios-inflections__progress-line"
+                    }),
+                    _vm._v(" "),
                     _c(
-                      "button",
-                      {
-                        staticClass:
-                          "uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn",
-                        on: { click: _vm.hideNoSuffixGroupsClick }
-                      },
+                      "div",
+                      { staticClass: "alpheios-inflections__progress-text" },
                       [
                         _vm._v(
-                          "\n                  " +
-                            _vm._s(_vm.buttons.hideNoSuffixGroups.text) +
-                            "\n                "
+                          "\n                        " +
+                            _vm._s(
+                              _vm.messages.PLACEHOLDER_INFLECT_IN_PROGRESS
+                            ) +
+                            "\n                    "
                         )
                       ]
                     )
                   ]
                 )
-              ],
-              1
+              ]
             )
-          ],
-          1
-        ),
-        _vm._v(" "),
-        _vm.selectedView.additionalTitle
-          ? _c(
-              "h4",
-              { staticClass: "alpheios-inflections__additional_title" },
-              [_vm._v(_vm._s(_vm.selectedView.additionalTitle))]
-            )
-          : _vm._e(),
-        _vm._v(" "),
-        _vm.data.inflectionData
-          ? _c("div", {
-              directives: [
+          ])
+        ])
+      : _vm.inflectionsEnabled && _vm.hasMatchingViews
+        ? _c(
+            "div",
+            { staticClass: "alpheios-inflections__content" },
+            [
+              _c(
+                "div",
                 {
-                  name: "show",
-                  rawName: "v-show",
-                  value: _vm.showExplanatoryHint,
-                  expression: "showExplanatoryHint"
-                }
-              ],
-              staticClass: "alpheios-inflections__paradigms-expl",
-              domProps: {
-                innerHTML: _vm._s(
-                  _vm.messages.INFLECTIONS_PARADIGMS_EXPLANATORY_HINT.get(
-                    _vm.data.inflectionData.targetWord
-                  )
-                )
-              }
-            })
-          : _vm._e(),
-        _vm._v(" "),
-        !_vm.selectedView.hasPrerenderedTables
-          ? _c(
-              "div",
-              [
-                _c("main-table-wide-vue", {
-                  attrs: {
-                    view: _vm.selectedView,
-                    "no-suffix-matches-hidden":
-                      _vm.buttons.hideNoSuffixGroups.noSuffixMatchesHidden
-                  }
-                }),
-                _vm._v(" "),
-                _c(
-                  "div",
-                  {
-                    staticClass: "alpheios-inflections__footnotes",
-                    attrs: { id: _vm.elementIDs.footnotes }
-                  },
-                  [
-                    _vm._l(_vm.footnotes, function(footnote) {
-                      return [
-                        _c("dt", [_vm._v(_vm._s(footnote.index))]),
-                        _vm._v(" "),
-                        _c("dd", [_vm._v(_vm._s(footnote.text))])
-                      ]
+                  directives: [
+                    {
+                      name: "show",
+                      rawName: "v-show",
+                      value: _vm.partsOfSpeech.length > 1,
+                      expression: "partsOfSpeech.length > 1"
+                    }
+                  ]
+                },
+                [
+                  _c("label", { staticClass: "uk-form-label" }, [
+                    _vm._v(_vm._s(_vm.messages.LABEL_INFLECT_SELECT_POFS))
+                  ]),
+                  _vm._v(" "),
+                  _c(
+                    "select",
+                    {
+                      directives: [
+                        {
+                          name: "model",
+                          rawName: "v-model",
+                          value: _vm.partOfSpeechSelector,
+                          expression: "partOfSpeechSelector"
+                        }
+                      ],
+                      staticClass:
+                        "uk-select alpheios-inflections__view-selector alpheios-text__smallest",
+                      on: {
+                        change: function($event) {
+                          var $$selectedVal = Array.prototype.filter
+                            .call($event.target.options, function(o) {
+                              return o.selected
+                            })
+                            .map(function(o) {
+                              var val = "_value" in o ? o._value : o.value
+                              return val
+                            })
+                          _vm.partOfSpeechSelector = $event.target.multiple
+                            ? $$selectedVal
+                            : $$selectedVal[0]
+                        }
+                      }
+                    },
+                    _vm._l(_vm.partsOfSpeech, function(partOfSpeech) {
+                      return _c("option", [_vm._v(_vm._s(partOfSpeech))])
                     })
-                  ],
-                  2
-                )
-              ],
-              1
-            )
-          : [
-              _c("prerendered-table-wide", {
-                attrs: { view: _vm.selectedView }
-              }),
+                  )
+                ]
+              ),
               _vm._v(" "),
-              _c("sub-tables-wide", {
-                attrs: { view: _vm.selectedView },
-                on: { navigate: _vm.navigate }
-              }),
+              _c(
+                "div",
+                { staticClass: "alpheios-inflections__actions" },
+                [
+                  _vm.selectedView && _vm.selectedView.homonym
+                    ? _c("word-forms", {
+                        attrs: {
+                          partOfSpeech:
+                            _vm.selectedView.constructor.mainPartOfSpeech,
+                          targetWord: _vm.selectedView.homonym.targetWord,
+                          lexemes: _vm.selectedView.homonym.lexemes
+                        }
+                      })
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      directives: [
+                        {
+                          name: "show",
+                          rawName: "v-show",
+                          value: _vm.views.length > 1,
+                          expression: "views.length > 1"
+                        }
+                      ]
+                    },
+                    [
+                      _c(
+                        "select",
+                        {
+                          directives: [
+                            {
+                              name: "model",
+                              rawName: "v-model",
+                              value: _vm.viewSelector,
+                              expression: "viewSelector"
+                            }
+                          ],
+                          staticClass:
+                            "uk-select alpheios-inflections__view-selector alpheios-text__smallest",
+                          on: {
+                            change: function($event) {
+                              var $$selectedVal = Array.prototype.filter
+                                .call($event.target.options, function(o) {
+                                  return o.selected
+                                })
+                                .map(function(o) {
+                                  var val = "_value" in o ? o._value : o.value
+                                  return val
+                                })
+                              _vm.viewSelector = $event.target.multiple
+                                ? $$selectedVal
+                                : $$selectedVal[0]
+                            }
+                          }
+                        },
+                        _vm._l(_vm.views, function(view) {
+                          return _c(
+                            "option",
+                            { domProps: { value: view.id } },
+                            [_vm._v(_vm._s(view.name))]
+                          )
+                        })
+                      )
+                    ]
+                  ),
+                  _vm._v(" "),
+                  _c(
+                    "div",
+                    {
+                      directives: [
+                        {
+                          name: "show",
+                          rawName: "v-show",
+                          value: _vm.hasInflectionData && _vm.canCollapse,
+                          expression: "hasInflectionData && canCollapse"
+                        }
+                      ],
+                      staticClass:
+                        "alpheios-inflections__control-btn-cont uk-button-group"
+                    },
+                    [
+                      _c(
+                        "alph-tooltip",
+                        {
+                          attrs: {
+                            tooltipDirection: "bottom-right",
+                            tooltipText:
+                              _vm.buttons.hideNoSuffixGroups.tooltipText
+                          }
+                        },
+                        [
+                          _c(
+                            "button",
+                            {
+                              staticClass:
+                                "uk-button uk-button-primary uk-button-small alpheios-inflections__control-btn",
+                              on: { click: _vm.hideNoSuffixGroupsClick }
+                            },
+                            [
+                              _vm._v(
+                                "\n                        " +
+                                  _vm._s(_vm.buttons.hideNoSuffixGroups.text) +
+                                  "\n                    "
+                              )
+                            ]
+                          )
+                        ]
+                      )
+                    ],
+                    1
+                  )
+                ],
+                1
+              ),
+              _vm._v(" "),
+              _vm.selectedView.additionalTitle
+                ? _c(
+                    "h4",
+                    { staticClass: "alpheios-inflections__additional_title" },
+                    [_vm._v(_vm._s(_vm.selectedView.additionalTitle))]
+                  )
+                : _vm._e(),
+              _vm._v(" "),
+              _vm.data.inflectionData
+                ? _c("div", {
+                    directives: [
+                      {
+                        name: "show",
+                        rawName: "v-show",
+                        value: _vm.showExplanatoryHint,
+                        expression: "showExplanatoryHint"
+                      }
+                    ],
+                    staticClass: "alpheios-inflections__paradigms-expl",
+                    domProps: {
+                      innerHTML: _vm._s(
+                        _vm.messages.INFLECTIONS_PARADIGMS_EXPLANATORY_HINT.get(
+                          _vm.data.inflectionData.targetWord
+                        )
+                      )
+                    }
+                  })
+                : _vm._e(),
+              _vm._v(" "),
+              !_vm.selectedView.hasPrerenderedTables
+                ? _c(
+                    "div",
+                    [
+                      _c("main-table-wide-vue", {
+                        attrs: {
+                          view: _vm.selectedView,
+                          "no-suffix-matches-hidden":
+                            _vm.buttons.hideNoSuffixGroups.noSuffixMatchesHidden
+                        }
+                      }),
+                      _vm._v(" "),
+                      _c(
+                        "div",
+                        {
+                          staticClass: "alpheios-inflections__footnotes",
+                          attrs: { id: _vm.elementIDs.footnotes }
+                        },
+                        [
+                          _vm._l(_vm.footnotes, function(footnote) {
+                            return [
+                              _c("dt", [_vm._v(_vm._s(footnote.index))]),
+                              _vm._v(" "),
+                              _c("dd", [_vm._v(_vm._s(footnote.text))])
+                            ]
+                          })
+                        ],
+                        2
+                      )
+                    ],
+                    1
+                  )
+                : [
+                    _c("prerendered-table-wide", {
+                      attrs: { view: _vm.selectedView }
+                    }),
+                    _vm._v(" "),
+                    _c("sub-tables-wide", {
+                      attrs: { view: _vm.selectedView },
+                      on: { navigate: _vm.navigate }
+                    }),
+                    _vm._v(" "),
+                    _c(
+                      "div",
+                      {
+                        directives: [
+                          {
+                            name: "show",
+                            rawName: "v-show",
+                            value: _vm.selectedView.hasSuppParadigms,
+                            expression: "selectedView.hasSuppParadigms"
+                          }
+                        ],
+                        staticClass: "alpheios-inflections__supp-tables"
+                      },
+                      [
+                        _c(
+                          "h3",
+                          { staticClass: "alpheios-inflections__title" },
+                          [
+                            _vm._v(
+                              _vm._s(
+                                _vm.messages
+                                  .INFLECTIONS_SUPPLEMENTAL_SECTION_HEADER
+                              )
+                            )
+                          ]
+                        ),
+                        _vm._v(" "),
+                        _vm._l(_vm.selectedView.suppParadigms, function(
+                          paradigm
+                        ) {
+                          return [
+                            _c("supp-tables-wide", {
+                              attrs: {
+                                data: paradigm,
+                                "bg-color": _vm.selectedView.hlSuppParadigms
+                                  ? _vm.selectedView.suppHlColors.get(
+                                      paradigm.paradigmID
+                                    )
+                                  : "transparent",
+                                messages: _vm.messages
+                              },
+                              on: { navigate: _vm.navigate }
+                            })
+                          ]
+                        })
+                      ],
+                      2
+                    )
+                  ],
               _vm._v(" "),
               _c(
                 "div",
@@ -12212,69 +12279,37 @@ var render = function() {
                     {
                       name: "show",
                       rawName: "v-show",
-                      value: _vm.selectedView.hasSuppParadigms,
-                      expression: "selectedView.hasSuppParadigms"
+                      value: _vm.selectedView.hasCredits,
+                      expression: "selectedView.hasCredits"
                     }
                   ],
-                  staticClass: "alpheios-inflections__supp-tables"
+                  staticClass: "alpheios-inflections__credits-cont"
                 },
                 [
-                  _c("h3", { staticClass: "alpheios-inflections__title" }, [
-                    _vm._v(
-                      _vm._s(
-                        _vm.messages.INFLECTIONS_SUPPLEMENTAL_SECTION_HEADER
-                      )
-                    )
-                  ]),
+                  _c(
+                    "h3",
+                    { staticClass: "alpheios-inflections__credits-title" },
+                    [_vm._v(_vm._s(_vm.messages.INFLECTIONS_CREDITS_TITLE))]
+                  ),
                   _vm._v(" "),
-                  _vm._l(_vm.selectedView.suppParadigms, function(paradigm) {
-                    return [
-                      _c("supp-tables-wide", {
-                        attrs: {
-                          data: paradigm,
-                          "bg-color": _vm.selectedView.hlSuppParadigms
-                            ? _vm.selectedView.suppHlColors.get(
-                                paradigm.paradigmID
-                              )
-                            : "transparent",
-                          messages: _vm.messages
-                        },
-                        on: { navigate: _vm.navigate }
-                      })
-                    ]
+                  _c("div", {
+                    staticClass: "alpheios-inflections__credits-text",
+                    domProps: {
+                      innerHTML: _vm._s(_vm.selectedView.creditsText)
+                    }
                   })
-                ],
-                2
+                ]
               )
             ],
-        _vm._v(" "),
-        _c(
-          "div",
-          {
-            directives: [
-              {
-                name: "show",
-                rawName: "v-show",
-                value: _vm.selectedView.hasCredits,
-                expression: "selectedView.hasCredits"
-              }
-            ],
-            staticClass: "alpheios-inflections__credits-cont"
-          },
-          [
-            _c("h3", { staticClass: "alpheios-inflections__credits-title" }, [
-              _vm._v(_vm._s(_vm.messages.INFLECTIONS_CREDITS_TITLE))
-            ]),
-            _vm._v(" "),
-            _c("div", {
-              staticClass: "alpheios-inflections__credits-text",
-              domProps: { innerHTML: _vm._s(_vm.selectedView.creditsText) }
-            })
-          ]
-        )
-      ],
-      2
-    )
+            2
+          )
+        : _c("div", { staticClass: "alpheios-inflections__placeholder" }, [
+            _vm._v(
+              "\n        " +
+                _vm._s(_vm.messages.PLACEHOLDER_INFLECT_UNAVAILABLE) +
+                "\n    "
+            )
+          ])
   ])
 }
 var staticRenderFns = []
@@ -12580,190 +12615,195 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _vm.lex
     ? _c("div", { class: _vm.morphClass }, [
-        _c("div", { staticClass: "alpheios-morph__features" }, [
-          _c(
-            "p",
-            { staticClass: "principal_parts" },
-            [
-              _vm.count > 1
-                ? _c("span", { staticClass: "lemma_index" }, [
-                    _vm._v(_vm._s(_vm.index + 1))
-                  ])
-                : _vm._e(),
-              _vm._v(" "),
-              !_vm.lex.lemma.principalParts.includes(_vm.lex.lemma.word)
-                ? _c(
+        _c(
+          "div",
+          { staticClass: "alpheios-morph__features" },
+          [
+            _vm._l(_vm.allLemmas, function(lemma, lemmaIndex) {
+              return _c(
+                "p",
+                { staticClass: "principal_parts" },
+                [
+                  lemmaIndex === 0 && _vm.count > 1
+                    ? _c("span", { staticClass: "lemma_index" }, [
+                        _vm._v(_vm._s(_vm.index + 1))
+                      ])
+                    : lemmaIndex > 0 && _vm.count > 1
+                      ? _c("span", { staticClass: "lemma_index_spacer" })
+                      : _vm._e(),
+                  _vm._v(" "),
+                  !lemma.principalParts.includes(lemma.word)
+                    ? _c(
+                        "span",
+                        {
+                          staticClass:
+                            "alpheios-morph__hdwd alpheios-morph__formtext alpheios-morph__groupitem",
+                          attrs: { lang: _vm.languageCode(lemma.languageID) }
+                        },
+                        [_vm._v(_vm._s(lemma.word))]
+                      )
+                    : _vm._e(),
+                  _vm._v(" "),
+                  _c(
                     "span",
                     {
                       staticClass:
-                        "alpheios-morph__hdwd alpheios-morph__formtext alpheios-morph__groupitem",
-                      attrs: {
-                        lang: _vm.languageCode(_vm.lex.lemma.languageID)
-                      }
+                        "alpheios-morph__hdwd alpheios-morph__formtext alpheios-morph__groupitem"
                     },
-                    [_vm._v(_vm._s(_vm.lex.lemma.word))]
-                  )
-                : _vm._e(),
-              _vm._v(" "),
-              _c(
-                "span",
-                {
-                  staticClass:
-                    "alpheios-morph__hdwd alpheios-morph__formtext alpheios-morph__groupitem"
-                },
-                _vm._l(_vm.lex.lemma.principalParts, function(part) {
-                  return _c(
-                    "span",
-                    {
-                      staticClass: "alpheios-morph__listitem",
-                      attrs: {
-                        lang: _vm.languageCode(_vm.lex.lemma.languageID)
-                      }
-                    },
-                    [_vm._v(_vm._s(part))]
-                  )
-                })
-              ),
-              _vm._v(" "),
-              _c("inflectionattribute", {
-                attrs: {
-                  data: _vm.lex.lemma.features,
-                  type: _vm.types.pronunciation,
-                  linkedfeatures: _vm.linkedfeatures,
-                  decorators: ["brackets"]
-                }
-              }),
-              _vm._v(" "),
-              _vm.lex.lemma.features &&
-              (_vm.getFeature(_vm.lex.lemma, "frequency") ||
-                _vm.getFeature(_vm.lex.lemma, "age") ||
-                _vm.getFeature(_vm.lex.lemma, "area") ||
-                _vm.getFeature(_vm.lex.lemma, "geo"))
-                ? _c(
-                    "span",
-                    { staticClass: "feature_extras" },
-                    [
-                      _c("inflectionattribute", {
-                        attrs: {
-                          data: _vm.featureList(
-                            _vm.lex.lemma,
-                            ["age", "area", "geo", "frequency"],
-                            "extras"
-                          ),
-                          type: "extras"
+                    _vm._l(lemma.principalParts, function(part) {
+                      return _c(
+                        "span",
+                        {
+                          staticClass: "alpheios-morph__listitem",
+                          attrs: { lang: _vm.languageCode(lemma.languageID) }
                         },
-                        on: { sendfeature: _vm.sendFeature }
-                      })
-                    ],
-                    1
-                  )
-                : _vm._e()
-            ],
-            1
-          ),
-          _vm._v(" "),
-          _vm.lex.lemma.features
-            ? _c(
-                "div",
-                { staticClass: "alpheios-morph__morphdata" },
-                [
-                  _c(
-                    "span",
-                    { staticClass: "alpheios-morph__pofs" },
-                    [
-                      _c("inflectionattribute", {
-                        attrs: {
-                          data: _vm.lex.lemma.features,
-                          type: _vm.types.grmCase,
-                          linkedfeatures: _vm.linkedfeatures
-                        },
-                        on: { sendfeature: _vm.sendFeature }
-                      }),
-                      _vm._v(" "),
-                      _c("inflectionattribute", {
-                        attrs: {
-                          data: _vm.lex.lemma.features,
-                          type: _vm.types.gender,
-                          linkedfeatures: _vm.linkedfeatures
-                        },
-                        on: { sendfeature: _vm.sendFeature }
-                      }),
-                      _vm._v(" "),
-                      _c("inflectionattribute", {
-                        attrs: {
-                          data: _vm.lex.lemma.features,
-                          type: _vm.types.part,
-                          linkedfeatures: _vm.linkedfeatures
-                        },
-                        on: { sendfeature: _vm.sendFeature }
-                      })
-                    ],
-                    1
+                        [_vm._v(_vm._s(part))]
+                      )
+                    })
                   ),
                   _vm._v(" "),
                   _c("inflectionattribute", {
                     attrs: {
-                      data: _vm.lex.lemma.features,
-                      type: _vm.types.kind,
-                      linkedfeatures: _vm.linkedfeatures,
-                      decorators: ["parenthesize"]
-                    },
-                    on: { sendfeature: _vm.sendFeature }
-                  }),
-                  _vm._v(" "),
-                  _c("inflectionattribute", {
-                    attrs: {
-                      data: _vm.lex.lemma.features,
-                      type: _vm.types.declension,
-                      linkedfeatures: _vm.linkedfeatures,
-                      decorators: ["appendtype"]
-                    },
-                    on: { sendfeature: _vm.sendFeature }
-                  }),
-                  _vm._v(" "),
-                  _c("inflectionattribute", {
-                    attrs: {
-                      data: _vm.lex.lemma.features,
-                      type: _vm.types.conjugation,
-                      linkedfeatures: _vm.linkedfeatures,
-                      decorators: ["appendtype"]
-                    },
-                    on: { sendfeature: _vm.sendFeature }
-                  }),
-                  _vm._v(" "),
-                  _c("inflectionattribute", {
-                    attrs: {
-                      data: _vm.lex.lemma.features,
-                      type: _vm.types.note,
+                      data: lemma.features,
+                      type: _vm.types.pronunciation,
                       linkedfeatures: _vm.linkedfeatures,
                       decorators: ["brackets"]
-                    },
-                    on: { sendfeature: _vm.sendFeature }
-                  })
+                    }
+                  }),
+                  _vm._v(" "),
+                  lemma.features &&
+                  (_vm.getFeature(lemma, "frequency") ||
+                    _vm.getFeature(lemma, "age") ||
+                    _vm.getFeature(lemma, "area") ||
+                    _vm.getFeature(lemma, "geo"))
+                    ? _c(
+                        "span",
+                        { staticClass: "feature_extras" },
+                        [
+                          _c("inflectionattribute", {
+                            attrs: {
+                              data: _vm.featureList(
+                                lemma,
+                                ["age", "area", "geo", "frequency"],
+                                "extras"
+                              ),
+                              type: "extras"
+                            },
+                            on: { sendfeature: _vm.sendFeature }
+                          })
+                        ],
+                        1
+                      )
+                    : _vm._e(),
+                  _vm._v(" "),
+                  lemma.features && _vm.getFeature(lemma, "source")
+                    ? _c(
+                        "span",
+                        { staticClass: "feature_source" },
+                        [
+                          _c("inflectionattribute", {
+                            attrs: {
+                              data: lemma.features,
+                              type: _vm.types.source,
+                              linkedfeatures: _vm.linkedfeatures,
+                              decorators: ["brackets"]
+                            },
+                            on: { sendfeature: _vm.sendFeature }
+                          })
+                        ],
+                        1
+                      )
+                    : _vm._e()
                 ],
                 1
               )
-            : _vm._e(),
-          _vm._v(" "),
-          _vm.lex.lemma.features && _vm.getFeature(_vm.lex.lemma, "source")
-            ? _c(
-                "p",
-                { staticClass: "feature_source" },
-                [
-                  _c("inflectionattribute", {
-                    attrs: {
-                      data: _vm.lex.lemma.features,
-                      type: _vm.types.source,
-                      linkedfeatures: _vm.linkedfeatures,
-                      decorators: ["brackets"]
-                    },
-                    on: { sendfeature: _vm.sendFeature }
-                  })
-                ],
-                1
-              )
-            : _vm._e()
-        ]),
+            }),
+            _vm._v(" "),
+            _vm.lex.lemma.features
+              ? _c(
+                  "div",
+                  { staticClass: "alpheios-morph__morphdata" },
+                  [
+                    _c(
+                      "span",
+                      { staticClass: "alpheios-morph__pofs" },
+                      [
+                        _c("inflectionattribute", {
+                          attrs: {
+                            data: _vm.lex.lemma.features,
+                            type: _vm.types.grmCase,
+                            linkedfeatures: _vm.linkedfeatures
+                          },
+                          on: { sendfeature: _vm.sendFeature }
+                        }),
+                        _vm._v(" "),
+                        _c("inflectionattribute", {
+                          attrs: {
+                            data: _vm.lex.lemma.features,
+                            type: _vm.types.gender,
+                            linkedfeatures: _vm.linkedfeatures
+                          },
+                          on: { sendfeature: _vm.sendFeature }
+                        }),
+                        _vm._v(" "),
+                        _c("inflectionattribute", {
+                          attrs: {
+                            data: _vm.lex.lemma.features,
+                            type: _vm.types.part,
+                            linkedfeatures: _vm.linkedfeatures
+                          },
+                          on: { sendfeature: _vm.sendFeature }
+                        })
+                      ],
+                      1
+                    ),
+                    _vm._v(" "),
+                    _c("inflectionattribute", {
+                      attrs: {
+                        data: _vm.lex.lemma.features,
+                        type: _vm.types.kind,
+                        linkedfeatures: _vm.linkedfeatures,
+                        decorators: ["parenthesize"]
+                      },
+                      on: { sendfeature: _vm.sendFeature }
+                    }),
+                    _vm._v(" "),
+                    _c("inflectionattribute", {
+                      attrs: {
+                        data: _vm.lex.lemma.features,
+                        type: _vm.types.declension,
+                        linkedfeatures: _vm.linkedfeatures,
+                        decorators: ["appendtype"]
+                      },
+                      on: { sendfeature: _vm.sendFeature }
+                    }),
+                    _vm._v(" "),
+                    _c("inflectionattribute", {
+                      attrs: {
+                        data: _vm.lex.lemma.features,
+                        type: _vm.types.conjugation,
+                        linkedfeatures: _vm.linkedfeatures,
+                        decorators: ["appendtype"]
+                      },
+                      on: { sendfeature: _vm.sendFeature }
+                    }),
+                    _vm._v(" "),
+                    _c("inflectionattribute", {
+                      attrs: {
+                        data: _vm.lex.lemma.features,
+                        type: _vm.types.note,
+                        linkedfeatures: _vm.linkedfeatures,
+                        decorators: ["brackets"]
+                      },
+                      on: { sendfeature: _vm.sendFeature }
+                    })
+                  ],
+                  1
+                )
+              : _vm._e()
+          ],
+          2
+        ),
         _vm._v(" "),
         _vm.definitions.length > 0
           ? _c(
@@ -13317,6 +13357,14 @@ var render = function() {
                 _c(
                   "alph-tooltip",
                   {
+                    directives: [
+                      {
+                        name: "show",
+                        rawName: "v-show",
+                        value: _vm.data.inflectionsEnabled,
+                        expression: "data.inflectionsEnabled"
+                      }
+                    ],
                     attrs: {
                       tooltipDirection: "bottom-narrow",
                       tooltipText: _vm.ln10Messages("TOOLTIP_INFLECT")
@@ -13343,6 +13391,14 @@ var render = function() {
                 _c(
                   "alph-tooltip",
                   {
+                    directives: [
+                      {
+                        name: "show",
+                        rawName: "v-show",
+                        value: _vm.data.grammarAvailable,
+                        expression: "data.grammarAvailable"
+                      }
+                    ],
                     attrs: {
                       tooltipDirection: "bottom-narrow",
                       tooltipText: _vm.ln10Messages("TOOLTIP_GRAMMAR")
@@ -13660,9 +13716,11 @@ var render = function() {
                     _c("inflections", {
                       staticClass: "alpheios-panel-inflections",
                       attrs: {
+                        "inflections-enabled": _vm.data.inflectionsEnabled,
                         data: _vm.data.inflectionComponentData,
                         locale: _vm.data.settings.locale.currentValue,
-                        messages: _vm.data.l10n.messages
+                        messages: _vm.data.l10n.messages,
+                        "wait-state": _vm.data.inflectionsWaitState
                       },
                       on: { contentwidth: _vm.setContentWidth }
                     })
@@ -26889,12 +26947,15 @@ class UIController {
             treebank: false
           },
           verboseMode: this.state.verboseMode,
+          grammarAvailable: false,
           grammarRes: {},
           lexemes: [],
           inflectionComponentData: {
             visible: false,
             inflectionViewSet: null
           },
+          inflectionsWaitState: false,
+          inflectionsEnabled: false,
           shortDefinitions: [],
           fullDefinitions: '',
           inflections: {
@@ -27553,8 +27614,12 @@ class UIController {
     return this
   }
 
-  newLexicalRequest () {
+  newLexicalRequest (languageID) {
+    console.log(`new inflection request`)
     this.popup.newLexicalRequest()
+    this.panel.panelData.inflectionsEnabled = alpheios_inflection_tables__WEBPACK_IMPORTED_MODULE_1__["ViewSetFactory"].hasInflectionsEnabled(languageID)
+    this.panel.panelData.inflectionsWaitState = true // Homonym is retrieved and inflection data is calculated
+    this.panel.panelData.grammarAvailable = false
     this.clear().open().changeTab('definitions')
     return this
   }
@@ -27590,6 +27655,7 @@ class UIController {
   updateGrammar (urls) {
     if (urls.length > 0) {
       this.panel.panelData.grammarRes = urls[0]
+      this.panel.panelData.grammarAvailable = true
     } else {
       this.panel.panelData.grammarRes = { provider: this.l10n.messages.TEXT_NOTICE_GRAMMAR_NOTFOUND }
     }
@@ -27677,11 +27743,17 @@ class UIController {
 
   updateInflections (homonym) {
     this.inflectionsViewSet = alpheios_inflection_tables__WEBPACK_IMPORTED_MODULE_1__["ViewSetFactory"].create(homonym, this.options.items.locale.currentValue)
+
     this.panel.panelData.inflectionComponentData.inflectionViewSet = this.inflectionsViewSet
     if (this.inflectionsViewSet.hasMatchingViews) {
       this.addMessage(this.l10n.messages.TEXT_NOTICE_INFLDATA_READY)
     }
+    this.panel.panelData.inflectionsWaitState = false
     this.popup.popupData.inflDataReady = this.inflDataReady
+  }
+
+  lexicalRequestComplete () {
+    this.panel.panelData.inflectionsWaitState = false
   }
 
   get inflDataReady () {
@@ -29486,7 +29558,7 @@ class LexicalQuery extends _query_js__WEBPACK_IMPORTED_MODULE_1__["default"] {
 
   async getData () {
     this.languageID = this.selector.languageID
-    this.ui.setTargetRect(this.htmlSelector.targetRect).newLexicalRequest().message(`Please wait while data is retrieved ...`)
+    this.ui.setTargetRect(this.htmlSelector.targetRect).newLexicalRequest(this.languageID).message(`Please wait while data is retrieved ...`)
     this.ui.showStatusInfo(this.selector.normalizedText, this.languageID)
     this.ui.updateWordAnnotationData(this.selector.data)
     let iterator = this.iterations()
@@ -29653,6 +29725,7 @@ class LexicalQuery extends _query_js__WEBPACK_IMPORTED_MODULE_1__["default"] {
       // to show language info. It will catch empty data.
       this.ui.showLanguageInfo(this.homonym)
     }
+    this.ui.lexicalRequestComplete()
     _query_js__WEBPACK_IMPORTED_MODULE_1__["default"].destroy(this)
     return result
   }
@@ -30433,10 +30506,10 @@ module.exports = {"COOKIE_TEST_MESSAGE":{"message":"This is a test message about
 /*!*************************************!*\
   !*** ./locales/en-us/messages.json ***!
   \*************************************/
-/*! exports provided: COOKIE_TEST_MESSAGE, NUM_LINES_TEST_MESSAGE, TOOLTIP_MOVE_PANEL_LEFT, TOOLTIP_MOVE_PANEL_RIGHT, TOOLTIP_CLOSE_PANEL, TOOLTIP_HELP, TOOLTIP_INFLECT, TOOLTIP_DEFINITIONS, TOOLTIP_GRAMMAR, TOOLTIP_TREEBANK, TOOLTIP_OPTIONS, TOOLTIP_STATUS, TOOLTIP_SHOW_INFLECTIONS, TOOLTIP_SHOW_DEFINITIONS, TOOLTIP_SHOW_OPTIONS, PLACEHOLDER_DEFINITIONS, PLACEHOLDER_INFLECT, PLACEHOLDER_INFLECT_UNAVAILABLE, LABEL_INFLECT_SELECT_POFS, LABEL_INFLECT_SHOWFULL, LABEL_INFLECT_COLLAPSE, TOOLTIP_INFLECT_SHOWFULL, TOOLTIP_INFLECT_COLLAPSE, LABEL_INFLECT_HIDEEMPTY, LABEL_INFLECT_SHOWEMPTY, TOOLTIP_INFLECT_HIDEEMPTY, TOOLTIP_INFLECT_SHOWEMPTY, TEXT_INFO_GETTINGSTARTED, TEXT_INFO_ACTIVATE, TEXT_INFO_CLICK, TEXT_INFO_LANGDETECT, LABEL_INFO_CURRENTLANGUAGE, TEXT_INFO_SETTINGS, TEXT_INFO_ARROW, TEXT_INFO_REOPEN, TEXT_INFO_DEACTIVATE, TOOLTIP_POPUP_CLOSE, LABEL_POPUP_TREEBANK, LABEL_POPUP_INFLECT, LABEL_POPUP_OPTIONS, LABEL_POPUP_DEFINE, PLACEHOLDER_POPUP_DATA, PLACEHOLDER_NO_LANGUAGE_POPUP_DATA, PLACEHOLDER_NO_DATA_POPUP_DATA, LABEL_POPUP_CREDITS, LABEL_POPUP_SHOWCREDITS, LABEL_POPUP_HIDECREDITS, TEXT_NOTICE_CHANGE_LANGUAGE, TEXT_NOTICE_LANGUAGE_UNKNOWN, TEXT_NOTICE_GRAMMAR_NOTFOUND, TEXT_NOTICE_MORPHDATA_READY, TEXT_NOTICE_MORPHDATA_NOTFOUND, TEXT_NOTICE_INFLDATA_READY, TEXT_NOTICE_DEFSDATA_READY, TEXT_NOTICE_DEFSDATA_NOTFOUND, TEXT_NOTICE_LEXQUERY_COMPLETE, TEXT_NOTICE_GRAMMAR_READY, TEXT_NOTICE_GRAMMAR_COMPLETE, TEXT_NOTICE_RESQUERY_COMPLETE, LABEL_BROWSERACTION_DEACTIVATE, LABEL_BROWSERACTION_ACTIVATE, LABEL_BROWSERACTION_DISABLED, LABEL_CTXTMENU_DEACTIVATE, LABEL_CTXTMENU_ACTIVATE, LABEL_CTXTMENU_DISABLED, LABEL_CTXTMENU_OPENPANEL, LABEL_CTXTMENU_INFO, LABEL_CTXTMENU_SENDEXP, LABEL_LOOKUP_BUTTON, TOOLTIP_LOOKUP_BUTTON, LABEL_LOOKUP_SETTINGS, LABEL_RESKIN_SETTINGS, TOOLTIP_RESKIN_SMALLFONT, TOOLTIP_RESKIN_MEDIUMFONT, TOOLTIP_RESKIN_LARGEFONT, TOOLTIP_RESKIN_LIGHTBG, TOOLTIP_RESKIN_DARKBG, INFLECTIONS_CREDITS_TITLE, INFLECTIONS_PARADIGMS_EXPLANATORY_HINT, INFLECTIONS_MAIN_TABLE_LINK_TEXT, default */
+/*! exports provided: COOKIE_TEST_MESSAGE, NUM_LINES_TEST_MESSAGE, TOOLTIP_MOVE_PANEL_LEFT, TOOLTIP_MOVE_PANEL_RIGHT, TOOLTIP_CLOSE_PANEL, TOOLTIP_HELP, TOOLTIP_INFLECT, TOOLTIP_DEFINITIONS, TOOLTIP_GRAMMAR, TOOLTIP_TREEBANK, TOOLTIP_OPTIONS, TOOLTIP_STATUS, TOOLTIP_SHOW_INFLECTIONS, TOOLTIP_SHOW_DEFINITIONS, TOOLTIP_SHOW_OPTIONS, PLACEHOLDER_DEFINITIONS, PLACEHOLDER_INFLECT_IN_PROGRESS, PLACEHOLDER_INFLECT_UNAVAILABLE, LABEL_INFLECT_SELECT_POFS, LABEL_INFLECT_SHOWFULL, LABEL_INFLECT_COLLAPSE, TOOLTIP_INFLECT_SHOWFULL, TOOLTIP_INFLECT_COLLAPSE, LABEL_INFLECT_HIDEEMPTY, LABEL_INFLECT_SHOWEMPTY, TOOLTIP_INFLECT_HIDEEMPTY, TOOLTIP_INFLECT_SHOWEMPTY, TEXT_INFO_GETTINGSTARTED, TEXT_INFO_ACTIVATE, TEXT_INFO_CLICK, TEXT_INFO_LANGDETECT, LABEL_INFO_CURRENTLANGUAGE, TEXT_INFO_SETTINGS, TEXT_INFO_ARROW, TEXT_INFO_REOPEN, TEXT_INFO_DEACTIVATE, TOOLTIP_POPUP_CLOSE, LABEL_POPUP_TREEBANK, LABEL_POPUP_INFLECT, LABEL_POPUP_OPTIONS, LABEL_POPUP_DEFINE, PLACEHOLDER_POPUP_DATA, PLACEHOLDER_NO_LANGUAGE_POPUP_DATA, PLACEHOLDER_NO_DATA_POPUP_DATA, LABEL_POPUP_CREDITS, LABEL_POPUP_SHOWCREDITS, LABEL_POPUP_HIDECREDITS, TEXT_NOTICE_CHANGE_LANGUAGE, TEXT_NOTICE_LANGUAGE_UNKNOWN, TEXT_NOTICE_GRAMMAR_NOTFOUND, TEXT_NOTICE_MORPHDATA_READY, TEXT_NOTICE_MORPHDATA_NOTFOUND, TEXT_NOTICE_INFLDATA_READY, TEXT_NOTICE_DEFSDATA_READY, TEXT_NOTICE_DEFSDATA_NOTFOUND, TEXT_NOTICE_LEXQUERY_COMPLETE, TEXT_NOTICE_GRAMMAR_READY, TEXT_NOTICE_GRAMMAR_COMPLETE, TEXT_NOTICE_RESQUERY_COMPLETE, LABEL_BROWSERACTION_DEACTIVATE, LABEL_BROWSERACTION_ACTIVATE, LABEL_BROWSERACTION_DISABLED, LABEL_CTXTMENU_DEACTIVATE, LABEL_CTXTMENU_ACTIVATE, LABEL_CTXTMENU_DISABLED, LABEL_CTXTMENU_OPENPANEL, LABEL_CTXTMENU_INFO, LABEL_CTXTMENU_SENDEXP, LABEL_LOOKUP_BUTTON, TOOLTIP_LOOKUP_BUTTON, LABEL_LOOKUP_SETTINGS, LABEL_RESKIN_SETTINGS, TOOLTIP_RESKIN_SMALLFONT, TOOLTIP_RESKIN_MEDIUMFONT, TOOLTIP_RESKIN_LARGEFONT, TOOLTIP_RESKIN_LIGHTBG, TOOLTIP_RESKIN_DARKBG, INFLECTIONS_CREDITS_TITLE, INFLECTIONS_PARADIGMS_EXPLANATORY_HINT, INFLECTIONS_MAIN_TABLE_LINK_TEXT, default */
 /***/ (function(module) {
 
-module.exports = {"COOKIE_TEST_MESSAGE":{"message":"This is a test message about a cookie.","description":"A test message that is shown in a panel","component":"Panel"},"NUM_LINES_TEST_MESSAGE":{"message":"There {numLines, plural, =0 {are no lines} =1 {is one line} other {are # lines}}.","description":"A test message that is shown in a panel","component":"Panel","params":["numLines"]},"TOOLTIP_MOVE_PANEL_LEFT":{"message":"Move Panel to Left","description":"tooltip for moving the panel to the left","component":"Panel"},"TOOLTIP_MOVE_PANEL_RIGHT":{"message":"Move Panel to Right","description":"tooltip for moving the panel to the right","component":"Panel"},"TOOLTIP_CLOSE_PANEL":{"message":"Close Panel","description":"tooltip for closing the panel","component":"Panel"},"TOOLTIP_HELP":{"message":"Help","description":"tooltip for help tab","component":"Panel"},"TOOLTIP_INFLECT":{"message":"Inflection Tables","description":"tooltip for inflections tab","component":"Panel"},"TOOLTIP_DEFINITIONS":{"message":"Definitions","description":"tooltip for definitions tab","component":"Panel"},"TOOLTIP_GRAMMAR":{"message":"Grammar","description":"tooltip for grammar tab","component":"Panel"},"TOOLTIP_TREEBANK":{"message":"Diagram","description":"tooltip for treebank tab","component":"Panel"},"TOOLTIP_OPTIONS":{"message":"Options","description":"tooltip for options tab","component":"Panel"},"TOOLTIP_STATUS":{"message":"Status Messages","description":"tooltip for status tab","component":"Panel"},"TOOLTIP_SHOW_INFLECTIONS":{"message":"Show inflections","description":"tooltip for button inflections","component":"Popup"},"TOOLTIP_SHOW_DEFINITIONS":{"message":"Show definitions","description":"tooltip for button definitions","component":"Popup"},"TOOLTIP_SHOW_OPTIONS":{"message":"Show options","description":"tooltip for button options","component":"Popup"},"PLACEHOLDER_DEFINITIONS":{"message":"Lookup a word to show definitions...","description":"placeholder for definitions panel","component":"Panel"},"PLACEHOLDER_INFLECT":{"message":"Lookup a word to show inflections...","description":"placeholder for inflections panel","component":"Panel"},"PLACEHOLDER_INFLECT_UNAVAILABLE":{"message":"Inflection data is unavailable","description":"placeholder for inflections panel if unavailable","component":"Panel"},"LABEL_INFLECT_SELECT_POFS":{"message":"Part of speech:","description":"label for part of speech selector on inflections panel","component":"Panel"},"LABEL_INFLECT_SHOWFULL":{"message":"Full Table","description":"label for show full table button on inflections panel","component":"Panel"},"LABEL_INFLECT_COLLAPSE":{"message":"Collapse","description":"label for collapse table button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_SHOWFULL":{"message":"Show full Table","description":"tooltip for show full table button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_COLLAPSE":{"message":"Show collapsed table","description":"tooltip for collapse table button on inflections panel","component":"Panel"},"LABEL_INFLECT_HIDEEMPTY":{"message":"Hide empty columns","description":"label for hide empty columns button on inflections panel","component":"Panel"},"LABEL_INFLECT_SHOWEMPTY":{"message":"Show empty columns","description":"label for show empty columns button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_HIDEEMPTY":{"message":"Show table without empty columns","description":"tooltip for hide empty columns button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_SHOWEMPTY":{"message":"Show table with empty columns","description":"tooltip for show empty columns button on inflections panel","component":"Panel"},"TEXT_INFO_GETTINGSTARTED":{"message":"Getting Started","description":"info text","component":"Panel"},"TEXT_INFO_ACTIVATE":{"message":"Activate on a page with Latin, Ancient Greek, Arabic or Persian text.","description":"info text","component":"Panel"},"TEXT_INFO_CLICK":{"message":"Double-click on a word to retrieve morphology and short definitions.","description":"info text","component":"Panel"},"TEXT_INFO_LANGDETECT":{"message":"Alpheios will try to detect the language of the word from the page markup. If it cannot it will use the default language.","description":"info text","component":"Panel"},"LABEL_INFO_CURRENTLANGUAGE":{"message":"Current language:","description":"label for current language in info text","component":"Panel"},"TEXT_INFO_SETTINGS":{"message":"Click the Options wheel to change the default language, default dictionaries or to disable the popup (set UI Type to 'panel').","description":"info text","component":"Panel"},"TEXT_INFO_ARROW":{"message":"Use the arrow at the top of this panel to move it from the right to left of your browser window.","description":"info text","component":"Panel"},"TEXT_INFO_REOPEN":{"message":"You can reopen this panel at any time by selecting 'Info' from the Alpheios Reading Tools option in your browser's context menu.","description":"info text","component":"Panel"},"TEXT_INFO_DEACTIVATE":{"message":"Deactivate Alpheios by clicking the toolbar icon or choosing 'Deactivate' from the Alpheios Reading Tools option in your browser's context menu.","description":"info text","component":"Panel"},"TOOLTIP_POPUP_CLOSE":{"message":"Close Popup","description":"tooltip for closing the popup","component":"Popup"},"LABEL_POPUP_TREEBANK":{"message":"Diagram","description":"label for treebank button on popup","component":"Popup"},"LABEL_POPUP_INFLECT":{"message":"Inflect","description":"label for inflect button on popup","component":"Popup"},"LABEL_POPUP_OPTIONS":{"message":"Options","description":"label for options button on popup","component":"Popup"},"LABEL_POPUP_DEFINE":{"message":"Define","description":"label for define button on popup","component":"Popup"},"PLACEHOLDER_POPUP_DATA":{"message":"Lexical data is loading","description":"placeholder text for popup data","component":"Popup"},"PLACEHOLDER_NO_LANGUAGE_POPUP_DATA":{"message":"Lexical data couldn't be populated because page language is not defined","description":"placeholder text for popup data when language is not defined","component":"Popup"},"PLACEHOLDER_NO_DATA_POPUP_DATA":{"message":"Lexical data couldn't be populated  for unknown reason","description":"placeholder text for popup data","component":"Popup"},"LABEL_POPUP_CREDITS":{"message":"Credits:","description":"label for credits on popup","component":"Popup"},"LABEL_POPUP_SHOWCREDITS":{"message":"Credits","description":"label for show credits link on popup","component":"Popup"},"LABEL_POPUP_HIDECREDITS":{"message":"Hide Credits","description":"label for hide credits link on popup","component":"Popup"},"TEXT_NOTICE_CHANGE_LANGUAGE":{"message":"Language: {languageName}<br>Wrong? Change to:","description":"language notification","component":"UI","params":["languageName"]},"TEXT_NOTICE_LANGUAGE_UNKNOWN":{"message":"unknown","description":"unknown language notification","component":"UI"},"TEXT_NOTICE_GRAMMAR_NOTFOUND":{"message":"The requested grammar resource is not currently available","description":"grammar not found notification","component":"UI"},"TEXT_NOTICE_MORPHDATA_READY":{"message":"Morphological analyzer data is ready","description":"morph data ready notice","component":"UI"},"TEXT_NOTICE_MORPHDATA_NOTFOUND":{"message":"Morphological data not found. Definition queries pending.","description":"morph data not found notice","component":"UI"},"TEXT_NOTICE_INFLDATA_READY":{"message":"Inflection data is ready","description":"inflection data ready notice","component":"UI"},"TEXT_NOTICE_DEFSDATA_READY":{"message":"{requestType} request is completed successfully. Lemma: \"{lemma}\"","description":"definition request success notice","component":"UI","params":["requestType","lemma"]},"TEXT_NOTICE_DEFSDATA_NOTFOUND":{"message":"{requestType} request failed. Lemma not found for: \"{word}\"","description":"definition request success notice","component":"UI","params":["requestType","word"]},"TEXT_NOTICE_LEXQUERY_COMPLETE":{"message":"All lexical queries complete.","description":"lexical queries complete notice","component":"UI"},"TEXT_NOTICE_GRAMMAR_READY":{"message":"Grammar resource retrieved","description":"grammar retrieved notice","component":"UI"},"TEXT_NOTICE_GRAMMAR_COMPLETE":{"message":"All grammar resource data retrieved","description":"grammar retrieved notice","component":"UI"},"TEXT_NOTICE_RESQUERY_COMPLETE":{"message":"All resource data retrieved","description":"resource query complete notice","component":"UI"},"LABEL_BROWSERACTION_DEACTIVATE":{"message":"Deactivate Alpheios","description":"Deactivate browser action title","component":"UI"},"LABEL_BROWSERACTION_ACTIVATE":{"message":"Activate Alpheios","description":"Activate browser action title","component":"UI"},"LABEL_BROWSERACTION_DISABLED":{"message":"(Alpheios Extension Disabled For Page)","description":"Disabled browser action title","component":"UI"},"LABEL_CTXTMENU_DEACTIVATE":{"message":"Deactivate","description":"Deactivate context menu label","component":"UI"},"LABEL_CTXTMENU_ACTIVATE":{"message":"Activate","description":"Activate context menu label","component":"UI"},"LABEL_CTXTMENU_DISABLED":{"message":"(Disabled)","description":"Disabled context menu label","component":"UI"},"LABEL_CTXTMENU_OPENPANEL":{"message":"Open Panel","description":"Open Panel context menu label","component":"UI"},"LABEL_CTXTMENU_INFO":{"message":"Info","description":"Info context menu label","component":"UI"},"LABEL_CTXTMENU_SENDEXP":{"message":"Send Experiences to remote server","description":"send exp data context menu label","component":"UI"},"LABEL_LOOKUP_BUTTON":{"message":"Lookup","description":"lookup button in lookup.vue","component":"Popup"},"TOOLTIP_LOOKUP_BUTTON":{"message":"Lookup word","description":"Tooltip for the lookup button in lookup.vue","component":"Lookup"},"LABEL_LOOKUP_SETTINGS":{"message":"Using Language...","description":"Settings link-label in the lookup block in lookup.vue","component":"Lookup"},"LABEL_RESKIN_SETTINGS":{"message":"Reskin options","description":"Label for Reskin component","component":"ReskinFontColor"},"TOOLTIP_RESKIN_SMALLFONT":{"message":"Small font","description":"Tooltip for small font icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_MEDIUMFONT":{"message":"Medium font","description":"Tooltip for medium font icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_LARGEFONT":{"message":"Large font","description":"Tooltip for large font icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_LIGHTBG":{"message":"Light background","description":"Tooltip for light colors schema icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_DARKBG":{"message":"Dark background","description":"Tooltip for dark colors schema icon","component":"ReskinFontColor"},"INFLECTIONS_CREDITS_TITLE":{"message":"Credits","description":"Title of credits section on inflection tables panel","component":"InflectionTables"},"INFLECTIONS_PARADIGMS_EXPLANATORY_HINT":{"message":"The following table(s) show conjugation patterns for verbs which are similar to those of <span>{word}</span>","description":"A hint that indicates that the current table is representative pattern for verbs similar to the one chosen","component":"InflectionTables","params":["word"]},"INFLECTIONS_MAIN_TABLE_LINK_TEXT":{"message":"Back to main","description":"A link pointing to a main inflection table","component":"InflectionTables"}};
+module.exports = {"COOKIE_TEST_MESSAGE":{"message":"This is a test message about a cookie.","description":"A test message that is shown in a panel","component":"Panel"},"NUM_LINES_TEST_MESSAGE":{"message":"There {numLines, plural, =0 {are no lines} =1 {is one line} other {are # lines}}.","description":"A test message that is shown in a panel","component":"Panel","params":["numLines"]},"TOOLTIP_MOVE_PANEL_LEFT":{"message":"Move Panel to Left","description":"tooltip for moving the panel to the left","component":"Panel"},"TOOLTIP_MOVE_PANEL_RIGHT":{"message":"Move Panel to Right","description":"tooltip for moving the panel to the right","component":"Panel"},"TOOLTIP_CLOSE_PANEL":{"message":"Close Panel","description":"tooltip for closing the panel","component":"Panel"},"TOOLTIP_HELP":{"message":"Help","description":"tooltip for help tab","component":"Panel"},"TOOLTIP_INFLECT":{"message":"Inflection Tables","description":"tooltip for inflections tab","component":"Panel"},"TOOLTIP_DEFINITIONS":{"message":"Definitions","description":"tooltip for definitions tab","component":"Panel"},"TOOLTIP_GRAMMAR":{"message":"Grammar","description":"tooltip for grammar tab","component":"Panel"},"TOOLTIP_TREEBANK":{"message":"Diagram","description":"tooltip for treebank tab","component":"Panel"},"TOOLTIP_OPTIONS":{"message":"Options","description":"tooltip for options tab","component":"Panel"},"TOOLTIP_STATUS":{"message":"Status Messages","description":"tooltip for status tab","component":"Panel"},"TOOLTIP_SHOW_INFLECTIONS":{"message":"Show inflections","description":"tooltip for button inflections","component":"Popup"},"TOOLTIP_SHOW_DEFINITIONS":{"message":"Show definitions","description":"tooltip for button definitions","component":"Popup"},"TOOLTIP_SHOW_OPTIONS":{"message":"Show options","description":"tooltip for button options","component":"Popup"},"PLACEHOLDER_DEFINITIONS":{"message":"Lookup a word to show definitions...","description":"placeholder for definitions panel","component":"Panel"},"PLACEHOLDER_INFLECT_IN_PROGRESS":{"message":"Lookup a word to show inflections...","description":"placeholder for inflections panel","component":"Panel"},"PLACEHOLDER_INFLECT_UNAVAILABLE":{"message":"Inflection data is unavailable","description":"placeholder for inflections panel if unavailable","component":"Panel"},"LABEL_INFLECT_SELECT_POFS":{"message":"Part of speech:","description":"label for part of speech selector on inflections panel","component":"Panel"},"LABEL_INFLECT_SHOWFULL":{"message":"Full Table","description":"label for show full table button on inflections panel","component":"Panel"},"LABEL_INFLECT_COLLAPSE":{"message":"Collapse","description":"label for collapse table button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_SHOWFULL":{"message":"Show full Table","description":"tooltip for show full table button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_COLLAPSE":{"message":"Show collapsed table","description":"tooltip for collapse table button on inflections panel","component":"Panel"},"LABEL_INFLECT_HIDEEMPTY":{"message":"Hide empty columns","description":"label for hide empty columns button on inflections panel","component":"Panel"},"LABEL_INFLECT_SHOWEMPTY":{"message":"Show empty columns","description":"label for show empty columns button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_HIDEEMPTY":{"message":"Show table without empty columns","description":"tooltip for hide empty columns button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_SHOWEMPTY":{"message":"Show table with empty columns","description":"tooltip for show empty columns button on inflections panel","component":"Panel"},"TEXT_INFO_GETTINGSTARTED":{"message":"Getting Started","description":"info text","component":"Panel"},"TEXT_INFO_ACTIVATE":{"message":"Activate on a page with Latin, Ancient Greek, Arabic or Persian text.","description":"info text","component":"Panel"},"TEXT_INFO_CLICK":{"message":"Double-click on a word to retrieve morphology and short definitions.","description":"info text","component":"Panel"},"TEXT_INFO_LANGDETECT":{"message":"Alpheios will try to detect the language of the word from the page markup. If it cannot it will use the default language.","description":"info text","component":"Panel"},"LABEL_INFO_CURRENTLANGUAGE":{"message":"Current language:","description":"label for current language in info text","component":"Panel"},"TEXT_INFO_SETTINGS":{"message":"Click the Options wheel to change the default language, default dictionaries or to disable the popup (set UI Type to 'panel').","description":"info text","component":"Panel"},"TEXT_INFO_ARROW":{"message":"Use the arrow at the top of this panel to move it from the right to left of your browser window.","description":"info text","component":"Panel"},"TEXT_INFO_REOPEN":{"message":"You can reopen this panel at any time by selecting 'Info' from the Alpheios Reading Tools option in your browser's context menu.","description":"info text","component":"Panel"},"TEXT_INFO_DEACTIVATE":{"message":"Deactivate Alpheios by clicking the toolbar icon or choosing 'Deactivate' from the Alpheios Reading Tools option in your browser's context menu.","description":"info text","component":"Panel"},"TOOLTIP_POPUP_CLOSE":{"message":"Close Popup","description":"tooltip for closing the popup","component":"Popup"},"LABEL_POPUP_TREEBANK":{"message":"Diagram","description":"label for treebank button on popup","component":"Popup"},"LABEL_POPUP_INFLECT":{"message":"Inflect","description":"label for inflect button on popup","component":"Popup"},"LABEL_POPUP_OPTIONS":{"message":"Options","description":"label for options button on popup","component":"Popup"},"LABEL_POPUP_DEFINE":{"message":"Define","description":"label for define button on popup","component":"Popup"},"PLACEHOLDER_POPUP_DATA":{"message":"Lexical data is loading","description":"placeholder text for popup data","component":"Popup"},"PLACEHOLDER_NO_LANGUAGE_POPUP_DATA":{"message":"Lexical data couldn't be populated because page language is not defined","description":"placeholder text for popup data when language is not defined","component":"Popup"},"PLACEHOLDER_NO_DATA_POPUP_DATA":{"message":"Lexical data couldn't be populated  for unknown reason","description":"placeholder text for popup data","component":"Popup"},"LABEL_POPUP_CREDITS":{"message":"Credits:","description":"label for credits on popup","component":"Popup"},"LABEL_POPUP_SHOWCREDITS":{"message":"Credits","description":"label for show credits link on popup","component":"Popup"},"LABEL_POPUP_HIDECREDITS":{"message":"Hide Credits","description":"label for hide credits link on popup","component":"Popup"},"TEXT_NOTICE_CHANGE_LANGUAGE":{"message":"Language: {languageName}<br>Wrong? Change to:","description":"language notification","component":"UI","params":["languageName"]},"TEXT_NOTICE_LANGUAGE_UNKNOWN":{"message":"unknown","description":"unknown language notification","component":"UI"},"TEXT_NOTICE_GRAMMAR_NOTFOUND":{"message":"The requested grammar resource is not currently available","description":"grammar not found notification","component":"UI"},"TEXT_NOTICE_MORPHDATA_READY":{"message":"Morphological analyzer data is ready","description":"morph data ready notice","component":"UI"},"TEXT_NOTICE_MORPHDATA_NOTFOUND":{"message":"Morphological data not found. Definition queries pending.","description":"morph data not found notice","component":"UI"},"TEXT_NOTICE_INFLDATA_READY":{"message":"Inflection data is ready","description":"inflection data ready notice","component":"UI"},"TEXT_NOTICE_DEFSDATA_READY":{"message":"{requestType} request is completed successfully. Lemma: \"{lemma}\"","description":"definition request success notice","component":"UI","params":["requestType","lemma"]},"TEXT_NOTICE_DEFSDATA_NOTFOUND":{"message":"{requestType} request failed. Lemma not found for: \"{word}\"","description":"definition request success notice","component":"UI","params":["requestType","word"]},"TEXT_NOTICE_LEXQUERY_COMPLETE":{"message":"All lexical queries complete.","description":"lexical queries complete notice","component":"UI"},"TEXT_NOTICE_GRAMMAR_READY":{"message":"Grammar resource retrieved","description":"grammar retrieved notice","component":"UI"},"TEXT_NOTICE_GRAMMAR_COMPLETE":{"message":"All grammar resource data retrieved","description":"grammar retrieved notice","component":"UI"},"TEXT_NOTICE_RESQUERY_COMPLETE":{"message":"All resource data retrieved","description":"resource query complete notice","component":"UI"},"LABEL_BROWSERACTION_DEACTIVATE":{"message":"Deactivate Alpheios","description":"Deactivate browser action title","component":"UI"},"LABEL_BROWSERACTION_ACTIVATE":{"message":"Activate Alpheios","description":"Activate browser action title","component":"UI"},"LABEL_BROWSERACTION_DISABLED":{"message":"(Alpheios Extension Disabled For Page)","description":"Disabled browser action title","component":"UI"},"LABEL_CTXTMENU_DEACTIVATE":{"message":"Deactivate","description":"Deactivate context menu label","component":"UI"},"LABEL_CTXTMENU_ACTIVATE":{"message":"Activate","description":"Activate context menu label","component":"UI"},"LABEL_CTXTMENU_DISABLED":{"message":"(Disabled)","description":"Disabled context menu label","component":"UI"},"LABEL_CTXTMENU_OPENPANEL":{"message":"Open Panel","description":"Open Panel context menu label","component":"UI"},"LABEL_CTXTMENU_INFO":{"message":"Info","description":"Info context menu label","component":"UI"},"LABEL_CTXTMENU_SENDEXP":{"message":"Send Experiences to remote server","description":"send exp data context menu label","component":"UI"},"LABEL_LOOKUP_BUTTON":{"message":"Lookup","description":"lookup button in lookup.vue","component":"Popup"},"TOOLTIP_LOOKUP_BUTTON":{"message":"Lookup word","description":"Tooltip for the lookup button in lookup.vue","component":"Lookup"},"LABEL_LOOKUP_SETTINGS":{"message":"Using Language...","description":"Settings link-label in the lookup block in lookup.vue","component":"Lookup"},"LABEL_RESKIN_SETTINGS":{"message":"Reskin options","description":"Label for Reskin component","component":"ReskinFontColor"},"TOOLTIP_RESKIN_SMALLFONT":{"message":"Small font","description":"Tooltip for small font icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_MEDIUMFONT":{"message":"Medium font","description":"Tooltip for medium font icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_LARGEFONT":{"message":"Large font","description":"Tooltip for large font icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_LIGHTBG":{"message":"Light background","description":"Tooltip for light colors schema icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_DARKBG":{"message":"Dark background","description":"Tooltip for dark colors schema icon","component":"ReskinFontColor"},"INFLECTIONS_CREDITS_TITLE":{"message":"Credits","description":"Title of credits section on inflection tables panel","component":"InflectionTables"},"INFLECTIONS_PARADIGMS_EXPLANATORY_HINT":{"message":"The following table(s) show conjugation patterns for verbs which are similar to those of <span>{word}</span>","description":"A hint that indicates that the current table is representative pattern for verbs similar to the one chosen","component":"InflectionTables","params":["word"]},"INFLECTIONS_MAIN_TABLE_LINK_TEXT":{"message":"Back to main","description":"A link pointing to a main inflection table","component":"InflectionTables"}};
 
 /***/ }),
 
@@ -37820,24 +37893,10 @@ class LatinLanguageDataset extends _lib_language_dataset_js__WEBPACK_IMPORTED_MO
   }
 
   checkIrregularVerb (inflection) {
-    if (
-      inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].POFS_VERB &&
-      inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.conjugation] &&
-      inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.conjugation].value === alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].TYPE_IRREGULAR
-    ) {
-      // This is an irregular verb that was identified by a morphological analyzer
-      return true
-    } else if ([alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].POFS_VERB, alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].POFS_VERB_PARTICIPLE].includes(inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value) && inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.word]) {
+    if ([alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].POFS_VERB, alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].POFS_VERB_PARTICIPLE].includes(inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value) && inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.word]) {
       return this.verbsIrregularLemmas.filter(item => item.word === inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.word].value).length > 0
     }
     return false
-  }
-
-  isUnimplemented (inflection) {
-    return Boolean(
-      this.checkIrregularVerb(inflection) &&
-      !this.verbsIrregularLemmas.some(item => item.word === inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.word].value)
-    )
   }
 
   static getObligatoryMatchList (inflection) {
@@ -38022,10 +38081,6 @@ class LanguageDataset {
     this.footnotes = [] // Footnotes
   }
 
-  isUnimplemented (inflection) {
-    return false
-  }
-
   /**
    * Each grammatical feature can be either a single or an array of Feature objects. The latter is the case when
    * an ending can belong to several grammatical features at once (i.e. belong to both 'masculine' and
@@ -38185,9 +38240,6 @@ class LanguageDataset {
     }
     partOfSpeech = partOfSpeech.value
 
-    // add the lemma to the inflection before setting inflection constraints
-    inflection.addFeature(new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"](alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.word, lemma.word, lemma.languageID))
-
     inflection.constraints = this.model.getInflectionConstraints(inflection)
 
     if (inflection.constraints.pronounClassRequired) {
@@ -38209,10 +38261,10 @@ class LanguageDataset {
       }
     }
 
+    // add the lemma to the inflection
+    inflection.addFeature(new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"](alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.word, lemma.word, lemma.languageID))
     // Check if this is an irregular word after a `word` feature is added
     inflection.constraints.irregularVerb = this.checkIrregularVerb(inflection)
-    inflection.constraints.unimplemented = this.isUnimplemented(inflection)
-    console.log(`Constraints are: `, inflection.constraints)
 
     if (!this.pos.get(partOfSpeech)) {
       // There is no source data for this part of speech
@@ -50061,11 +50113,6 @@ class LatinVerbIrregularView extends _views_lang_latin_verb_latin_verb_irregular
    * @return {boolean} - True if this view shall be displayed for an inflection, false otherwise.
    */
   static enabledForInflection (inflection) {
-    console.log(`Checking for an irregular verb`)
-    if (inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.conjugation] && inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.conjugation].value === alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].TYPE_IRREGULAR) {
-      console.log('This is an irregular word')
-    }
-
     return Boolean(
       inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech &&
       inflection.constraints &&
@@ -51970,8 +52017,20 @@ __webpack_require__.r(__webpack_exports__);
 
 class ViewSetFactory {
   static create (homonym, locale) {
-    let Constructor = this.getConstructor(homonym.languageID)
-    return new Constructor(homonym, locale)
+    let viewSet
+    try {
+      let Constructor = this.getConstructor(homonym.languageID)
+      viewSet = new Constructor(homonym, locale)
+    } catch (e) {
+      console.error(`Cannot build inflection tables: ${e}`)
+      // Create an empty ViewSet with no inflection data
+      viewSet = new _view_set_js__WEBPACK_IMPORTED_MODULE_1__["default"]()
+    }
+    return viewSet
+  }
+
+  static hasInflectionsEnabled (languageID) {
+    return alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["LanguageModelFactory"].getLanguageModel(languageID).canInflect()
   }
 
   static getConstructor (languageID) {
@@ -52018,43 +52077,35 @@ class ViewSet {
    * @param {Homonym} homonym - Data about inflections we need to build views for
    * @param {string} locale - A locale's IETF language tag (ex. `en-US`)
    */
-  constructor (homonym, locale) {
+  constructor (homonym = undefined, locale = 'en-US') {
     this.homonym = homonym
-    this.languageID = homonym.languageID
-    this.dataset = _lib_language_dataset_factory_js__WEBPACK_IMPORTED_MODULE_1__["default"].getDataset(homonym.languageID)
-
-    /**
-     * Whether inflections are enabled for the homonym's language
-     */
-    this.enabled = alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["LanguageModelFactory"].getLanguageModel(homonym.languageID).canInflect()
-    this.inflectionData = null
     this.locale = locale
     this.matchingViews = []
     this.matchingViewsMap = new Map()
+    this.inflectionData = null
+    this.enabled = false
 
-    if (this.enabled) {
-      // this.inflectionData = LanguageDatasetFactory.getInflectionData(this.homonym)
+    if (this.homonym) {
+      this.languageID = homonym.languageID
+      this.dataset = _lib_language_dataset_factory_js__WEBPACK_IMPORTED_MODULE_1__["default"].getDataset(homonym.languageID)
 
-      for (let lexeme of homonym.lexemes) {
-        for (let inflection of lexeme.inflections) {
-          // Inflections are grouped by part of speech
-          inflection = this.dataset.setInflectionData(inflection, lexeme.lemma)
+      /**
+       * Whether inflections are enabled for the homonym's language
+       */
+      this.enabled = alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["LanguageModelFactory"].getLanguageModel(homonym.languageID).canInflect()
+
+      if (this.enabled) {
+        for (let lexeme of homonym.lexemes) {
+          for (let inflection of lexeme.inflections) {
+            // Inflections are grouped by part of speech
+            inflection = this.dataset.setInflectionData(inflection, lexeme.lemma)
+          }
         }
+
+        this.matchingViews.push(...this.constructor.views.reduce(
+          (acc, view) => acc.concat(...view.getMatchingInstances(this.homonym, this.locale)), []))
+        this.updateMatchingViewsMap(this.matchingViews)
       }
-
-      // let view = new LatinNounView(homonym, locale)
-      // this.matchingViews = [view]
-      this.matchingViews.push(...this.constructor.views.reduce(
-        (acc, view) => acc.concat(...view.getMatchingInstances(this.homonym, this.locale)), []))
-
-      /* for (const lexeme of this.homonym.lexemes) {
-        // TODO: Can we handle combined data better?
-        for (const inflection of lexeme.inflections) {
-          matchingInstances.push(...this.constructor.views.reduce(
-            (acc, view) => acc.concat(...view.getMatchingInstances(inflection, this.inflectionData, this.messages)), []))
-        }
-      } */
-      this.updateMatchingViewsMap(this.matchingViews)
     }
   }
   /**
