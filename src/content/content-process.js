@@ -125,7 +125,11 @@ export default class ContentProcess {
     }
 
     if (this.ui) {
+      if (diff.has('panelStatus')) {
+        if (diff.panelStatus === TabScript.statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
+      }
       this.updatePanelOnActivation()
+
       if (diff.has('tab') && diff.tab) {
         this.ui.changeTab(diff.tab)
       }
@@ -218,10 +222,8 @@ export default class ContentProcess {
   }
 
   updatePanelOnActivation () {
-    if (this.isActive && this.ui.uiOptions.items.panelOnActivate.currentValue) {
+    if (this.isActive && this.ui.uiOptions.items.panelOnActivate.currentValue && !this.ui.panel.isOpen()) {
       this.ui.panel.open()
-    } else {
-      this.ui.panel.close()
     }
   }
 }
