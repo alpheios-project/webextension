@@ -12144,7 +12144,7 @@ var render = function() {
             "\n"
         )
       ])
-    : _vm.view.wideView
+    : _vm.view.wideView && !_vm.view.isEmpty
       ? _c("div", [
           _c(
             "h3",
@@ -12537,31 +12537,27 @@ var render = function() {
           ? _c(
               "div",
               [
-                !_vm.selectedView.isEmpty
-                  ? _c("main-table-wide-vue", {
-                      attrs: {
-                        view: _vm.selectedView,
-                        messages: _vm.messages,
-                        "no-suffix-matches-hidden":
-                          _vm.buttons.hideNoSuffixGroups.noSuffixMatchesHidden
-                      }
-                    })
-                  : _vm._e(),
+                _c("main-table-wide-vue", {
+                  attrs: {
+                    view: _vm.selectedView,
+                    messages: _vm.messages,
+                    "no-suffix-matches-hidden":
+                      _vm.buttons.hideNoSuffixGroups.noSuffixMatchesHidden
+                  }
+                }),
                 _vm._v(" "),
                 _vm._l(_vm.selectedView.linkedViews, function(linkedView) {
                   return _vm.selectedView.linkedViews
                     ? [
-                        !linkedView.isEmpty
-                          ? _c("main-table-wide-vue", {
-                              attrs: {
-                                view: linkedView,
-                                messages: _vm.messages,
-                                "no-suffix-matches-hidden":
-                                  _vm.buttons.hideNoSuffixGroups
-                                    .noSuffixMatchesHidden
-                              }
-                            })
-                          : _vm._e()
+                        _c("main-table-wide-vue", {
+                          attrs: {
+                            view: linkedView,
+                            messages: _vm.messages,
+                            "no-suffix-matches-hidden":
+                              _vm.buttons.hideNoSuffixGroups
+                                .noSuffixMatchesHidden
+                          }
+                        })
                       ]
                     : _vm._e()
                 }),
@@ -42556,7 +42552,7 @@ module.exports = "Index,Text\r\n1,Old forms.\r\n2,Alternate forms.\r\n3,\"The or
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "Lemma,PrincipalParts,Form,Voice,Mood,Tense,Number,Person,Footnote\r\nsum,esse_fui_futurus,futūrus,,,future,,,\r\nsum,esse_fui_futurus,-a,,,future,,,\r\nsum,esse_fui_futurus,-um,,,future,,,\r\nfero,ferre_tuli_latus,ferēns,active,,present,,,\r\nfero,ferre_tuli_latus,-entis,active,,present,,,\r\nfero,ferre_tuli_latus,latūrus,active,,future,,,\r\nfero,ferre_tuli_latus,ferundus,passive,,future,,,4\r\nfero,ferre_tuli_latus,\"lātus, -ta, -tum\",passive,,perfect,,,8\r\nvolo,velle_volui_-,volēns,,,present,,,\r\nvolo,velle_volui_-,-entis,,,present,,,\r\neo,ire_ivi(ii)_itus,iēns,,,present,,,\r\neo,ire_ivi(ii)_itus,euntis,,,present,,,\r\neo,ire_ivi(ii)_itus,itūrus,,,future,,,\r\neo,ire_ivi(ii)_itus,eundum,passive,,future,,,4\r\npossum,posse_potui_-,potēns,,,present,,,"
+module.exports = "Lemma,PrincipalParts,Form,Voice,Mood,Tense,Number,Person,Footnote\r\nsum,esse_fui_futurus,futūrus,active,,future,,,\r\nsum,esse_fui_futurus,-a,active,,future,,,\r\nsum,esse_fui_futurus,-um,active,,future,,,\r\nfero,ferre_tuli_latus,ferēns,active,,present,,,\r\nfero,ferre_tuli_latus,-entis,active,,present,,,\r\nfero,ferre_tuli_latus,latūrus,active,,future,,,\r\nfero,ferre_tuli_latus,ferundus,passive,,future,,,4\r\nfero,ferre_tuli_latus,\"lātus, -ta, -tum\",passive,,perfect,,,8\r\nvolo,velle_volui_-,volēns,active,,present,,,\r\nvolo,velle_volui_-,-entis,active,,present,,,\r\neo,ire_ivi(ii)_itus,iēns,active,,present,,,\r\neo,ire_ivi(ii)_itus,euntis,active,,present,,,\r\neo,ire_ivi(ii)_itus,itūrus,active,,future,,,\r\neo,ire_ivi(ii)_itus,eundum,passive,,future,,,4\r\npossum,posse_potui_-,potēns,active,,present,,,"
 
 /***/ }),
 
@@ -54296,16 +54292,17 @@ class GreekPronounView extends _greek_view_js__WEBPACK_IMPORTED_MODULE_3__["defa
   // Select inflections that have a 'Form' type (form based) and find those whose grammar class matches a grammar class of the view
 
   /**
-   * Determines wither this view can be used to display an inflection table of any data
+   * Determines whether this view can be used to display an inflection table of any data
    * within an `inflectionData` object.
    * By default a view can be used if a view and an inflection data piece have the same language,
    * the same part of speech, and the view is enabled for lexemes within an inflection data.
-   * @param homonym
+   * @param {symbol} languageID
+   * @param {Inflection[]} inflections
    * @param inflectionData
    * @return {boolean}
    */
-  static matchFilter (homonym, inflectionData) {
-    if (this.languageID === homonym.languageID && homonym.inflections.some(i => i[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech)) {
+  static matchFilter (languageID, inflections, inflectionData) {
+    if (this.languageID === languageID && inflections.some(i => i[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech)) {
       if (inflectionData.types.has(this.inflectionType)) {
         let inflections = inflectionData.types.get(this.inflectionType)
         let found = inflections.items.find(form => {
@@ -54325,7 +54322,7 @@ class GreekPronounView extends _greek_view_js__WEBPACK_IMPORTED_MODULE_3__["defa
 
   static getMatchingInstances (homonym, messages) {
     let inflectionData = this.getInflectionsData(homonym)
-    if (this.matchFilter(homonym, inflectionData)) {
+    if (this.matchFilter(homonym.languageID, homonym.inflections, inflectionData)) {
       return [new this(homonym, inflectionData, messages)]
     }
     return []
@@ -54466,13 +54463,14 @@ class GreekVerbParadigmView extends _greek_view_js__WEBPACK_IMPORTED_MODULE_3__[
    * within an `inflectionData` object.
    * By default a view can be used if a view and an inflection data piece have the same language,
    * the same part of speech, and the view is enabled for lexemes within an inflection data.
-   * @param homonym
+   * @param {symbol} languageID
+   * @param {Inflection[]} inflections
    * @param inflectionData
    * @return {boolean}
    */
-  static matchFilter (homonym, inflectionData) {
-    return (this.languageID === homonym.languageID &&
-      homonym.inflections.some(i => i[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech)) &&
+  static matchFilter (languageID, inflections, inflectionData) {
+    return (this.languageID === languageID &&
+      inflections.some(i => i[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech)) &&
       inflectionData.types.has(this.inflectionType)
 
     /* if (this.languageID === inflection.languageID && this.partsOfSpeech.includes(inflection[Feature.types.part].value)) {
@@ -54486,7 +54484,7 @@ class GreekVerbParadigmView extends _greek_view_js__WEBPACK_IMPORTED_MODULE_3__[
 
   static getMatchingInstances (homonym, messages) {
     let inflectionData = this.getInflectionsData(homonym)
-    if (this.matchFilter(homonym, inflectionData)) {
+    if (this.matchFilter(homonym.languageID, homonym.inflections, inflectionData)) {
       let paradigms = inflectionData.types.get(this.inflectionType).items
       return paradigms.map(paradigm => new this(paradigm, homonym, inflectionData, messages))
     }
@@ -55020,11 +55018,18 @@ class LatinVerbIrregularVoiceView extends _views_lang_latin_latin_view_js__WEBPA
 
   /**
    * Will always return false because this view serves as base class and is never created directly.
-   * @param {Homonym} homonym
+   * @param {symbol} languageID
+   * @param {Inflection[]} inflections
    * @return {boolean} Always returns false
    */
-  static matchFilter (homonym) {
+  static matchFilter (languageID, inflections) {
     return false
+  }
+
+  static enabledForInflection (inflection) {
+    return inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech &&
+      inflection.constraints &&
+      inflection.constraints.irregular
   }
 
   /**
@@ -55053,7 +55058,7 @@ class LatinVerbIrregularVoiceView extends _views_lang_latin_latin_view_js__WEBPA
         infl[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part] = infl[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].createFeature(Constructor.mainPartOfSpeech)
       }
       let inflectionData = this.constructor.dataset.createInflectionSet(Constructor.mainPartOfSpeech, inflections)
-      if (Constructor.isValidForView(inflectionData)) {
+      if (Constructor.matchFilter(this.homonym.languageID, inflections)) {
         let view = new Constructor(this.homonym, inflectionData, this.locale)
         for (let infl of inflections) {
           infl[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part] = infl[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].createFeature(this.constructor.mainPartOfSpeech)
@@ -55067,7 +55072,7 @@ class LatinVerbIrregularVoiceView extends _views_lang_latin_latin_view_js__WEBPA
 
   // See base view for description
   static getMatchingInstances (homonym, locale) {
-    if (this.matchFilter(homonym)) {
+    if (this.matchFilter(homonym.languageID, homonym.inflections)) {
       let inflectionData = this.getInflectionsData(homonym)
       let view = new this(homonym, inflectionData, locale)
       view.createLinkedViews()
@@ -55114,9 +55119,14 @@ class LatinVerbIrregularView extends _views_lang_latin_verb_irregular_latin_verb
 
     this.id = 'verbConjugationIrregular'
     this.name = 'verb-irregular'
-    this.title = 'Verb Conjugation (Irregular, Voice)'
+    this.title = 'Verb Conjugation (Irregular)'
 
-    this.createTable()
+    // Some irregular verbs can be unimplemented and shall be skipped
+    const inflections = this.homonym.inflections.filter(item => item.constraints.implemented)
+    this.isImplemented = inflections.length > 0
+    if (this.isImplemented) {
+      this.createTable()
+    }
   }
 
   static get viewID () {
@@ -55132,10 +55142,9 @@ class LatinVerbIrregularView extends _views_lang_latin_verb_irregular_latin_verb
     features.fullWidthRowTitles = [this.features.tenses]
   }
 
-  static matchFilter (homonym) {
+  static matchFilter (languageID, inflections) {
     return Boolean(
-      this.languageID === homonym.languageID &&
-      homonym.inflections.some(i => this.enabledForInflection(i))
+      this.languageID === languageID && inflections.some(i => this.enabledForInflection(i))
     )
   }
 
@@ -55203,7 +55212,7 @@ class LatinVerbIrregularVoiceView extends _views_lang_latin_verb_irregular_latin
 
     this.id = 'verbConjugationIrregularVoice'
     this.name = 'verb-irregular-voice'
-    this.title = 'Verb Conjugation (Irregular)'
+    this.title = 'Verb Conjugation (Irregular, with Voice Data)'
 
     // Some irregular verbs can be unimplemented and shall be skipped
     const inflections = this.homonym.inflections.filter(item => item.constraints.implemented)
@@ -55228,10 +55237,9 @@ class LatinVerbIrregularVoiceView extends _views_lang_latin_verb_irregular_latin
     features.fullWidthRowTitles = [this.features.tenses]
   }
 
-  static matchFilter (homonym) {
+  static matchFilter (languageID, inflections) {
     return Boolean(
-      this.languageID === homonym.languageID &&
-      homonym.inflections.some(i => this.enabledForInflection(i))
+      this.languageID === languageID && inflections.some(i => this.enabledForInflection(i))
     )
   }
 
@@ -55314,22 +55322,10 @@ class LatinVerbParticipleIrregularView extends _views_lang_latin_verb_irregular_
     features.fullWidthRowTitles = []
   }
 
-  static matchFilter (homonym) {
+  static matchFilter (languageID, inflections) {
     return Boolean(
-      this.languageID === homonym.languageID &&
-      homonym.inflections.some(i => i[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech) &&
-      this.enabledForLexemes(homonym.lexemes))
-  }
-
-  static enabledForLexemes (lexemes) {
-    for (let lexeme of lexemes) {
-      for (let inflection of lexeme.inflections) {
-        if (inflection.constraints && inflection.constraints.irregular) {
-          return true
-        }
-      }
-    }
-    return false
+      this.languageID === languageID &&
+      inflections.some(i => this.enabledForInflection(i)))
   }
 
   /**
@@ -55394,22 +55390,10 @@ class LatinVerbSupineIrregularView extends _views_lang_latin_verb_irregular_lati
     features.fullWidthRowTitles = []
   }
 
-  static matchFilter (homonym) {
+  static matchFilter (languageID, inflections) {
     return Boolean(
-      this.languageID === homonym.languageID &&
-      homonym.inflections.some(i => i[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech) &&
-      this.enabledForLexemes(homonym.lexemes))
-  }
-
-  static enabledForLexemes (lexemes) {
-    for (let lexeme of lexemes) {
-      for (let inflection of lexeme.inflections) {
-        if (inflection.constraints && inflection.constraints.irregular) {
-          return true
-        }
-      }
-    }
-    return false
+      this.languageID === languageID &&
+      inflections.some(i => this.enabledForInflection(i)))
   }
 
   /**
@@ -55615,26 +55599,20 @@ class LatinImperativeView extends _latin_verb_mood_view_js__WEBPACK_IMPORTED_MOD
    * within an `inflectionData` object.
    * By default a view can be used if a view and an inflection data piece have the same language,
    * the same part of speech, and the view is enabled for lexemes within an inflection data.
-   * @param homonym
+   * @param {symbol} languageID
+   * @param {Inflection[]} inflections
    * @return {boolean}
    */
-  static matchFilter (homonym) {
-    return (this.languageID === homonym.languageID &&
-      homonym.inflections.some(i => i[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech) &&
-      this.enabledForLexemes(homonym.lexemes))
+  static matchFilter (languageID, inflections) {
+    return Boolean(
+      this.languageID === languageID &&
+      inflections.some(i => this.enabledForInflection(i)))
   }
 
-  static enabledForLexemes (lexemes) {
-    // default is true
-    for (let lexeme of lexemes) {
-      for (let inflection of lexeme.inflections) {
-        if (inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.mood] &&
-          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.mood].values.includes(alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].MOOD_IMPERATIVE)) {
-          return true
-        }
-      }
-    }
-    return false
+  static enabledForInflection (inflection) {
+    return inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech &&
+      inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.mood] &&
+      inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.mood].values.includes(alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].MOOD_IMPERATIVE)
   }
 
   static morphemeCellFilter (suffix) {
@@ -55697,26 +55675,20 @@ class LatinInfinitiveView extends _latin_verb_mood_view_js__WEBPACK_IMPORTED_MOD
    * within an `inflectionData` object.
    * By default a view can be used if a view and an inflection data piece have the same language,
    * the same part of speech, and the view is enabled for lexemes within an inflection data.
-   * @param homonym
+   * @param {symbol} languageID
+   * @param {Inflection[]} inflections
    * @return {boolean}
    */
-  static matchFilter (homonym) {
-    return (this.languageID === homonym.languageID &&
-      homonym.inflections.some(i => i[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech) &&
-      this.enabledForLexemes(homonym.lexemes))
+  static matchFilter (languageID, inflections) {
+    return Boolean(
+      this.languageID === languageID &&
+      inflections.some(i => this.enabledForInflection(i)))
   }
 
-  static enabledForLexemes (lexemes) {
-    // default is true
-    for (let lexeme of lexemes) {
-      for (let inflection of lexeme.inflections) {
-        if (inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.mood] &&
-          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.mood].values.includes(alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].MOOD_INFINITIVE)) {
-          return true
-        }
-      }
-    }
-    return false
+  static enabledForInflection (inflection) {
+    return inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech &&
+      inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.mood] &&
+      inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.mood].values.includes(alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].MOOD_INFINITIVE)
   }
 
   static morphemeCellFilter (suffix) {
@@ -58105,13 +58077,14 @@ class View {
    * within an `inflectionData` object.
    * By default a view can be used if a view has the same language as homonym
    * and homonym's inflections has at least one with a part of speech that matches view
-   * @param homonym
+   * @param {symbol} languageID - A language ID of an inflection data
+   * @param {Inflection[]} inflections - An array of inflections
    * @return {boolean}
    */
-  static matchFilter (homonym) {
+  static matchFilter (languageID, inflections) {
     // return (this.languageID === inflection.languageID && this.partsOfSpeech.includes(inflection[Feature.types.part].value))
     // Disable multiple parts of speech for now
-    return (this.languageID === homonym.languageID && homonym.inflections.some(i => i[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech))
+    return (this.languageID === languageID && inflections.some(i => i[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.mainPartOfSpeech))
   }
 
   /**
@@ -58124,7 +58097,7 @@ class View {
    * @return {View[] | []} Array of view instances or an empty array if view instance does not match inflection data.
    */
   static getMatchingInstances (homonym, locale) {
-    if (this.matchFilter(homonym)) {
+    if (this.matchFilter(homonym.languageID, homonym.inflections)) {
       let inflectionData = this.getInflectionsData(homonym)
       return [new this(homonym, inflectionData, locale)]
     }
@@ -58132,11 +58105,11 @@ class View {
   }
 
   /**
-   * test to see if a view is enabled for a specific set of lexemes
-   * @param {Lexeme[]} lexemes
+   * test to see if a view is enabled for a specific inflection
+   * @param {Inflection[]} inflection
    * @return {boolean} true if the view should be shown false if not
    */
-  static enabledForLexemes (lexemes) {
+  static enabledForInflection (inflection) {
     // default returns true
     return true
   }
@@ -58300,15 +58273,6 @@ class View {
     let inflectionData = this.getInflectionsData(homonym)
     // TODO: Find the best way to pass messages (the last argument)
     return new this(homonym, inflectionData, messages).render()
-  }
-
-  /**
-   * Checks whether an inflection data can be used to construct a view.
-   * @param {InflectionSet} inflectionData - A set of inflection data.
-   * @return {boolean} - True if data can be used for a view, false otherwise.
-   */
-  static isValidForView (inflectionData) {
-    return (inflectionData.types.has(this.inflectionType) && inflectionData.types.get(this.inflectionType).items.length > 0)
   }
 }
 
