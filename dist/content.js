@@ -8512,6 +8512,10 @@ __webpack_require__.r(__webpack_exports__);
       type: Array,
       required: false,
       default: () => [""]
+    },
+    messages: {
+      type: Object,
+      required: false
     }
   },
   methods: {
@@ -8529,6 +8533,10 @@ __webpack_require__.r(__webpack_exports__);
       let decorated = typeof(data[type]) === 'string' ? data[type] : data[type].value
       if (this.decorators.includes('abbreviate') && data[type].value) {
         decorated = data[type].toLocaleStringAbbr()
+      }
+      if (this.decorators.includes('link') && data[type].value && data[type].value.match(/^http/)) {
+        let linkText = this.messages ? this.messages[`INFL_ATTRIBUTE_LINK_TEXT_TYPE`] : type
+        decorated = `<a class="alpheios-morph__linkedattr" target="_blank" href="${data[type].value}">${linkText}</a>`
       }
       if (this.decorators.includes('appendtype')) {
         decorated = `${decorated} ${type}`
@@ -9544,7 +9552,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
 
 
 
@@ -9629,7 +9636,6 @@ __webpack_require__.r(__webpack_exports__);
       }
       return this.options.items.lookupLanguage
     }
-
   },
   watch: {
     clearLookupText: function(value) {
@@ -9637,6 +9643,10 @@ __webpack_require__.r(__webpack_exports__);
         this.lookuptext = ''
         this.showLanguageSettings = this.overrideLanguage
       }
+    },
+    'uiController.options.items.lookupLangOverride.currentValue': function(value) {
+      this.overrideLanguage = value
+      this.updateUIbyOverrideLanguage()
     }
   },
   methods: {
@@ -9686,8 +9696,7 @@ __webpack_require__.r(__webpack_exports__);
       return defaultValue
     },
 
-    checkboxClick: function () {
-      this.overrideLanguage = !this.overrideLanguage
+    updateUIbyOverrideLanguage: function () {
       if (this.overrideLanguage !== this.showLanguageSettings) {
         this.switchLookupSettings()
       }
@@ -9696,6 +9705,13 @@ __webpack_require__.r(__webpack_exports__);
         this.currentLanguage = this.options.items.preferredLanguage.currentTextValue()
         this.options.items.lookupLanguage.setTextValue(this.currentLanguage)
       }
+    },
+
+    checkboxClick: function () {
+      this.overrideLanguage = !this.overrideLanguage
+      this.uiController.options.items.lookupLangOverride.setValue(this.overrideLanguage)
+
+      this.updateUIbyOverrideLanguage()
     }
   }
 });
@@ -11794,22 +11810,16 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _vm.data[_vm.type]
-    ? _c(
-        "span",
-        {
-          class: _vm.attributeClass(_vm.type),
-          attrs: {
-            "data-feature": _vm.type,
-            "data-grouplevel": _vm.grouplevel
-          },
-          on: {
-            click: function($event) {
-              _vm.sendFeature(_vm.data[_vm.type], ["alpheios-text__medium"])
-            }
+    ? _c("span", {
+        class: _vm.attributeClass(_vm.type),
+        attrs: { "data-feature": _vm.type, "data-grouplevel": _vm.grouplevel },
+        domProps: { innerHTML: _vm._s(_vm.decorate(_vm.data, _vm.type)) },
+        on: {
+          click: function($event) {
+            _vm.sendFeature(_vm.data[_vm.type], ["alpheios-text__medium"])
           }
-        },
-        [_vm._v(_vm._s(_vm.decorate(_vm.data, _vm.type)))]
-      )
+        }
+      })
     : _vm._e()
 }
 var staticRenderFns = []
@@ -12884,16 +12894,6 @@ var render = function() {
                         "\n    "
                     )
                   ]
-                ),
-                _vm._v(" "),
-                _c(
-                  "a",
-                  {
-                    staticClass:
-                      "alpheios-lookup__settings-link alpheios-text__smaller uk-link",
-                    on: { click: _vm.switchLookupSettings }
-                  },
-                  [_vm._v(_vm._s(_vm.ln10Messages("LABEL_LOOKUP_SETTINGS")))]
                 )
               ])
             ]
@@ -12947,6 +12947,7 @@ var render = function() {
               _c(
                 "label",
                 {
+                  staticClass: "alpheios-override-lang__label",
                   attrs: { for: "checkbox" },
                   on: { click: _vm.checkboxClick }
                 },
@@ -13114,7 +13115,7 @@ var render = function() {
                               data: lemma.features,
                               type: _vm.types.source,
                               linkedfeatures: _vm.linkedfeatures,
-                              decorators: ["brackets"]
+                              decorators: ["link", "brackets"]
                             },
                             on: { sendfeature: _vm.sendFeature }
                           })
@@ -27602,6 +27603,7 @@ class UIController {
           document.body.dispatchEvent(new Event('Alpheios_Options_Loaded'))
 
           const currentLanguageID = alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["LanguageModelFactory"].getLanguageIdFromCode(this.options.items.preferredLanguage.currentValue)
+          this.options.items.lookupLangOverride.setValue(false)
           this.updateLanguage(currentLanguageID)
           this.updateVerboseMode()
         })
@@ -31114,10 +31116,10 @@ module.exports = {"COOKIE_TEST_MESSAGE":{"message":"This is a test message about
 /*!*************************************!*\
   !*** ./locales/en-us/messages.json ***!
   \*************************************/
-/*! exports provided: COOKIE_TEST_MESSAGE, NUM_LINES_TEST_MESSAGE, TOOLTIP_MOVE_PANEL_LEFT, TOOLTIP_MOVE_PANEL_RIGHT, TOOLTIP_CLOSE_PANEL, TOOLTIP_HELP, TOOLTIP_INFLECT, TOOLTIP_DEFINITIONS, TOOLTIP_GRAMMAR, TOOLTIP_TREEBANK, TOOLTIP_OPTIONS, TOOLTIP_STATUS, TOOLTIP_SHOW_INFLECTIONS, TOOLTIP_SHOW_DEFINITIONS, TOOLTIP_SHOW_OPTIONS, PLACEHOLDER_DEFINITIONS, PLACEHOLDER_INFLECT, PLACEHOLDER_INFLECT_UNAVAILABLE, LABEL_INFLECT_SELECT_POFS, LABEL_INFLECT_SHOWFULL, LABEL_INFLECT_COLLAPSE, TOOLTIP_INFLECT_SHOWFULL, TOOLTIP_INFLECT_COLLAPSE, LABEL_INFLECT_HIDEEMPTY, LABEL_INFLECT_SHOWEMPTY, TOOLTIP_INFLECT_HIDEEMPTY, TOOLTIP_INFLECT_SHOWEMPTY, INFLECT_MSG_TABLE_NOT_IMPLEMENTED, TEXT_INFO_GETTINGSTARTED, TEXT_INFO_ACTIVATE, TEXT_INFO_CLICK, TEXT_INFO_LANGDETECT, LABEL_INFO_CURRENTLANGUAGE, TEXT_INFO_SETTINGS, TEXT_INFO_ARROW, TEXT_INFO_REOPEN, TEXT_INFO_DEACTIVATE, TOOLTIP_POPUP_CLOSE, LABEL_POPUP_TREEBANK, LABEL_POPUP_INFLECT, LABEL_POPUP_OPTIONS, LABEL_POPUP_DEFINE, PLACEHOLDER_POPUP_DATA, PLACEHOLDER_NO_LANGUAGE_POPUP_DATA, PLACEHOLDER_NO_DATA_POPUP_DATA, LABEL_POPUP_CREDITS, LABEL_POPUP_SHOWCREDITS, LABEL_POPUP_HIDECREDITS, TEXT_NOTICE_CHANGE_LANGUAGE, TEXT_NOTICE_LANGUAGE_UNKNOWN, TEXT_NOTICE_GRAMMAR_NOTFOUND, TEXT_NOTICE_MORPHDATA_READY, TEXT_NOTICE_MORPHDATA_NOTFOUND, TEXT_NOTICE_INFLDATA_READY, TEXT_NOTICE_DEFSDATA_READY, TEXT_NOTICE_DEFSDATA_NOTFOUND, TEXT_NOTICE_LEXQUERY_COMPLETE, TEXT_NOTICE_GRAMMAR_READY, TEXT_NOTICE_GRAMMAR_COMPLETE, TEXT_NOTICE_RESQUERY_COMPLETE, LABEL_BROWSERACTION_DEACTIVATE, LABEL_BROWSERACTION_ACTIVATE, LABEL_BROWSERACTION_DISABLED, LABEL_CTXTMENU_DEACTIVATE, LABEL_CTXTMENU_ACTIVATE, LABEL_CTXTMENU_DISABLED, LABEL_CTXTMENU_OPENPANEL, LABEL_CTXTMENU_INFO, LABEL_CTXTMENU_SENDEXP, LABEL_LOOKUP_BUTTON, TOOLTIP_LOOKUP_BUTTON, LABEL_LOOKUP_SETTINGS, LABEL_RESKIN_SETTINGS, TOOLTIP_RESKIN_SMALLFONT, TOOLTIP_RESKIN_MEDIUMFONT, TOOLTIP_RESKIN_LARGEFONT, TOOLTIP_RESKIN_LIGHTBG, TOOLTIP_RESKIN_DARKBG, INFLECTIONS_CREDITS_TITLE, INFLECTIONS_PARADIGMS_EXPLANATORY_HINT, INFLECTIONS_MAIN_TABLE_LINK_TEXT, default */
+/*! exports provided: COOKIE_TEST_MESSAGE, NUM_LINES_TEST_MESSAGE, TOOLTIP_MOVE_PANEL_LEFT, TOOLTIP_MOVE_PANEL_RIGHT, TOOLTIP_CLOSE_PANEL, TOOLTIP_HELP, TOOLTIP_INFLECT, TOOLTIP_DEFINITIONS, TOOLTIP_GRAMMAR, TOOLTIP_TREEBANK, TOOLTIP_OPTIONS, TOOLTIP_STATUS, TOOLTIP_SHOW_INFLECTIONS, TOOLTIP_SHOW_DEFINITIONS, TOOLTIP_SHOW_OPTIONS, PLACEHOLDER_DEFINITIONS, PLACEHOLDER_INFLECT, PLACEHOLDER_INFLECT_UNAVAILABLE, LABEL_INFLECT_SELECT_POFS, LABEL_INFLECT_SHOWFULL, LABEL_INFLECT_COLLAPSE, TOOLTIP_INFLECT_SHOWFULL, TOOLTIP_INFLECT_COLLAPSE, LABEL_INFLECT_HIDEEMPTY, LABEL_INFLECT_SHOWEMPTY, TOOLTIP_INFLECT_HIDEEMPTY, TOOLTIP_INFLECT_SHOWEMPTY, INFLECT_MSG_TABLE_NOT_IMPLEMENTED, TEXT_INFO_GETTINGSTARTED, TEXT_INFO_ACTIVATE, TEXT_INFO_CLICK, TEXT_INFO_LANGDETECT, LABEL_INFO_CURRENTLANGUAGE, TEXT_INFO_SETTINGS, TEXT_INFO_ARROW, TEXT_INFO_REOPEN, TEXT_INFO_DEACTIVATE, TOOLTIP_POPUP_CLOSE, LABEL_POPUP_TREEBANK, LABEL_POPUP_INFLECT, LABEL_POPUP_OPTIONS, LABEL_POPUP_DEFINE, PLACEHOLDER_POPUP_DATA, PLACEHOLDER_NO_LANGUAGE_POPUP_DATA, PLACEHOLDER_NO_DATA_POPUP_DATA, LABEL_POPUP_CREDITS, LABEL_POPUP_SHOWCREDITS, LABEL_POPUP_HIDECREDITS, TEXT_NOTICE_CHANGE_LANGUAGE, TEXT_NOTICE_LANGUAGE_UNKNOWN, TEXT_NOTICE_GRAMMAR_NOTFOUND, TEXT_NOTICE_MORPHDATA_READY, TEXT_NOTICE_MORPHDATA_NOTFOUND, TEXT_NOTICE_INFLDATA_READY, TEXT_NOTICE_DEFSDATA_READY, TEXT_NOTICE_DEFSDATA_NOTFOUND, TEXT_NOTICE_LEXQUERY_COMPLETE, TEXT_NOTICE_GRAMMAR_READY, TEXT_NOTICE_GRAMMAR_COMPLETE, TEXT_NOTICE_RESQUERY_COMPLETE, LABEL_BROWSERACTION_DEACTIVATE, LABEL_BROWSERACTION_ACTIVATE, LABEL_BROWSERACTION_DISABLED, LABEL_CTXTMENU_DEACTIVATE, LABEL_CTXTMENU_ACTIVATE, LABEL_CTXTMENU_DISABLED, LABEL_CTXTMENU_OPENPANEL, LABEL_CTXTMENU_INFO, LABEL_CTXTMENU_SENDEXP, LABEL_LOOKUP_BUTTON, TOOLTIP_LOOKUP_BUTTON, LABEL_LOOKUP_SETTINGS, LABEL_RESKIN_SETTINGS, TOOLTIP_RESKIN_SMALLFONT, TOOLTIP_RESKIN_MEDIUMFONT, TOOLTIP_RESKIN_LARGEFONT, TOOLTIP_RESKIN_LIGHTBG, TOOLTIP_RESKIN_DARKBG, INFLECTIONS_CREDITS_TITLE, INFLECTIONS_PARADIGMS_EXPLANATORY_HINT, INFLECTIONS_MAIN_TABLE_LINK_TEXT, INFL_ATTRIBUTE_LINK_TEXT_SOURCE, default */
 /***/ (function(module) {
 
-module.exports = {"COOKIE_TEST_MESSAGE":{"message":"This is a test message about a cookie.","description":"A test message that is shown in a panel","component":"Panel"},"NUM_LINES_TEST_MESSAGE":{"message":"There {numLines, plural, =0 {are no lines} =1 {is one line} other {are # lines}}.","description":"A test message that is shown in a panel","component":"Panel","params":["numLines"]},"TOOLTIP_MOVE_PANEL_LEFT":{"message":"Move Panel to Left","description":"tooltip for moving the panel to the left","component":"Panel"},"TOOLTIP_MOVE_PANEL_RIGHT":{"message":"Move Panel to Right","description":"tooltip for moving the panel to the right","component":"Panel"},"TOOLTIP_CLOSE_PANEL":{"message":"Close Panel","description":"tooltip for closing the panel","component":"Panel"},"TOOLTIP_HELP":{"message":"Help","description":"tooltip for help tab","component":"Panel"},"TOOLTIP_INFLECT":{"message":"Inflection Tables","description":"tooltip for inflections tab","component":"Panel"},"TOOLTIP_DEFINITIONS":{"message":"Definitions","description":"tooltip for definitions tab","component":"Panel"},"TOOLTIP_GRAMMAR":{"message":"Grammar","description":"tooltip for grammar tab","component":"Panel"},"TOOLTIP_TREEBANK":{"message":"Diagram","description":"tooltip for treebank tab","component":"Panel"},"TOOLTIP_OPTIONS":{"message":"Options","description":"tooltip for options tab","component":"Panel"},"TOOLTIP_STATUS":{"message":"Status Messages","description":"tooltip for status tab","component":"Panel"},"TOOLTIP_SHOW_INFLECTIONS":{"message":"Show inflections","description":"tooltip for button inflections","component":"Popup"},"TOOLTIP_SHOW_DEFINITIONS":{"message":"Show definitions","description":"tooltip for button definitions","component":"Popup"},"TOOLTIP_SHOW_OPTIONS":{"message":"Show options","description":"tooltip for button options","component":"Popup"},"PLACEHOLDER_DEFINITIONS":{"message":"Lookup a word to show definitions...","description":"placeholder for definitions panel","component":"Panel"},"PLACEHOLDER_INFLECT":{"message":"Lookup a word to show inflections...","description":"placeholder for inflections panel","component":"Panel"},"PLACEHOLDER_INFLECT_UNAVAILABLE":{"message":"Inflection data is unavailable","description":"placeholder for inflections panel if unavailable","component":"Panel"},"LABEL_INFLECT_SELECT_POFS":{"message":"Part of speech:","description":"label for part of speech selector on inflections panel","component":"Panel"},"LABEL_INFLECT_SHOWFULL":{"message":"Full Table","description":"label for show full table button on inflections panel","component":"Panel"},"LABEL_INFLECT_COLLAPSE":{"message":"Collapse","description":"label for collapse table button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_SHOWFULL":{"message":"Show full Table","description":"tooltip for show full table button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_COLLAPSE":{"message":"Show collapsed table","description":"tooltip for collapse table button on inflections panel","component":"Panel"},"LABEL_INFLECT_HIDEEMPTY":{"message":"Hide empty columns","description":"label for hide empty columns button on inflections panel","component":"Panel"},"LABEL_INFLECT_SHOWEMPTY":{"message":"Show empty columns","description":"label for show empty columns button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_HIDEEMPTY":{"message":"Show table without empty columns","description":"tooltip for hide empty columns button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_SHOWEMPTY":{"message":"Show table with empty columns","description":"tooltip for show empty columns button on inflections panel","component":"Panel"},"INFLECT_MSG_TABLE_NOT_IMPLEMENTED":{"message":"This table has not been implemented yet","description":"tooltip to show instead of inflection table if the latter is not implemented","component":"Panel"},"TEXT_INFO_GETTINGSTARTED":{"message":"Getting Started","description":"info text","component":"Panel"},"TEXT_INFO_ACTIVATE":{"message":"Activate on a page with Latin, Ancient Greek, Arabic or Persian text.","description":"info text","component":"Panel"},"TEXT_INFO_CLICK":{"message":"Double-click on a word to retrieve morphology and short definitions.","description":"info text","component":"Panel"},"TEXT_INFO_LANGDETECT":{"message":"Alpheios will try to detect the language of the word from the page markup. If it cannot it will use the default language.","description":"info text","component":"Panel"},"LABEL_INFO_CURRENTLANGUAGE":{"message":"Current language:","description":"label for current language in info text","component":"Panel"},"TEXT_INFO_SETTINGS":{"message":"Click the Options wheel to change the default language, default dictionaries or to disable the popup (set UI Type to 'panel').","description":"info text","component":"Panel"},"TEXT_INFO_ARROW":{"message":"Use the arrow at the top of this panel to move it from the right to left of your browser window.","description":"info text","component":"Panel"},"TEXT_INFO_REOPEN":{"message":"You can reopen this panel at any time by selecting 'Info' from the Alpheios Reading Tools option in your browser's context menu.","description":"info text","component":"Panel"},"TEXT_INFO_DEACTIVATE":{"message":"Deactivate Alpheios by clicking the toolbar icon or choosing 'Deactivate' from the Alpheios Reading Tools option in your browser's context menu.","description":"info text","component":"Panel"},"TOOLTIP_POPUP_CLOSE":{"message":"Close Popup","description":"tooltip for closing the popup","component":"Popup"},"LABEL_POPUP_TREEBANK":{"message":"Diagram","description":"label for treebank button on popup","component":"Popup"},"LABEL_POPUP_INFLECT":{"message":"Inflect","description":"label for inflect button on popup","component":"Popup"},"LABEL_POPUP_OPTIONS":{"message":"Options","description":"label for options button on popup","component":"Popup"},"LABEL_POPUP_DEFINE":{"message":"Define","description":"label for define button on popup","component":"Popup"},"PLACEHOLDER_POPUP_DATA":{"message":"Lexical data is loading","description":"placeholder text for popup data","component":"Popup"},"PLACEHOLDER_NO_LANGUAGE_POPUP_DATA":{"message":"Lexical data couldn't be populated because page language is not defined","description":"placeholder text for popup data when language is not defined","component":"Popup"},"PLACEHOLDER_NO_DATA_POPUP_DATA":{"message":"Lexical data couldn't be populated  for unknown reason","description":"placeholder text for popup data","component":"Popup"},"LABEL_POPUP_CREDITS":{"message":"Credits:","description":"label for credits on popup","component":"Popup"},"LABEL_POPUP_SHOWCREDITS":{"message":"Credits","description":"label for show credits link on popup","component":"Popup"},"LABEL_POPUP_HIDECREDITS":{"message":"Hide Credits","description":"label for hide credits link on popup","component":"Popup"},"TEXT_NOTICE_CHANGE_LANGUAGE":{"message":"Language: {languageName}<br>Wrong? Change to:","description":"language notification","component":"UI","params":["languageName"]},"TEXT_NOTICE_LANGUAGE_UNKNOWN":{"message":"unknown","description":"unknown language notification","component":"UI"},"TEXT_NOTICE_GRAMMAR_NOTFOUND":{"message":"The requested grammar resource is not currently available","description":"grammar not found notification","component":"UI"},"TEXT_NOTICE_MORPHDATA_READY":{"message":"Morphological analyzer data is ready","description":"morph data ready notice","component":"UI"},"TEXT_NOTICE_MORPHDATA_NOTFOUND":{"message":"Morphological data not found. Definition queries pending.","description":"morph data not found notice","component":"UI"},"TEXT_NOTICE_INFLDATA_READY":{"message":"Inflection data is ready","description":"inflection data ready notice","component":"UI"},"TEXT_NOTICE_DEFSDATA_READY":{"message":"{requestType} request is completed successfully. Lemma: \"{lemma}\"","description":"definition request success notice","component":"UI","params":["requestType","lemma"]},"TEXT_NOTICE_DEFSDATA_NOTFOUND":{"message":"{requestType} request failed. Lemma not found for: \"{word}\"","description":"definition request success notice","component":"UI","params":["requestType","word"]},"TEXT_NOTICE_LEXQUERY_COMPLETE":{"message":"All lexical queries complete.","description":"lexical queries complete notice","component":"UI"},"TEXT_NOTICE_GRAMMAR_READY":{"message":"Grammar resource retrieved","description":"grammar retrieved notice","component":"UI"},"TEXT_NOTICE_GRAMMAR_COMPLETE":{"message":"All grammar resource data retrieved","description":"grammar retrieved notice","component":"UI"},"TEXT_NOTICE_RESQUERY_COMPLETE":{"message":"All resource data retrieved","description":"resource query complete notice","component":"UI"},"LABEL_BROWSERACTION_DEACTIVATE":{"message":"Deactivate Alpheios","description":"Deactivate browser action title","component":"UI"},"LABEL_BROWSERACTION_ACTIVATE":{"message":"Activate Alpheios","description":"Activate browser action title","component":"UI"},"LABEL_BROWSERACTION_DISABLED":{"message":"(Alpheios Extension Disabled For Page)","description":"Disabled browser action title","component":"UI"},"LABEL_CTXTMENU_DEACTIVATE":{"message":"Deactivate","description":"Deactivate context menu label","component":"UI"},"LABEL_CTXTMENU_ACTIVATE":{"message":"Activate","description":"Activate context menu label","component":"UI"},"LABEL_CTXTMENU_DISABLED":{"message":"(Disabled)","description":"Disabled context menu label","component":"UI"},"LABEL_CTXTMENU_OPENPANEL":{"message":"Open Panel","description":"Open Panel context menu label","component":"UI"},"LABEL_CTXTMENU_INFO":{"message":"Info","description":"Info context menu label","component":"UI"},"LABEL_CTXTMENU_SENDEXP":{"message":"Send Experiences to remote server","description":"send exp data context menu label","component":"UI"},"LABEL_LOOKUP_BUTTON":{"message":"Lookup","description":"lookup button in lookup.vue","component":"Popup"},"TOOLTIP_LOOKUP_BUTTON":{"message":"Lookup word","description":"Tooltip for the lookup button in lookup.vue","component":"Lookup"},"LABEL_LOOKUP_SETTINGS":{"message":"Using Language...","description":"Settings link-label in the lookup block in lookup.vue","component":"Lookup"},"LABEL_RESKIN_SETTINGS":{"message":"Reskin options","description":"Label for Reskin component","component":"ReskinFontColor"},"TOOLTIP_RESKIN_SMALLFONT":{"message":"Small font","description":"Tooltip for small font icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_MEDIUMFONT":{"message":"Medium font","description":"Tooltip for medium font icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_LARGEFONT":{"message":"Large font","description":"Tooltip for large font icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_LIGHTBG":{"message":"Light background","description":"Tooltip for light colors schema icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_DARKBG":{"message":"Dark background","description":"Tooltip for dark colors schema icon","component":"ReskinFontColor"},"INFLECTIONS_CREDITS_TITLE":{"message":"Credits","description":"Title of credits section on inflection tables panel","component":"InflectionTables"},"INFLECTIONS_PARADIGMS_EXPLANATORY_HINT":{"message":"The following table(s) show conjugation patterns for verbs which are similar to those of <span>{word}</span>","description":"A hint that indicates that the current table is representative pattern for verbs similar to the one chosen","component":"InflectionTables","params":["word"]},"INFLECTIONS_MAIN_TABLE_LINK_TEXT":{"message":"Back to main","description":"A link pointing to a main inflection table","component":"InflectionTables"}};
+module.exports = {"COOKIE_TEST_MESSAGE":{"message":"This is a test message about a cookie.","description":"A test message that is shown in a panel","component":"Panel"},"NUM_LINES_TEST_MESSAGE":{"message":"There {numLines, plural, =0 {are no lines} =1 {is one line} other {are # lines}}.","description":"A test message that is shown in a panel","component":"Panel","params":["numLines"]},"TOOLTIP_MOVE_PANEL_LEFT":{"message":"Move Panel to Left","description":"tooltip for moving the panel to the left","component":"Panel"},"TOOLTIP_MOVE_PANEL_RIGHT":{"message":"Move Panel to Right","description":"tooltip for moving the panel to the right","component":"Panel"},"TOOLTIP_CLOSE_PANEL":{"message":"Close Panel","description":"tooltip for closing the panel","component":"Panel"},"TOOLTIP_HELP":{"message":"Help","description":"tooltip for help tab","component":"Panel"},"TOOLTIP_INFLECT":{"message":"Inflection Tables","description":"tooltip for inflections tab","component":"Panel"},"TOOLTIP_DEFINITIONS":{"message":"Definitions","description":"tooltip for definitions tab","component":"Panel"},"TOOLTIP_GRAMMAR":{"message":"Grammar","description":"tooltip for grammar tab","component":"Panel"},"TOOLTIP_TREEBANK":{"message":"Diagram","description":"tooltip for treebank tab","component":"Panel"},"TOOLTIP_OPTIONS":{"message":"Options","description":"tooltip for options tab","component":"Panel"},"TOOLTIP_STATUS":{"message":"Status Messages","description":"tooltip for status tab","component":"Panel"},"TOOLTIP_SHOW_INFLECTIONS":{"message":"Show inflections","description":"tooltip for button inflections","component":"Popup"},"TOOLTIP_SHOW_DEFINITIONS":{"message":"Show definitions","description":"tooltip for button definitions","component":"Popup"},"TOOLTIP_SHOW_OPTIONS":{"message":"Show options","description":"tooltip for button options","component":"Popup"},"PLACEHOLDER_DEFINITIONS":{"message":"Lookup a word to show definitions...","description":"placeholder for definitions panel","component":"Panel"},"PLACEHOLDER_INFLECT":{"message":"Lookup a word to show inflections...","description":"placeholder for inflections panel","component":"Panel"},"PLACEHOLDER_INFLECT_UNAVAILABLE":{"message":"Inflection data is unavailable","description":"placeholder for inflections panel if unavailable","component":"Panel"},"LABEL_INFLECT_SELECT_POFS":{"message":"Part of speech:","description":"label for part of speech selector on inflections panel","component":"Panel"},"LABEL_INFLECT_SHOWFULL":{"message":"Full Table","description":"label for show full table button on inflections panel","component":"Panel"},"LABEL_INFLECT_COLLAPSE":{"message":"Collapse","description":"label for collapse table button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_SHOWFULL":{"message":"Show full Table","description":"tooltip for show full table button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_COLLAPSE":{"message":"Show collapsed table","description":"tooltip for collapse table button on inflections panel","component":"Panel"},"LABEL_INFLECT_HIDEEMPTY":{"message":"Hide empty columns","description":"label for hide empty columns button on inflections panel","component":"Panel"},"LABEL_INFLECT_SHOWEMPTY":{"message":"Show empty columns","description":"label for show empty columns button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_HIDEEMPTY":{"message":"Show table without empty columns","description":"tooltip for hide empty columns button on inflections panel","component":"Panel"},"TOOLTIP_INFLECT_SHOWEMPTY":{"message":"Show table with empty columns","description":"tooltip for show empty columns button on inflections panel","component":"Panel"},"INFLECT_MSG_TABLE_NOT_IMPLEMENTED":{"message":"This table has not been implemented yet","description":"tooltip to show instead of inflection table if the latter is not implemented","component":"Panel"},"TEXT_INFO_GETTINGSTARTED":{"message":"Getting Started","description":"info text","component":"Panel"},"TEXT_INFO_ACTIVATE":{"message":"Activate on a page with Latin, Ancient Greek, Arabic or Persian text.","description":"info text","component":"Panel"},"TEXT_INFO_CLICK":{"message":"Double-click on a word to retrieve morphology and short definitions.","description":"info text","component":"Panel"},"TEXT_INFO_LANGDETECT":{"message":"Alpheios will try to detect the language of the word from the page markup. If it cannot it will use the default language.","description":"info text","component":"Panel"},"LABEL_INFO_CURRENTLANGUAGE":{"message":"Current language:","description":"label for current language in info text","component":"Panel"},"TEXT_INFO_SETTINGS":{"message":"Click the Options wheel to change the default language, default dictionaries or to disable the popup (set UI Type to 'panel').","description":"info text","component":"Panel"},"TEXT_INFO_ARROW":{"message":"Use the arrow at the top of this panel to move it from the right to left of your browser window.","description":"info text","component":"Panel"},"TEXT_INFO_REOPEN":{"message":"You can reopen this panel at any time by selecting 'Info' from the Alpheios Reading Tools option in your browser's context menu.","description":"info text","component":"Panel"},"TEXT_INFO_DEACTIVATE":{"message":"Deactivate Alpheios by clicking the toolbar icon or choosing 'Deactivate' from the Alpheios Reading Tools option in your browser's context menu.","description":"info text","component":"Panel"},"TOOLTIP_POPUP_CLOSE":{"message":"Close Popup","description":"tooltip for closing the popup","component":"Popup"},"LABEL_POPUP_TREEBANK":{"message":"Diagram","description":"label for treebank button on popup","component":"Popup"},"LABEL_POPUP_INFLECT":{"message":"Inflect","description":"label for inflect button on popup","component":"Popup"},"LABEL_POPUP_OPTIONS":{"message":"Options","description":"label for options button on popup","component":"Popup"},"LABEL_POPUP_DEFINE":{"message":"Define","description":"label for define button on popup","component":"Popup"},"PLACEHOLDER_POPUP_DATA":{"message":"Lexical data is loading","description":"placeholder text for popup data","component":"Popup"},"PLACEHOLDER_NO_LANGUAGE_POPUP_DATA":{"message":"Lexical data couldn't be populated because page language is not defined","description":"placeholder text for popup data when language is not defined","component":"Popup"},"PLACEHOLDER_NO_DATA_POPUP_DATA":{"message":"Lexical data couldn't be populated  for unknown reason","description":"placeholder text for popup data","component":"Popup"},"LABEL_POPUP_CREDITS":{"message":"Credits:","description":"label for credits on popup","component":"Popup"},"LABEL_POPUP_SHOWCREDITS":{"message":"Credits","description":"label for show credits link on popup","component":"Popup"},"LABEL_POPUP_HIDECREDITS":{"message":"Hide Credits","description":"label for hide credits link on popup","component":"Popup"},"TEXT_NOTICE_CHANGE_LANGUAGE":{"message":"Language: {languageName}<br>Wrong? Change to:","description":"language notification","component":"UI","params":["languageName"]},"TEXT_NOTICE_LANGUAGE_UNKNOWN":{"message":"unknown","description":"unknown language notification","component":"UI"},"TEXT_NOTICE_GRAMMAR_NOTFOUND":{"message":"The requested grammar resource is not currently available","description":"grammar not found notification","component":"UI"},"TEXT_NOTICE_MORPHDATA_READY":{"message":"Morphological analyzer data is ready","description":"morph data ready notice","component":"UI"},"TEXT_NOTICE_MORPHDATA_NOTFOUND":{"message":"Morphological data not found. Definition queries pending.","description":"morph data not found notice","component":"UI"},"TEXT_NOTICE_INFLDATA_READY":{"message":"Inflection data is ready","description":"inflection data ready notice","component":"UI"},"TEXT_NOTICE_DEFSDATA_READY":{"message":"{requestType} request is completed successfully. Lemma: \"{lemma}\"","description":"definition request success notice","component":"UI","params":["requestType","lemma"]},"TEXT_NOTICE_DEFSDATA_NOTFOUND":{"message":"{requestType} request failed. Lemma not found for: \"{word}\"","description":"definition request success notice","component":"UI","params":["requestType","word"]},"TEXT_NOTICE_LEXQUERY_COMPLETE":{"message":"All lexical queries complete.","description":"lexical queries complete notice","component":"UI"},"TEXT_NOTICE_GRAMMAR_READY":{"message":"Grammar resource retrieved","description":"grammar retrieved notice","component":"UI"},"TEXT_NOTICE_GRAMMAR_COMPLETE":{"message":"All grammar resource data retrieved","description":"grammar retrieved notice","component":"UI"},"TEXT_NOTICE_RESQUERY_COMPLETE":{"message":"All resource data retrieved","description":"resource query complete notice","component":"UI"},"LABEL_BROWSERACTION_DEACTIVATE":{"message":"Deactivate Alpheios","description":"Deactivate browser action title","component":"UI"},"LABEL_BROWSERACTION_ACTIVATE":{"message":"Activate Alpheios","description":"Activate browser action title","component":"UI"},"LABEL_BROWSERACTION_DISABLED":{"message":"(Alpheios Extension Disabled For Page)","description":"Disabled browser action title","component":"UI"},"LABEL_CTXTMENU_DEACTIVATE":{"message":"Deactivate","description":"Deactivate context menu label","component":"UI"},"LABEL_CTXTMENU_ACTIVATE":{"message":"Activate","description":"Activate context menu label","component":"UI"},"LABEL_CTXTMENU_DISABLED":{"message":"(Disabled)","description":"Disabled context menu label","component":"UI"},"LABEL_CTXTMENU_OPENPANEL":{"message":"Open Panel","description":"Open Panel context menu label","component":"UI"},"LABEL_CTXTMENU_INFO":{"message":"Info","description":"Info context menu label","component":"UI"},"LABEL_CTXTMENU_SENDEXP":{"message":"Send Experiences to remote server","description":"send exp data context menu label","component":"UI"},"LABEL_LOOKUP_BUTTON":{"message":"Lookup","description":"lookup button in lookup.vue","component":"Popup"},"TOOLTIP_LOOKUP_BUTTON":{"message":"Lookup word","description":"Tooltip for the lookup button in lookup.vue","component":"Lookup"},"LABEL_LOOKUP_SETTINGS":{"message":"Using Language...","description":"Settings link-label in the lookup block in lookup.vue","component":"Lookup"},"LABEL_RESKIN_SETTINGS":{"message":"Reskin options","description":"Label for Reskin component","component":"ReskinFontColor"},"TOOLTIP_RESKIN_SMALLFONT":{"message":"Small font","description":"Tooltip for small font icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_MEDIUMFONT":{"message":"Medium font","description":"Tooltip for medium font icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_LARGEFONT":{"message":"Large font","description":"Tooltip for large font icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_LIGHTBG":{"message":"Light background","description":"Tooltip for light colors schema icon","component":"ReskinFontColor"},"TOOLTIP_RESKIN_DARKBG":{"message":"Dark background","description":"Tooltip for dark colors schema icon","component":"ReskinFontColor"},"INFLECTIONS_CREDITS_TITLE":{"message":"Credits","description":"Title of credits section on inflection tables panel","component":"InflectionTables"},"INFLECTIONS_PARADIGMS_EXPLANATORY_HINT":{"message":"The following table(s) show conjugation patterns for verbs which are similar to those of <span>{word}</span>","description":"A hint that indicates that the current table is representative pattern for verbs similar to the one chosen","component":"InflectionTables","params":["word"]},"INFLECTIONS_MAIN_TABLE_LINK_TEXT":{"message":"Back to main","description":"A link pointing to a main inflection table","component":"InflectionTables"},"INFL_ATTRIBUTE_LINK_TEXT_SOURCE":{"message":"Source","description":"A link pointing to the source of a lemma or inflection","component":"InflAttribute"}};
 
 /***/ }),
 
@@ -31286,7 +31288,7 @@ var _settings_ui_options_defaults_json__WEBPACK_IMPORTED_MODULE_19___namespace =
 /*! exports provided: domain, items, default */
 /***/ (function(module) {
 
-module.exports = {"domain":"alpheios-content-options","items":{"locale":{"defaultValue":"en-US","labelText":"UI Locale:","values":[{"value":"en-US","text":"English (US)"},{"value":"en-GB","text":"English (GB)"}]},"panelPosition":{"defaultValue":"left","labelText":"Panel position:","values":[{"value":"left","text":"Left"},{"value":"right","text":"Right"}]},"popupPosition":{"defaultValue":"fixed","labelText":"Popup position:","values":[{"value":"flexible","text":"Flexible"},{"value":"fixed","text":"Fixed"}]},"uiType":{"defaultValue":"popup","labelText":"UI type:","values":[{"value":"popup","text":"Pop-up"},{"value":"panel","text":"Panel"}]},"preferredLanguage":{"defaultValue":"lat","labelText":"Page language:","values":[{"value":"lat","text":"Latin"},{"value":"grc","text":"Greek"},{"value":"ara","text":"Arabic"},{"value":"per","text":"Persian"}]},"verboseMode":{"defaultValue":"normal","labelText":"Log Level","values":[{"value":"verbose","text":"Verbose"},{"value":"normal","text":"Normal"}]},"lookupLanguage":{"defaultValue":"lat","labelText":"Page language:","values":[{"value":"lat","text":"Latin"},{"value":"grc","text":"Greek"},{"value":"ara","text":"Arabic"},{"value":"per","text":"Persian"}]}}};
+module.exports = {"domain":"alpheios-content-options","items":{"locale":{"defaultValue":"en-US","labelText":"UI Locale:","values":[{"value":"en-US","text":"English (US)"},{"value":"en-GB","text":"English (GB)"}]},"panelPosition":{"defaultValue":"left","labelText":"Panel position:","values":[{"value":"left","text":"Left"},{"value":"right","text":"Right"}]},"popupPosition":{"defaultValue":"fixed","labelText":"Popup position:","values":[{"value":"flexible","text":"Flexible"},{"value":"fixed","text":"Fixed"}]},"uiType":{"defaultValue":"popup","labelText":"UI type:","values":[{"value":"popup","text":"Pop-up"},{"value":"panel","text":"Panel"}]},"preferredLanguage":{"defaultValue":"lat","labelText":"Page language:","values":[{"value":"lat","text":"Latin"},{"value":"grc","text":"Greek"},{"value":"ara","text":"Arabic"},{"value":"per","text":"Persian"},{"value":"gez","text":"Ge'ez"}]},"verboseMode":{"defaultValue":"normal","labelText":"Log Level","values":[{"value":"verbose","text":"Verbose"},{"value":"normal","text":"Normal"}]},"lookupLanguage":{"defaultValue":"lat","labelText":"Page language:","values":[{"value":"lat","text":"Latin"},{"value":"grc","text":"Greek"},{"value":"ara","text":"Arabic"},{"value":"per","text":"Persian"},{"value":"gez","text":"Ge'ez"}]},"lookupLangOverride":{"defaultValue":false,"labelText":"Override language at lookup panel","boolean":true,"values":[{"value":true,"text":"Yes"},{"value":false,"text":"No"}]}}};
 
 /***/ }),
 
@@ -35792,7 +35794,7 @@ class ArabicLanguageModel extends _language_model_js__WEBPACK_IMPORTED_MODULE_0_
 /*!**********************!*\
   !*** ./constants.js ***!
   \**********************/
-/*! exports provided: LANG_UNIT_WORD, LANG_UNIT_CHAR, LANG_DIR_LTR, LANG_DIR_RTL, LANG_UNDEFINED, LANG_LATIN, LANG_GREEK, LANG_ARABIC, LANG_PERSIAN, STR_LANG_CODE_UNDEFINED, STR_LANG_CODE_LAT, STR_LANG_CODE_LA, STR_LANG_CODE_GRC, STR_LANG_CODE_ARA, STR_LANG_CODE_AR, STR_LANG_CODE_FAS, STR_LANG_CODE_PER, STR_LANG_CODE_FA_IR, STR_LANG_CODE_FA, POFS_ADJECTIVE, POFS_ADVERB, POFS_ADVERBIAL, POFS_ARTICLE, POFS_CONJUNCTION, POFS_EXCLAMATION, POFS_INTERJECTION, POFS_NOUN, POFS_NOUN_PROPER, POFS_NUMERAL, POFS_PARTICLE, POFS_PREFIX, POFS_PREPOSITION, POFS_PRONOUN, POFS_SUFFIX, POFS_GERUNDIVE, POFS_SUPINE, POFS_VERB, POFS_VERB_PARTICIPLE, GEND_MASCULINE, GEND_FEMININE, GEND_NEUTER, GEND_COMMON, GEND_ANIMATE, GEND_INANIMATE, GEND_PERSONAL_MASCULINE, GEND_ANIMATE_MASCULINE, GEND_INANIMATE_MASCULINE, COMP_POSITIVE, COMP_COMPARITIVE, COMP_SUPERLATIVE, CASE_ABESSIVE, CASE_ABLATIVE, CASE_ABSOLUTIVE, CASE_ACCUSATIVE, CASE_ADDIRECTIVE, CASE_ADELATIVE, CASE_ADESSIVE, CASE_ADVERBIAL, CASE_ALLATIVE, CASE_ANTESSIVE, CASE_APUDESSIVE, CASE_AVERSIVE, CASE_BENEFACTIVE, CASE_CARITIVE, CASE_CAUSAL, CASE_CAUSAL_FINAL, CASE_COMITATIVE, CASE_DATIVE, CASE_DELATIVE, CASE_DIRECT, CASE_DISTRIBUTIVE, CASE_DISTRIBUTIVE_TEMPORAL, CASE_ELATIVE, CASE_ERGATIVE, CASE_ESSIVE, CASE_ESSIVE_FORMAL, CASE_ESSIVE_MODAL, CASE_EQUATIVE, CASE_EVITATIVE, CASE_EXESSIVE, CASE_FINAL, CASE_FORMAL, CASE_GENITIVE, CASE_ILLATIVE, CASE_INELATIVE, CASE_INESSIVE, CASE_INSTRUCTIVE, CASE_INSTRUMENTAL, CASE_INSTRUMENTAL_COMITATIVE, CASE_INTRANSITIVE, CASE_LATIVE, CASE_LOCATIVE, CASE_MODAL, CASE_MULTIPLICATIVE, CASE_NOMINATIVE, CASE_PARTITIVE, CASE_PEGATIVE, CASE_PERLATIVE, CASE_POSSESSIVE, CASE_POSTELATIVE, CASE_POSTDIRECTIVE, CASE_POSTESSIVE, CASE_POSTPOSITIONAL, CASE_PREPOSITIONAL, CASE_PRIVATIVE, CASE_PROLATIVE, CASE_PROSECUTIVE, CASE_PROXIMATIVE, CASE_SEPARATIVE, CASE_SOCIATIVE, CASE_SUBDIRECTIVE, CASE_SUBESSIVE, CASE_SUBELATIVE, CASE_SUBLATIVE, CASE_SUPERDIRECTIVE, CASE_SUPERESSIVE, CASE_SUPERLATIVE, CASE_SUPPRESSIVE, CASE_TEMPORAL, CASE_TERMINATIVE, CASE_TRANSLATIVE, CASE_VIALIS, CASE_VOCATIVE, MOOD_ADMIRATIVE, MOOD_COHORTATIVE, MOOD_CONDITIONAL, MOOD_DECLARATIVE, MOOD_DUBITATIVE, MOOD_ENERGETIC, MOOD_EVENTIVE, MOOD_GENERIC, MOOD_GERUNDIVE, MOOD_HYPOTHETICAL, MOOD_IMPERATIVE, MOOD_INDICATIVE, MOOD_INFERENTIAL, MOOD_INFINITIVE, MOOD_INTERROGATIVE, MOOD_JUSSIVE, MOOD_NEGATIVE, MOOD_OPTATIVE, MOOD_PARTICIPLE, MOOD_PRESUMPTIVE, MOOD_RENARRATIVE, MOOD_SUBJUNCTIVE, MOOD_SUPINE, NUM_SINGULAR, NUM_PLURAL, NUM_DUAL, NUM_TRIAL, NUM_PAUCAL, NUM_SINGULATIVE, NUM_COLLECTIVE, NUM_DISTRIBUTIVE_PLURAL, NRL_CARDINAL, NRL_ORDINAL, NRL_DISTRIBUTIVE, NURL_NUMERAL_ADVERB, ORD_1ST, ORD_2ND, ORD_3RD, ORD_4TH, ORD_5TH, ORD_6TH, ORD_7TH, ORD_8TH, ORD_9TH, TENSE_AORIST, TENSE_FUTURE, TENSE_FUTURE_PERFECT, TENSE_IMPERFECT, TENSE_PAST_ABSOLUTE, TENSE_PERFECT, TENSE_PLUPERFECT, TENSE_PRESENT, VKIND_TO_BE, VKIND_COMPOUNDS_OF_TO_BE, VKIND_TAKING_ABLATIVE, VKIND_TAKING_DATIVE, VKIND_TAKING_GENITIVE, VKIND_TRANSITIVE, VKIND_INTRANSITIVE, VKIND_IMPERSONAL, VKIND_DEPONENT, VKIND_SEMIDEPONENT, VKIND_PERFECT_DEFINITE, VOICE_ACTIVE, VOICE_PASSIVE, VOICE_MEDIOPASSIVE, VOICE_IMPERSONAL_PASSIVE, VOICE_MIDDLE, VOICE_ANTIPASSIVE, VOICE_REFLEXIVE, VOICE_RECIPROCAL, VOICE_CAUSATIVE, VOICE_ADJUTATIVE, VOICE_APPLICATIVE, VOICE_CIRCUMSTANTIAL, VOICE_DEPONENT, TYPE_IRREGULAR, TYPE_REGULAR, CLASS_PERSONAL, CLASS_REFLEXIVE, CLASS_POSSESSIVE, CLASS_DEMONSTRATIVE, CLASS_RELATIVE, CLASS_INTERROGATIVE, CLASS_GENERAL_RELATIVE, CLASS_INDEFINITE, CLASS_INTENSIVE, CLASS_RECIPROCAL */
+/*! exports provided: LANG_UNIT_WORD, LANG_UNIT_CHAR, LANG_DIR_LTR, LANG_DIR_RTL, LANG_UNDEFINED, LANG_LATIN, LANG_GREEK, LANG_ARABIC, LANG_PERSIAN, LANG_GEEZ, STR_LANG_CODE_UNDEFINED, STR_LANG_CODE_LAT, STR_LANG_CODE_LA, STR_LANG_CODE_GRC, STR_LANG_CODE_ARA, STR_LANG_CODE_AR, STR_LANG_CODE_FAS, STR_LANG_CODE_PER, STR_LANG_CODE_FA_IR, STR_LANG_CODE_FA, STR_LANG_CODE_GEZ, POFS_ADJECTIVE, POFS_ADVERB, POFS_ADVERBIAL, POFS_ARTICLE, POFS_CONJUNCTION, POFS_EXCLAMATION, POFS_INTERJECTION, POFS_NOUN, POFS_NOUN_PROPER, POFS_NUMERAL, POFS_PARTICLE, POFS_PREFIX, POFS_PREPOSITION, POFS_PRONOUN, POFS_SUFFIX, POFS_GERUNDIVE, POFS_SUPINE, POFS_VERB, POFS_VERB_PARTICIPLE, GEND_MASCULINE, GEND_FEMININE, GEND_NEUTER, GEND_COMMON, GEND_ANIMATE, GEND_INANIMATE, GEND_PERSONAL_MASCULINE, GEND_ANIMATE_MASCULINE, GEND_INANIMATE_MASCULINE, COMP_POSITIVE, COMP_COMPARITIVE, COMP_SUPERLATIVE, CASE_ABESSIVE, CASE_ABLATIVE, CASE_ABSOLUTIVE, CASE_ACCUSATIVE, CASE_ADDIRECTIVE, CASE_ADELATIVE, CASE_ADESSIVE, CASE_ADVERBIAL, CASE_ALLATIVE, CASE_ANTESSIVE, CASE_APUDESSIVE, CASE_AVERSIVE, CASE_BENEFACTIVE, CASE_CARITIVE, CASE_CAUSAL, CASE_CAUSAL_FINAL, CASE_COMITATIVE, CASE_DATIVE, CASE_DELATIVE, CASE_DIRECT, CASE_DISTRIBUTIVE, CASE_DISTRIBUTIVE_TEMPORAL, CASE_ELATIVE, CASE_ERGATIVE, CASE_ESSIVE, CASE_ESSIVE_FORMAL, CASE_ESSIVE_MODAL, CASE_EQUATIVE, CASE_EVITATIVE, CASE_EXESSIVE, CASE_FINAL, CASE_FORMAL, CASE_GENITIVE, CASE_ILLATIVE, CASE_INELATIVE, CASE_INESSIVE, CASE_INSTRUCTIVE, CASE_INSTRUMENTAL, CASE_INSTRUMENTAL_COMITATIVE, CASE_INTRANSITIVE, CASE_LATIVE, CASE_LOCATIVE, CASE_MODAL, CASE_MULTIPLICATIVE, CASE_NOMINATIVE, CASE_PARTITIVE, CASE_PEGATIVE, CASE_PERLATIVE, CASE_POSSESSIVE, CASE_POSTELATIVE, CASE_POSTDIRECTIVE, CASE_POSTESSIVE, CASE_POSTPOSITIONAL, CASE_PREPOSITIONAL, CASE_PRIVATIVE, CASE_PROLATIVE, CASE_PROSECUTIVE, CASE_PROXIMATIVE, CASE_SEPARATIVE, CASE_SOCIATIVE, CASE_SUBDIRECTIVE, CASE_SUBESSIVE, CASE_SUBELATIVE, CASE_SUBLATIVE, CASE_SUPERDIRECTIVE, CASE_SUPERESSIVE, CASE_SUPERLATIVE, CASE_SUPPRESSIVE, CASE_TEMPORAL, CASE_TERMINATIVE, CASE_TRANSLATIVE, CASE_VIALIS, CASE_VOCATIVE, MOOD_ADMIRATIVE, MOOD_COHORTATIVE, MOOD_CONDITIONAL, MOOD_DECLARATIVE, MOOD_DUBITATIVE, MOOD_ENERGETIC, MOOD_EVENTIVE, MOOD_GENERIC, MOOD_GERUNDIVE, MOOD_HYPOTHETICAL, MOOD_IMPERATIVE, MOOD_INDICATIVE, MOOD_INFERENTIAL, MOOD_INFINITIVE, MOOD_INTERROGATIVE, MOOD_JUSSIVE, MOOD_NEGATIVE, MOOD_OPTATIVE, MOOD_PARTICIPLE, MOOD_PRESUMPTIVE, MOOD_RENARRATIVE, MOOD_SUBJUNCTIVE, MOOD_SUPINE, NUM_SINGULAR, NUM_PLURAL, NUM_DUAL, NUM_TRIAL, NUM_PAUCAL, NUM_SINGULATIVE, NUM_COLLECTIVE, NUM_DISTRIBUTIVE_PLURAL, NRL_CARDINAL, NRL_ORDINAL, NRL_DISTRIBUTIVE, NURL_NUMERAL_ADVERB, ORD_1ST, ORD_2ND, ORD_3RD, ORD_4TH, ORD_5TH, ORD_6TH, ORD_7TH, ORD_8TH, ORD_9TH, TENSE_AORIST, TENSE_FUTURE, TENSE_FUTURE_PERFECT, TENSE_IMPERFECT, TENSE_PAST_ABSOLUTE, TENSE_PERFECT, TENSE_PLUPERFECT, TENSE_PRESENT, VKIND_TO_BE, VKIND_COMPOUNDS_OF_TO_BE, VKIND_TAKING_ABLATIVE, VKIND_TAKING_DATIVE, VKIND_TAKING_GENITIVE, VKIND_TRANSITIVE, VKIND_INTRANSITIVE, VKIND_IMPERSONAL, VKIND_DEPONENT, VKIND_SEMIDEPONENT, VKIND_PERFECT_DEFINITE, VOICE_ACTIVE, VOICE_PASSIVE, VOICE_MEDIOPASSIVE, VOICE_IMPERSONAL_PASSIVE, VOICE_MIDDLE, VOICE_ANTIPASSIVE, VOICE_REFLEXIVE, VOICE_RECIPROCAL, VOICE_CAUSATIVE, VOICE_ADJUTATIVE, VOICE_APPLICATIVE, VOICE_CIRCUMSTANTIAL, VOICE_DEPONENT, TYPE_IRREGULAR, TYPE_REGULAR, CLASS_PERSONAL, CLASS_REFLEXIVE, CLASS_POSSESSIVE, CLASS_DEMONSTRATIVE, CLASS_RELATIVE, CLASS_INTERROGATIVE, CLASS_GENERAL_RELATIVE, CLASS_INDEFINITE, CLASS_INTENSIVE, CLASS_RECIPROCAL */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -35806,6 +35808,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LANG_GREEK", function() { return LANG_GREEK; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LANG_ARABIC", function() { return LANG_ARABIC; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LANG_PERSIAN", function() { return LANG_PERSIAN; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LANG_GEEZ", function() { return LANG_GEEZ; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "STR_LANG_CODE_UNDEFINED", function() { return STR_LANG_CODE_UNDEFINED; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "STR_LANG_CODE_LAT", function() { return STR_LANG_CODE_LAT; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "STR_LANG_CODE_LA", function() { return STR_LANG_CODE_LA; });
@@ -35816,6 +35819,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "STR_LANG_CODE_PER", function() { return STR_LANG_CODE_PER; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "STR_LANG_CODE_FA_IR", function() { return STR_LANG_CODE_FA_IR; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "STR_LANG_CODE_FA", function() { return STR_LANG_CODE_FA; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "STR_LANG_CODE_GEZ", function() { return STR_LANG_CODE_GEZ; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "POFS_ADJECTIVE", function() { return POFS_ADJECTIVE; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "POFS_ADVERB", function() { return POFS_ADVERB; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "POFS_ADVERBIAL", function() { return POFS_ADVERBIAL; });
@@ -36018,6 +36022,7 @@ const LANG_LATIN = Symbol('latin')
 const LANG_GREEK = Symbol('greek')
 const LANG_ARABIC = Symbol('arabic')
 const LANG_PERSIAN = Symbol('persian')
+const LANG_GEEZ = Symbol('ge\'ez')
 const STR_LANG_CODE_UNDEFINED = 'undefined'
 const STR_LANG_CODE_LAT = 'lat'
 const STR_LANG_CODE_LA = 'la'
@@ -36028,6 +36033,7 @@ const STR_LANG_CODE_FAS = 'fas'
 const STR_LANG_CODE_PER = 'per'
 const STR_LANG_CODE_FA_IR = 'fa-IR'
 const STR_LANG_CODE_FA = 'fa'
+const STR_LANG_CODE_GEZ = 'gez'
 // parts of speech
 const POFS_ADJECTIVE = 'adjective'
 const POFS_ADVERB = 'adverb'
@@ -36355,7 +36361,7 @@ class Definition {
 /*!*******************!*\
   !*** ./driver.js ***!
   \*******************/
-/*! exports provided: Constants, Definition, DefinitionSet, Feature, GrmFeature, FeatureType, FeatureList, FeatureImporter, Inflection, LanguageModelFactory, Homonym, Lexeme, Lemma, LatinLanguageModel, GreekLanguageModel, ArabicLanguageModel, PersianLanguageModel, ResourceProvider, Translation */
+/*! exports provided: Constants, Definition, DefinitionSet, Feature, GrmFeature, FeatureType, FeatureList, FeatureImporter, Inflection, LanguageModelFactory, Homonym, Lexeme, Lemma, LatinLanguageModel, GreekLanguageModel, ArabicLanguageModel, PersianLanguageModel, GeezLanguageModel, ResourceProvider, Translation */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -36410,11 +36416,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _persian_language_model_js__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./persian_language_model.js */ "./persian_language_model.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PersianLanguageModel", function() { return _persian_language_model_js__WEBPACK_IMPORTED_MODULE_16__["default"]; });
 
-/* harmony import */ var _resource_provider_js__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./resource_provider.js */ "./resource_provider.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ResourceProvider", function() { return _resource_provider_js__WEBPACK_IMPORTED_MODULE_17__["default"]; });
+/* harmony import */ var _geez_language_model_js__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./geez_language_model.js */ "./geez_language_model.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GeezLanguageModel", function() { return _geez_language_model_js__WEBPACK_IMPORTED_MODULE_17__["default"]; });
 
-/* harmony import */ var _translation_js__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./translation.js */ "./translation.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Translation", function() { return _translation_js__WEBPACK_IMPORTED_MODULE_18__["default"]; });
+/* harmony import */ var _resource_provider_js__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./resource_provider.js */ "./resource_provider.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ResourceProvider", function() { return _resource_provider_js__WEBPACK_IMPORTED_MODULE_18__["default"]; });
+
+/* harmony import */ var _translation_js__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./translation.js */ "./translation.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Translation", function() { return _translation_js__WEBPACK_IMPORTED_MODULE_19__["default"]; });
+
 
 
 
@@ -37309,6 +37319,118 @@ FeatureType.UNRESTRICTED_VALUE = Symbol('unrestricted')
 
 /***/ }),
 
+/***/ "./geez_language_model.js":
+/*!********************************!*\
+  !*** ./geez_language_model.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return GeezLanguageModel; });
+/* harmony import */ var _language_model_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./language_model.js */ "./language_model.js");
+/* harmony import */ var _feature_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./feature.js */ "./feature.js");
+/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./constants.js */ "./constants.js");
+
+
+
+
+let typeFeatures = new Map()
+let typeFeaturesInitialized = false
+
+/**
+ * @class  GezLanguageModel is the lass for Ge'ez specific behavior
+ */
+class GeezLanguageModel extends _language_model_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
+  static get languageID () { return _constants_js__WEBPACK_IMPORTED_MODULE_2__["LANG_GEEZ"] }
+
+  static get languageCode () { return _constants_js__WEBPACK_IMPORTED_MODULE_2__["STR_LANG_CODE_GEZ"] }
+
+  static get languageCodes () { return [_constants_js__WEBPACK_IMPORTED_MODULE_2__["STR_LANG_CODE_GEZ"]] }
+
+  static get contextForward () { return 0 }
+
+  static get contextBackward () { return 0 }
+
+  static get direction () { return _constants_js__WEBPACK_IMPORTED_MODULE_2__["LANG_DIR_LTR"] }
+
+  static get baseUnit () { return _constants_js__WEBPACK_IMPORTED_MODULE_2__["LANG_UNIT_WORD"] }
+  static get featureValues () {
+    return new Map([
+      ..._language_model_js__WEBPACK_IMPORTED_MODULE_0__["default"].featureValues,
+      [
+        _feature_js__WEBPACK_IMPORTED_MODULE_1__["default"].types.grmCase,
+        [
+          // TODO Valid Values for case for gez
+        ]
+      ],
+      [
+        _feature_js__WEBPACK_IMPORTED_MODULE_1__["default"].types.number,
+        [
+          // TODO Valid Values for number for gez
+        ]
+      ],
+      [
+        _feature_js__WEBPACK_IMPORTED_MODULE_1__["default"].types.gender,
+        [
+          // TODO Valid Values for gender for gez
+        ]
+      ],
+      [
+        _feature_js__WEBPACK_IMPORTED_MODULE_1__["default"].types.mood,
+        [
+          // TODO Valid Values for mood for gez
+        ]
+      ]
+    ])
+  }
+
+  static get typeFeatures () {
+    if (!typeFeaturesInitialized) { this.initTypeFeatures() }
+    return typeFeatures
+  }
+
+  static initTypeFeatures () {
+    for (const featureName of this.featureNames) {
+      typeFeatures.set(featureName, this.getFeature(featureName))
+    }
+    typeFeaturesInitialized = true
+  }
+
+  /**
+   * Check to see if this language tool can produce an inflection table display
+   * for the current node
+   */
+  static canInflect (node) {
+    return false
+  }
+
+  /**
+   * Returns alternate encodings for a word
+   * @param {string} word the word
+   * @param {string} preceding optional preceding word
+   * @param {string} following optional following word
+   * @param {string} encoding optional encoding name to filter the response to
+   * @returns {Array} an array of alternate encodings
+   */
+  static alternateWordEncodings (word, preceding = null, following = null, encoding = null) {
+    // Not implemented yet
+    return []
+  }
+
+  /**
+   * Get a list of valid puncutation for this language
+   * @returns {String} a string containing valid puncutation symbols
+   */
+  static getPunctuation () {
+    return "፡፨።፣፤፥፦፧፠,;:!?'\"(){}\\[\\]<>/\\\u00A0\u2010\u2011\u2012\u2013\u2014\u2015\u2018\u2019\u201C\u201D\u0387\u00B7\n\r"
+  }
+}
+
+
+/***/ }),
+
 /***/ "./greek_language_model.js":
 /*!*********************************!*\
   !*** ./greek_language_model.js ***!
@@ -37489,6 +37611,9 @@ class GreekLanguageModel extends _language_model_js__WEBPACK_IMPORTED_MODULE_0__
     //    precombined unicode (vowel length/diacritics preserved)
     // 2. When looking up a verb in the verb paradigm tables
     //    it set e_normalize to false, otherwise it was true...
+    if (!word) {
+      return []
+    }
     // make sure it's normalized to NFC and in lower case
     let normalized = GreekLanguageModel.normalizeWord(word).toLocaleLowerCase()
     let strippedVowelLength = normalized.replace(
@@ -37516,8 +37641,14 @@ class GreekLanguageModel extends _language_model_js__WEBPACK_IMPORTED_MODULE_0__
       /\u{1FED}/ug, '\u{1FEF}').replace(
       /\u{1FEE}/ug, '\u{1FFD}').replace(
       /[\u{00A8}\u{0308}]/ug, '')
+    // to strip diacritics, rather than list all possible combined vowels with
+    // diacritis, decompose, remove the combining accents, and then recompose
+    let strippedDiacritics = normalized.normalize('NFD').replace(
+      /[\u{300}\u{0301}\u{0304}\u{0306},\u{342}]/ug, '').normalize('NFC')
     if (encoding === 'strippedDiaeresis') {
       return [strippedDiaeresis]
+    } else if (encoding === 'strippedDiacritics') {
+      return [strippedDiacritics]
     } else {
       return [strippedVowelLength]
     }
@@ -38183,6 +38314,7 @@ class Inflection {
     this.constraints = {
       fullFormBased: false, // True this inflection stores and requires to use a full form of a word
       suffixBased: false, // True if only suffix is enough to identify this inflection
+      irregular: false, // Whether this word is an irregular one
       obligatoryMatches: [], // Names of features that should be matched in order to include a form or suffix to an inflection table
       optionalMatches: [] // Names of features that will be recorded but are not important for inclusion of a form or suffix to an inflection table
     }
@@ -38238,10 +38370,8 @@ class Inflection {
   }
 
   compareWithWordDependsOnType (word, className, normalize = true) {
-    const model = _language_model_factory_js__WEBPACK_IMPORTED_MODULE_1__["default"].getLanguageModel(this.languageID)
     let value
-
-    if (!this.constraints.irregularVerb) {
+    if (!this.constraints.irregular) {
       value = this.constraints.suffixBased ? this.suffix : this.form
     } else {
       if (className === 'Suffix') {
@@ -38250,18 +38380,40 @@ class Inflection {
         value = this[_feature_js__WEBPACK_IMPORTED_MODULE_0__["default"].types.fullForm] ? this[_feature_js__WEBPACK_IMPORTED_MODULE_0__["default"].types.fullForm].value : this.form
       }
     }
-
-    return normalize
-      ? model.normalizeWord(value) === model.normalizeWord(word)
-      : value === word
+    return this.modelCompareWords(word, value)
   }
 
   compareWithWord (word, normalize = true) {
-    const model = _language_model_factory_js__WEBPACK_IMPORTED_MODULE_1__["default"].getLanguageModel(this.languageID)
     const value = this.constraints.suffixBased ? this.suffix : this.form
-    return normalize
-      ? model.normalizeWord(value) === model.normalizeWord(word)
-      : value === word
+    return this.modelCompareWords(word, value)
+  }
+
+  /**
+   * Compare to words (or partial words) delegating to the language model
+   * rules for normalization
+   * @param {String} wordA the first word
+   * @param {String} wordB the second word
+   * @param {Boolean} normalize whether or not to apply normalization
+   */
+  modelCompareWords (wordA, wordB, normalize = true) {
+    const model = _language_model_factory_js__WEBPACK_IMPORTED_MODULE_1__["default"].getLanguageModel(this.languageID)
+    let matched = false
+    if (normalize) {
+      let altWordA = model.alternateWordEncodings(wordA, null, null, 'strippedDiacritics')
+      let altWordB = model.alternateWordEncodings(wordB, null, null, 'strippedDiacritics')
+      for (let i = 0; i < altWordA.length; i++) {
+        matched = altWordA[i] === altWordB[i]
+        if (matched) {
+          break
+        }
+      }
+      if (!matched) {
+        matched = model.normalizeWord(wordA) === model.normalizeWord(wordB)
+      }
+    } else {
+      matched = wordA === wordB
+    }
+    return matched
   }
 
   /**
@@ -38697,6 +38849,13 @@ class LanguageModel {
         ]
       ],
       [
+        _feature_js__WEBPACK_IMPORTED_MODULE_2__["default"].types.number,
+        [
+          _constants_js__WEBPACK_IMPORTED_MODULE_0__["NUM_SINGULAR"],
+          _constants_js__WEBPACK_IMPORTED_MODULE_0__["NUM_PLURAL"]
+        ]
+      ],
+      [
         _feature_js__WEBPACK_IMPORTED_MODULE_2__["default"].types.age,
         []
       ],
@@ -39101,7 +39260,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _greek_language_model_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./greek_language_model.js */ "./greek_language_model.js");
 /* harmony import */ var _arabic_language_model_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./arabic_language_model.js */ "./arabic_language_model.js");
 /* harmony import */ var _persian_language_model_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./persian_language_model.js */ "./persian_language_model.js");
-/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./constants.js */ "./constants.js");
+/* harmony import */ var _geez_language_model_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./geez_language_model.js */ "./geez_language_model.js");
+/* harmony import */ var _constants_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./constants.js */ "./constants.js");
+
 
 
 
@@ -39110,12 +39271,13 @@ __webpack_require__.r(__webpack_exports__);
 
 
 const MODELS = new Map([
-  [ _constants_js__WEBPACK_IMPORTED_MODULE_5__["STR_LANG_CODE_LA"], _latin_language_model_js__WEBPACK_IMPORTED_MODULE_1__["default"] ],
-  [ _constants_js__WEBPACK_IMPORTED_MODULE_5__["STR_LANG_CODE_LAT"], _latin_language_model_js__WEBPACK_IMPORTED_MODULE_1__["default"] ],
-  [ _constants_js__WEBPACK_IMPORTED_MODULE_5__["STR_LANG_CODE_GRC"], _greek_language_model_js__WEBPACK_IMPORTED_MODULE_2__["default"] ],
-  [ _constants_js__WEBPACK_IMPORTED_MODULE_5__["STR_LANG_CODE_ARA"], _arabic_language_model_js__WEBPACK_IMPORTED_MODULE_3__["default"] ],
-  [ _constants_js__WEBPACK_IMPORTED_MODULE_5__["STR_LANG_CODE_AR"], _arabic_language_model_js__WEBPACK_IMPORTED_MODULE_3__["default"] ],
-  [ _constants_js__WEBPACK_IMPORTED_MODULE_5__["STR_LANG_CODE_PER"], _persian_language_model_js__WEBPACK_IMPORTED_MODULE_4__["default"] ]
+  [ _constants_js__WEBPACK_IMPORTED_MODULE_6__["STR_LANG_CODE_LA"], _latin_language_model_js__WEBPACK_IMPORTED_MODULE_1__["default"] ],
+  [ _constants_js__WEBPACK_IMPORTED_MODULE_6__["STR_LANG_CODE_LAT"], _latin_language_model_js__WEBPACK_IMPORTED_MODULE_1__["default"] ],
+  [ _constants_js__WEBPACK_IMPORTED_MODULE_6__["STR_LANG_CODE_GRC"], _greek_language_model_js__WEBPACK_IMPORTED_MODULE_2__["default"] ],
+  [ _constants_js__WEBPACK_IMPORTED_MODULE_6__["STR_LANG_CODE_ARA"], _arabic_language_model_js__WEBPACK_IMPORTED_MODULE_3__["default"] ],
+  [ _constants_js__WEBPACK_IMPORTED_MODULE_6__["STR_LANG_CODE_AR"], _arabic_language_model_js__WEBPACK_IMPORTED_MODULE_3__["default"] ],
+  [ _constants_js__WEBPACK_IMPORTED_MODULE_6__["STR_LANG_CODE_PER"], _persian_language_model_js__WEBPACK_IMPORTED_MODULE_4__["default"] ],
+  [ _constants_js__WEBPACK_IMPORTED_MODULE_6__["STR_LANG_CODE_GEZ"], _geez_language_model_js__WEBPACK_IMPORTED_MODULE_5__["default"] ]
 ])
 
 class LanguageModelFactory {
@@ -39166,7 +39328,7 @@ class LanguageModelFactory {
       }
     }
     // Noting found, return a Symbol with an undefined value (to keep return value type the same)
-    return _constants_js__WEBPACK_IMPORTED_MODULE_5__["LANG_UNDEFINED"]
+    return _constants_js__WEBPACK_IMPORTED_MODULE_6__["LANG_UNDEFINED"]
   }
 
   /**
@@ -39181,7 +39343,7 @@ class LanguageModelFactory {
       }
     }
     // Noting found, return a string with an undefined value (to keep return value type the same)
-    return _constants_js__WEBPACK_IMPORTED_MODULE_5__["STR_LANG_CODE_UNDEFINED"]
+    return _constants_js__WEBPACK_IMPORTED_MODULE_6__["STR_LANG_CODE_UNDEFINED"]
   }
 
   /**
@@ -43647,6 +43809,10 @@ class LanguageDataset {
 
     // Check if this is an irregular word after a `word` feature is added
     inflection.constraints.irregular = this.isIrregular(inflection)
+    if (inflection.constraints.irregular) {
+      // Irregular words are always full form based
+      inflection.constraints.fullFormBased = true
+    }
     inflection.constraints.implemented = this.isImplemented(inflection)
 
     if (!this.pos.get(partOfSpeech)) {
@@ -55354,8 +55520,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _views_lang_latin_verb_irregular_latin_verb_irregular_base_view_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @views/lang/latin/verb/irregular/latin-verb-irregular-base-view.js */ "./views/lang/latin/verb/irregular/latin-verb-irregular-base-view.js");
 /* harmony import */ var _views_lang_latin_verb_irregular_latin_verb_irregular_view_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @views/lang/latin/verb/irregular/latin-verb-irregular-view.js */ "./views/lang/latin/verb/irregular/latin-verb-irregular-view.js");
-/* harmony import */ var _views_lang_latin_verb_irregular_latin_verb_participle_irregular_view_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @views/lang/latin/verb/irregular/latin-verb-participle-irregular-view.js */ "./views/lang/latin/verb/irregular/latin-verb-participle-irregular-view.js");
-/* harmony import */ var _views_lib_table__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @views/lib/table */ "./views/lib/table.js");
+/* harmony import */ var _views_lang_latin_verb_irregular_latin_verb_irregular_voice_view_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @views/lang/latin/verb/irregular/latin-verb-irregular-voice-view.js */ "./views/lang/latin/verb/irregular/latin-verb-irregular-voice-view.js");
+/* harmony import */ var _views_lang_latin_verb_irregular_latin_verb_participle_irregular_view_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! @views/lang/latin/verb/irregular/latin-verb-participle-irregular-view.js */ "./views/lang/latin/verb/irregular/latin-verb-participle-irregular-view.js");
+/* harmony import */ var _views_lib_table__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! @views/lib/table */ "./views/lib/table.js");
+
 
 
 
@@ -55382,7 +55550,7 @@ class LatinVerbSupineIrregularView extends _views_lang_latin_verb_irregular_lati
   }
 
   createTable () {
-    this.table = new _views_lib_table__WEBPACK_IMPORTED_MODULE_4__["default"]([this.features.cases])
+    this.table = new _views_lib_table__WEBPACK_IMPORTED_MODULE_5__["default"]([this.features.cases])
     let features = this.table.features
     features.columns = []
     features.rows = [this.features.cases]
@@ -55415,7 +55583,28 @@ class LatinVerbSupineIrregularView extends _views_lang_latin_verb_irregular_lati
    * @return {View[]}
    */
   static get linkedViewConstructors () {
-    return [_views_lang_latin_verb_irregular_latin_verb_irregular_view_js__WEBPACK_IMPORTED_MODULE_2__["default"], _views_lang_latin_verb_irregular_latin_verb_participle_irregular_view_js__WEBPACK_IMPORTED_MODULE_3__["default"]]
+    return [_views_lang_latin_verb_irregular_latin_verb_irregular_view_js__WEBPACK_IMPORTED_MODULE_2__["default"], _views_lang_latin_verb_irregular_latin_verb_irregular_voice_view_js__WEBPACK_IMPORTED_MODULE_3__["default"], _views_lang_latin_verb_irregular_latin_verb_participle_irregular_view_js__WEBPACK_IMPORTED_MODULE_4__["default"]]
+  }
+
+  // TODO: Remove after testing
+  createLinkedViews () {
+    let views = []
+    let inflections = this.homonym.inflections.filter(infl => infl[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].value === this.constructor.mainPartOfSpeech)
+    for (let Constructor of this.constructor.linkedViewConstructors) {
+      for (let infl of inflections) {
+        infl[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part] = infl[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].createFeature(Constructor.mainPartOfSpeech)
+      }
+      let inflectionData = this.constructor.dataset.createInflectionSet(Constructor.mainPartOfSpeech, inflections)
+      if (Constructor.matchFilter(this.homonym.languageID, inflections)) {
+        let view = new Constructor(this.homonym, inflectionData, this.locale)
+        for (let infl of inflections) {
+          infl[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part] = infl[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types.part].createFeature(this.constructor.mainPartOfSpeech)
+        }
+        views.push(view)
+      }
+    }
+    this.linkedViews = views
+    return views
   }
 }
 
@@ -74895,11 +75084,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _engine_morpheusgrc__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./engine/morpheusgrc */ "./tufts/engine/morpheusgrc.js");
 /* harmony import */ var _engine_aramorph__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./engine/aramorph */ "./tufts/engine/aramorph.js");
 /* harmony import */ var _engine_hazm__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./engine/hazm */ "./tufts/engine/hazm.js");
-/* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! alpheios-data-models */ "alpheios-data-models");
-/* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _engine_data_test_data__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./engine/data/test-data */ "./tufts/engine/data/test-data.js");
-/* harmony import */ var _config_json__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./config.json */ "./tufts/config.json");
-var _config_json__WEBPACK_IMPORTED_MODULE_7___namespace = /*#__PURE__*/__webpack_require__.t(/*! ./config.json */ "./tufts/config.json", 1);
+/* harmony import */ var _engine_traces__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./engine/traces */ "./tufts/engine/traces.js");
+/* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! alpheios-data-models */ "alpheios-data-models");
+/* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_6___default = /*#__PURE__*/__webpack_require__.n(alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__);
+/* harmony import */ var _engine_data_test_data__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./engine/data/test-data */ "./tufts/engine/data/test-data.js");
+/* harmony import */ var _config_json__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./config.json */ "./tufts/config.json");
+var _config_json__WEBPACK_IMPORTED_MODULE_8___namespace = /*#__PURE__*/__webpack_require__.t(/*! ./config.json */ "./tufts/config.json", 1);
+
 
 
 
@@ -74918,12 +75109,12 @@ class AlpheiosTuftsAdapter extends _base_adapter__WEBPACK_IMPORTED_MODULE_0__["d
   constructor (config = {}) {
     super()
     try {
-      this.config = JSON.parse(_config_json__WEBPACK_IMPORTED_MODULE_7__)
+      this.config = JSON.parse(_config_json__WEBPACK_IMPORTED_MODULE_8__)
     } catch (e) {
-      this.config = Object.assign({}, _config_json__WEBPACK_IMPORTED_MODULE_7__)
+      this.config = Object.assign({}, _config_json__WEBPACK_IMPORTED_MODULE_8__)
     }
     Object.assign(this.config, config)
-    this.engineMap = new Map(([ _engine_whitakers__WEBPACK_IMPORTED_MODULE_1__["default"], _engine_morpheusgrc__WEBPACK_IMPORTED_MODULE_2__["default"], _engine_aramorph__WEBPACK_IMPORTED_MODULE_3__["default"], _engine_hazm__WEBPACK_IMPORTED_MODULE_4__["default"] ]).map((e) => { return [ e.engine, e ] }))
+    this.engineMap = new Map(([ _engine_whitakers__WEBPACK_IMPORTED_MODULE_1__["default"], _engine_morpheusgrc__WEBPACK_IMPORTED_MODULE_2__["default"], _engine_aramorph__WEBPACK_IMPORTED_MODULE_3__["default"], _engine_hazm__WEBPACK_IMPORTED_MODULE_4__["default"], _engine_traces__WEBPACK_IMPORTED_MODULE_5__["default"] ]).map((e) => { return [ e.engine, e ] }))
   }
 
   getEngineLanguageMap (lang) {
@@ -74947,7 +75138,7 @@ class AlpheiosTuftsAdapter extends _base_adapter__WEBPACK_IMPORTED_MODULE_0__["d
   fetchTestData (lang, word) {
     return new Promise((resolve, reject) => {
       try {
-        let wordData = new _engine_data_test_data__WEBPACK_IMPORTED_MODULE_6__["default"]().get(word)
+        let wordData = new _engine_data_test_data__WEBPACK_IMPORTED_MODULE_7__["default"]().get(word)
         let json = JSON.parse(wordData)
         resolve(json)
       } catch (error) {
@@ -74983,7 +75174,7 @@ class AlpheiosTuftsAdapter extends _base_adapter__WEBPACK_IMPORTED_MODULE_0__["d
     if (jsonObj.RDF.Annotation.rights) {
       providerRights = jsonObj.RDF.Annotation.rights.$
     }
-    let provider = new alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["ResourceProvider"](providerUri, providerRights)
+    let provider = new alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["ResourceProvider"](providerUri, providerRights)
     for (let lexeme of annotationBody) {
       let inflectionsJSON = lexeme.rest.entry.infl
       if (!inflectionsJSON) {
@@ -75031,8 +75222,12 @@ class AlpheiosTuftsAdapter extends _base_adapter__WEBPACK_IMPORTED_MODULE_0__["d
       let language = lemmaElements[0].hdwd ? lemmaElements[0].hdwd.lang : lemmaElements[0].lang
       // Get importer based on the language
       let mappingData = this.getEngineLanguageMap(language)
+      if (!mappingData) {
+        console.log(`No mapping data found for ${language}`)
+        continue
+      }
       if (reconstructHdwd.length > 0) {
-        if (mappingData.model.direction === alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Constants"].LANG_DIR_RTL) {
+        if (mappingData.model.direction === alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Constants"].LANG_DIR_RTL) {
           reconstructHdwd.reverse()
         }
         lexeme.rest.entry.dict.hdwd.$ = reconstructHdwd.join('')
@@ -75048,6 +75243,7 @@ class AlpheiosTuftsAdapter extends _base_adapter__WEBPACK_IMPORTED_MODULE_0__["d
           lemmaText = elem.hdwd.$
         }
         if (!lemmaText || !language) {
+          console.log('No lemma or language found')
           continue
         }
         let lemma = mappingData.parseLemma(lemmaText, language)
@@ -75066,22 +75262,22 @@ class AlpheiosTuftsAdapter extends _base_adapter__WEBPACK_IMPORTED_MODULE_0__["d
             let meaning = meanings[index]
             // TODO: convert a source-specific language code to ISO 639-3 if don't match
             let lang = meaning.lang ? meaning.lang : 'eng'
-            shortdefs.push(alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["ResourceProvider"].getProxy(provider,
-              new alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Definition"](meaning.$, lang, 'text/plain', lemmas[index].word)))
+            shortdefs.push(alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["ResourceProvider"].getProxy(provider,
+              new alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Definition"](meaning.$, lang, 'text/plain', lemmas[index].word)))
           }
         } else {
           // Changed to prevent some weird "Array Iterator.prototype.next called on incompatible receiver [object Unknown]" error
           let sDefs = meanings.map(meaning => {
             let lang = meaning.lang ? meaning.lang : 'eng'
-            return alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["ResourceProvider"].getProxy(provider,
-              new alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Definition"](meaning.$, lang, 'text/plain', lemma.word))
+            return alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["ResourceProvider"].getProxy(provider,
+              new alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Definition"](meaning.$, lang, 'text/plain', lemma.word))
           })
           shortdefs.push(...sDefs)
         }
-        let lexmodel = new alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Lexeme"](lemma, [])
+        let lexmodel = new alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Lexeme"](lemma, [])
 
         lexmodel.meaning.appendShortDefs(shortdefs)
-        lexemeSet.push(alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["ResourceProvider"].getProxy(provider, lexmodel))
+        lexemeSet.push(alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["ResourceProvider"].getProxy(provider, lexmodel))
       }
       if (lemmas.length === 0) {
         continue
@@ -75092,61 +75288,61 @@ class AlpheiosTuftsAdapter extends _base_adapter__WEBPACK_IMPORTED_MODULE_0__["d
         let suffix = inflectionJSON.term.suff ? inflectionJSON.term.suff.$ : null
         let prefix = inflectionJSON.term.pref ? inflectionJSON.term.pref.$ : null
         let xmpl = inflectionJSON.xmpl ? inflectionJSON.xmpl.$ : null
-        let inflection = new alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Inflection"](stem, mappingData.model.languageID, suffix, prefix, xmpl)
+        let inflection = new alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Inflection"](stem, mappingData.model.languageID, suffix, prefix, xmpl)
         if (targetWord) {
-          inflection.addFeature(new alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"](alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.fullForm, targetWord, mappingData.model.languageID))
+          inflection.addFeature(new alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"](alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.fullForm, targetWord, mappingData.model.languageID))
         }
-        // Parse whatever grammatical features we're interested in
-        mappingData.mapFeature(inflection, inflectionJSON, 'pofs', 'part', this.config.allowUnknownValues)
-        mappingData.mapFeature(inflection, inflectionJSON, 'case', 'grmCase', this.config.allowUnknownValues)
-        mappingData.mapFeature(inflection, inflectionJSON, 'decl', 'declension', this.config.allowUnknownValues)
-        mappingData.mapFeature(inflection, inflectionJSON, 'num', 'number', this.config.allowUnknownValues)
-        mappingData.mapFeature(inflection, inflectionJSON, 'gend', 'gender', this.config.allowUnknownValues)
-        mappingData.mapFeature(inflection, inflectionJSON, 'conj', 'conjugation', this.config.allowUnknownValues)
-        mappingData.mapFeature(inflection, inflectionJSON, 'tense', 'tense', this.config.allowUnknownValues)
-        mappingData.mapFeature(inflection, inflectionJSON, 'voice', 'voice', this.config.allowUnknownValues)
-        mappingData.mapFeature(inflection, inflectionJSON, 'mood', 'mood', this.config.allowUnknownValues)
-        mappingData.mapFeature(inflection, inflectionJSON, 'pers', 'person', this.config.allowUnknownValues)
-        mappingData.mapFeature(inflection, inflectionJSON, 'comp', 'comparison', this.config.allowUnknownValues)
-        if (inflectionJSON.stemtype) {
-          mappingData.mapFeature(inflection, inflectionJSON, 'stemtype', 'stemtype', this.config.allowUnknownValues)
-        }
-        if (inflectionJSON.derivtype) {
-          mappingData.mapFeature(inflection, inflectionJSON, 'derivtype', 'derivtype', this.config.allowUnknownValues)
-        }
-        if (inflectionJSON.dial) {
-          mappingData.mapFeature(inflection, inflectionJSON, 'dial', 'dialect', this.config.allowUnknownValues)
-        }
-        if (inflectionJSON.morph) {
-          mappingData.mapFeature(inflection, inflectionJSON, 'morph', 'morph', this.config.allowUnknownValues)
+        // Parse whatever grammatical features we're interested in and are provided
+        for (let f of [
+          ['pofs', 'part'],
+          ['case', 'grmCase'],
+          ['decl', 'declension'],
+          ['num', 'number'],
+          ['gend', 'gender'],
+          ['conj', 'conjugation'],
+          ['tense', 'tense'],
+          ['voice', 'voice'],
+          ['mood', 'mood'],
+          ['pers', 'person'],
+          ['comp', 'comparison'],
+          ['stemtype', 'stemtype'],
+          ['derivtype', 'derivtype'],
+          ['dial', 'dialect'],
+          ['morph', 'morph']
+        ]) {
+          try {
+            mappingData.mapFeature(inflection, inflectionJSON, ...f, this.config.allowUnknownValues)
+          } catch (e) {
+            console.log(`Unable to map ${f[0]}`, e)
+          }
         }
         // we only use the inflection if it tells us something the dictionary details do not
-        if (inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.grmCase] ||
-          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.tense] ||
-          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.mood] ||
-          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.voice] ||
-          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.person] ||
-          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.comparison] ||
-          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.stemtype] ||
-          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.derivtype] ||
-          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.dialect] ||
-          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.morph] ||
-          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.example]) {
+        if (inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.grmCase] ||
+          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.tense] ||
+          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.mood] ||
+          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.voice] ||
+          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.person] ||
+          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.comparison] ||
+          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.stemtype] ||
+          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.derivtype] ||
+          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.dialect] ||
+          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.morph] ||
+          inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.example]) {
           inflections.push(inflection)
         }
         // inflection can provide lemma decl, pofs, conj
         for (let lemma of lemmas) {
-          if (!lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.part]) {
+          if (!lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.part]) {
             mappingData.mapFeature(lemma, inflectionJSON, 'pofs', 'part', this.config.allowUnknownValues)
           }
           // only take declension from inflection if lemma has no part of speech or its the same as the inflection
-          if (!lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.declension] &&
-            (!lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.part] || lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.part].isEqual(inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.part]))) {
+          if (!lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.declension] &&
+            (!lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.part] || lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.part].isEqual(inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.part]))) {
             mappingData.mapFeature(lemma, inflectionJSON, 'decl', 'declension', this.config.allowUnknownValues)
           }
           // only take conjugation from inflection if lemma has a part of speech and its the same as the inflection
-          if (!lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.conjugation] &&
-            (!lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.part] || lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.part].isEqual(inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.part]))) {
+          if (!lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.conjugation] &&
+            (!lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.part] || lemma.features[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.part].isEqual(inflection[alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.part]))) {
             mappingData.mapFeature(lemma, inflectionJSON, 'conj', 'conjugation', this.config.allowUnknownValues)
           }
         }
@@ -75155,7 +75351,7 @@ class AlpheiosTuftsAdapter extends _base_adapter__WEBPACK_IMPORTED_MODULE_0__["d
       lexemes.push(...aggregated)
     }
     if (lexemes.length > 0) {
-      return new alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Homonym"](lexemes, targetWord)
+      return new alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Homonym"](lexemes, targetWord)
     } else {
       return undefined
     }
@@ -75165,7 +75361,9 @@ class AlpheiosTuftsAdapter extends _base_adapter__WEBPACK_IMPORTED_MODULE_0__["d
     let jsonObj = await this.fetch(languageID, word)
     if (jsonObj) {
       let homonym = this.transform(jsonObj, word)
-      homonym.lexemes.sort(alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Lexeme"].getSortByTwoLemmaFeatures(alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.frequency, alpheios_data_models__WEBPACK_IMPORTED_MODULE_5__["Feature"].types.part))
+      if (homonym && homonym.lexemes) {
+        homonym.lexemes.sort(alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Lexeme"].getSortByTwoLemmaFeatures(alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.frequency, alpheios_data_models__WEBPACK_IMPORTED_MODULE_6__["Feature"].types.part))
+      }
       return homonym
     } else {
       // No data found for this word
@@ -75186,7 +75384,7 @@ class AlpheiosTuftsAdapter extends _base_adapter__WEBPACK_IMPORTED_MODULE_0__["d
 /*! exports provided: engine, url, allowUnknownValues, default */
 /***/ (function(module) {
 
-module.exports = {"engine":{"lat":["whitakerLat"],"grc":["morpheusgrc"],"ara":["aramorph"],"per":["hazm"]},"url":"https://morph.alpheios.net/api/v1/analysis/word?word=r_WORD&engine=r_ENGINE&lang=r_LANG","allowUnknownValues":true};
+module.exports = {"engine":{"lat":["whitakerLat"],"grc":["morpheusgrc"],"ara":["aramorph"],"per":["hazm"],"gez":["traces"]},"url":"https://morph.alpheios.net/api/v1/analysis/word?word=r_WORD&engine=r_ENGINE&lang=r_LANG","allowUnknownValues":true};
 
 /***/ }),
 
@@ -75361,6 +75559,28 @@ data.addFeature(alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__["Feature"].typ
 
 /***/ }),
 
+/***/ "./tufts/engine/traces.js":
+/*!********************************!*\
+  !*** ./tufts/engine/traces.js ***!
+  \********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _lib__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../lib */ "./tufts/lib.js");
+/* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! alpheios-data-models */ "alpheios-data-models");
+/* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__);
+
+
+
+let data = new _lib__WEBPACK_IMPORTED_MODULE_0__["default"](alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__["GeezLanguageModel"], 'traces')
+
+/* harmony default export */ __webpack_exports__["default"] = (data);
+
+
+/***/ }),
+
 /***/ "./tufts/engine/whitakers.js":
 /*!***********************************!*\
   !*** ./tufts/engine/whitakers.js ***!
@@ -75421,10 +75641,11 @@ data.setLexemeAggregator(function (lexemeSet, inflections) {
           if (otherLex.meaning.shortDefs.length > 0 && otherLex.lemma.isFullHomonym(lex.lemma)) {
             let featuresMatch = true
             for (let feature of Object.entries(lex.lemma.features)) {
-              // check the other features excluding frequency and source
+              // check the other features excluding frequency, source and age
               if ((feature[0] !== alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__["Feature"].types.frequency) &&
-                    (feature[0] !== alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__["Feature"].types.source) &&
-                    !(feature[1].isEqual(otherLex.lemma.features[feature[0]]))) {
+                   (feature[0] !== alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__["Feature"].types.source) &&
+                   (feature[0] !== alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__["Feature"].types.age) &&
+                   !(feature[1].isEqual(otherLex.lemma.features[feature[0]]))) {
                 featuresMatch = false
                 break
               }
@@ -75668,9 +75889,9 @@ class ImportData {
    * @param {boolean} allowUnknownValues flag to indicate if unknown values are allowed
    */
   mapFeature (model, inputElem, inputName, featureName, allowUnknownValues) {
-    let values = []
     let inputItem = inputElem[inputName]
-    if (inputItem) {
+    if (inputItem && (Array.isArray(inputItem) || inputItem.$)) {
+      let values = []
       if (Array.isArray(inputItem)) {
         // There are multiple values of this feature
         for (let e of inputItem) {
@@ -75680,12 +75901,12 @@ class ImportData {
         values = this.parseProperty(inputName, inputItem.$)
       }
       // `values` is always an array as an array is a return value of `parseProperty`
-    }
-    if (values.length > 0) {
-      // There are some values found
-      values = values.map(v => { return { providerValue: v, sortOrder: inputItem.order ? inputItem.order : 1 } })
-      let feature = this[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types[featureName]].getMultiple(values, allowUnknownValues)
-      model.addFeature(feature)
+      if (values.length > 0) {
+        // There are some values found
+        values = values.map(v => { return { providerValue: v, sortOrder: inputItem.order ? inputItem.order : 1 } })
+        let feature = this[alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Feature"].types[featureName]].getMultiple(values, allowUnknownValues)
+        model.addFeature(feature)
+      }
     }
   }
 }
