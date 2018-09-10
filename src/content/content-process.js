@@ -1,6 +1,7 @@
 /* global browser */
 import {Constants} from 'alpheios-data-models'
 import {AlpheiosTuftsAdapter} from 'alpheios-morph-client'
+import {LemmaTranslations} from 'alpheios-lemma-client'
 import {Lexicons} from 'alpheios-lexicon-client'
 import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
 import Message from '../lib/messaging/message/message'
@@ -27,6 +28,7 @@ export default class ContentProcess {
     this.uiOptions = new Options(UIOptionDefaults, ExtensionSyncStorage)
     this.messagingService = new MessagingService()
     this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
+    this.lemmaTranslations = new LemmaTranslations()
     this.ui = new UIController(this.state, this.options, this.resourceOptions, this.uiOptions, browser.runtime.getManifest())
   }
 
@@ -180,6 +182,7 @@ export default class ContentProcess {
             lexicons: Lexicons,
             resourceOptions: this.resourceOptions,
             siteOptions: [],
+            lemmaTranslations: this.enableLemmaTranslations(textSelector) ? { adapter: LemmaTranslations, locale: this.options.items.locale.currentValue } : null,
             langOpts: { [Constants.LANG_PERSIAN]: { lookupMorphLast: true } } // TODO this should be externalized
           }),
           {
@@ -192,6 +195,16 @@ export default class ContentProcess {
           .getData()
       }
     }
+  }
+
+  /**
+   * Check to see if Lemma Translations should be enabled for a query
+   *  NB this is Prototype functionality
+   */
+  enableLemmaTranslations (textSelector) {
+    return textSelector.languageID === Constants.LANG_LATIN &&
+      this.options.items.enableLemmaTranslations.currentValue &&
+      !this.options.items.locale.currentValue.match(/^en-/)
   }
 
   /**
