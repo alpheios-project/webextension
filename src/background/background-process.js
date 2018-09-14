@@ -422,11 +422,11 @@ export default class BackgroundProcess {
   updateBrowserActionForTab (tab) {
     if (tab && tab.hasOwnProperty('status')) {
       if (tab.isActive()) {
-        browser.browserAction.setTitle({title: BackgroundProcess.defaults.deactivateBrowserActionTitle, tabId: tab.tabObj.tabId})
+        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.deactivateBrowserActionTitle, tabId: tab.tabObj.tabId })
       } else if (tab.isDeactivated()) {
-        browser.browserAction.setTitle({title: BackgroundProcess.defaults.activateBrowserActionTitle, tabId: tab.tabObj.tabId})
+        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.activateBrowserActionTitle, tabId: tab.tabObj.tabId })
       } else if (tab.isDisabled()) {
-        browser.browserAction.setTitle({title: BackgroundProcess.defaults.disabledBrowserActionTitle, tabId: tab.tabObj.tabId})
+        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.disabledBrowserActionTitle, tabId: tab.tabObj.tabId })
       }
     }
   }
