@@ -1,8 +1,8 @@
 /* global browser */
-import {Constants} from 'alpheios-data-models'
-import {AlpheiosTuftsAdapter} from 'alpheios-morph-client'
-import {Lexicons} from 'alpheios-lexicon-client'
-import {ObjectMonitor as ExpObjMon} from 'alpheios-experience'
+import { Constants } from 'alpheios-data-models'
+import { AlpheiosTuftsAdapter } from 'alpheios-morph-client'
+import { Lexicons } from 'alpheios-lexicon-client'
+import { ObjectMonitor as ExpObjMon } from 'alpheios-experience'
 import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'

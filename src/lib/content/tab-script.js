@@ -1,4 +1,4 @@
-import {UIStateAPI} from 'alpheios-components'
+import { UIStateAPI } from 'alpheios-components'
 import Tab from '@/lib/tab.js'
 /**
  * Contains a state of a tab content script.

@@ -1,6 +1,6 @@
 import Browser from '../lib/browser'
 import Process from './background-process'
-import {Monitor as ExperienceMonitor} from 'alpheios-experience'
+import { Monitor as ExperienceMonitor } from 'alpheios-experience'
 
 // Detect browser features
 let browserFeatures = new Browser().inspect().getFeatures()
