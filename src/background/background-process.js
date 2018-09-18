@@ -303,22 +303,31 @@ export default class BackgroundProcess {
    * @return {Promise.<void>}
    */
   async navigationCompletedListener (details) {
-    // make sure this is a tab we know about AND that it's not an iframe event
     let finalWindowId = this.defineCurrentWindowIdForActivation(details)
 
     let tmpTabUniqueId = Tab.createUniqueId(details.tabId, finalWindowId)
 
-    if (this.tabs.has(tmpTabUniqueId) && details.frameId === 0) {
-      // If content script was loaded to that tab, restore it to the state it had before
-      let tab = this.tabs.get(tmpTabUniqueId)
-      tab.restore()
-      try {
-        await this.loadContentData(tab)
-        this.setContentState(tab)
-        this.checkEmbeddedContent(details.tabId)
-        this.notifyPageLoad(details.tabId)
-      } catch (error) {
-        console.error(`Cannot load content script for a tab with an ID of tabId = ${details.tabId}, windowId = ${details.windowId}`)
+    if (this.tabs.has(tmpTabUniqueId)) {
+      // make sure this is a tab we know about
+      if (details.frameId === 0) {
+        // AND that it's not an iframe event
+        // If content script was loaded to that tab, restore it to the state it had before
+        let tab = this.tabs.get(tmpTabUniqueId)
+        tab.restore()
+        try {
+          await this.loadContentData(tab)
+          this.setContentState(tab)
+          this.checkEmbeddedContent(details.tabId)
+          this.notifyPageLoad(details.tabId)
+        } catch (error) {
+          console.error(`Cannot load content script for a tab with an ID of tabId = ${details.tabId}, windowId = ${details.windowId}`)
+        }
+      // but if it is an iFrame event
+      // firefox resets the browserAction icon and title when the user navigates to a new page
+      // even when the navigation is in a frame so we need to be sure it's updated
+      } else if (this.tabs.get(tmpTabUniqueId).isActive()) {
+        this.updateIcon(true, details.tabId)
+        this.updateBrowserActionForTab(this.tabs.get(tmpTabUniqueId))
       }
     }
   }
