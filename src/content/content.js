@@ -1,8 +1,9 @@
 import ContentProcess from './content-process'
-import { Monitor as ExperienceMonitor } from 'alpheios-experience'
+// import { Monitor as ExperienceMonitor } from 'alpheios-experience'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
 
-let contentProcess = ExperienceMonitor.track(
+// TODO: Might cause memory leaks on page reload
+/* let contentProcess = ExperienceMonitor.track(
   new ContentProcess(),
   [
     {
@@ -11,6 +12,7 @@ let contentProcess = ExperienceMonitor.track(
       asyncWrapper: ExperienceMonitor.recordExperience
     }
   ]
-)
+) */
 
+let contentProcess = new ContentProcess()
 contentProcess.initialize()

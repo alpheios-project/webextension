@@ -3,7 +3,7 @@ import { Constants } from 'alpheios-data-models'
 import { AlpheiosTuftsAdapter } from 'alpheios-morph-client'
 import { LemmaTranslations } from 'alpheios-lemma-client'
 import { Lexicons } from 'alpheios-lexicon-client'
-import { ObjectMonitor as ExpObjMon } from 'alpheios-experience'
+// import { ObjectMonitor as ExpObjMon } from 'alpheios-experience'
 import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
@@ -174,7 +174,8 @@ export default class ContentProcess {
       let textSelector = htmlSelector.createTextSelector()
 
       if (!textSelector.isEmpty()) {
-        ExpObjMon.track(
+        // TODO: disable experience monitor as it might cause memory leaks
+        /* ExpObjMon.track(
           LexicalQuery.create(textSelector, {
             htmlSelector: htmlSelector,
             uiController: this.ui,
@@ -192,7 +193,18 @@ export default class ContentProcess {
               { name: 'finalize', action: ExpObjMon.actions.STOP, event: ExpObjMon.events.GET }
             ]
           })
-          .getData()
+          .getData() */
+
+        LexicalQuery.create(textSelector, {
+          htmlSelector: htmlSelector,
+          uiController: this.ui,
+          maAdapter: this.maAdapter,
+          lexicons: Lexicons,
+          resourceOptions: this.resourceOptions,
+          siteOptions: [],
+          lemmaTranslations: this.enableLemmaTranslations(textSelector) ? { adapter: LemmaTranslations, locale: this.options.items.locale.currentValue } : null,
+          langOpts: { [Constants.LANG_PERSIAN]: { lookupMorphLast: true } } // TODO this should be externalized
+        }).getData()
       }
     }
   }
