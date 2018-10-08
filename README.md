@@ -1,9 +1,6 @@
 # Alpheios WebExtension
 [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-# Alpheios WebExtension
-[![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
-
 ## Build Instructions
 
 **Prerequisites**
