@@ -16,4 +16,4 @@ operating system for build: windows or linux
 npm install
 npm run build
 npm run zip <version>
-``
+```
