@@ -6,6 +6,7 @@
 **Prerequisites**
 
 node 10.5.0 or greater
+
 npm 6.1.0 or greater
 
 operating system for build: windows or linux
