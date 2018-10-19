@@ -1,11 +1,11 @@
 {
   "extensionName": {
-    "message": "Alpheios Reading Tools (Beta)",
+    "message": "Alpheios Reading Tools (Alpha)",
     "description": "Name of the extension."
   },
 
   "extensionDescription": {
-    "message": "The Alpheios Reading Tools add support for reading texts in Ancient Greek, Latin, Classical Arabic and Persian. Beta Version.",
+    "message": "The Alpheios Reading Tools add support for reading texts in Ancient Greek, Latin, Classical Arabic and Persian. Alpha Version.",
     "description": "Description of the extension."
   }
 }
