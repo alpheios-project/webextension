@@ -65,11 +65,6 @@
 		<key>SFSafariContentScript</key>
 		<array>
 			<dict>
-				<key>Excluded URL Patterns</key>
-				<array>
-					<string>https://*grammars.alpheios.net/*</string>
-					<string>http://*grammars.alpheios.net/*</string>
-				</array>
 				<key>Script</key>
 				<string>content-safari.js</string>
 			</dict>
