@@ -63,14 +63,14 @@
 		7832F8A12147A4E400CD96CB /* SafariExtensionViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariExtensionViewController.swift; sourceTree = "<group>"; };
 		7832F8A42147A4E400CD96CB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/SafariExtensionViewController.xib; sourceTree = "<group>"; };
 		7832F8A62147A4E400CD96CB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		7832F8A72147A4E400CD96CB /* content-safari.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "content-safari.js"; path = "../../../dist/safari/content-safari.js"; sourceTree = "<group>"; };
+		7832F8A72147A4E400CD96CB /* content-safari.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = "content-safari.js"; path = "../../../dist/content-safari.js"; sourceTree = "<group>"; };
 		7832F8AB2147A4E400CD96CB /* AlpheiosSafariV2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AlpheiosSafariV2.entitlements; sourceTree = "<group>"; };
 		7832F8B42147A52300CD96CB /* TabScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabScript.swift; sourceTree = "<group>"; };
-		7832F8B62147A70300CD96CB /* content-safari.js.map */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; name = "content-safari.js.map"; path = "../../../dist/safari/content-safari.js.map"; sourceTree = "<group>"; };
-		7832F8B72147A70300CD96CB /* style.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; name = style.css; path = ../../../dist/safari/style.css; sourceTree = "<group>"; };
+		7832F8B72147A70300CD96CB /* style.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; name = style.css; path = ../../../dist/style/style.css; sourceTree = "<group>"; };
 		7832F8BC2147D9B900CD96CB /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		7832F8BE2147DB7C00CD96CB /* RequestMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestMessage.swift; sourceTree = "<group>"; };
 		7832F8C02147E10500CD96CB /* StateRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateRequest.swift; sourceTree = "<group>"; };
+		784A52D2217AEC8600E888E4 /* content-safari.js.map */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; name = "content-safari.js.map"; path = "../../../dist/content-safari.js.map"; sourceTree = "<group>"; };
 		BF3927F8216F565E00213E05 /* alpheios.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = alpheios.pdf; sourceTree = "<group>"; };
 		BF4FB089216E130B004E2592 /* TabScript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabScript.swift; sourceTree = "<group>"; };
 		BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundProcess.swift; sourceTree = "<group>"; };
@@ -141,10 +141,10 @@
 				BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */,
 				7832F89F2147A4E400CD96CB /* SafariExtensionHandler.swift */,
 				7832F8A12147A4E400CD96CB /* SafariExtensionViewController.swift */,
-				7832F8B62147A70300CD96CB /* content-safari.js.map */,
 				7832F8A32147A4E400CD96CB /* SafariExtensionViewController.xib */,
 				BF4FB089216E130B004E2592 /* TabScript.swift */,
 				7832F8B72147A70300CD96CB /* style.css */,
+				784A52D2217AEC8600E888E4 /* content-safari.js.map */,
 				7832F8A62147A4E400CD96CB /* Info.plist */,
 				7832F8A72147A4E400CD96CB /* content-safari.js */,
 				BF3927F8216F565E00213E05 /* alpheios.pdf */,

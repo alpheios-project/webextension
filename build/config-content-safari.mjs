@@ -28,22 +28,12 @@ const webpack = {
 
   production: {
     mode: 'production',
-    output: {filename: 'safari/content-safari.js'},
-    plugins: [
-      new MiniCssExtractPlugin({
-        filename: 'safari/style.min.css'
-      })
-    ]
+    output: {filename: 'content-safari.js'}
   },
 
   development: {
     mode: 'development',
-    output: {filename: 'safari/content-safari.js'},
-    plugins: [
-      new MiniCssExtractPlugin({
-        filename: 'safari/style.css'
-      })
-    ]
+    output: {filename: 'content-safari.js'}
   }
 }
 
