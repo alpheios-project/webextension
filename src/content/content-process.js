@@ -99,10 +99,4 @@ export default class ContentProcess extends BaseContentProcess {
       }
     )
   }
-
-  updatePanelOnActivation () {
-    if (this.isActive && this.ui.uiOptions.items.panelOnActivate.currentValue && !this.ui.panel.isOpen()) {
-      this.ui.panel.open()
-    }
-  }
 }
