@@ -7,7 +7,7 @@ import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
-import TabScript from '../lib/content/tab-script'
+
 import { ExtensionSyncStorage } from 'alpheios-components'
 
 export default class ContentProcess extends BaseContentProcess {
@@ -29,10 +29,6 @@ export default class ContentProcess extends BaseContentProcess {
 
   get messagingServiceClass () {
     return MessagingService
-  }
-
-  get tabScriptClass () {
-    return TabScript
   }
 
   handleStateRequest (request, sender) {

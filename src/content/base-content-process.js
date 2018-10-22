@@ -7,13 +7,14 @@ import { Lexicons } from 'alpheios-lexicon-client'
 import { HTMLSelector, LexicalQuery, Options, AnnotationQuery, UIController, LanguageOptionDefaults, ContentOptionDefaults,
   UIOptionDefaults, MouseDblClick } from 'alpheios-components'
 
+import TabScript from '@/lib/content/tab-script'
 import SiteOptions from '@/lib/settings/site-options.json'
 
 export default class BaseContentProcess {
   constructor () {
-    this.state = new this.tabScriptClass()
-    this.state.status = this.tabScriptClass.statuses.script.PENDING
-    this.state.panelStatus = this.tabScriptClass.statuses.panel.CLOSED
+    this.state = new TabScript()
+    this.state.status = TabScript.statuses.script.PENDING
+    this.state.panelStatus = TabScript.statuses.panel.CLOSED
 
     this.siteOptions = this.loadSiteOptions()
 
@@ -51,7 +52,7 @@ export default class BaseContentProcess {
 
   handleStateRequest (message) {
     console.log(`State request has been received`)
-    let state = this.tabScriptClass.readObject(message.body)
+    let state = TabScript.readObject(message.body)
     let diff = this.state.diff(state)
 
     if (diff.has('tabID')) {
@@ -68,14 +69,14 @@ export default class BaseContentProcess {
     }
 
     if (diff.has('status')) {
-      if (diff.status === this.tabScriptClass.statuses.script.ACTIVE) {
+      if (diff.status === TabScript.statuses.script.ACTIVE) {
         this.state.activate()
-      } else if (diff.status === this.tabScriptClass.statuses.script.DEACTIVATED) {
+      } else if (diff.status === TabScript.statuses.script.DEACTIVATED) {
         this.state.deactivate()
         this.ui.panel.close()
         this.ui.popup.close()
         console.log('Content has been deactivated')
-      } else if (diff.status === this.tabScriptClass.statuses.script.DISABLED) {
+      } else if (diff.status === TabScript.statuses.script.DISABLED) {
         this.state.disable()
         console.log('Content has been disabled')
       }
@@ -83,7 +84,7 @@ export default class BaseContentProcess {
 
     if (this.ui) {
       if (diff.has('panelStatus')) {
-        if (diff.panelStatus === this.tabScriptClass.statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
+        if (diff.panelStatus === TabScript.statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
       }
       this.updatePanelOnActivation()
       if (diff.has('tab') && diff.tab) {

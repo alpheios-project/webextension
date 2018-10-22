@@ -8,7 +8,6 @@ import MessagingService from '@safari/lib/messaging/service'
 
 import StateMessage from '@safari/lib/messaging/message/state-message'
 
-import TabScript from '@safari/lib/content/tab-script'
 import { LocalStorageArea, MouseDblClick } from 'alpheios-components'
 
 export default class ContentProcessSafari extends BaseContentProcess {
@@ -17,10 +16,6 @@ export default class ContentProcessSafari extends BaseContentProcess {
     this.messagingService.addHandler(Message.types.STATE_REQUEST, this.handleStateRequest, this)
     safari.self.addEventListener('message', this.messagingService.listener.bind(this.messagingService))
     this.sendStateToBackground('updateState')
-  }
-
-  get tabScriptClass () {
-    return TabScript
   }
 
   get storageAreaClass () {
