@@ -1,8 +1,5 @@
 /* eslint-disable no-unused-vars */
 /* global safari */
-import { Constants } from 'alpheios-data-models'
-import { AlpheiosTuftsAdapter } from 'alpheios-morph-client'
-import { Lexicons } from 'alpheios-lexicon-client'
 
 import BaseContentProcess from '@/content/base-content-process'
 
@@ -12,25 +9,11 @@ import MessagingService from '@safari/lib/messaging/service'
 import StateMessage from '@safari/lib/messaging/message/state-message'
 
 import TabScript from '@safari/lib/content/tab-script'
-import { UIController, HTMLSelector, LexicalQuery, LanguageOptionDefaults, ContentOptionDefaults,
-  UIOptionDefaults, Options, AnnotationQuery, LocalStorageArea, MouseDblClick } from 'alpheios-components'
-import SiteOptions from '@safari/lib/settings/site-options.json'
+import { LocalStorageArea, MouseDblClick } from 'alpheios-components'
 
 export default class ContentProcessSafari extends BaseContentProcess {
   constructor () {
     super(TabScript)
-
-    this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
-    this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
-    this.state.setWatcher('uiActive', this.updateAnnotations.bind(this))
-
-    this.options = new Options(ContentOptionDefaults, LocalStorageArea)
-    this.resourceOptions = new Options(LanguageOptionDefaults, LocalStorageArea)
-    this.uiOptions = new Options(UIOptionDefaults, LocalStorageArea)
-
-    this.messagingService = new MessagingService()
-    this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
-    this.ui = new UIController(this.state, this.options, this.resourceOptions, this.uiOptions)
   }
 
   initialize () {
@@ -51,6 +34,10 @@ export default class ContentProcessSafari extends BaseContentProcess {
 
   get storageAreaClass () {
     return LocalStorageArea
+  }
+
+  get messagingServiceClass () {
+    return MessagingService
   }
 
   handleStateRequest (message) {
@@ -98,20 +85,6 @@ export default class ContentProcessSafari extends BaseContentProcess {
 
   sendStateToBackground (messageName) {
     safari.extension.dispatchMessage(messageName, new StateMessage(this.state))
-  }
-
-  /**
-   * Load site-specific settings
-   */
-  loadSiteOptions () {
-    let allSiteOptions = []
-    for (let site of SiteOptions) {
-      for (let domain of site.options) {
-        let siteOpts = new Options(domain, LocalStorageArea)
-        allSiteOptions.push({ uriMatch: site.uriMatch, resourceOptions: siteOpts })
-      }
-    }
-    return allSiteOptions
   }
 
   updatePanelOnActivation () {
