@@ -4,6 +4,9 @@ import { AlpheiosTuftsAdapter } from 'alpheios-morph-client'
 import { LemmaTranslations } from 'alpheios-lemma-client'
 import { Lexicons } from 'alpheios-lexicon-client'
 // import { ObjectMonitor as ExpObjMon } from 'alpheios-experience'
+
+import BaseContentProcess from '@/content/base-content-process'
+
 import Message from '../lib/messaging/message/message'
 import MessagingService from '../lib/messaging/service'
 import StateMessage from '../lib/messaging/message/state-message'
@@ -11,15 +14,11 @@ import StateResponse from '../lib/messaging/response/state-response'
 import TabScript from '../lib/content/tab-script'
 import { UIController, HTMLSelector, LexicalQuery, LanguageOptionDefaults, ContentOptionDefaults,
   UIOptionDefaults, Options, AnnotationQuery, ExtensionSyncStorage, MouseDblClick } from 'alpheios-components'
-import SiteOptions from '../lib/settings/site-options.json'
 
-export default class ContentProcess {
+export default class ContentProcess extends BaseContentProcess {
   constructor () {
-    this.state = new TabScript()
-    this.state.status = TabScript.statuses.script.PENDING
-    this.state.panelStatus = TabScript.statuses.panel.CLOSED
+    super(TabScript)
 
-    this.siteOptions = this.loadSiteOptions()
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
     this.state.setWatcher('uiActive', this.updateAnnotations.bind(this))
@@ -44,6 +43,10 @@ export default class ContentProcess {
 
     document.body.addEventListener('Alpheios_Options_Loaded', this.updatePanelOnActivation.bind(this))
     this.reactivate()
+  }
+
+  get storageAreaClass () {
+    return ExtensionSyncStorage
   }
 
   get isActive () {
@@ -217,20 +220,6 @@ export default class ContentProcess {
     return textSelector.languageID === Constants.LANG_LATIN &&
       this.options.items.enableLemmaTranslations.currentValue &&
       !this.options.items.locale.currentValue.match(/^en-/)
-  }
-
-  /**
-   * Load site-specific settings
-   */
-  loadSiteOptions () {
-    let allSiteOptions = []
-    for (let site of SiteOptions) {
-      for (let domain of site.options) {
-        let siteOpts = new Options(domain, ExtensionSyncStorage)
-        allSiteOptions.push({ uriMatch: site.uriMatch, resourceOptions: siteOpts })
-      }
-    }
-    return allSiteOptions
   }
 
   /**

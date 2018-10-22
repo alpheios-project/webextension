@@ -4,6 +4,8 @@ import { Constants } from 'alpheios-data-models'
 import { AlpheiosTuftsAdapter } from 'alpheios-morph-client'
 import { Lexicons } from 'alpheios-lexicon-client'
 
+import BaseContentProcess from '@/content/base-content-process'
+
 import Message from '@safari/lib/messaging/message/message'
 import MessagingService from '@safari/lib/messaging/service'
 
@@ -14,13 +16,10 @@ import { UIController, HTMLSelector, LexicalQuery, LanguageOptionDefaults, Conte
   UIOptionDefaults, Options, AnnotationQuery, LocalStorageArea, MouseDblClick } from 'alpheios-components'
 import SiteOptions from '@safari/lib/settings/site-options.json'
 
-export default class ContentProcess {
+export default class ContentProcessSafari extends BaseContentProcess {
   constructor () {
-    this.state = new TabScript()
-    this.state.status = TabScript.statuses.script.PENDING
-    this.state.panelStatus = TabScript.statuses.panel.CLOSED
+    super(TabScript)
 
-    this.siteOptions = this.loadSiteOptions()
     this.state.setWatcher('panelStatus', this.sendStateToBackground.bind(this))
     this.state.setWatcher('tab', this.sendStateToBackground.bind(this))
     this.state.setWatcher('uiActive', this.updateAnnotations.bind(this))
@@ -50,51 +49,8 @@ export default class ContentProcess {
     this.sendStateToBackground('updateState')
   }
 
-  get isActive () {
-    return this.state.isActive()
-  }
-
-  get uiIsActive () {
-    return this.state.uiIsActive()
-  }
-
-  disableContent () {
-    console.log('Alpheios is embedded.')
-    // if we weren't already disabled, remember the current state
-    // and then deactivate before disabling
-    if (!this.state.isDisabled()) {
-      this.state.save()
-      if (this.isActive) {
-        console.log('Deactivating Alpheios')
-        this.deactivate()
-      }
-    }
-    this.state.disable()
-    this.sendStateToBackground()
-  }
-
-  handleReload () {
-    console.log('Alpheios reload event caught.')
-    if (this.isActive) {
-      this.deactivate()
-    }
-    window.location.reload()
-  }
-
-  deactivate () {
-    console.log('Content has been deactivated.')
-    this.ui.popup.close()
-    this.ui.panel.close()
-    this.state.deactivate()
-  }
-
-  reactivate () {
-    if (this.state.isDisabled()) {
-      console.log('Alpheios is disabled')
-    } else {
-      console.log('Content has been reactivated.')
-      this.state.activate()
-    }
+  get storageAreaClass () {
+    return LocalStorageArea
   }
 
   handleStateRequest (message) {
@@ -144,42 +100,6 @@ export default class ContentProcess {
     safari.extension.dispatchMessage(messageName, new StateMessage(this.state))
   }
 
-  handleEscapeKey (event) {
-    if (event.keyCode === 27 && this.isActive) {
-      if (this.state.isPanelOpen()) {
-        this.ui.panel.close()
-      } else if (this.ui.popup.visible) {
-        this.ui.popup.close()
-      }
-    }
-    return true
-  }
-
-  getSelectedText (event) {
-    if (this.isActive && this.uiIsActive) {
-      /*
-      TextSelector conveys text selection information. It is more generic of the two.
-      HTMLSelector conveys page-specific information, such as location of a selection on a page.
-      It's probably better to keep them separated in order to follow a more abstract model.
-       */
-      let htmlSelector = new HTMLSelector(event, this.options.items.preferredLanguage.currentValue)
-      let textSelector = htmlSelector.createTextSelector()
-
-      if (!textSelector.isEmpty()) {
-        LexicalQuery.create(textSelector, {
-          htmlSelector: htmlSelector,
-          uiController: this.ui,
-          maAdapter: this.maAdapter,
-          lexicons: Lexicons,
-          resourceOptions: this.resourceOptions,
-          siteOptions: [],
-          langOpts: { [Constants.LANG_PERSIAN]: { lookupMorphLast: true } } // TODO this should be externalized
-        })
-          .getData()
-      }
-    }
-  }
-
   /**
    * Load site-specific settings
    */
@@ -192,19 +112,6 @@ export default class ContentProcess {
       }
     }
     return allSiteOptions
-  }
-
-  /**
-   * Issues an AnnotationQuery to find and apply annotations for the currently loaded document
-   */
-  updateAnnotations () {
-    if (this.isActive && this.uiIsActive) {
-      AnnotationQuery.create({
-        uiController: this.ui,
-        document: document,
-        siteOptions: this.siteOptions
-      }).getData()
-    }
   }
 
   updatePanelOnActivation () {

@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import ContentProcess from '@safari/content/content-process.js'
+import ContentProcessSafari from '@/content/content-process-safari.js'
 import HTMLPage from '@safari/lib/html-page.js'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
 // import { Monitor as ExperienceMonitor } from 'alpheios-experience'
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
   if (event.currentTarget.URL.search(`${SAFARI_BLANK_ADDR}|${ALPHEIOS_GRAMMAR_ADDR}`) === -1) {
     if (!HTMLPage.hasFrames && !HTMLPage.isFrame) {
-      let contentProcess = new ContentProcess()
+      let contentProcess = new ContentProcessSafari()
       contentProcess.initialize()
     } else {
       console.warn(`Alpheios Safari App Extension cannot be enabled on pages with frames`)
