@@ -5,8 +5,8 @@ const projectRoot = process.cwd()
 
 const webpack = {
   common: {
-    context: path.join(projectRoot, 'src/content-safari'),
-    entry: './index.js',
+    context: path.join(projectRoot, 'src'),
+    entry: './content/content-safari.js',
     resolve: {
       alias: {
         'alpheios-data-models': path.join(projectRoot, 'node_modules/alpheios-data-models/dist/alpheios-data-models.js'),
