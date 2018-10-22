@@ -3,12 +3,12 @@
 
 import BaseContentProcess from '@/content/base-content-process'
 
-import Message from '@safari/lib/messaging/message/message'
-import MessagingService from '@safari/lib/messaging/service'
+import Message from '@/lib/messaging/message/message'
+import MessagingService from '@/lib/messaging/service-safari'
 
-import StateMessage from '@safari/lib/messaging/message/state-message'
+import StateMessage from '@/lib/messaging/message/state-message'
 
-import { LocalStorageArea, MouseDblClick } from 'alpheios-components'
+import { LocalStorageArea } from 'alpheios-components'
 
 export default class ContentProcessSafari extends BaseContentProcess {
   initialize () {

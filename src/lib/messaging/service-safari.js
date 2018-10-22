@@ -1,17 +1,9 @@
 /* eslint-disable no-unused-vars */
 /* global safari */
 
-export default class Service {
-  constructor () {
-    this.messages = new Map()
-    this.listeners = new Map()
-  }
+import BaseService from '@/lib/messaging/base-service'
 
-  addHandler (type, handlerFunc, thisValue = undefined) {
-    if (thisValue) { handlerFunc = handlerFunc.bind(thisValue) }
-    this.listeners.set(type, handlerFunc)
-  }
-
+export default class ServiceSafari extends BaseService {
   listener (sender) {
     let message = sender.message
     console.log(`New message received:`, message)

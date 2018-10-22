@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import ContentProcessSafari from '@/content/content-process-safari.js'
-import HTMLPage from '@safari/lib/html-page.js'
+import HTMLPage from '@/lib/html-page.js'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
 // import { Monitor as ExperienceMonitor } from 'alpheios-experience'
 
