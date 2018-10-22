@@ -5,15 +5,15 @@ import { LemmaTranslations } from 'alpheios-lemma-client'
 import { Lexicons } from 'alpheios-lexicon-client'
 
 import { HTMLSelector, LexicalQuery, Options, AnnotationQuery, UIController, LanguageOptionDefaults, ContentOptionDefaults,
-  UIOptionDefaults } from 'alpheios-components'
+  UIOptionDefaults, MouseDblClick } from 'alpheios-components'
 
 import SiteOptions from '@/lib/settings/site-options.json'
 
 export default class BaseContentProcess {
-  constructor (TabScriptClass) {
-    this.state = new TabScriptClass()
-    this.state.status = TabScriptClass.statuses.script.PENDING
-    this.state.panelStatus = TabScriptClass.statuses.panel.CLOSED
+  constructor () {
+    this.state = new this.tabScriptClass()
+    this.state.status = this.tabScriptClass.statuses.script.PENDING
+    this.state.panelStatus = this.tabScriptClass.statuses.panel.CLOSED
 
     this.siteOptions = this.loadSiteOptions()
 
@@ -36,6 +36,60 @@ export default class BaseContentProcess {
 
   get uiIsActive () {
     return this.state.uiIsActive()
+  }
+
+  initialize () {
+    MouseDblClick.listen('body', evt => this.getSelectedText(evt))
+
+    document.addEventListener('keydown', this.handleEscapeKey.bind(this))
+    document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
+    document.body.addEventListener('Alpheios_Embedded_Response', this.disableContent.bind(this))
+    document.body.addEventListener('Alpheios_Page_Load', this.updateAnnotations.bind(this))
+
+    document.body.addEventListener('Alpheios_Options_Loaded', this.updatePanelOnActivation.bind(this))
+  }
+
+  handleStateRequest (message) {
+    console.log(`State request has been received`)
+    let state = this.tabScriptClass.readObject(message.body)
+    let diff = this.state.diff(state)
+
+    if (diff.has('tabID')) {
+      if (!this.state.tabID) {
+        // Content script has been just loaded and does not have its tab ID yet
+        this.state.tabID = diff.tabID
+        this.state.tabObj = state.tabObj
+      } else if (!this.state.hasSameID(diff.tabID)) {
+        console.warn(`State request with the wrong tab ID "${Symbol.keyFor(diff.tabID)}" received. This tab ID is "${Symbol.keyFor(this.state.tabID)}"`)
+        // TODO: Should we ignore such requests?
+        this.state.tabID = state.tabID
+        this.state.tabObj = state.tabObj
+      }
+    }
+
+    if (diff.has('status')) {
+      if (diff.status === this.tabScriptClass.statuses.script.ACTIVE) {
+        this.state.activate()
+      } else if (diff.status === this.tabScriptClass.statuses.script.DEACTIVATED) {
+        this.state.deactivate()
+        this.ui.panel.close()
+        this.ui.popup.close()
+        console.log('Content has been deactivated')
+      } else if (diff.status === this.tabScriptClass.statuses.script.DISABLED) {
+        this.state.disable()
+        console.log('Content has been disabled')
+      }
+    }
+
+    if (this.ui) {
+      if (diff.has('panelStatus')) {
+        if (diff.panelStatus === this.tabScriptClass.statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
+      }
+      this.updatePanelOnActivation()
+      if (diff.has('tab') && diff.tab) {
+        this.ui.changeTab(diff.tab)
+      }
+    }
   }
 
   disableContent () {
