@@ -4,17 +4,17 @@ import { Constants } from 'alpheios-data-models'
 import { AlpheiosTuftsAdapter } from 'alpheios-morph-client'
 import { Lexicons } from 'alpheios-lexicon-client'
 
-import Message from '@safari/lib/messaging/message/message'
-import MessagingService from '@safari/lib/messaging/service'
+// import Message from '@/lib/messaging/message/message.js'
+// import MessagingService from '@safari/lib/messaging/service-safari.js'
 
-import StateMessage from '@safari/lib/messaging/message/state-message'
+import StateMessage from '@/lib/messaging/message/state-message.js'
 
-import TabScript from '@safari/lib/content/tab-script'
+import TabScript from '@/lib/content/tab-script.js'
 import { UIController, HTMLSelector, LexicalQuery, LanguageOptionDefaults, ContentOptionDefaults,
   UIOptionDefaults, Options, AnnotationQuery, LocalStorageArea, MouseDblClick } from 'alpheios-components'
-import SiteOptions from '@safari/lib/settings/site-options.json'
+import SiteOptions from '@/lib/settings/site-options.json'
 
-export default class ContentProcess {
+export default class ContentProcessSafari {
   constructor () {
     this.state = new TabScript()
     this.state.status = TabScript.statuses.script.PENDING
@@ -29,14 +29,23 @@ export default class ContentProcess {
     this.resourceOptions = new Options(LanguageOptionDefaults, LocalStorageArea)
     this.uiOptions = new Options(UIOptionDefaults, LocalStorageArea)
 
-    this.messagingService = new MessagingService()
-    this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
-    this.ui = new UIController(this.state, this.options, this.resourceOptions, this.uiOptions)
+    /**
+     * Whether content process has been initialized.
+     * @type {boolean}
+     */
+    this.isInitialized = false
   }
 
-  initialize () {
-    this.messagingService.addHandler(Message.types.STATE_REQUEST, this.handleStateRequest, this)
-    safari.self.addEventListener('message', this.messagingService.listener.bind(this.messagingService))
+  /**
+   * Initializes a content process. It successful, sets `isInitialized` prop to true.
+   */
+  async init () {
+    if (this.isInitialized) { return `Already initialized` }
+
+    console.log(`Initialization started`)
+    this.maAdapter = new AlpheiosTuftsAdapter() // Morphological analyzer adapter, with default arguments
+    this.ui = new UIController(this.state, this.options, this.resourceOptions, this.uiOptions)
+    await this.ui.init()
 
     MouseDblClick.listen('body', evt => this.getSelectedText(evt))
 
@@ -48,6 +57,7 @@ export default class ContentProcess {
     document.body.addEventListener('Alpheios_Options_Loaded', this.updatePanelOnActivation.bind(this))
     // this.reactivate()
     this.sendStateToBackground('updateState')
+    this.isInitialized = true
   }
 
   get isActive () {
@@ -81,11 +91,16 @@ export default class ContentProcess {
     window.location.reload()
   }
 
+  activate () {
+    console.log('Content has been activated.')
+    this.state.activate()
+  }
+
   deactivate () {
     console.log('Content has been deactivated.')
-    this.ui.popup.close()
-    this.ui.panel.close()
     this.state.deactivate()
+    this.ui.panel.close()
+    this.ui.popup.close()
   }
 
   reactivate () {
@@ -94,49 +109,6 @@ export default class ContentProcess {
     } else {
       console.log('Content has been reactivated.')
       this.state.activate()
-    }
-  }
-
-  handleStateRequest (message) {
-    console.log(`State request has been received`)
-    let state = TabScript.readObject(message.body)
-    let diff = this.state.diff(state)
-
-    if (diff.has('tabID')) {
-      if (!this.state.tabID) {
-        // Content script has been just loaded and does not have its tab ID yet
-        this.state.tabID = diff.tabID
-        this.state.tabObj = state.tabObj
-      } else if (!this.state.hasSameID(diff.tabID)) {
-        console.warn(`State request with the wrong tab ID "${Symbol.keyFor(diff.tabID)}" received. This tab ID is "${Symbol.keyFor(this.state.tabID)}"`)
-        // TODO: Should we ignore such requests?
-        this.state.tabID = state.tabID
-        this.state.tabObj = state.tabObj
-      }
-    }
-
-    if (diff.has('status')) {
-      if (diff.status === TabScript.statuses.script.ACTIVE) {
-        this.state.activate()
-      } else if (diff.status === TabScript.statuses.script.DEACTIVATED) {
-        this.state.deactivate()
-        this.ui.panel.close()
-        this.ui.popup.close()
-        console.log('Content has been deactivated')
-      } else if (diff.status === TabScript.statuses.script.DISABLED) {
-        this.state.disable()
-        console.log('Content has been disabled')
-      }
-    }
-
-    if (this.ui) {
-      if (diff.has('panelStatus')) {
-        if (diff.panelStatus === TabScript.statuses.panel.OPEN) { this.ui.panel.open() } else { this.ui.panel.close() }
-      }
-      this.updatePanelOnActivation()
-      if (diff.has('tab') && diff.tab) {
-        this.ui.changeTab(diff.tab)
-      }
     }
   }
 

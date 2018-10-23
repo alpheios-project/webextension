@@ -1,7 +1,9 @@
 /* eslint-disable no-unused-vars */
-/* global safari */
 
-export default class Service {
+/**
+ * This is a Safari-specific implementation of a messaging service.
+ */
+export default class ServiceSafari {
   constructor () {
     this.messages = new Map()
     this.listeners = new Map()
