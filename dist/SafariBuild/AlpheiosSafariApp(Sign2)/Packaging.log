@@ -1,0 +1,312 @@
+2018-10-23 02:23:06 +0000  Initial pipeline context: <IDEDistributionProcessingPipelineContext: 0x7fab06e607b0; archive(resolved)='<IDEArchive: 0x7fab06b26160>', distributionTask(resolved)='2', distributionDestination(resolved)='1', distributionMethod(resolved)='<IDEDistributionMethodDevelopmentSignedMac: 0x7fab00c5f940>', team(resolved)='<IDEProvisioningDisambiguatableBasicTeam: 0x7fab009e4960; teamID='W79WNX2NKZ', teamName='The Alpheios Project Ltd.', teamType='Company', username='irinaskl0609@gmail.com', isFreeProvisioningTeam='0'>'>
+	Chain (11, self inclusive):
+	<IDEDistributionProcessingPipelineContext: 0x7fab06e607b0; archive = '<IDEArchive: 0x7fab06b26160>', distributionMethod='<IDEDistributionMethodDevelopmentSignedMac: 0x7fab00c5f940>', team='<IDEProvisioningDisambiguatableBasicTeam: 0x7fab009e4960; teamID='W79WNX2NKZ', teamName='The Alpheios Project Ltd.', teamType='Company', username='irinaskl0609@gmail.com', isFreeProvisioningTeam='0'>'>
+	<IDEDistributionProcessingPipelineContext: 0x7fab06d9d1d0; archive = '<IDEArchive: 0x7fab06b26160>', distributionMethod='<IDEDistributionMethodDevelopmentSignedMac: 0x7fab00c5f940>', team='<IDEProvisioningDisambiguatableBasicTeam: 0x7fab009e4960; teamID='W79WNX2NKZ', teamName='The Alpheios Project Ltd.', teamType='Company', username='irinaskl0609@gmail.com', isFreeProvisioningTeam='0'>'>
+	<IDEDistributionContext: 0x7fab06e3f470; archive = '<IDEArchive: 0x7fab06b26160>', distributionMethod='<IDEDistributionMethodDevelopmentSignedMac: 0x7fab00c5f940>', team='<IDEProvisioningDisambiguatableBasicTeam: 0x7fab009e4960; teamID='W79WNX2NKZ', teamName='The Alpheios Project Ltd.', teamType='Company', username='irinaskl0609@gmail.com', isFreeProvisioningTeam='0'>'>
+	<IDEDistributionContext: 0x7fab06d7dd30; archive = '<IDEArchive: 0x7fab06b26160>', distributionMethod='<IDEDistributionMethodDevelopmentSignedMac: 0x7fab00c5f940>', team='<IDEProvisioningDisambiguatableBasicTeam: 0x7fab009e4960; teamID='W79WNX2NKZ', teamName='The Alpheios Project Ltd.', teamType='Company', username='irinaskl0609@gmail.com', isFreeProvisioningTeam='0'>'>
+	<IDEDistributionContext: 0x7fab06d95450; archive = '<IDEArchive: 0x7fab06b26160>', distributionMethod='<IDEDistributionMethodDevelopmentSignedMac: 0x7fab00c5f940>', team='<IDEProvisioningDisambiguatableBasicTeam: 0x7fab009e4960; teamID='W79WNX2NKZ', teamName='The Alpheios Project Ltd.', teamType='Company', username='irinaskl0609@gmail.com', isFreeProvisioningTeam='0'>'>
+	<IDEDistributionContext: 0x7fab06d7e9d0; archive = '<IDEArchive: 0x7fab06b26160>', distributionMethod='<IDEDistributionMethodDevelopmentSignedMac: 0x7fab00c5f940>', team='<IDEProvisioningDisambiguatableBasicTeam: 0x7fab009e4960; teamID='W79WNX2NKZ', teamName='The Alpheios Project Ltd.', teamType='Company', username='irinaskl0609@gmail.com', isFreeProvisioningTeam='0'>'>
+	<IDEDistributionContext: 0x7fab01a99e80; archive = '<IDEArchive: 0x7fab06b26160>', distributionMethod='<IDEDistributionMethodDevelopmentSignedMac: 0x7fab00c5f940>', team='<IDEProvisioningDisambiguatableBasicTeam: 0x7fab009e4960; teamID='W79WNX2NKZ', teamName='The Alpheios Project Ltd.', teamType='Company', username='irinaskl0609@gmail.com', isFreeProvisioningTeam='0'>'>
+	<IDEDistributionContext: 0x7fab06d46920; archive = '<IDEArchive: 0x7fab06b26160>', distributionMethod='<IDEDistributionMethodDevelopmentSignedMac: 0x7fab00c5f940>', team='<IDEProvisioningDisambiguatableBasicTeam: 0x7fab009e4960; teamID='W79WNX2NKZ', teamName='The Alpheios Project Ltd.', teamType='Company', username='irinaskl0609@gmail.com', isFreeProvisioningTeam='0'>'>
+	<IDEDistributionContext: 0x7fab01cdab60; archive = '<IDEArchive: 0x7fab06b26160>', distributionMethod='<IDEDistributionMethodDevelopmentSignedMac: 0x7fab00c5f940>', team='(null)'>
+	<IDEDistributionContext: 0x7fab06d45bb0; archive = '<IDEArchive: 0x7fab06b26160>', distributionMethod='<IDEDistributionMethodDevelopmentSignedMac: 0x7fab00c5f940>', team='(null)'>
+	<IDEDistributionContext: 0x7fab00969b70; archive = '<IDEArchive: 0x7fab06b26160>', distributionMethod='(null)', team='(null)'>
+</IDEDistributionProcessingPipelineContext: 0x7fab06e607b0>
+2018-10-23 02:23:06 +0000  Processing step: IDEDistributionCreateDestRootStep
+2018-10-23 02:23:06 +0000  Processing step: IDEDistributionCopyItemStep
+2018-10-23 02:23:06 +0000  Running /usr/bin/ditto '-V' '/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app'
+2018-10-23 02:23:06 +0000  >>> Copying /Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app 
+2018-10-23 02:23:06 +0000  copying file ./Contents/_CodeSignature/CodeResources ... 
+2018-10-23 02:23:06 +0000  9321 bytes for ./Contents/_CodeSignature/CodeResources
+2018-10-23 02:23:06 +0000  copying file ./Contents/MacOS/AlpheiosApp ... 
+2018-10-23 02:23:06 +0000  34368 bytes for ./Contents/MacOS/AlpheiosApp
+2018-10-23 02:23:06 +0000  copying file ./Contents/PlugIns/AlpheiosSafari.appex/Contents/_CodeSignature/CodeResources ... 
+2018-10-23 02:23:06 +0000  3204 bytes for ./Contents/PlugIns/AlpheiosSafari.appex/Contents/_CodeSignature/CodeResources
+2018-10-23 02:23:06 +0000  copying file ./Contents/PlugIns/AlpheiosSafari.appex/Contents/MacOS/AlpheiosSafari ... 
+2018-10-23 02:23:06 +0000  85456 bytes for ./Contents/PlugIns/AlpheiosSafari.appex/Contents/MacOS/AlpheiosSafari
+2018-10-23 02:23:06 +0000  copying file ./Contents/PlugIns/AlpheiosSafari.appex/Contents/Resources/alpheios.pdf ... 
+2018-10-23 02:23:06 +0000  356807 bytes for ./Contents/PlugIns/AlpheiosSafari.appex/Contents/Resources/alpheios.pdf
+2018-10-23 02:23:06 +0000  copying file ./Contents/PlugIns/AlpheiosSafari.appex/Contents/Resources/Base.lproj/SafariExtensionViewController.nib ... 
+2018-10-23 02:23:06 +0000  7521 bytes for ./Contents/PlugIns/AlpheiosSafari.appex/Contents/Resources/Base.lproj/SafariExtensionViewController.nib
+2018-10-23 02:23:06 +0000  copying file ./Contents/PlugIns/AlpheiosSafari.appex/Contents/Resources/content-safari.js ... 
+2018-10-23 02:23:06 +0000  2122173 bytes for ./Contents/PlugIns/AlpheiosSafari.appex/Contents/Resources/content-safari.js
+copying file ./Contents/PlugIns/AlpheiosSafari.appex/Contents/Resources/style.css ... 
+2018-10-23 02:23:06 +0000  165690 bytes for ./Contents/PlugIns/AlpheiosSafari.appex/Contents/Resources/style.css
+2018-10-23 02:23:06 +0000  copying file ./Contents/PlugIns/AlpheiosSafari.appex/Contents/Info.plist ... 
+2018-10-23 02:23:06 +0000  3034 bytes for ./Contents/PlugIns/AlpheiosSafari.appex/Contents/Info.plist
+2018-10-23 02:23:06 +0000  copying file ./Contents/Resources/Base.lproj/MainMenu.nib ... 
+2018-10-23 02:23:06 +0000  37065 bytes for ./Contents/Resources/Base.lproj/MainMenu.nib
+2018-10-23 02:23:06 +0000  copying file ./Contents/Frameworks/libswiftAppKit.dylib ... 
+2018-10-23 02:23:06 +0000  241248 bytes for ./Contents/Frameworks/libswiftAppKit.dylib
+2018-10-23 02:23:06 +0000  copying file ./Contents/Frameworks/libswiftCoreImage.dylib ... 
+2018-10-23 02:23:06 +0000  49360 bytes for ./Contents/Frameworks/libswiftCoreImage.dylib
+copying file ./Contents/Frameworks/libswiftObjectiveC.dylib ... 
+2018-10-23 02:23:06 +0000  61024 bytes for ./Contents/Frameworks/libswiftObjectiveC.dylib
+2018-10-23 02:23:06 +0000  copying file ./Contents/Frameworks/libswiftXPC.dylib ... 
+2018-10-23 02:23:06 +0000  44960 bytes for ./Contents/Frameworks/libswiftXPC.dylib
+2018-10-23 02:23:06 +0000  copying file ./Contents/Frameworks/libswiftSafariServices.dylib ... 
+2018-10-23 02:23:06 +0000  58720 bytes for ./Contents/Frameworks/libswiftSafariServices.dylib
+copying file ./Contents/Frameworks/libswiftCore.dylib ... 
+2018-10-23 02:23:06 +0000  6552912 bytes for ./Contents/Frameworks/libswiftCore.dylib
+copying file ./Contents/Frameworks/libswiftCoreGraphics.dylib ... 
+2018-10-23 02:23:06 +0000  202128 bytes for ./Contents/Frameworks/libswiftCoreGraphics.dylib
+copying file ./Contents/Frameworks/libswiftMetal.dylib ... 
+92416 bytes for ./Contents/Frameworks/libswiftMetal.dylib
+copying file ./Contents/Frameworks/libswiftCoreData.dylib ... 
+98416 bytes for ./Contents/Frameworks/libswiftCoreData.dylib
+copying file ./Contents/Frameworks/libswiftDispatch.dylib ... 
+2018-10-23 02:23:06 +0000  345920 bytes for ./Contents/Frameworks/libswiftDispatch.dylib
+copying file ./Contents/Frameworks/libswiftos.dylib ... 
+2018-10-23 02:23:06 +0000  74624 bytes for ./Contents/Frameworks/libswiftos.dylib
+2018-10-23 02:23:06 +0000  copying file ./Contents/Frameworks/libswiftCoreFoundation.dylib ... 
+2018-10-23 02:23:06 +0000  41120 bytes for ./Contents/Frameworks/libswiftCoreFoundation.dylib
+copying file ./Contents/Frameworks/libswiftDarwin.dylib ... 
+2018-10-23 02:23:06 +0000  106448 bytes for ./Contents/Frameworks/libswiftDarwin.dylib
+copying file ./Contents/Frameworks/libswiftQuartzCore.dylib ... 
+2018-10-23 02:23:06 +0000  58368 bytes for ./Contents/Frameworks/libswiftQuartzCore.dylib
+2018-10-23 02:23:06 +0000  copying file ./Contents/Frameworks/libswiftIOKit.dylib ... 
+2018-10-23 02:23:06 +0000  45008 bytes for ./Contents/Frameworks/libswiftIOKit.dylib
+copying file ./Contents/Frameworks/libswiftFoundation.dylib ... 
+2018-10-23 02:23:06 +0000  3065360 bytes for ./Contents/Frameworks/libswiftFoundation.dylib
+2018-10-23 02:23:06 +0000  copying file ./Contents/Info.plist ... 
+1468 bytes for ./Contents/Info.plist
+copying file ./Contents/PkgInfo ... 
+2018-10-23 02:23:06 +0000  8 bytes for ./Contents/PkgInfo
+2018-10-23 02:23:06 +0000  /usr/bin/ditto exited with 0
+2018-10-23 02:23:06 +0000  Processing step: IDEDistributionEmbedProfileStep
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7faafc426c10 'com.apple.dt.runtime.swiftAppKit' '<DVTFilePath:0x7fab01f55b30:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftAppKit.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06e51a70 'com.apple.dt.runtime.swiftCore' '<DVTFilePath:0x7fab01f53b30:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCore.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06d74630 'com.apple.dt.runtime.swiftCoreData' '<DVTFilePath:0x7fab01f030f0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreData.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06e25900 'com.apple.dt.runtime.swiftCoreFoundation' '<DVTFilePath:0x7fab01f5aff0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreFoundation.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06bf3070 'com.apple.dt.runtime.swiftCoreGraphics' '<DVTFilePath:0x7fab01f530e0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreGraphics.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06e25490 'com.apple.dt.runtime.swiftCoreImage' '<DVTFilePath:0x7fab01a35a10:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreImage.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06e22ca0 'com.apple.dt.runtime.swiftDarwin' '<DVTFilePath:0x7fab01f5bb70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDarwin.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06e27b50 'com.apple.dt.runtime.swiftDispatch' '<DVTFilePath:0x7fab01f58710:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDispatch.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06e2e440 'com.apple.dt.runtime.swiftFoundation' '<DVTFilePath:0x7fab06e1c230:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftFoundation.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06e053f0 'com.apple.dt.runtime.swiftIOKit' '<DVTFilePath:0x7fab06e1df30:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftIOKit.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06be18f0 'com.apple.dt.runtime.swiftMetal' '<DVTFilePath:0x7fab01f06750:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftMetal.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06e49950 'com.apple.dt.runtime.swiftObjectiveC' '<DVTFilePath:0x7fab01ca9e70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftObjectiveC.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06bf5c10 'com.apple.dt.runtime.swiftQuartzCore' '<DVTFilePath:0x7fab06e1bdf0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftQuartzCore.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06e38dc0 'com.apple.dt.runtime.swiftSafariServices' '<DVTFilePath:0x7fab01f49b10:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftSafariServices.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06e0cda0 'com.apple.dt.runtime.swiftXPC' '<DVTFilePath:0x7fab01a97580:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftXPC.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab01f5e1b0 'com.apple.dt.runtime.swiftos' '<DVTFilePath:0x7fab01f53e70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftos.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab06e36960 'ru.irina-sklyarova.AlpheiosApp.AlpheiosSafari' '<DVTFilePath:0x7fab06c94d40:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/PlugIns/AlpheiosSafari.appex'>'>
+2018-10-23 02:23:06 +0000  Skipping profile for item: <IDEDistributionItem: 0x7fab01f68b00 'ru.irina-sklyarova.AlpheiosApp' '<DVTFilePath:0x7fab00c5dd70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app'>'>
+2018-10-23 02:23:06 +0000  Processing step: IDEDistributionAppThinningPlistStep
+2018-10-23 02:23:06 +0000  Processing step: IDEDistributionCompileBitcodeStep
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCompileBitcodeStep because it said so
+2018-10-23 02:23:06 +0000  Processing step: IDEDistributionCodeSlimmingStep
+2018-10-23 02:23:06 +0000  Processing step: IDEDistributionCopyBCSymbolMapsStep
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionCopyBCSymbolMapsStep because it said so
+2018-10-23 02:23:06 +0000  Processing step: IDEDistributionSymbolsStep
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionSymbolsStep because it said so
+2018-10-23 02:23:06 +0000  Processing step: IDEDistributionAppThinningStep
+2018-10-23 02:23:06 +0000  Skipping step: IDEDistributionAppThinningStep because it said so
+2018-10-23 02:23:06 +0000  Processing step: IDEDistributionODRStep
+2018-10-23 02:23:06 +0000  Processing step: IDEDistributionStripXattrsStep
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7faafc426c10 'com.apple.dt.runtime.swiftAppKit' '<DVTFilePath:0x7fab01f55b30:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftAppKit.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06e51a70 'com.apple.dt.runtime.swiftCore' '<DVTFilePath:0x7fab01f53b30:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCore.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06d74630 'com.apple.dt.runtime.swiftCoreData' '<DVTFilePath:0x7fab01f030f0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreData.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06e25900 'com.apple.dt.runtime.swiftCoreFoundation' '<DVTFilePath:0x7fab01f5aff0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreFoundation.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06bf3070 'com.apple.dt.runtime.swiftCoreGraphics' '<DVTFilePath:0x7fab01f530e0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreGraphics.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06e25490 'com.apple.dt.runtime.swiftCoreImage' '<DVTFilePath:0x7fab01a35a10:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreImage.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06e22ca0 'com.apple.dt.runtime.swiftDarwin' '<DVTFilePath:0x7fab01f5bb70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDarwin.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06e27b50 'com.apple.dt.runtime.swiftDispatch' '<DVTFilePath:0x7fab01f58710:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDispatch.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06e2e440 'com.apple.dt.runtime.swiftFoundation' '<DVTFilePath:0x7fab06e1c230:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftFoundation.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06e053f0 'com.apple.dt.runtime.swiftIOKit' '<DVTFilePath:0x7fab06e1df30:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftIOKit.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06be18f0 'com.apple.dt.runtime.swiftMetal' '<DVTFilePath:0x7fab01f06750:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftMetal.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06e49950 'com.apple.dt.runtime.swiftObjectiveC' '<DVTFilePath:0x7fab01ca9e70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftObjectiveC.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06bf5c10 'com.apple.dt.runtime.swiftQuartzCore' '<DVTFilePath:0x7fab06e1bdf0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftQuartzCore.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06e38dc0 'com.apple.dt.runtime.swiftSafariServices' '<DVTFilePath:0x7fab01f49b10:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftSafariServices.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06e0cda0 'com.apple.dt.runtime.swiftXPC' '<DVTFilePath:0x7fab01a97580:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftXPC.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab01f5e1b0 'com.apple.dt.runtime.swiftos' '<DVTFilePath:0x7fab01f53e70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftos.dylib'>'>
+2018-10-23 02:23:06 +0000  Skipping stripping extended attributes of item: <IDEDistributionItem: 0x7fab06e36960 'ru.irina-sklyarova.AlpheiosApp.AlpheiosSafari' '<DVTFilePath:0x7fab06c94d40:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/PlugIns/AlpheiosSafari.appex'>'>
+2018-10-23 02:23:06 +0000  Running /usr/bin/xattr '-crs' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app'
+2018-10-23 02:23:06 +0000  /usr/bin/xattr exited with 0
+2018-10-23 02:23:06 +0000  Processing step: IDEDistributionCodesignStep
+2018-10-23 02:23:06 +0000  Entitlements for <IDEDistributionItem: 0x7faafc426c10 'com.apple.dt.runtime.swiftAppKit' '<DVTFilePath:0x7fab01f55b30:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftAppKit.dylib'>'>: {
+}
+2018-10-23 02:23:06 +0000  Writing entitlements for <IDEDistributionItem: 0x7faafc426c10 'com.apple.dt.runtime.swiftAppKit' '<DVTFilePath:0x7fab01f55b30:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftAppKit.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsmKEoiF
+2018-10-23 02:23:06 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsmKEoiF' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftAppKit.dylib'
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftAppKit.dylib: replacing existing signature
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftAppKit.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftAppKit]
+2018-10-23 02:23:06 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:06 +0000  Entitlements for <IDEDistributionItem: 0x7fab06e51a70 'com.apple.dt.runtime.swiftCore' '<DVTFilePath:0x7fab01f53b30:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCore.dylib'>'>: {
+}
+2018-10-23 02:23:06 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06e51a70 'com.apple.dt.runtime.swiftCore' '<DVTFilePath:0x7fab01f53b30:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCore.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementstJGsEa
+2018-10-23 02:23:06 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementstJGsEa' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCore.dylib'
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCore.dylib: replacing existing signature
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCore.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftCore]
+2018-10-23 02:23:06 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:06 +0000  Entitlements for <IDEDistributionItem: 0x7fab06d74630 'com.apple.dt.runtime.swiftCoreData' '<DVTFilePath:0x7fab01f030f0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreData.dylib'>'>: {
+}
+2018-10-23 02:23:06 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06d74630 'com.apple.dt.runtime.swiftCoreData' '<DVTFilePath:0x7fab01f030f0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreData.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsNeAMnG
+2018-10-23 02:23:06 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsNeAMnG' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreData.dylib'
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreData.dylib: replacing existing signature
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreData.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftCoreData]
+2018-10-23 02:23:06 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:06 +0000  Entitlements for <IDEDistributionItem: 0x7fab06e25900 'com.apple.dt.runtime.swiftCoreFoundation' '<DVTFilePath:0x7fab01f5aff0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreFoundation.dylib'>'>: {
+}
+2018-10-23 02:23:06 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06e25900 'com.apple.dt.runtime.swiftCoreFoundation' '<DVTFilePath:0x7fab01f5aff0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreFoundation.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsiNUWKV
+2018-10-23 02:23:06 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsiNUWKV' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreFoundation.dylib'
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreFoundation.dylib: replacing existing signature
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreFoundation.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftCoreFoundation]
+2018-10-23 02:23:06 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:06 +0000  Entitlements for <IDEDistributionItem: 0x7fab06bf3070 'com.apple.dt.runtime.swiftCoreGraphics' '<DVTFilePath:0x7fab01f530e0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreGraphics.dylib'>'>: {
+}
+2018-10-23 02:23:06 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06bf3070 'com.apple.dt.runtime.swiftCoreGraphics' '<DVTFilePath:0x7fab01f530e0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreGraphics.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsapfXB9
+2018-10-23 02:23:06 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsapfXB9' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreGraphics.dylib'
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreGraphics.dylib: replacing existing signature
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreGraphics.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftCoreGraphics]
+2018-10-23 02:23:06 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:06 +0000  Entitlements for <IDEDistributionItem: 0x7fab06e25490 'com.apple.dt.runtime.swiftCoreImage' '<DVTFilePath:0x7fab01a35a10:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreImage.dylib'>'>: {
+}
+2018-10-23 02:23:06 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06e25490 'com.apple.dt.runtime.swiftCoreImage' '<DVTFilePath:0x7fab01a35a10:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreImage.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsNK7m8W
+2018-10-23 02:23:06 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsNK7m8W' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreImage.dylib'
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreImage.dylib: replacing existing signature
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftCoreImage.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftCoreImage]
+2018-10-23 02:23:06 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:06 +0000  Entitlements for <IDEDistributionItem: 0x7fab06e22ca0 'com.apple.dt.runtime.swiftDarwin' '<DVTFilePath:0x7fab01f5bb70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDarwin.dylib'>'>: {
+}
+2018-10-23 02:23:06 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06e22ca0 'com.apple.dt.runtime.swiftDarwin' '<DVTFilePath:0x7fab01f5bb70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDarwin.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementseSor1i
+2018-10-23 02:23:06 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementseSor1i' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDarwin.dylib'
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDarwin.dylib: replacing existing signature
+2018-10-23 02:23:06 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDarwin.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftDarwin]
+2018-10-23 02:23:06 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:06 +0000  Entitlements for <IDEDistributionItem: 0x7fab06e27b50 'com.apple.dt.runtime.swiftDispatch' '<DVTFilePath:0x7fab01f58710:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDispatch.dylib'>'>: {
+}
+2018-10-23 02:23:06 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06e27b50 'com.apple.dt.runtime.swiftDispatch' '<DVTFilePath:0x7fab01f58710:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDispatch.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementszP3rwm
+2018-10-23 02:23:06 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementszP3rwm' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDispatch.dylib'
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDispatch.dylib: replacing existing signature
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftDispatch.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftDispatch]
+2018-10-23 02:23:07 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:07 +0000  Entitlements for <IDEDistributionItem: 0x7fab06e2e440 'com.apple.dt.runtime.swiftFoundation' '<DVTFilePath:0x7fab06e1c230:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftFoundation.dylib'>'>: {
+}
+2018-10-23 02:23:07 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06e2e440 'com.apple.dt.runtime.swiftFoundation' '<DVTFilePath:0x7fab06e1c230:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftFoundation.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsd8Ldvp
+2018-10-23 02:23:07 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsd8Ldvp' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftFoundation.dylib'
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftFoundation.dylib: replacing existing signature
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftFoundation.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftFoundation]
+2018-10-23 02:23:07 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:07 +0000  Entitlements for <IDEDistributionItem: 0x7fab06e053f0 'com.apple.dt.runtime.swiftIOKit' '<DVTFilePath:0x7fab06e1df30:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftIOKit.dylib'>'>: {
+}
+2018-10-23 02:23:07 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06e053f0 'com.apple.dt.runtime.swiftIOKit' '<DVTFilePath:0x7fab06e1df30:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftIOKit.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementst9rSuA
+2018-10-23 02:23:07 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementst9rSuA' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftIOKit.dylib'
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftIOKit.dylib: replacing existing signature
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftIOKit.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftIOKit]
+2018-10-23 02:23:07 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:07 +0000  Entitlements for <IDEDistributionItem: 0x7fab06be18f0 'com.apple.dt.runtime.swiftMetal' '<DVTFilePath:0x7fab01f06750:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftMetal.dylib'>'>: {
+}
+2018-10-23 02:23:07 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06be18f0 'com.apple.dt.runtime.swiftMetal' '<DVTFilePath:0x7fab01f06750:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftMetal.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementswfpS5w
+2018-10-23 02:23:07 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementswfpS5w' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftMetal.dylib'
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftMetal.dylib: replacing existing signature
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftMetal.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftMetal]
+2018-10-23 02:23:07 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:07 +0000  Entitlements for <IDEDistributionItem: 0x7fab06e49950 'com.apple.dt.runtime.swiftObjectiveC' '<DVTFilePath:0x7fab01ca9e70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftObjectiveC.dylib'>'>: {
+}
+2018-10-23 02:23:07 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06e49950 'com.apple.dt.runtime.swiftObjectiveC' '<DVTFilePath:0x7fab01ca9e70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftObjectiveC.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsbAgF3Y
+2018-10-23 02:23:07 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsbAgF3Y' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftObjectiveC.dylib'
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftObjectiveC.dylib: replacing existing signature
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftObjectiveC.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftObjectiveC]
+2018-10-23 02:23:07 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:07 +0000  Entitlements for <IDEDistributionItem: 0x7fab06bf5c10 'com.apple.dt.runtime.swiftQuartzCore' '<DVTFilePath:0x7fab06e1bdf0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftQuartzCore.dylib'>'>: {
+}
+2018-10-23 02:23:07 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06bf5c10 'com.apple.dt.runtime.swiftQuartzCore' '<DVTFilePath:0x7fab06e1bdf0:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftQuartzCore.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsZEZ7EL
+2018-10-23 02:23:07 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsZEZ7EL' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftQuartzCore.dylib'
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftQuartzCore.dylib: replacing existing signature
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftQuartzCore.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftQuartzCore]
+2018-10-23 02:23:07 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:07 +0000  Entitlements for <IDEDistributionItem: 0x7fab06e38dc0 'com.apple.dt.runtime.swiftSafariServices' '<DVTFilePath:0x7fab01f49b10:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftSafariServices.dylib'>'>: {
+}
+2018-10-23 02:23:07 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06e38dc0 'com.apple.dt.runtime.swiftSafariServices' '<DVTFilePath:0x7fab01f49b10:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftSafariServices.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsvRigzG
+2018-10-23 02:23:07 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsvRigzG' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftSafariServices.dylib'
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftSafariServices.dylib: replacing existing signature
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftSafariServices.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftSafariServices]
+2018-10-23 02:23:07 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:07 +0000  Entitlements for <IDEDistributionItem: 0x7fab06e0cda0 'com.apple.dt.runtime.swiftXPC' '<DVTFilePath:0x7fab01a97580:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftXPC.dylib'>'>: {
+}
+2018-10-23 02:23:07 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06e0cda0 'com.apple.dt.runtime.swiftXPC' '<DVTFilePath:0x7fab01a97580:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftXPC.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlements02kCMd
+2018-10-23 02:23:07 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlements02kCMd' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftXPC.dylib'
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftXPC.dylib: replacing existing signature
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftXPC.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftXPC]
+2018-10-23 02:23:07 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:07 +0000  Entitlements for <IDEDistributionItem: 0x7fab01f5e1b0 'com.apple.dt.runtime.swiftos' '<DVTFilePath:0x7fab01f53e70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftos.dylib'>'>: {
+}
+2018-10-23 02:23:07 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab01f5e1b0 'com.apple.dt.runtime.swiftos' '<DVTFilePath:0x7fab01f53e70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftos.dylib'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsigxl7E
+2018-10-23 02:23:07 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsigxl7E' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftos.dylib'
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftos.dylib: replacing existing signature
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/Frameworks/libswiftos.dylib: signed Mach-O thin (x86_64) [com.apple.dt.runtime.swiftos]
+2018-10-23 02:23:07 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:07 +0000  Entitlements for <IDEDistributionItem: 0x7fab06e36960 'ru.irina-sklyarova.AlpheiosApp.AlpheiosSafari' '<DVTFilePath:0x7fab06c94d40:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/PlugIns/AlpheiosSafari.appex'>'>: {
+    "com.apple.security.app-sandbox" = 1;
+    "com.apple.security.files.user-selected.read-only" = 1;
+}
+2018-10-23 02:23:07 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab06e36960 'ru.irina-sklyarova.AlpheiosApp.AlpheiosSafari' '<DVTFilePath:0x7fab06c94d40:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app/Contents/PlugIns/AlpheiosSafari.appex'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsDAsIWc
+2018-10-23 02:23:07 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementsDAsIWc' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/PlugIns/AlpheiosSafari.appex'
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/PlugIns/AlpheiosSafari.appex: replacing existing signature
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app/Contents/PlugIns/AlpheiosSafari.appex: signed bundle with Mach-O thin (x86_64) [ru.irina-sklyarova.AlpheiosApp.AlpheiosSafari]
+2018-10-23 02:23:07 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:07 +0000  Entitlements for <IDEDistributionItem: 0x7fab01f68b00 'ru.irina-sklyarova.AlpheiosApp' '<DVTFilePath:0x7fab00c5dd70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app'>'>: {
+}
+2018-10-23 02:23:07 +0000  Writing entitlements for <IDEDistributionItem: 0x7fab01f68b00 'ru.irina-sklyarova.AlpheiosApp' '<DVTFilePath:0x7fab00c5dd70:'/Users/irinasklyarova/Library/Developer/Xcode/Archives/2018-10-23/AlpheiosApp 23-10-2018, 12.22.xcarchive/Products/Applications/AlpheiosApp.app'>'> to: /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementshKk8vN
+2018-10-23 02:23:07 +0000  Running /usr/bin/codesign '-vvv' '--force' '--sign' '97C7FFE46B510D0650777DFD99E711EB06C7ED81' '--entitlements' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/entitlementshKk8vN' '--preserve-metadata=identifier,flags,runtime' '/var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app'
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app: replacing existing signature
+2018-10-23 02:23:07 +0000  /var/folders/35/ql4xq3z1295060r1z2xjntw80000gn/T/XcodeDistPipeline.cVr/Root/Applications/AlpheiosApp.app: signed app bundle with Mach-O thin (x86_64) [ru.irina-sklyarova.AlpheiosApp]
+2018-10-23 02:23:07 +0000  /usr/bin/codesign exited with 0
+2018-10-23 02:23:07 +0000  Processing step: IDEDistributionZipODRItemStep
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionZipODRItemStep because it said so
+2018-10-23 02:23:07 +0000  Processing step: IDEDistributionSkipPackagingStep
+2018-10-23 02:23:07 +0000  Processing step: IDEDistributionAppStoreInformationStep
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionAppStoreInformationStep because it said so
+2018-10-23 02:23:07 +0000  Processing step: IDEDistributionCreateManifestStep
+2018-10-23 02:23:07 +0000  Skipping step: IDEDistributionCreateManifestStep because it said so
