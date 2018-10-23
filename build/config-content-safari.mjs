@@ -5,8 +5,8 @@ const projectRoot = process.cwd()
 
 const webpack = {
   common: {
-    context: path.join(projectRoot, 'src/content-safari'),
-    entry: './index.js',
+    context: path.join(projectRoot, 'src'),
+    entry: './content/content-safari.js',
     resolve: {
       alias: {
         'alpheios-data-models': path.join(projectRoot, 'node_modules/alpheios-data-models/dist/alpheios-data-models.js'),
@@ -17,6 +17,7 @@ const webpack = {
         'alpheios-components': path.join(projectRoot, 'node_modules/alpheios-components/dist/alpheios-components.js'),
         'alpheios-inflection-tables': path.join(projectRoot, 'node_modules/alpheios-inflection-tables/dist/alpheios-inflection-tables.js'),
         'alpheios-morph-client': path.join(projectRoot, 'node_modules/alpheios-morph-client/dist/alpheios-morph-client.js'),
+        '@': path.join(projectRoot, 'src'),
         '@safari': path.join(projectRoot, 'src/content-safari'),
         'alpheios-component-styles': path.join(projectRoot, 'node_modules/alpheios-components/dist/style/style.min.css')
       }

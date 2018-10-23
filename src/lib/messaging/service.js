@@ -1,28 +1,9 @@
 /* global browser */
+import BaseService from '@/lib/messaging/base-service'
 import ResponseMessage from './response/response-message'
 import StoredOutgoingRequest from './stored-request'
 
-export default class Service {
-  constructor () {
-    this.messages = new Map()
-    this.listeners = new Map()
-  }
-
-  /**
-   * Adds a handler function for each particular message type. If thisValue is provided, a handler function
-   * will be bound to it.
-   * Usually there is no need to add handlers to responses: they will be handled via a promise fulfillment
-   * within registerRequest() and SendRequestTo...() logic. Thus, only handlers to incoming requests
-   * need to be registered.
-   * @param {Message.types} type - A type of a message to listen
-   * @param {Function} handlerFunc - A function that will be called when a message of a certain type is received.
-   * @param thisValue - An object a listenerFunc will be bound to (optional)
-   */
-  addHandler (type, handlerFunc, thisValue = undefined) {
-    if (thisValue) { handlerFunc = handlerFunc.bind(thisValue) }
-    this.listeners.set(type, handlerFunc)
-  }
-
+export default class Service extends BaseService {
   /**
    * A message dispatcher function
    */
