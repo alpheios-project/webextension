@@ -1,8 +1,38 @@
-/* eslint-disable no-unused-vars */
-import ContentProcessSafari from '@/content/content-process-safari.js'
-import HTMLPage from '@/lib/html-page.js'
+/* global safari */
+import Message from '@/lib/messaging/message/message.js'
+import StateMessage from '@/lib/messaging/message/state-message'
+import MessagingService from '@/lib/messaging/service-safari.js'
+import TabScript from '@/lib/content/tab-script.js'
+import { UIController, LocalStorageArea, HTMLPage } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
-// import { Monitor as ExperienceMonitor } from 'alpheios-experience'
+
+console.log(`Loading a content script`)
+let uiController = null
+
+/**
+ * State request processing function.
+ */
+let handleStateRequest = function handleStateRequest (message) {
+  console.log(`State request has been received`)
+  let state = TabScript.readObject(message.body)
+  let diff = uiController.state.diff(state)
+
+  if (diff.has('status')) {
+    if (diff.status === TabScript.statuses.script.ACTIVE) {
+      console.log(`Preparing to activate state`)
+      uiController.activate().catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
+    } else if (diff.status === TabScript.statuses.script.DEACTIVATED) {
+      console.log(`Preparing to deactivate state`)
+      uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+    }
+    sendStateToBackground('updateState')
+  }
+}
+
+let sendStateToBackground = function sendStateToBackground (messageName) {
+  console.log(`Content: Sending state to background`)
+  safari.extension.dispatchMessage(messageName, new StateMessage(uiController.state))
+}
 
 document.addEventListener('DOMContentLoaded', (event) => {
   /*
@@ -16,25 +46,23 @@ document.addEventListener('DOMContentLoaded', (event) => {
   const SAFARI_BLANK_ADDR = 'about:blank'
   const ALPHEIOS_GRAMMAR_ADDR = 'grammars.alpheios.net'
 
+  console.log(`Loaded listener fired`)
+
   if (event.currentTarget.URL.search(`${SAFARI_BLANK_ADDR}|${ALPHEIOS_GRAMMAR_ADDR}`) === -1) {
     if (!HTMLPage.hasFrames && !HTMLPage.isFrame) {
-      let contentProcess = new ContentProcessSafari()
-      contentProcess.initialize()
+      console.log(`This is a valid content page or frame`)
+      let state = new TabScript()
+      state.status = TabScript.statuses.script.PENDING
+      state.panelStatus = TabScript.statuses.panel.CLOSED
+      state.setWatcher('panelStatus', sendStateToBackground)
+      state.setWatcher('tab', sendStateToBackground)
+      let messagingService = new MessagingService()
+      // let browserManifest = browser.runtime.getManifest() // TODO: Do we need this in Safari?
+      uiController = new UIController(state, LocalStorageArea/*, browserManifest */)
+      messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest, uiController)
+      safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
     } else {
       console.warn(`Alpheios Safari App Extension cannot be enabled on pages with frames`)
     }
-
-    /* let contentProcess = ExperienceMonitor.track(
-      new ContentProcess(),
-      [
-        {
-          monitoredFunction: 'getWordDataStatefully',
-          experience: 'Get word data',
-          asyncWrapper: ExperienceMonitor.recordExperience
-        }
-      ]
-    )
-
-    contentProcess.initialize() */
   }
 })
