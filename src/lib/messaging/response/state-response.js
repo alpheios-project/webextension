@@ -1,6 +1,6 @@
 import Message from '../message/message'
 import ResponseMessage from './response-message'
-import TabScript from '../../content/tab-script'
+import { TabScript } from 'alpheios-components'
 
 export default class StateResponse extends ResponseMessage {
   /**

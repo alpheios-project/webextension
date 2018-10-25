@@ -1,13 +1,10 @@
 /* global browser */
-import { enUS, enGB, Locales, L10n } from 'alpheios-components'
+import { enUS, enGB, Locales, L10n, Tab, TabScript } from 'alpheios-components'
 import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
 import ContextMenuItem from './context-menu-item.js'
 import ContentMenuSeparator from './context-menu-separator.js'
-import TabScript from '../lib/content/tab-script.js'
-
-import Tab from '@/lib/tab.js'
 
 import {
   Transporter,

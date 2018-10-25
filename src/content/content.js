@@ -2,8 +2,7 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service.js'
-import TabScript from '@/lib/content/tab-script.js'
-import { UIController, ExtensionSyncStorage } from 'alpheios-components'
+import { TabScript, UIController, ExtensionSyncStorage } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
 import StateResponse from '../lib/messaging/response/state-response'
 
@@ -15,19 +14,19 @@ let uiController = null
  */
 let handleStateRequest = function handleStateRequest (request, sender) {
   console.log(`State request has been received`)
-  let state = TabScript.readObject(request.body)
-  let diff = uiController.state.diff(state)
+  let requestState = TabScript.readObject(request.body)
+  let diff = uiController.state.diff(requestState)
 
   if (diff.has('tabID')) {
     if (!uiController.state.tabID) {
       // Content script has been just loaded and does not have its tab ID yet
       uiController.state.tabID = diff.tabID
-      uiController.state.tabObj = state.tabObj
+      uiController.state.tabObj = requestState.tabObj
     } else if (!uiController.state.hasSameID(diff.tabID)) {
       console.warn(`State request with the wrong tab ID "${Symbol.keyFor(diff.tabID)}" received. This tab ID is "${Symbol.keyFor(uiController.state.tabID)}"`)
       // TODO: Should we ignore such requests?
-      uiController.state.tabID = state.tabID
-      uiController.state.tabObj = state.tabObj
+      uiController.state.tabID = requestState.tabID
+      uiController.state.tabObj = requestState.tabObj
     }
   }
 
@@ -66,14 +65,11 @@ let sendStateToBackground = function sendStateToBackground () {
 
 console.log(`Loaded listener fired`)
 
-let state = new TabScript()
-state.status = TabScript.statuses.script.PENDING
-state.panelStatus = TabScript.statuses.panel.CLOSED
-state.setWatcher('panelStatus', sendStateToBackground)
-state.setWatcher('tab', sendStateToBackground)
 messagingService = new MessagingService()
 let browserManifest = browser.runtime.getManifest()
-uiController = new UIController(state, ExtensionSyncStorage, browserManifest)
+uiController = new UIController(ExtensionSyncStorage, browserManifest)
+uiController.state.setWatcher('panelStatus', sendStateToBackground)
+uiController.state.setWatcher('tab', sendStateToBackground)
 uiController.activate()
   .then(() => {
     messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest, uiController)

@@ -2,8 +2,7 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
-import TabScript from '@/lib/content/tab-script.js'
-import { UIController, LocalStorageArea, HTMLPage } from 'alpheios-components'
+import { TabScript, UIController, LocalStorageArea, HTMLPage } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
 
 console.log(`Loading a content script`)
@@ -14,8 +13,15 @@ let uiController = null
  */
 let handleStateRequest = function handleStateRequest (message) {
   console.log(`State request has been received`)
-  let state = TabScript.readObject(message.body)
-  let diff = uiController.state.diff(state)
+  // let browserManifest = browser.runtime.getManifest() // TODO: Do we need this in Safari?
+  if (!uiController) {
+    uiController = new UIController(LocalStorageArea/*, browserManifest */)
+    uiController.state.setWatcher('panelStatus', sendStateToBackground)
+    uiController.state.setWatcher('tab', sendStateToBackground)
+  }
+
+  let requestState = TabScript.readObject(message.body)
+  let diff = uiController.state.diff(requestState)
 
   if (diff.has('status')) {
     if (diff.status === TabScript.statuses.script.ACTIVE) {
@@ -51,15 +57,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
   if (event.currentTarget.URL.search(`${SAFARI_BLANK_ADDR}|${ALPHEIOS_GRAMMAR_ADDR}`) === -1) {
     if (!HTMLPage.hasFrames && !HTMLPage.isFrame) {
       console.log(`This is a valid content page or frame`)
-      let state = new TabScript()
-      state.status = TabScript.statuses.script.PENDING
-      state.panelStatus = TabScript.statuses.panel.CLOSED
-      state.setWatcher('panelStatus', sendStateToBackground)
-      state.setWatcher('tab', sendStateToBackground)
       let messagingService = new MessagingService()
-      // let browserManifest = browser.runtime.getManifest() // TODO: Do we need this in Safari?
-      uiController = new UIController(state, LocalStorageArea/*, browserManifest */)
-      messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest, uiController)
+      messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest)
       safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
     } else {
       console.warn(`Alpheios Safari App Extension cannot be enabled on pages with frames`)

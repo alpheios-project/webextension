@@ -1,5 +1,5 @@
 import Message from './message'
-import TabScript from '../../content/tab-script'
+import { TabScript } from 'alpheios-components'
 
 export default class StateMessage extends Message {
   constructor (state) {

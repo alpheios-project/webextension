@@ -29899,23 +29899,24 @@ __webpack_require__.r(__webpack_exports__);
 var _locales_en_us_messages_json__WEBPACK_IMPORTED_MODULE_11___namespace = /*#__PURE__*/__webpack_require__.t(/*! @/locales/en-us/messages.json */ "./locales/en-us/messages.json", 1);
 /* harmony import */ var _locales_en_gb_messages_json__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! @/locales/en-gb/messages.json */ "./locales/en-gb/messages.json");
 var _locales_en_gb_messages_json__WEBPACK_IMPORTED_MODULE_12___namespace = /*#__PURE__*/__webpack_require__.t(/*! @/locales/en-gb/messages.json */ "./locales/en-gb/messages.json", 1);
-/* harmony import */ var _templates_template_htmlf__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @/templates/template.htmlf */ "./templates/template.htmlf");
-/* harmony import */ var _templates_template_htmlf__WEBPACK_IMPORTED_MODULE_13___default = /*#__PURE__*/__webpack_require__.n(_templates_template_htmlf__WEBPACK_IMPORTED_MODULE_13__);
-/* harmony import */ var _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @/lib/queries/lexical-query.js */ "./lib/queries/lexical-query.js");
-/* harmony import */ var _lib_queries_resource_query_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @/lib/queries/resource-query.js */ "./lib/queries/resource-query.js");
-/* harmony import */ var _lib_queries_annotation_query_js__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @/lib/queries/annotation-query.js */ "./lib/queries/annotation-query.js");
-/* harmony import */ var _settings_site_options_json__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! @/settings/site-options.json */ "./settings/site-options.json");
-var _settings_site_options_json__WEBPACK_IMPORTED_MODULE_17___namespace = /*#__PURE__*/__webpack_require__.t(/*! @/settings/site-options.json */ "./settings/site-options.json", 1);
-/* harmony import */ var _settings_content_options_defaults_json__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! @/settings/content-options-defaults.json */ "./settings/content-options-defaults.json");
-var _settings_content_options_defaults_json__WEBPACK_IMPORTED_MODULE_18___namespace = /*#__PURE__*/__webpack_require__.t(/*! @/settings/content-options-defaults.json */ "./settings/content-options-defaults.json", 1);
-/* harmony import */ var _settings_ui_options_defaults_json__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! @/settings/ui-options-defaults.json */ "./settings/ui-options-defaults.json");
-var _settings_ui_options_defaults_json__WEBPACK_IMPORTED_MODULE_19___namespace = /*#__PURE__*/__webpack_require__.t(/*! @/settings/ui-options-defaults.json */ "./settings/ui-options-defaults.json", 1);
-/* harmony import */ var _lib_selection_media_html_selector_js__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! @/lib/selection/media/html-selector.js */ "./lib/selection/media/html-selector.js");
-/* harmony import */ var _lib_utility_html_page_js__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! @/lib/utility/html-page.js */ "./lib/utility/html-page.js");
-/* harmony import */ var _settings_language_options_defaults_json__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! @/settings/language-options-defaults.json */ "./settings/language-options-defaults.json");
-var _settings_language_options_defaults_json__WEBPACK_IMPORTED_MODULE_22___namespace = /*#__PURE__*/__webpack_require__.t(/*! @/settings/language-options-defaults.json */ "./settings/language-options-defaults.json", 1);
-/* harmony import */ var _lib_custom_pointer_events_mouse_dbl_click_js__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! @/lib/custom-pointer-events/mouse-dbl-click.js */ "./lib/custom-pointer-events/mouse-dbl-click.js");
-/* harmony import */ var _lib_options_options_js__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! @/lib/options/options.js */ "./lib/options/options.js");
+/* harmony import */ var _lib_state_tab_script_js__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! @/lib/state/tab-script.js */ "./lib/state/tab-script.js");
+/* harmony import */ var _templates_template_htmlf__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! @/templates/template.htmlf */ "./templates/template.htmlf");
+/* harmony import */ var _templates_template_htmlf__WEBPACK_IMPORTED_MODULE_14___default = /*#__PURE__*/__webpack_require__.n(_templates_template_htmlf__WEBPACK_IMPORTED_MODULE_14__);
+/* harmony import */ var _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! @/lib/queries/lexical-query.js */ "./lib/queries/lexical-query.js");
+/* harmony import */ var _lib_queries_resource_query_js__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! @/lib/queries/resource-query.js */ "./lib/queries/resource-query.js");
+/* harmony import */ var _lib_queries_annotation_query_js__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! @/lib/queries/annotation-query.js */ "./lib/queries/annotation-query.js");
+/* harmony import */ var _settings_site_options_json__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! @/settings/site-options.json */ "./settings/site-options.json");
+var _settings_site_options_json__WEBPACK_IMPORTED_MODULE_18___namespace = /*#__PURE__*/__webpack_require__.t(/*! @/settings/site-options.json */ "./settings/site-options.json", 1);
+/* harmony import */ var _settings_content_options_defaults_json__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! @/settings/content-options-defaults.json */ "./settings/content-options-defaults.json");
+var _settings_content_options_defaults_json__WEBPACK_IMPORTED_MODULE_19___namespace = /*#__PURE__*/__webpack_require__.t(/*! @/settings/content-options-defaults.json */ "./settings/content-options-defaults.json", 1);
+/* harmony import */ var _settings_ui_options_defaults_json__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! @/settings/ui-options-defaults.json */ "./settings/ui-options-defaults.json");
+var _settings_ui_options_defaults_json__WEBPACK_IMPORTED_MODULE_20___namespace = /*#__PURE__*/__webpack_require__.t(/*! @/settings/ui-options-defaults.json */ "./settings/ui-options-defaults.json", 1);
+/* harmony import */ var _lib_selection_media_html_selector_js__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! @/lib/selection/media/html-selector.js */ "./lib/selection/media/html-selector.js");
+/* harmony import */ var _lib_utility_html_page_js__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! @/lib/utility/html-page.js */ "./lib/utility/html-page.js");
+/* harmony import */ var _settings_language_options_defaults_json__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! @/settings/language-options-defaults.json */ "./settings/language-options-defaults.json");
+var _settings_language_options_defaults_json__WEBPACK_IMPORTED_MODULE_23___namespace = /*#__PURE__*/__webpack_require__.t(/*! @/settings/language-options-defaults.json */ "./settings/language-options-defaults.json", 1);
+/* harmony import */ var _lib_custom_pointer_events_mouse_dbl_click_js__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! @/lib/custom-pointer-events/mouse-dbl-click.js */ "./lib/custom-pointer-events/mouse-dbl-click.js");
+/* harmony import */ var _lib_options_options_js__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! @/lib/options/options.js */ "./lib/options/options.js");
 /* global Event */
 
 
@@ -29948,6 +29949,7 @@ var _settings_language_options_defaults_json__WEBPACK_IMPORTED_MODULE_22___names
 
 
 
+
 const languageNames = new Map([
   [alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].LANG_LATIN, 'Latin'],
   [alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].LANG_GREEK, 'Greek'],
@@ -29959,7 +29961,6 @@ const languageNames = new Map([
 class UIController {
   /**
    * @constructor
-   * @param {UIStateAPI} state - State object for the parent application
    * @param {Object} storageAdapter - A storage adapter for storing options (see `lib/options`). Is environment dependent.
    * @param {Object} manifest - parent application info details  (API definition pending)
    * In some environments manifest data may not be available. Then a `{}` default value
@@ -29973,19 +29974,21 @@ class UIController {
    *                            popupComponent: Vue single file component of a panel element.
    *                              Allows to provide an alternative popup layout
    */
-  constructor (state, storageAdapter, /* options, resourceOptions, uiOptions, */manifest = {}, template = {}) {
-    this.state = state
+  constructor (storageAdapter, manifest = {}, template = {}) {
+    this.state = new _lib_state_tab_script_js__WEBPACK_IMPORTED_MODULE_13__["default"]()
+    this.state.status = _lib_state_tab_script_js__WEBPACK_IMPORTED_MODULE_13__["default"].statuses.script.PENDING
+    this.state.panelStatus = _lib_state_tab_script_js__WEBPACK_IMPORTED_MODULE_13__["default"].statuses.panel.CLOSED
     this.storageAdapter = storageAdapter
-    this.options = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_24__["default"](_settings_content_options_defaults_json__WEBPACK_IMPORTED_MODULE_18__, this.storageAdapter)
-    this.resourceOptions = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_24__["default"](_settings_language_options_defaults_json__WEBPACK_IMPORTED_MODULE_22__, this.storageAdapter)
-    this.uiOptions = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_24__["default"](_settings_ui_options_defaults_json__WEBPACK_IMPORTED_MODULE_19__, this.storageAdapter)
+    this.options = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_25__["default"](_settings_content_options_defaults_json__WEBPACK_IMPORTED_MODULE_19__, this.storageAdapter)
+    this.resourceOptions = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_25__["default"](_settings_language_options_defaults_json__WEBPACK_IMPORTED_MODULE_23__, this.storageAdapter)
+    this.uiOptions = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_25__["default"](_settings_ui_options_defaults_json__WEBPACK_IMPORTED_MODULE_20__, this.storageAdapter)
     this.siteOptions = null // Will be set during `init` phase
     this.settings = UIController.settingValues
     this.irregularBaseFontSizeClassName = 'alpheios-irregular-base-font-size'
     this.irregularBaseFontSize = !UIController.hasRegularBaseFontSize()
     this.manifest = manifest
     const templateDefaults = {
-      html: _templates_template_htmlf__WEBPACK_IMPORTED_MODULE_13___default.a,
+      html: _templates_template_htmlf__WEBPACK_IMPORTED_MODULE_14___default.a,
       panelId: 'alpheios-panel',
       panelComponents: {
         panel: _vue_components_panel_vue__WEBPACK_IMPORTED_MODULE_7__["default"]
@@ -30028,7 +30031,7 @@ class UIController {
     let optionLoadPromises = [this.options.load(), this.resourceOptions.load(), this.uiOptions.load()]
     this.siteOptions = this.loadSiteOptions() //
 
-    this.zIndex = _lib_utility_html_page_js__WEBPACK_IMPORTED_MODULE_21__["default"].getZIndexMax()
+    this.zIndex = _lib_utility_html_page_js__WEBPACK_IMPORTED_MODULE_22__["default"].getZIndexMax()
 
     this.l10n = new _lib_l10n_l10n_js__WEBPACK_IMPORTED_MODULE_9__["default"]()
       .addMessages(_locales_en_us_messages_json__WEBPACK_IMPORTED_MODULE_11__, _locales_locales_js__WEBPACK_IMPORTED_MODULE_10__["default"].en_US)
@@ -30260,7 +30263,7 @@ class UIController {
 
         requestGrammar: function (feature) {
           // ExpObjMon.track(
-          _lib_queries_resource_query_js__WEBPACK_IMPORTED_MODULE_15__["default"].create(feature, {
+          _lib_queries_resource_query_js__WEBPACK_IMPORTED_MODULE_16__["default"].create(feature, {
             uiController: this.uiController,
             grammars: alpheios_res_client__WEBPACK_IMPORTED_MODULE_3__["Grammars"]
           }).getData()
@@ -30610,7 +30613,7 @@ class UIController {
     this.state.setWatcher('uiActive', this.updateAnnotations.bind(this))
 
     // Activate listeners
-    _lib_custom_pointer_events_mouse_dbl_click_js__WEBPACK_IMPORTED_MODULE_23__["default"].listen('body', evt => this.getSelectedText(evt))
+    _lib_custom_pointer_events_mouse_dbl_click_js__WEBPACK_IMPORTED_MODULE_24__["default"].listen('body', evt => this.getSelectedText(evt))
     document.addEventListener('keydown', this.handleEscapeKey.bind(this))
     document.body.addEventListener('Alpheios_Reload', this.handleReload.bind(this))
     document.body.addEventListener('Alpheios_Embedded_Response', this.disableContent.bind(this))
@@ -30659,9 +30662,9 @@ class UIController {
     let allSiteOptions = []
     // TODO: need to fix this. It iterates over `site` but `site-options.json` does not have this filed
     // TODO: also, is `site-options-treebanks.json` the thing similar? Why is it never loaded?
-    for (let site of _settings_site_options_json__WEBPACK_IMPORTED_MODULE_17__) {
+    for (let site of _settings_site_options_json__WEBPACK_IMPORTED_MODULE_18__) {
       for (let domain of site.options) {
-        let siteOpts = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_24__["default"](domain, this.storageAdapter)
+        let siteOpts = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_25__["default"](domain, this.storageAdapter)
         allSiteOptions.push({ uriMatch: site.uriMatch, resourceOptions: siteOpts })
       }
     }
@@ -31013,7 +31016,7 @@ class UIController {
       HTMLSelector conveys page-specific information, such as location of a selection on a page.
       It's probably better to keep them separated in order to follow a more abstract model.
        */
-      let htmlSelector = new _lib_selection_media_html_selector_js__WEBPACK_IMPORTED_MODULE_20__["default"](event, this.options.items.preferredLanguage.currentValue)
+      let htmlSelector = new _lib_selection_media_html_selector_js__WEBPACK_IMPORTED_MODULE_21__["default"](event, this.options.items.preferredLanguage.currentValue)
       let textSelector = htmlSelector.createTextSelector()
 
       if (!textSelector.isEmpty()) {
@@ -31038,7 +31041,7 @@ class UIController {
           })
           .getData() */
 
-        _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].create(textSelector, {
+        _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_15__["default"].create(textSelector, {
           htmlSelector: htmlSelector,
           uiController: this,
           maAdapter: this.maAdapter,
@@ -31104,7 +31107,7 @@ class UIController {
    */
   updateAnnotations () {
     if (this.state.isActive() && this.state.uiIsActive()) {
-      _lib_queries_annotation_query_js__WEBPACK_IMPORTED_MODULE_16__["default"].create({
+      _lib_queries_annotation_query_js__WEBPACK_IMPORTED_MODULE_17__["default"].create({
         uiController: this,
         document: document,
         siteOptions: this.siteOptions
@@ -31116,138 +31119,6 @@ class UIController {
     if (this.state.isActive() && this.uiOptions.items.panelOnActivate.currentValue && !this.panel.isOpen()) {
       this.panel.open()
     }
-  }
-}
-
-
-/***/ }),
-
-/***/ "./lib/controllers/ui-state.js":
-/*!*************************************!*\
-  !*** ./lib/controllers/ui-state.js ***!
-  \*************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return UIStateAPI; });
-/**
- * Interface for a State Object to manage Alpheios UI State
- */
-class UIStateAPI {
-  constructor () {
-    /**
-     * A language of a latest lexical query
-     * @type {Language}
-     */
-    this.selectionLang = undefined
-
-    this.watchers = new Map()
-  }
-
-  static get statuses () {
-    return {
-      script: {
-        PENDING: Symbol.for('Alpheios_Status_Pending'), // Script has not been fully initialized yet
-        ACTIVE: Symbol.for('Alpheios_Status_Active'), // Script is loaded and active
-        DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Script has been loaded, but is deactivated
-        DISABLED: Symbol.for('Alpheios_Status_Disabled') // Script has been loaded, but it is disabled
-      },
-      panel: {
-        OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
-        CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
-      }
-    }
-  }
-
-  /**
-   * SetItem provides a monitored way to change a TabScript state. If value is assigned to a data property directly
-   * there is no way to know if a property was changed. However, if a property was changed using setItem() method,
-   * and if there is a watcher function registered for a changed property name,
-   * this function will be called on every property change, passing a changed property name as an argument.
-   * @param key
-   * @param value
-   * @return {UIStateAPI}
-   */
-  setItem (key, value) {
-    this[key] = value
-    if (this.watchers && this.watchers.has(key)) {
-      this.watchers.get(key)(key, this)
-    }
-    return this
-  }
-
-  /**
-   * Sets a watcher function that is called every time a property is changed using a setItem() method.
-   * @param {String} property - A name of a property that should be monitored
-   * @param {Function} watchFunc - A function that will be called every time a property changes
-   * @return {UIStateAPI} Reference to self for chaining
-   */
-  setWatcher (property, watchFunc) {
-    this.watchers.set(property, watchFunc)
-    return this
-  }
-
-  /**
-   * Check if the state of the panel is open
-   * @return {boolean} true if open false if closed
-   */
-  isPanelOpen () {
-    return false
-  }
-
-  /**
-   * Check if the state of the panel is closed
-   * @return {boolean} true if closed false if open
-   */
-  isPanelClosed () {
-    return false
-  }
-
-  /**
-   * Set the state of the panel to open
-   * @return {UIStateAPI} the updated state object
-   */
-  setPanelOpen () {
-    console.log('setPanelOpen is not implemented')
-    return this
-  }
-
-  /**
-   * Set the state of the panel to closed
-   * @return {UIStateAPI} the updated state object
-   */
-  setPanelClosed () {
-    console.log('setPanelClosed is not implemented')
-    return this
-  }
-
-  /**
-   * Check if the state of the UI is active (i.e. fully loaded and ready to use)
-   * @return {boolean} true if active false if not
-   */
-  uiIsActive () {
-    return false
-  }
-
-  /**
-   * Set the state of the UI to active (i.e. fully loaded and ready to use)
-   * @return {IState} the updated state object
-   */
-  activateUI () {
-    console.log('activateUI is not implemented')
-    return this
-  }
-
-  /**
-   * Set the currently active panel tab
-   * @param {String} tabName name of the tab
-   * @return {UIStateAPI} the updated state object
-   */
-  changeTab (tabName) {
-    console.log('changeTab is not implemented')
-    return this
   }
 }
 
@@ -34069,6 +33940,558 @@ class TextQuoteSelector {
 
 /***/ }),
 
+/***/ "./lib/state/tab-script.js":
+/*!*********************************!*\
+  !*** ./lib/state/tab-script.js ***!
+  \*********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return TabScript; });
+/* harmony import */ var _lib_state_ui_state_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @/lib/state/ui-state-api.js */ "./lib/state/ui-state-api.js");
+/* harmony import */ var _lib_state_tab_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/lib/state/tab.js */ "./lib/state/tab.js");
+
+
+/**
+ * Contains a state of a tab (page) content script.
+ * @property {Number} tabID - An ID of a tab where the content script is loaded
+ * @property {Symbol} status - A status of a current script (Active, Deactivated, Pending)
+ * @property {panelStatus} panelStatus
+ */
+class TabScript extends _lib_state_ui_state_api_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
+  constructor (tabObj) {
+    super()
+    this.tabID = tabObj ? tabObj.uniqueId : undefined
+    this.tabObj = tabObj
+    this.status = undefined
+    this.panelStatus = undefined
+    this.tab = undefined
+    this.savedStatus = undefined
+    this.uiActive = false
+
+    this.watchers = new Map()
+  }
+
+  updateTabObject (tabId, windowId) {
+    this.tabObj = new _lib_state_tab_js__WEBPACK_IMPORTED_MODULE_1__["default"](tabId, windowId)
+    this.tabID = this.tabObj.uniqueId
+    return this
+  }
+
+  deattach () {
+    this.tabObj.deattach()
+  }
+
+  attach (newWinId) {
+    this.tabObj.attach(newWinId)
+  }
+
+  get isDeattached () {
+    return this.tabObj.isDeattached
+  }
+
+  static get propTypes () {
+    return {
+      NUMERIC: Symbol('Numeric'),
+      STRING: Symbol('String'),
+      SYMBOL: Symbol('Symbol')
+    }
+  }
+
+  static get props () {
+    return {
+      status: {
+        name: 'status',
+        valueType: TabScript.propTypes.SYMBOL,
+        values: {
+          PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
+          ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
+          DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
+          DISABLED: Symbol.for('Alpheios_Status_Disabled') // Content script has been loaded, but it is disabled
+        },
+        defaultValueIndex: 0
+      },
+      savedStatus: {
+        name: 'savedStatus',
+        valueType: Boolean
+      },
+      panelStatus: {
+        name: 'panelStatus',
+        valueType: TabScript.propTypes.SYMBOL,
+        values: {
+          OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
+          CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
+        },
+        defaultValueIndex: 1
+      },
+      tab: {
+        name: 'tab',
+        valueType: TabScript.propTypes.STRING,
+        values: {
+          INFO: 'info'
+        },
+        defaultValueIndex: 0
+      },
+      uiActive: {
+        name: 'uiActive',
+        valueType: Boolean
+      }
+    }
+  }
+
+  static get symbolProps () {
+    return [TabScript.props.status.name, TabScript.props.panelStatus.name]
+  }
+
+  static get stringProps () {
+    return [TabScript.props.tab.name]
+  }
+
+  static get booleanProps () {
+    return [TabScript.props.savedStatus.name]
+  }
+
+  /**
+   * Only certain features will be stored within a serialized version of a TabScript. This is done
+   * to prevent context-specific features (such as local event handlers) to be passed over the network
+   * to a different context where they would make no sense. This getter returns a list of such fields.
+   * @return {String[]}
+   */
+  static get dataProps () {
+    return TabScript.symbolProps.concat(TabScript.stringProps).concat(TabScript.booleanProps)
+  }
+
+  /**
+   * A copy constructor.
+   * @param {TabScript} source - An instance of TabScript object we need to copy.
+   * @return {TabScript} A copy of a source object.
+   */
+  static create (source) {
+    let copy = new TabScript()
+    for (let key of Object.keys(source)) {
+      copy[key] = source[key]
+    }
+    return copy
+  }
+
+  static get defaults () {
+    return {
+      status: TabScript.statuses.script.ACTIVE,
+      panelStatus: TabScript.statuses.panel.OPEN
+    }
+  }
+
+  static get statuses () {
+    return {
+      script: {
+        PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
+        ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
+        DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
+        DISABLED: Symbol.for('Alpheios_Status_Disabled') // Content script has been loaded, but it is disabled
+      },
+      panel: {
+        OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
+        CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
+      }
+    }
+  }
+
+  /**
+   * Sets a watcher function that is called every time a property is changed using a setItem() method.
+   * @param {String} property - A name of a property that should be monitored
+   * @param {Function} watchFunc - A function that will be called every time a property changes
+   * @return {TabScript} Reference to self for chaining
+   */
+  setWatcher (property, watchFunc) {
+    this.watchers.set(property, watchFunc)
+    return this
+  }
+
+  /**
+   * SetItem provides a monitored way to change a TabScript state. If value is assigned to a data property directly
+   * there is no way to know if a property was changed. However, if a property was changed using setItem() method,
+   * and if there is a watcher function registered for a changed property name,
+   * this function will be called on every property change, passing a changed property name as an argument.
+   * @param key
+   * @param value
+   * @return {TabScript}
+   */
+  setItem (key, value) {
+    this[key] = value
+    if (this.watchers && this.watchers.has(key)) {
+      this.watchers.get(key)(key, this)
+    }
+    return this
+  }
+
+  isPanelOpen () {
+    return this.panelStatus === TabScript.statuses.panel.OPEN
+  }
+
+  isPanelClosed () {
+    return this.panelStatus === TabScript.statuses.panel.CLOSED
+  }
+
+  setPanelOpen () {
+    this.setItem('panelStatus', TabScript.statuses.panel.OPEN)
+    return this
+  }
+
+  setPanelClosed () {
+    this.setItem('panelStatus', TabScript.statuses.panel.CLOSED)
+    return this
+  }
+
+  hasSameID (tabID) {
+    return Symbol.keyFor(this.tabID) === Symbol.keyFor(tabID)
+  }
+
+  isActive () {
+    return this.status === TabScript.statuses.script.ACTIVE
+  }
+
+  isDeactivated () {
+    return this.status === TabScript.statuses.script.DEACTIVATED
+  }
+
+  isDisabled () {
+    return this.status === TabScript.statuses.script.DISABLED
+  }
+
+  uiIsActive () {
+    return this[TabScript.props.uiActive.name]
+  }
+
+  activate () {
+    this.status = TabScript.statuses.script.ACTIVE
+    return this
+  }
+
+  deactivate () {
+    this.status = TabScript.statuses.script.DEACTIVATED
+    return this
+  }
+
+  disable () {
+    this.status = TabScript.statuses.script.DISABLED
+    return this
+  }
+
+  save () {
+    this.savedStatus = this.status
+    return this
+  }
+
+  restore () {
+    if (this.savedStatus) {
+      this.status = this.savedStatus
+      this.savedStatus = undefined
+    }
+    return this
+  }
+
+  activateUI () {
+    this.setItem(TabScript.props.uiActive.name, true)
+    return this
+  }
+
+  changeTab (tabName) {
+    this.setItem(TabScript.props.tab.name, tabName)
+    return this
+  }
+
+  update (source) {
+    for (let key of Object.keys(source)) {
+      if (source[key]) {
+        this[key] = source[key]
+      }
+    }
+    return this
+  }
+
+  diff (state) {
+    let diff = {
+      _changedKeys: [],
+      _changedEntries: []
+    }
+
+    // Check if there are any differences in tab IDs
+
+    if (this.tabID !== state.tabID) {
+      diff.tabID = state.tabID
+      diff['_changedKeys'].push('tabID')
+      diff['_changedEntries'].push(['tabID', state.tabID])
+    }
+
+    for (let key of Object.keys(state)) {
+      // Build diffs only for data properties
+      if (TabScript.dataProps.includes(key)) {
+        if (this.hasOwnProperty(key)) {
+          if (this[key] !== state[key]) {
+            diff[key] = state[key]
+            diff['_changedKeys'].push(key)
+            diff['_changedEntries'].push([key, state[key]])
+          }
+        } else {
+          console.warn(`TabScript has no property named "${key}"`)
+        }
+      }
+    }
+
+    diff.keys = function () {
+      return diff['_changedKeys']
+    }
+
+    diff.entries = function () {
+      return diff['_changedEntries']
+    }
+
+    diff.has = function (prop) {
+      return diff._changedKeys.includes(prop)
+    }
+
+    diff.isEmpty = function () {
+      return !diff._changedKeys.length
+    }
+    return diff
+  }
+
+  /**
+   * Creates a serializable copy of a source object. Firefox uses the structured clone algorithm
+   * (https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) to serialize objects.
+   * Requirements of this algorithm are that a serializable object to have no Function or Error properties,
+   * neither any DOM Nodes. That's why an empty serializable object is created and only
+   * selected properties are copied into it.
+   * @param {TabScript} source - An object to be serialized.
+   * @return {Object} A serializable copy of a source.
+   */
+  static serializable (source) {
+    let serializable = {}
+    serializable.tabID = (typeof source.tabID === 'symbol') ? Symbol.keyFor(source.tabID) : source.tabID
+    serializable.tabObj = source.tabObj ? source.tabObj.clone() : undefined
+
+    for (let key of Object.keys(source)) {
+      if (TabScript.dataProps.includes(key)) {
+        /*
+        Only certain features will be stored within a serialized version of a TabScript. This is done
+        to prevent context-specific features (such as local event handlers) to be passed over the network
+        to a different context where they would make no sense.
+         */
+        let value = source[key]
+        serializable[key] = (typeof value === 'symbol') ? Symbol.keyFor(value) : value
+      }
+    }
+    return serializable
+  }
+
+  static readObject (jsonObject) {
+    let tabObj = (jsonObject.tabObj && jsonObject.tabObj.tabId && jsonObject.tabObj.windowId) ? new _lib_state_tab_js__WEBPACK_IMPORTED_MODULE_1__["default"](jsonObject.tabObj.tabId, jsonObject.tabObj.windowId, jsonObject.tabObj.status) : undefined
+    let tabScript = new TabScript(tabObj)
+
+    for (let prop of TabScript.symbolProps) {
+      if (jsonObject.hasOwnProperty(prop)) {
+        tabScript[prop] = Symbol.for(jsonObject[prop])
+      }
+    }
+
+    for (let prop of TabScript.stringProps) {
+      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
+    }
+
+    for (let prop of TabScript.booleanProps) {
+      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
+    }
+    return tabScript
+  }
+}
+
+
+/***/ }),
+
+/***/ "./lib/state/tab.js":
+/*!**************************!*\
+  !*** ./lib/state/tab.js ***!
+  \**************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Tab; });
+class Tab {
+  constructor (tabId, windowId, status) {
+    this.tabId = tabId
+    this.windowId = windowId
+    this.status = 'attached'
+  }
+
+  get uniqueId () {
+    return this.constructor.createUniqueId(this.tabId, this.windowId)
+  }
+
+  get isDeattached () {
+    return this.status === 'deattached'
+  }
+
+  deattach () {
+    this.status = 'deattached'
+  }
+
+  attach (newWinId) {
+    this.windowId = newWinId
+    this.status = 'attached'
+  }
+
+  clone () {
+    return new Tab(this.tabId, this.windowId)
+  }
+
+  compareWithTab (tabObj) {
+    return this.tabId === tabObj.tabId && this.windowId === tabObj.windowId
+  }
+
+  static createUniqueId (tabId, windowId) {
+    return Symbol.for(`Alpheios_tabId:${tabId.toString()},windowId:${windowId.toString()}`)
+  }
+}
+
+
+/***/ }),
+
+/***/ "./lib/state/ui-state-api.js":
+/*!***********************************!*\
+  !*** ./lib/state/ui-state-api.js ***!
+  \***********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return UIStateAPI; });
+/**
+ * Interface for a State Object to manage Alpheios UI State
+ */
+class UIStateAPI {
+  constructor () {
+    /**
+     * A language of a latest lexical query
+     * @type {Language}
+     */
+    this.selectionLang = undefined
+
+    this.watchers = new Map()
+  }
+
+  static get statuses () {
+    return {
+      script: {
+        PENDING: Symbol.for('Alpheios_Status_Pending'), // Script has not been fully initialized yet
+        ACTIVE: Symbol.for('Alpheios_Status_Active'), // Script is loaded and active
+        DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Script has been loaded, but is deactivated
+        DISABLED: Symbol.for('Alpheios_Status_Disabled') // Script has been loaded, but it is disabled
+      },
+      panel: {
+        OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
+        CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
+      }
+    }
+  }
+
+  /**
+   * SetItem provides a monitored way to change a TabScript state. If value is assigned to a data property directly
+   * there is no way to know if a property was changed. However, if a property was changed using setItem() method,
+   * and if there is a watcher function registered for a changed property name,
+   * this function will be called on every property change, passing a changed property name as an argument.
+   * @param key
+   * @param value
+   * @return {UIStateAPI}
+   */
+  setItem (key, value) {
+    this[key] = value
+    if (this.watchers && this.watchers.has(key)) {
+      this.watchers.get(key)(key, this)
+    }
+    return this
+  }
+
+  /**
+   * Sets a watcher function that is called every time a property is changed using a setItem() method.
+   * @param {String} property - A name of a property that should be monitored
+   * @param {Function} watchFunc - A function that will be called every time a property changes
+   * @return {UIStateAPI} Reference to self for chaining
+   */
+  setWatcher (property, watchFunc) {
+    this.watchers.set(property, watchFunc)
+    return this
+  }
+
+  /**
+   * Check if the state of the panel is open
+   * @return {boolean} true if open false if closed
+   */
+  isPanelOpen () {
+    return false
+  }
+
+  /**
+   * Check if the state of the panel is closed
+   * @return {boolean} true if closed false if open
+   */
+  isPanelClosed () {
+    return false
+  }
+
+  /**
+   * Set the state of the panel to open
+   * @return {UIStateAPI} the updated state object
+   */
+  setPanelOpen () {
+    console.log('setPanelOpen is not implemented')
+    return this
+  }
+
+  /**
+   * Set the state of the panel to closed
+   * @return {UIStateAPI} the updated state object
+   */
+  setPanelClosed () {
+    console.log('setPanelClosed is not implemented')
+    return this
+  }
+
+  /**
+   * Check if the state of the UI is active (i.e. fully loaded and ready to use)
+   * @return {boolean} true if active false if not
+   */
+  uiIsActive () {
+    return false
+  }
+
+  /**
+   * Set the state of the UI to active (i.e. fully loaded and ready to use)
+   * @return {IState} the updated state object
+   */
+  activateUI () {
+    console.log('activateUI is not implemented')
+    return this
+  }
+
+  /**
+   * Set the currently active panel tab
+   * @param {String} tabName name of the tab
+   * @return {UIStateAPI} the updated state object
+   */
+  changeTab (tabName) {
+    console.log('changeTab is not implemented')
+    return this
+  }
+}
+
+
+/***/ }),
+
 /***/ "./lib/utility/comparable.js":
 /*!***********************************!*\
   !*** ./lib/utility/comparable.js ***!
@@ -34238,7 +34661,7 @@ var _en_gb_messages_json__WEBPACK_IMPORTED_MODULE_1___namespace = /*#__PURE__*/_
 /*!*******************!*\
   !*** ./plugin.js ***!
   \*******************/
-/*! exports provided: Popup, PopupMobile, Panel, L10n, Locales, enUS, enGB, UIController, Language, HTMLSelector, AnnotationQuery, LexicalQuery, ResourceQuery, LocalStorageArea, ExtensionSyncStorage, ContentOptionDefaults, LanguageOptionDefaults, UIOptionDefaults, DefaultsLoader, Options, UIStateAPI, Style, Logger, HTMLConsole, MouseDblClick, LongTap, Swipe, GenericEvt, AlignmentSelector, HTMLPage */
+/*! exports provided: Popup, PopupMobile, Panel, L10n, Locales, enUS, enGB, UIController, Language, HTMLSelector, AnnotationQuery, LexicalQuery, ResourceQuery, LocalStorageArea, ExtensionSyncStorage, ContentOptionDefaults, LanguageOptionDefaults, UIOptionDefaults, DefaultsLoader, Options, UIStateAPI, Style, Logger, HTMLConsole, MouseDblClick, LongTap, Swipe, GenericEvt, AlignmentSelector, HTMLPage, Tab, TabScript */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -34270,8 +34693,8 @@ var _locales_en_gb_messages_json__WEBPACK_IMPORTED_MODULE_7___namespace = /*#__P
 /* harmony import */ var _lib_controllers_ui_controller_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./lib/controllers/ui-controller.js */ "./lib/controllers/ui-controller.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "UIController", function() { return _lib_controllers_ui_controller_js__WEBPACK_IMPORTED_MODULE_8__["default"]; });
 
-/* harmony import */ var _lib_controllers_ui_state_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./lib/controllers/ui-state.js */ "./lib/controllers/ui-state.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "UIStateAPI", function() { return _lib_controllers_ui_state_js__WEBPACK_IMPORTED_MODULE_9__["default"]; });
+/* harmony import */ var _lib_state_ui_state_api_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @/lib/state/ui-state-api.js */ "./lib/state/ui-state-api.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "UIStateAPI", function() { return _lib_state_ui_state_api_js__WEBPACK_IMPORTED_MODULE_9__["default"]; });
 
 /* harmony import */ var _lib_controllers_language_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./lib/controllers/language.js */ "./lib/controllers/language.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Language", function() { return _lib_controllers_language_js__WEBPACK_IMPORTED_MODULE_10__["default"]; });
@@ -34333,8 +34756,16 @@ var _settings_ui_options_defaults_json__WEBPACK_IMPORTED_MODULE_19___namespace =
 /* harmony import */ var _lib_utility_html_page_js__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./lib/utility/html-page.js */ "./lib/utility/html-page.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HTMLPage", function() { return _lib_utility_html_page_js__WEBPACK_IMPORTED_MODULE_29__["default"]; });
 
+/* harmony import */ var _lib_state_tab_js__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! @/lib/state/tab.js */ "./lib/state/tab.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Tab", function() { return _lib_state_tab_js__WEBPACK_IMPORTED_MODULE_30__["default"]; });
+
+/* harmony import */ var _lib_state_tab_script_js__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! @/lib/state/tab-script.js */ "./lib/state/tab-script.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TabScript", function() { return _lib_state_tab_script_js__WEBPACK_IMPORTED_MODULE_31__["default"]; });
+
 // The following import will not probably used by any client directly,
 // but is required to include Scss file specified in there to a MiniCssExtractPlugin bundle
+
+
 
 
 
@@ -91064,377 +91495,6 @@ module.exports = v4;
 
 /***/ }),
 
-/***/ "../lib/content/tab-script.js":
-/*!************************************!*\
-  !*** ../lib/content/tab-script.js ***!
-  \************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return TabScript; });
-/* harmony import */ var alpheios_components__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! alpheios-components */ "../../../components/dist/alpheios-components.js");
-/* harmony import */ var alpheios_components__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(alpheios_components__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _lib_tab_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/lib/tab.js */ "../lib/tab.js");
-
-
-/**
- * Contains a state of a tab content script.
- * @property {Number} tabID - An ID of a tab where the content script is loaded
- * @property {Symbol} status - A status of a current script (Active, Deactivated, Pending)
- * @property {panelStatus} panelStatus
- */
-class TabScript extends alpheios_components__WEBPACK_IMPORTED_MODULE_0__["UIStateAPI"] {
-  constructor (tabObj) {
-    super()
-    this.tabID = tabObj ? tabObj.uniqueId : undefined
-    this.tabObj = tabObj
-    this.status = undefined
-    this.panelStatus = undefined
-    this.tab = undefined
-    this.savedStatus = undefined
-    this.uiActive = false
-
-    this.watchers = new Map()
-  }
-
-  updateTabObject (tabId, windowId) {
-    this.tabObj = new _lib_tab_js__WEBPACK_IMPORTED_MODULE_1__["default"](tabId, windowId)
-    this.tabID = this.tabObj.uniqueId
-    return this
-  }
-
-  deattach () {
-    this.tabObj.deattach()
-  }
-
-  attach (newWinId) {
-    this.tabObj.attach(newWinId)
-  }
-
-  get isDeattached () {
-    return this.tabObj.isDeattached
-  }
-
-  static get propTypes () {
-    return {
-      NUMERIC: Symbol('Numeric'),
-      STRING: Symbol('String'),
-      SYMBOL: Symbol('Symbol')
-    }
-  }
-
-  static get props () {
-    return {
-      status: {
-        name: 'status',
-        valueType: TabScript.propTypes.SYMBOL,
-        values: {
-          PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
-          ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
-          DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
-          DISABLED: Symbol.for('Alpheios_Status_Disabled') // Content script has been loaded, but it is disabled
-        },
-        defaultValueIndex: 0
-      },
-      savedStatus: {
-        name: 'savedStatus',
-        valueType: Boolean
-      },
-      panelStatus: {
-        name: 'panelStatus',
-        valueType: TabScript.propTypes.SYMBOL,
-        values: {
-          OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
-          CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
-        },
-        defaultValueIndex: 1
-      },
-      tab: {
-        name: 'tab',
-        valueType: TabScript.propTypes.STRING,
-        values: {
-          INFO: 'info'
-        },
-        defaultValueIndex: 0
-      },
-      uiActive: {
-        name: 'uiActive',
-        valueType: Boolean
-      }
-    }
-  }
-
-  static get symbolProps () {
-    return [TabScript.props.status.name, TabScript.props.panelStatus.name]
-  }
-
-  static get stringProps () {
-    return [TabScript.props.tab.name]
-  }
-
-  static get booleanProps () {
-    return [TabScript.props.savedStatus.name]
-  }
-
-  /**
-   * Only certain features will be stored within a serialized version of a TabScript. This is done
-   * to prevent context-specific features (such as local event handlers) to be passed over the network
-   * to a different context where they would make no sense. This getter returns a list of such fields.
-   * @return {String[]}
-   */
-  static get dataProps () {
-    return TabScript.symbolProps.concat(TabScript.stringProps).concat(TabScript.booleanProps)
-  }
-
-  /**
-   * A copy constructor.
-   * @param {TabScript} source - An instance of TabScript object we need to copy.
-   * @return {TabScript} A copy of a source object.
-   */
-  static create (source) {
-    let copy = new TabScript()
-    for (let key of Object.keys(source)) {
-      copy[key] = source[key]
-    }
-    return copy
-  }
-
-  static get defaults () {
-    return {
-      status: TabScript.statuses.script.ACTIVE,
-      panelStatus: TabScript.statuses.panel.OPEN
-    }
-  }
-
-  static get statuses () {
-    return {
-      script: {
-        PENDING: Symbol.for('Alpheios_Status_Pending'), // Content script has not been fully initialized yet
-        ACTIVE: Symbol.for('Alpheios_Status_Active'), // Content script is loaded and active
-        DEACTIVATED: Symbol.for('Alpheios_Status_Deactivated'), // Content script has been loaded, but is deactivated
-        DISABLED: Symbol.for('Alpheios_Status_Disabled') // Content script has been loaded, but it is disabled
-      },
-      panel: {
-        OPEN: Symbol.for('Alpheios_Status_PanelOpen'), // Panel is open
-        CLOSED: Symbol.for('Alpheios_Status_PanelClosed') // Panel is closed
-      }
-    }
-  }
-
-  /**
-   * Sets a watcher function that is called every time a property is changed using a setItem() method.
-   * @param {String} property - A name of a property that should be monitored
-   * @param {Function} watchFunc - A function that will be called every time a property changes
-   * @return {TabScript} Reference to self for chaining
-   */
-  setWatcher (property, watchFunc) {
-    this.watchers.set(property, watchFunc)
-    return this
-  }
-
-  /**
-   * SetItem provides a monitored way to change a TabScript state. If value is assigned to a data property directly
-   * there is no way to know if a property was changed. However, if a property was changed using setItem() method,
-   * and if there is a watcher function registered for a changed property name,
-   * this function will be called on every property change, passing a changed property name as an argument.
-   * @param key
-   * @param value
-   * @return {TabScript}
-   */
-  setItem (key, value) {
-    this[key] = value
-    if (this.watchers && this.watchers.has(key)) {
-      this.watchers.get(key)(key, this)
-    }
-    return this
-  }
-
-  isPanelOpen () {
-    return this.panelStatus === TabScript.statuses.panel.OPEN
-  }
-
-  isPanelClosed () {
-    return this.panelStatus === TabScript.statuses.panel.CLOSED
-  }
-
-  setPanelOpen () {
-    this.setItem('panelStatus', TabScript.statuses.panel.OPEN)
-    return this
-  }
-
-  setPanelClosed () {
-    this.setItem('panelStatus', TabScript.statuses.panel.CLOSED)
-    return this
-  }
-
-  hasSameID (tabID) {
-    return Symbol.keyFor(this.tabID) === Symbol.keyFor(tabID)
-  }
-
-  isActive () {
-    return this.status === TabScript.statuses.script.ACTIVE
-  }
-
-  isDeactivated () {
-    return this.status === TabScript.statuses.script.DEACTIVATED
-  }
-
-  isDisabled () {
-    return this.status === TabScript.statuses.script.DISABLED
-  }
-
-  uiIsActive () {
-    return this[TabScript.props.uiActive.name]
-  }
-
-  activate () {
-    this.status = TabScript.statuses.script.ACTIVE
-    return this
-  }
-
-  deactivate () {
-    this.status = TabScript.statuses.script.DEACTIVATED
-    return this
-  }
-
-  disable () {
-    this.status = TabScript.statuses.script.DISABLED
-    return this
-  }
-
-  save () {
-    this.savedStatus = this.status
-    return this
-  }
-
-  restore () {
-    if (this.savedStatus) {
-      this.status = this.savedStatus
-      this.savedStatus = undefined
-    }
-    return this
-  }
-
-  activateUI () {
-    this.setItem(TabScript.props.uiActive.name, true)
-    return this
-  }
-
-  changeTab (tabName) {
-    this.setItem(TabScript.props.tab.name, tabName)
-    return this
-  }
-
-  update (source) {
-    for (let key of Object.keys(source)) {
-      if (source[key]) {
-        this[key] = source[key]
-      }
-    }
-    return this
-  }
-
-  diff (state) {
-    let diff = {
-      _changedKeys: [],
-      _changedEntries: []
-    }
-
-    // Check if there are any differences in tab IDs
-
-    if (this.tabID !== state.tabID) {
-      diff.tabID = state.tabID
-      diff['_changedKeys'].push('tabID')
-      diff['_changedEntries'].push(['tabID', state.tabID])
-    }
-
-    for (let key of Object.keys(state)) {
-      // Build diffs only for data properties
-      if (TabScript.dataProps.includes(key)) {
-        if (this.hasOwnProperty(key)) {
-          if (this[key] !== state[key]) {
-            diff[key] = state[key]
-            diff['_changedKeys'].push(key)
-            diff['_changedEntries'].push([key, state[key]])
-          }
-        } else {
-          console.warn(`TabScript has no property named "${key}"`)
-        }
-      }
-    }
-
-    diff.keys = function () {
-      return diff['_changedKeys']
-    }
-
-    diff.entries = function () {
-      return diff['_changedEntries']
-    }
-
-    diff.has = function (prop) {
-      return diff._changedKeys.includes(prop)
-    }
-
-    diff.isEmpty = function () {
-      return !diff._changedKeys.length
-    }
-    return diff
-  }
-
-  /**
-   * Creates a serializable copy of a source object. Firefox uses the structured clone algorithm
-   * (https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) to serialize objects.
-   * Requirements of this algorithm are that a serializable object to have no Function or Error properties,
-   * neither any DOM Nodes. That's why an empty serializable object is created and only
-   * selected properties are copied into it.
-   * @param {TabScript} source - An object to be serialized.
-   * @return {Object} A serializable copy of a source.
-   */
-  static serializable (source) {
-    let serializable = {}
-    serializable.tabID = (typeof source.tabID === 'symbol') ? Symbol.keyFor(source.tabID) : source.tabID
-    serializable.tabObj = source.tabObj ? source.tabObj.clone() : undefined
-
-    for (let key of Object.keys(source)) {
-      if (TabScript.dataProps.includes(key)) {
-        /*
-        Only certain features will be stored within a serialized version of a TabScript. This is done
-        to prevent context-specific features (such as local event handlers) to be passed over the network
-        to a different context where they would make no sense.
-         */
-        let value = source[key]
-        serializable[key] = (typeof value === 'symbol') ? Symbol.keyFor(value) : value
-      }
-    }
-    return serializable
-  }
-
-  static readObject (jsonObject) {
-    let tabObj = (jsonObject.tabObj && jsonObject.tabObj.tabId && jsonObject.tabObj.windowId) ? new _lib_tab_js__WEBPACK_IMPORTED_MODULE_1__["default"](jsonObject.tabObj.tabId, jsonObject.tabObj.windowId, jsonObject.tabObj.status) : undefined
-    let tabScript = new TabScript(tabObj)
-
-    for (let prop of TabScript.symbolProps) {
-      if (jsonObject.hasOwnProperty(prop)) {
-        tabScript[prop] = Symbol.for(jsonObject[prop])
-      }
-    }
-
-    for (let prop of TabScript.stringProps) {
-      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
-    }
-
-    for (let prop of TabScript.booleanProps) {
-      if (jsonObject.hasOwnProperty(prop)) { tabScript[prop] = jsonObject[prop] }
-    }
-    return tabScript
-  }
-}
-
-
-/***/ }),
-
 /***/ "../lib/messaging/base-service.js":
 /*!****************************************!*\
   !*** ../lib/messaging/base-service.js ***!
@@ -91535,13 +91595,14 @@ class Message {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return StateMessage; });
 /* harmony import */ var _message__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./message */ "../lib/messaging/message/message.js");
-/* harmony import */ var _content_tab_script__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../content/tab-script */ "../lib/content/tab-script.js");
+/* harmony import */ var alpheios_components__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! alpheios-components */ "../../../components/dist/alpheios-components.js");
+/* harmony import */ var alpheios_components__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(alpheios_components__WEBPACK_IMPORTED_MODULE_1__);
 
 
 
 class StateMessage extends _message__WEBPACK_IMPORTED_MODULE_0__["default"] {
   constructor (state) {
-    super(_content_tab_script__WEBPACK_IMPORTED_MODULE_1__["default"].serializable(state))
+    super(alpheios_components__WEBPACK_IMPORTED_MODULE_1__["TabScript"].serializable(state))
     this.type = Symbol.keyFor(_message__WEBPACK_IMPORTED_MODULE_0__["default"].types.STATE_MESSAGE)
   }
 }
@@ -91611,7 +91672,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return StateResponse; });
 /* harmony import */ var _message_message__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../message/message */ "../lib/messaging/message/message.js");
 /* harmony import */ var _response_message__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./response-message */ "../lib/messaging/response/response-message.js");
-/* harmony import */ var _content_tab_script__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../content/tab-script */ "../lib/content/tab-script.js");
+/* harmony import */ var alpheios_components__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! alpheios-components */ "../../../components/dist/alpheios-components.js");
+/* harmony import */ var alpheios_components__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(alpheios_components__WEBPACK_IMPORTED_MODULE_2__);
 
 
 
@@ -91624,7 +91686,7 @@ class StateResponse extends _response_message__WEBPACK_IMPORTED_MODULE_1__["defa
    * @param {Symbol | string} statusCode - A status code for a request that initiated this response.
    */
   constructor (request, status, statusCode = undefined) {
-    super(request, _content_tab_script__WEBPACK_IMPORTED_MODULE_2__["default"].serializable(status), statusCode)
+    super(request, alpheios_components__WEBPACK_IMPORTED_MODULE_2__["TabScript"].serializable(status), statusCode)
     this.type = Symbol.keyFor(_message_message__WEBPACK_IMPORTED_MODULE_0__["default"].types.STATE_RESPONSE)
   }
 }
@@ -91796,56 +91858,6 @@ class StoredRequest {
 
 /***/ }),
 
-/***/ "../lib/tab.js":
-/*!*********************!*\
-  !*** ../lib/tab.js ***!
-  \*********************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Tab; });
-class Tab {
-  constructor (tabId, windowId, status) {
-    this.tabId = tabId
-    this.windowId = windowId
-    this.status = 'attached'
-  }
-
-  get uniqueId () {
-    return this.constructor.createUniqueId(this.tabId, this.windowId)
-  }
-
-  get isDeattached () {
-    return this.status === 'deattached'
-  }
-
-  deattach () {
-    this.status = 'deattached'
-  }
-
-  attach (newWinId) {
-    this.windowId = newWinId
-    this.status = 'attached'
-  }
-
-  clone () {
-    return new Tab(this.tabId, this.windowId)
-  }
-
-  compareWithTab (tabObj) {
-    return this.tabId === tabObj.tabId && this.windowId === tabObj.windowId
-  }
-
-  static createUniqueId (tabId, windowId) {
-    return Symbol.for(`Alpheios_tabId:${tabId.toString()},windowId:${windowId.toString()}`)
-  }
-}
-
-
-/***/ }),
-
 /***/ "./content.js":
 /*!********************!*\
   !*** ./content.js ***!
@@ -91858,14 +91870,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _lib_messaging_message_message_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @/lib/messaging/message/message.js */ "../lib/messaging/message/message.js");
 /* harmony import */ var _lib_messaging_message_state_message__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/lib/messaging/message/state-message */ "../lib/messaging/message/state-message.js");
 /* harmony import */ var _lib_messaging_service_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @/lib/messaging/service.js */ "../lib/messaging/service.js");
-/* harmony import */ var _lib_content_tab_script_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @/lib/content/tab-script.js */ "../lib/content/tab-script.js");
-/* harmony import */ var alpheios_components__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! alpheios-components */ "../../../components/dist/alpheios-components.js");
-/* harmony import */ var alpheios_components__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(alpheios_components__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _node_modules_alpheios_components_dist_style_style_min_css__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../../node_modules/alpheios-components/dist/style/style.min.css */ "../../../components/dist/style/style.min.css");
-/* harmony import */ var _node_modules_alpheios_components_dist_style_style_min_css__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_node_modules_alpheios_components_dist_style_style_min_css__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _lib_messaging_response_state_response__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../lib/messaging/response/state-response */ "../lib/messaging/response/state-response.js");
+/* harmony import */ var alpheios_components__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! alpheios-components */ "../../../components/dist/alpheios-components.js");
+/* harmony import */ var alpheios_components__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(alpheios_components__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _node_modules_alpheios_components_dist_style_style_min_css__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../../node_modules/alpheios-components/dist/style/style.min.css */ "../../../components/dist/style/style.min.css");
+/* harmony import */ var _node_modules_alpheios_components_dist_style_style_min_css__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_node_modules_alpheios_components_dist_style_style_min_css__WEBPACK_IMPORTED_MODULE_4__);
+/* harmony import */ var _lib_messaging_response_state_response__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../lib/messaging/response/state-response */ "../lib/messaging/response/state-response.js");
 /* global browser */
-
 
 
 
@@ -91881,29 +91891,29 @@ let uiController = null
  */
 let handleStateRequest = function handleStateRequest (request, sender) {
   console.log(`State request has been received`)
-  let state = _lib_content_tab_script_js__WEBPACK_IMPORTED_MODULE_3__["default"].readObject(request.body)
-  let diff = uiController.state.diff(state)
+  let requestState = alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].readObject(request.body)
+  let diff = uiController.state.diff(requestState)
 
   if (diff.has('tabID')) {
     if (!uiController.state.tabID) {
       // Content script has been just loaded and does not have its tab ID yet
       uiController.state.tabID = diff.tabID
-      uiController.state.tabObj = state.tabObj
+      uiController.state.tabObj = requestState.tabObj
     } else if (!uiController.state.hasSameID(diff.tabID)) {
       console.warn(`State request with the wrong tab ID "${Symbol.keyFor(diff.tabID)}" received. This tab ID is "${Symbol.keyFor(uiController.state.tabID)}"`)
       // TODO: Should we ignore such requests?
-      uiController.state.tabID = state.tabID
-      uiController.state.tabObj = state.tabObj
+      uiController.state.tabID = requestState.tabID
+      uiController.state.tabObj = requestState.tabObj
     }
   }
 
   if (diff.has('status')) {
-    if (diff.status === _lib_content_tab_script_js__WEBPACK_IMPORTED_MODULE_3__["default"].statuses.script.ACTIVE) {
+    if (diff.status === alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.script.ACTIVE) {
       uiController.activate().catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
-    } else if (diff.status === _lib_content_tab_script_js__WEBPACK_IMPORTED_MODULE_3__["default"].statuses.script.DEACTIVATED) {
+    } else if (diff.status === alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.script.DEACTIVATED) {
       uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
       console.log('Content has been deactivated')
-    } else if (diff.status === _lib_content_tab_script_js__WEBPACK_IMPORTED_MODULE_3__["default"].statuses.script.DISABLED) {
+    } else if (diff.status === alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.script.DISABLED) {
       // TODO: Do we really need this state?
       uiController.state.disable()
       console.log('Content has been disabled')
@@ -91911,14 +91921,14 @@ let handleStateRequest = function handleStateRequest (request, sender) {
   }
 
   if (diff.has('panelStatus')) {
-    if (diff.panelStatus === _lib_content_tab_script_js__WEBPACK_IMPORTED_MODULE_3__["default"].statuses.panel.OPEN) { uiController.panel.open() } else { uiController.panel.close() }
+    if (diff.panelStatus === alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.panel.OPEN) { uiController.panel.open() } else { uiController.panel.close() }
   }
   this.updatePanelOnActivation()
   if (diff.has('tab') && diff.tab) {
     uiController.changeTab(diff.tab)
   }
 
-  messagingService.sendResponseToBg(new _lib_messaging_response_state_response__WEBPACK_IMPORTED_MODULE_6__["default"](request, uiController.state)).catch(
+  messagingService.sendResponseToBg(new _lib_messaging_response_state_response__WEBPACK_IMPORTED_MODULE_5__["default"](request, uiController.state)).catch(
     (error) => {
       console.error('Unable to send a response to a state request', error)
     }
@@ -91932,14 +91942,11 @@ let sendStateToBackground = function sendStateToBackground () {
 
 console.log(`Loaded listener fired`)
 
-let state = new _lib_content_tab_script_js__WEBPACK_IMPORTED_MODULE_3__["default"]()
-state.status = _lib_content_tab_script_js__WEBPACK_IMPORTED_MODULE_3__["default"].statuses.script.PENDING
-state.panelStatus = _lib_content_tab_script_js__WEBPACK_IMPORTED_MODULE_3__["default"].statuses.panel.CLOSED
-state.setWatcher('panelStatus', sendStateToBackground)
-state.setWatcher('tab', sendStateToBackground)
 messagingService = new _lib_messaging_service_js__WEBPACK_IMPORTED_MODULE_2__["default"]()
 let browserManifest = browser.runtime.getManifest()
-uiController = new alpheios_components__WEBPACK_IMPORTED_MODULE_4__["UIController"](state, alpheios_components__WEBPACK_IMPORTED_MODULE_4__["ExtensionSyncStorage"], browserManifest)
+uiController = new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["UIController"](alpheios_components__WEBPACK_IMPORTED_MODULE_3__["ExtensionSyncStorage"], browserManifest)
+uiController.state.setWatcher('panelStatus', sendStateToBackground)
+uiController.state.setWatcher('tab', sendStateToBackground)
 uiController.activate()
   .then(() => {
     messagingService.addHandler(_lib_messaging_message_message_js__WEBPACK_IMPORTED_MODULE_0__["default"].types.STATE_REQUEST, handleStateRequest, uiController)
