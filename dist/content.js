@@ -32097,7 +32097,6 @@ class ExtensionSyncStorage extends _storage_adapter_js__WEBPACK_IMPORTED_MODULE_
    * found in the storage area. If this operation failed, the promise will be rejected with an error message.
    */
   get (keys = undefined) {
-    console.log(`ExtensionSyncStorage: get`, browser.storage.sync)
     return browser.storage.sync.get(keys)
   }
 }
@@ -91901,7 +91900,6 @@ let uiController = null
  * State request processing function.
  */
 let handleStateRequest = function handleStateRequest (request, sender) {
-  console.log(`State request has been received`)
   let requestState = alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].readObject(request.body)
   let diff = uiController.state.diff(requestState)
 
@@ -91923,11 +91921,9 @@ let handleStateRequest = function handleStateRequest (request, sender) {
       uiController.activate().catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
     } else if (diff.status === alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.script.DEACTIVATED) {
       uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
-      console.log('Content has been deactivated')
     } else if (diff.status === alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.script.DISABLED) {
       // TODO: Do we really need this state?
       uiController.state.disable()
-      console.log('Content has been disabled')
     }
   }
 
@@ -91950,8 +91946,6 @@ let sendStateToBackground = function sendStateToBackground () {
   messagingService.sendMessageToBg(new _lib_messaging_message_state_message__WEBPACK_IMPORTED_MODULE_1__["default"](uiController.state))
     .catch((error) => console.error('Unable to send a response to activation request', error))
 }
-
-console.log(`Loaded listener fired`)
 
 messagingService = new _lib_messaging_service_js__WEBPACK_IMPORTED_MODULE_2__["default"]()
 let browserManifest = browser.runtime.getManifest()

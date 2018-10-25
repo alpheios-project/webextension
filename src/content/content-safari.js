@@ -5,14 +5,12 @@ import MessagingService from '@/lib/messaging/service-safari.js'
 import { TabScript, UIController, LocalStorageArea, HTMLPage } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
 
-console.log(`Loading a content script`)
 let uiController = null
 
 /**
  * State request processing function.
  */
 let handleStateRequest = function handleStateRequest (message) {
-  console.log(`State request has been received`)
   // let browserManifest = browser.runtime.getManifest() // TODO: Do we need this in Safari?
   if (!uiController) {
     uiController = new UIController(LocalStorageArea/*, browserManifest */)
@@ -25,10 +23,8 @@ let handleStateRequest = function handleStateRequest (message) {
 
   if (diff.has('status')) {
     if (diff.status === TabScript.statuses.script.ACTIVE) {
-      console.log(`Preparing to activate state`)
       uiController.activate().catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
     } else if (diff.status === TabScript.statuses.script.DEACTIVATED) {
-      console.log(`Preparing to deactivate state`)
       uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
     }
     sendStateToBackground('updateState')
@@ -36,7 +32,6 @@ let handleStateRequest = function handleStateRequest (message) {
 }
 
 let sendStateToBackground = function sendStateToBackground (messageName) {
-  console.log(`Content: Sending state to background`)
   safari.extension.dispatchMessage(messageName, new StateMessage(uiController.state))
 }
 
@@ -52,11 +47,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
   const SAFARI_BLANK_ADDR = 'about:blank'
   const ALPHEIOS_GRAMMAR_ADDR = 'grammars.alpheios.net'
 
-  console.log(`Loaded listener fired`)
-
   if (event.currentTarget.URL.search(`${SAFARI_BLANK_ADDR}|${ALPHEIOS_GRAMMAR_ADDR}`) === -1) {
     if (!HTMLPage.hasFrames && !HTMLPage.isFrame) {
-      console.log(`This is a valid content page or frame`)
       let messagingService = new MessagingService()
       messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest)
       safari.self.addEventListener('message', messagingService.listener.bind(messagingService))

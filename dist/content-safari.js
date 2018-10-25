@@ -32097,7 +32097,6 @@ class ExtensionSyncStorage extends _storage_adapter_js__WEBPACK_IMPORTED_MODULE_
    * found in the storage area. If this operation failed, the promise will be rejected with an error message.
    */
   get (keys = undefined) {
-    console.log(`ExtensionSyncStorage: get`, browser.storage.sync)
     return browser.storage.sync.get(keys)
   }
 }
@@ -91683,14 +91682,12 @@ __webpack_require__.r(__webpack_exports__);
 
  // eslint-disable-line
 
-console.log(`Loading a content script`)
 let uiController = null
 
 /**
  * State request processing function.
  */
 let handleStateRequest = function handleStateRequest (message) {
-  console.log(`State request has been received`)
   // let browserManifest = browser.runtime.getManifest() // TODO: Do we need this in Safari?
   if (!uiController) {
     uiController = new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["UIController"](alpheios_components__WEBPACK_IMPORTED_MODULE_3__["LocalStorageArea"]/*, browserManifest */)
@@ -91703,10 +91700,8 @@ let handleStateRequest = function handleStateRequest (message) {
 
   if (diff.has('status')) {
     if (diff.status === alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.script.ACTIVE) {
-      console.log(`Preparing to activate state`)
       uiController.activate().catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
     } else if (diff.status === alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.script.DEACTIVATED) {
-      console.log(`Preparing to deactivate state`)
       uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
     }
     sendStateToBackground('updateState')
@@ -91714,7 +91709,6 @@ let handleStateRequest = function handleStateRequest (message) {
 }
 
 let sendStateToBackground = function sendStateToBackground (messageName) {
-  console.log(`Content: Sending state to background`)
   safari.extension.dispatchMessage(messageName, new _lib_messaging_message_state_message__WEBPACK_IMPORTED_MODULE_1__["default"](uiController.state))
 }
 
@@ -91730,11 +91724,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
   const SAFARI_BLANK_ADDR = 'about:blank'
   const ALPHEIOS_GRAMMAR_ADDR = 'grammars.alpheios.net'
 
-  console.log(`Loaded listener fired`)
-
   if (event.currentTarget.URL.search(`${SAFARI_BLANK_ADDR}|${ALPHEIOS_GRAMMAR_ADDR}`) === -1) {
     if (!alpheios_components__WEBPACK_IMPORTED_MODULE_3__["HTMLPage"].hasFrames && !alpheios_components__WEBPACK_IMPORTED_MODULE_3__["HTMLPage"].isFrame) {
-      console.log(`This is a valid content page or frame`)
       let messagingService = new _lib_messaging_service_safari_js__WEBPACK_IMPORTED_MODULE_2__["default"]()
       messagingService.addHandler(_lib_messaging_message_message_js__WEBPACK_IMPORTED_MODULE_0__["default"].types.STATE_REQUEST, handleStateRequest)
       safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
