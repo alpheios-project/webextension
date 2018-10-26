@@ -5,11 +5,11 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>AlpheiosSafari</string>
+	<string>AlpheiosReadingTools</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<string>${PRODUCT_BUNDLE_IDENTIFIER}</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -24,6 +24,17 @@
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSExtension</key>
 	<dict>
+		<key>NSExtensionPointIdentifier</key>
+		<string>com.apple.Safari.extension</string>
+		<key>NSExtensionPrincipalClass</key>
+		<string>$(PRODUCT_MODULE_NAME).SafariExtensionHandler</string>
+		<key>SFSafariContentScript</key>
+		<array>
+			<dict>
+				<key>Script</key>
+				<string>content-safari.js</string>
+			</dict>
+		</array>
 		<key>SFSafariContextMenu</key>
 		<array>
 			<dict>
@@ -39,16 +50,16 @@
 				<string>Alpheios Deactivate</string>
 			</dict>
 			<dict>
-				<key>Text</key>
-				<string>Alpheios Open Panel</string>
 				<key>Command</key>
 				<string>OpenPanel</string>
+				<key>Text</key>
+				<string>Alpheios Open Panel</string>
 			</dict>
 			<dict>
-				<key>Text</key>
-				<string>Alpheios Show Info</string>
 				<key>Command</key>
 				<string>ShowInfo</string>
+				<key>Text</key>
+				<string>Alpheios Show Info</string>
 			</dict>
 		</array>
 		<key>SFSafariStyleSheet</key>
@@ -56,17 +67,6 @@
 			<dict>
 				<key>Style Sheet</key>
 				<string>style.css</string>
-			</dict>
-		</array>
-		<key>NSExtensionPointIdentifier</key>
-		<string>com.apple.Safari.extension</string>
-		<key>NSExtensionPrincipalClass</key>
-		<string>$(PRODUCT_MODULE_NAME).SafariExtensionHandler</string>
-		<key>SFSafariContentScript</key>
-		<array>
-			<dict>
-				<key>Script</key>
-				<string>content-safari.js</string>
 			</dict>
 		</array>
 		<key>SFSafariToolbarItem</key>
@@ -89,6 +89,6 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2018 The Alpheios Project. All rights reserved.</string>
 	<key>NSHumanReadableDescription</key>
-	<string>This is a Safari App Extension for using Alpheios Reading Tools in Safari Browser.</string>
+	<string>Alpheios Reading Tools for Safari on MacOS</string>
 </dict>
 </plist>
