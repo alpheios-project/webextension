@@ -37,3 +37,4 @@ alpheios.xpi
 !/src/*.xcworkspace/contents.xcworkspacedata
 /src/*.gcno
 xcuserdata
+.DS_Store
