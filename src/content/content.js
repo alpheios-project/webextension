@@ -43,7 +43,7 @@ let handleStateRequest = function handleStateRequest (request, sender) {
   if (diff.has('panelStatus')) {
     if (diff.panelStatus === TabScript.statuses.panel.OPEN) { uiController.panel.open() } else { uiController.panel.close() }
   }
-  this.updatePanelOnActivation()
+
   if (diff.has('tab') && diff.tab) {
     uiController.changeTab(diff.tab)
   }
@@ -57,14 +57,43 @@ let handleStateRequest = function handleStateRequest (request, sender) {
 
 let sendStateToBackground = function sendStateToBackground () {
   messagingService.sendMessageToBg(new StateMessage(uiController.state))
-    .catch((error) => console.error('Unable to send a response to activation request', error))
+    .catch((error) => console.error('Unable to send state to background', error))
 }
 
 messagingService = new MessagingService()
 let browserManifest = browser.runtime.getManifest()
-uiController = new UIController(ExtensionSyncStorage, browserManifest)
+let state = new TabScript()
+state.status = TabScript.statuses.script.PENDING
+state.panelStatus = TabScript.statuses.panel.CLOSED
+uiController = new UIController(state, ExtensionSyncStorage, {}, browserManifest)
 uiController.state.setWatcher('panelStatus', sendStateToBackground)
 uiController.state.setWatcher('tab', sendStateToBackground)
+
+// A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
+document.body.addEventListener('Alpheios_Embedded_Response', () => {
+  console.log(`Alpheios is embedded`)
+  // if we weren't already disabled, remember the current state
+  // and then deactivate before disabling
+  if (!uiController.state.isDisabled()) {
+    uiController.state.save()
+    if (uiController.state.isActive()) {
+      console.log('Deactivating Alpheios webextension')
+      uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+    }
+  }
+  uiController.state.disable()
+  // TODO: Need to handle this in a content. Send state to BG on every state change?
+  // sendStateToBackground()
+})
+
+document.body.addEventListener('Alpheios_Reload', () => {
+  console.log('Alpheios reload event caught.')
+  if (uiController.state.isActive()) {
+    uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+  }
+  window.location.reload()
+})
+
 uiController.activate()
   .then(() => {
     messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest, uiController)

@@ -13,9 +13,37 @@ let uiController = null
 let handleStateRequest = function handleStateRequest (message) {
   // let browserManifest = browser.runtime.getManifest() // TODO: Do we need this in Safari?
   if (!uiController) {
-    uiController = new UIController(LocalStorageArea/*, browserManifest */)
+    let state = new TabScript()
+    state.status = TabScript.statuses.script.PENDING
+    state.panelStatus = TabScript.statuses.panel.CLOSED
+    uiController = new UIController(state, LocalStorageArea, {}/*, browserManifest */)
     uiController.state.setWatcher('panelStatus', sendStateToBackground)
     uiController.state.setWatcher('tab', sendStateToBackground)
+
+    // A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
+    document.body.addEventListener('Alpheios_Embedded_Response', () => {
+      console.log(`Alpheios is embedded`)
+      // if we weren't already disabled, remember the current state
+      // and then deactivate before disabling
+      if (!uiController.state.isDisabled()) {
+        uiController.state.save()
+        if (uiController.state.isActive()) {
+          console.log('Deactivating Alpheios webextension')
+          uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+        }
+      }
+      uiController.state.disable()
+      // TODO: Need to handle this in a content. Send state to BG on every state change?
+      // sendStateToBackground()
+    })
+
+    document.body.addEventListener('Alpheios_Reload', () => {
+      console.log('Alpheios reload event caught.')
+      if (uiController.state.isActive()) {
+        uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+      }
+      window.location.reload()
+    })
   }
 
   let requestState = TabScript.readObject(message.body)
