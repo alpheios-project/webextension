@@ -10,7 +10,7 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		jT6Si+MEPmrOebut1UCCIKAfg9o=
+		iszelHEWQIFv6Z0X+QHk/Kl767w=
 		</data>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
 		<data>
@@ -167,7 +167,7 @@
 		<dict>
 			<key>cdhash</key>
 			<data>
-			GwagH+BDl36zjhWo5/j5xzQP1UE=
+			NClnfc1p+43fRXlA6iMbEyEz9B8=
 			</data>
 			<key>requirement</key>
 			<string>identifier "net.alpheios.webextension.safari" and anchor apple generic and certificate leaf[subject.CN] = "Mac Developer: Irina Sklyarova (3DU5WK6Y25)" and certificate 1[field.1.2.840.113635.100.6.2.1] /* exists */</string>
@@ -183,7 +183,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			0Xo33r4GASGLc3g5V6btpujo5diqUAN0EiXBr+qfWCM=
+			0IeRIa7PgQ/Zk0BtbOfbetqDi3sQUCNC8UlSLV55oSU=
 			</data>
 		</dict>
 		<key>Resources/Base.lproj/MainMenu.nib</key>
