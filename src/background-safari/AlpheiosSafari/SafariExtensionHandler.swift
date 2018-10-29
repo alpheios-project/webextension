@@ -42,10 +42,13 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
         }
         if command == "Activate" {
             self.backgroundProcess.activateContent(page: page)
+            SFSafariApplication.setToolbarItemsNeedUpdate()
         }
         if command == "Deactivate" {
             self.backgroundProcess.deactivateContent(page: page)
+            SFSafariApplication.setToolbarItemsNeedUpdate()
         }
+        
     }
     
     override func validateToolbarItem(in window: SFSafariWindow, validationHandler: @escaping ((Bool, String) -> Void)) {
