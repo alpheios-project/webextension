@@ -3,7 +3,7 @@
 //  AlpheiosSafariV2
 //
 //  Created by Irina Sklyarova on 11/09/2018.
-//  Copyright © 2018 Irina Sklyarova. All rights reserved.
+//  Copyright © 2018 The Alpheios Project, Ltd.
 //
 
 import SafariServices
@@ -42,10 +42,13 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
         }
         if command == "Activate" {
             self.backgroundProcess.activateContent(page: page)
+            SFSafariApplication.setToolbarItemsNeedUpdate()
         }
         if command == "Deactivate" {
             self.backgroundProcess.deactivateContent(page: page)
+            SFSafariApplication.setToolbarItemsNeedUpdate()
         }
+        
     }
     
     override func validateToolbarItem(in window: SFSafariWindow, validationHandler: @escaping ((Bool, String) -> Void)) {

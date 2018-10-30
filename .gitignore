@@ -37,3 +37,5 @@ alpheios.xpi
 !/src/*.xcodeproj/xcshareddata/
 !/src/*.xcworkspace/contents.xcworkspacedata
 /src/*.gcno
+xcuserdata
+.DS_Store
