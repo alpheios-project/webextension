@@ -1,26 +1,18 @@
-.DS_Store
-node_modules/
-/dist/*.map
-npm-debug.log*
-/test/unit/coverage/
-coverage
-alpheios.zip
-alpheios.xpi
 ### Xcode ###
 # Xcode
 #
 # gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
 
 ## User settings
-/src/*/xcuserdata/
+xcuserdata/
 
 ## compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
 *.xcscmblueprint
 *.xccheckout
 
 ## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
-/src/*/build/
-/src/*/DerivedData/
+build/
+DerivedData/
 *.moved-aside
 *.pbxuser
 !default.pbxuser
@@ -32,10 +24,8 @@ alpheios.xpi
 !default.perspectivev3
 
 ### Xcode Patch ###
-/src/*.xcodeproj/*
-!/src/*.xcodeproj/project.pbxproj
-!/src/*.xcodeproj/xcshareddata/
-!/src/*.xcworkspace/contents.xcworkspacedata
-/src/*.gcno
-xcuserdata
-.DS_Store
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+!*.xcworkspace/contents.xcworkspacedata
+/*.gcno

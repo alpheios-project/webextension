@@ -1,8 +1,67 @@
-/* eslint-disable no-unused-vars */
-import ContentProcessSafari from '@/content/content-process-safari.js'
-import HTMLPage from '@/lib/html-page.js'
+/* global safari */
+import Message from '@/lib/messaging/message/message.js'
+import StateMessage from '@/lib/messaging/message/state-message'
+import MessagingService from '@/lib/messaging/service-safari.js'
+import { TabScript, UIController, LocalStorageArea, HTMLPage } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
-// import { Monitor as ExperienceMonitor } from 'alpheios-experience'
+
+let uiController = null
+
+/**
+ * State request processing function.
+ */
+let handleStateRequest = function handleStateRequest (message) {
+  // let browserManifest = browser.runtime.getManifest() // TODO: Do we need this in Safari?
+  if (!uiController) {
+    let state = new TabScript()
+    state.status = TabScript.statuses.script.PENDING
+    state.panelStatus = TabScript.statuses.panel.CLOSED
+    uiController = new UIController(state, LocalStorageArea, {}/*, browserManifest */)
+    uiController.state.setWatcher('panelStatus', sendStateToBackground)
+    uiController.state.setWatcher('tab', sendStateToBackground)
+
+    // A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
+    document.body.addEventListener('Alpheios_Embedded_Response', () => {
+      console.log(`Alpheios is embedded`)
+      // if we weren't already disabled, remember the current state
+      // and then deactivate before disabling
+      if (!uiController.state.isDisabled()) {
+        uiController.state.save()
+        if (uiController.state.isActive()) {
+          console.log('Deactivating Alpheios webextension')
+          uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+        }
+      }
+      uiController.state.disable()
+      // TODO: Need to handle this in a content. Send state to BG on every state change?
+      // sendStateToBackground()
+    })
+
+    document.body.addEventListener('Alpheios_Reload', () => {
+      console.log('Alpheios reload event caught.')
+      if (uiController.state.isActive()) {
+        uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+      }
+      window.location.reload()
+    })
+  }
+
+  let requestState = TabScript.readObject(message.body)
+  let diff = uiController.state.diff(requestState)
+
+  if (diff.has('status')) {
+    if (diff.status === TabScript.statuses.script.ACTIVE) {
+      uiController.activate().catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
+    } else if (diff.status === TabScript.statuses.script.DEACTIVATED) {
+      uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+    }
+    sendStateToBackground('updateState')
+  }
+}
+
+let sendStateToBackground = function sendStateToBackground (messageName) {
+  safari.extension.dispatchMessage(messageName, new StateMessage(uiController.state))
+}
 
 document.addEventListener('DOMContentLoaded', (event) => {
   /*
@@ -18,23 +77,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
   if (event.currentTarget.URL.search(`${SAFARI_BLANK_ADDR}|${ALPHEIOS_GRAMMAR_ADDR}`) === -1) {
     if (!HTMLPage.hasFrames && !HTMLPage.isFrame) {
-      let contentProcess = new ContentProcessSafari()
-      contentProcess.initialize()
+      let messagingService = new MessagingService()
+      messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest)
+      safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
     } else {
       console.warn(`Alpheios Safari App Extension cannot be enabled on pages with frames`)
     }
-
-    /* let contentProcess = ExperienceMonitor.track(
-      new ContentProcess(),
-      [
-        {
-          monitoredFunction: 'getWordDataStatefully',
-          experience: 'Get word data',
-          asyncWrapper: ExperienceMonitor.recordExperience
-        }
-      ]
-    )
-
-    contentProcess.initialize() */
   }
 })
