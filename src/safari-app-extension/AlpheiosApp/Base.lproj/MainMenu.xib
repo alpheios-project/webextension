@@ -83,18 +83,6 @@
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="Help" id="wpr-3q-Mcd">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                    <menu key="submenu" title="Help" systemMenu="help" id="F2S-fz-NVQ">
-                        <items>
-                            <menuItem title="Alpheios Help" keyEquivalent="?" id="FKE-Sm-Kum">
-                                <connections>
-                                    <action selector="showHelp:" target="-1" id="y7X-2Q-9no"/>
-                                </connections>
-                            </menuItem>
-                        </items>
-                    </menu>
-                </menuItem>
             </items>
             <point key="canvasLocation" x="68" y="-328"/>
         </menu>
@@ -117,7 +105,7 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" allowsEditingTextAttributes="YES" id="1oF-zA-0E8">
                             <font key="font" size="13" name="ArialMT"/>
-                            <mutableString key="title">Provices clickable access to dictionary entries, morphological analyses, inflection tables and grammars for Latin and Ancient Greek and limited support for Classical Arabic and Persian.      1. Open Safari application     2. Open Safari Preferences Window in Menubar (⌘,)     3. Choose Extension Tab     4. Check "AlpheiosReadingTools"  Then activate on a page with Latin, Ancient Greek, Arabic or Persian text by clicking on the Alpheios icon          in the Safari toolbar.  Double-click on a word to retrieve morphology and short definitions.</mutableString>
+                            <string key="title">Provices clickable access to dictionary entries, morphological analyses, inflection tables and grammars for Latin and Ancient Greek and limited support for Classical Arabic and Persian.      1. Open Safari application     2. Open Safari Preferences Window in Menubar (⌘,)     3. Choose Extension Tab     4. Check "AlpheiosReadingTools"  Then activate on a page with Latin, Ancient Greek, Arabic or Persian text by clicking on the Alpheios icon          in the Safari toolbar.  Double-click on a word to retrieve morphology and short definitions.</string>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
@@ -132,7 +120,7 @@
                         <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" lineBreakMode="clipping" alignment="left" title="Alpheios Reading Tools" id="dAq-LV-Nzp">
                             <font key="font" size="21" name="Arial-BoldMT"/>
-                            <color key="textColor" name="keyboardFocusIndicatorColor" catalog="System" colorSpace="catalog"/>
+                            <color key="textColor" red="0.24313725490196078" green="0.55294117647058827" blue="0.61176470588235299" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>

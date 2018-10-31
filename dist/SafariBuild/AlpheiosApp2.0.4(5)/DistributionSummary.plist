@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>AlpheiosApp</key>
+	<array>
+		<dict>
+			<key>architectures</key>
+			<array>
+				<string>x86_64</string>
+			</array>
+			<key>certificate</key>
+			<dict>
+				<key>SHA1</key>
+				<string>97C7FFE46B510D0650777DFD99E711EB06C7ED81</string>
+				<key>dateExpires</key>
+				<string>18/10/2019</string>
+				<key>type</key>
+				<string>Mac Development</string>
+			</dict>
+			<key>embeddedBinaries</key>
+			<array>
+				<dict>
+					<key>architectures</key>
+					<array>
+						<string>x86_64</string>
+					</array>
+					<key>certificate</key>
+					<dict>
+						<key>SHA1</key>
+						<string>97C7FFE46B510D0650777DFD99E711EB06C7ED81</string>
+						<key>dateExpires</key>
+						<string>18/10/2019</string>
+						<key>type</key>
+						<string>Mac Development</string>
+					</dict>
+					<key>entitlements</key>
+					<dict>
+						<key>com.apple.application-identifier</key>
+						<string>W79WNX2NKZ.net.alpheios.webextension.safari</string>
+						<key>com.apple.developer.team-identifier</key>
+						<string>W79WNX2NKZ</string>
+						<key>com.apple.security.app-sandbox</key>
+						<true/>
+						<key>com.apple.security.files.user-selected.read-only</key>
+						<true/>
+					</dict>
+					<key>name</key>
+					<string>AlpheiosSafari.appex</string>
+					<key>profile</key>
+					<dict>
+						<key>UUID</key>
+						<string>b160a4c0-360b-4380-a24b-6aedf98a4545</string>
+						<key>name</key>
+						<string>Alpheios Safari Developer Profile</string>
+					</dict>
+					<key>team</key>
+					<dict>
+						<key>id</key>
+						<string>W79WNX2NKZ</string>
+						<key>name</key>
+						<string>The Alpheios Project Ltd.</string>
+					</dict>
+				</dict>
+			</array>
+			<key>entitlements</key>
+			<dict>
+				<key>com.apple.application-identifier</key>
+				<string>W79WNX2NKZ.net.alpheios.webextension</string>
+				<key>com.apple.developer.team-identifier</key>
+				<string>W79WNX2NKZ</string>
+				<key>com.apple.security.app-sandbox</key>
+				<true/>
+				<key>com.apple.security.files.user-selected.read-only</key>
+				<true/>
+			</dict>
+			<key>name</key>
+			<string>AlpheiosApp.app</string>
+			<key>profile</key>
+			<dict>
+				<key>UUID</key>
+				<string>ed83fc0f-aa93-4ae2-af96-996d8f40b6f1</string>
+				<key>name</key>
+				<string>Alpheios App Developer Profile</string>
+			</dict>
+			<key>team</key>
+			<dict>
+				<key>id</key>
+				<string>W79WNX2NKZ</string>
+				<key>name</key>
+				<string>The Alpheios Project Ltd.</string>
+			</dict>
+		</dict>
+	</array>
+</dict>
+</plist>
