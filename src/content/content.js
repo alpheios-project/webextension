@@ -65,7 +65,9 @@ let browserManifest = browser.runtime.getManifest()
 let state = new TabScript()
 state.status = TabScript.statuses.script.PENDING
 state.panelStatus = TabScript.statuses.panel.CLOSED
-uiController = new UIController(state, ExtensionSyncStorage, {}, browserManifest)
+uiController = new UIController(state, ExtensionSyncStorage, {
+  app: { name: browserManifest.name, version: browserManifest.version }
+})
 uiController.state.setWatcher('panelStatus', sendStateToBackground)
 uiController.state.setWatcher('tab', sendStateToBackground)
 

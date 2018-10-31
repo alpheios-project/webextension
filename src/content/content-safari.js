@@ -11,12 +11,14 @@ let uiController = null
  * State request processing function.
  */
 let handleStateRequest = function handleStateRequest (message) {
-  // let browserManifest = browser.runtime.getManifest() // TODO: Do we need this in Safari?
   if (!uiController) {
     let state = new TabScript()
     state.status = TabScript.statuses.script.PENDING
     state.panelStatus = TabScript.statuses.panel.CLOSED
-    uiController = new UIController(state, LocalStorageArea, {}/*, browserManifest */)
+    uiController = new UIController(state, LocalStorageArea, {
+      // TODO: Read this from a config file
+      app: { name: 'Safari App Extension', version: '2.0.3.0' }
+    })
     uiController.state.setWatcher('panelStatus', sendStateToBackground)
     uiController.state.setWatcher('tab', sendStateToBackground)
 
