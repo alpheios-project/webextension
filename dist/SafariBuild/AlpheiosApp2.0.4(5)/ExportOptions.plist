@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>destination</key>
+	<string>export</string>
+	<key>method</key>
+	<string>development</string>
+	<key>provisioningProfiles</key>
+	<dict>
+		<key>net.alpheios.webextension</key>
+		<string>Alpheios App Developer Profile</string>
+		<key>net.alpheios.webextension.safari</key>
+		<string>Alpheios Safari Developer Profile</string>
+	</dict>
+	<key>signingCertificate</key>
+	<string>97C7FFE46B510D0650777DFD99E711EB06C7ED81</string>
+	<key>signingStyle</key>
+	<string>manual</string>
+	<key>teamID</key>
+	<string>W79WNX2NKZ</string>
+</dict>
+</plist>
