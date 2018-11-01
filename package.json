@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/alpheios-project/webextension#readme",
   "devDependencies": {
-    "alpheios-components": "github:alpheios-project/components#v0.4.7-patch2",
+    "alpheios-components": "github:alpheios-project/components#v0.4.7-patch3",
     "alpheios-data-models": "github:alpheios-project/data-models#v1.1.13-patch1",
     "alpheios-experience": "github:alpheios-project/experience#v1.1.0",
     "alpheios-inflection-tables": "github:alpheios-project/inflection-tables#v1.14.11-patch3",
