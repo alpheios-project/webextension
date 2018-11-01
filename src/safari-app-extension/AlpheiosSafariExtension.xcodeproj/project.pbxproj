@@ -463,7 +463,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = net.alpheios.webextension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "Alpheios Safari Developer Profile";
+				PROVISIONING_PROFILE_SPECIFIER = "Alpheios App Developer Profile";
 				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
@@ -485,7 +485,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = net.alpheios.webextension;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PROVISIONING_PROFILE_SPECIFIER = "Alpheios App Developer Profile";
 				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
@@ -505,7 +505,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = net.alpheios.webextension.safari;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PROVISIONING_PROFILE_SPECIFIER = "Alpheios Safari Developer Profile";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 4.2;
 			};
@@ -526,7 +526,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = net.alpheios.webextension.safari;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PROVISIONING_PROFILE_SPECIFIER = "Alpheios Safari Developer Profile";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 4.2;
 			};
