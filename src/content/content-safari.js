@@ -4,6 +4,7 @@ import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
 import { TabScript, UIController, LocalStorageArea, HTMLPage } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
+import Package from '../../package.json'
 
 let uiController = null
 
@@ -15,10 +16,11 @@ let handleStateRequest = function handleStateRequest (message) {
     let state = new TabScript()
     state.status = TabScript.statuses.script.PENDING
     state.panelStatus = TabScript.statuses.panel.CLOSED
+    const buildNumber = 0
     uiController = new UIController(state, {
       storageAdapter: LocalStorageArea,
       // TODO: Read this from a config file
-      app: { name: 'Safari App Extension', version: '2.0.3.0' }
+      app: { name: 'Safari App Extension', version: `${Package.version}.${buildNumber}` }
     })
     uiController.state.setWatcher('panelStatus', sendStateToBackground)
     uiController.state.setWatcher('tab', sendStateToBackground)
