@@ -16,6 +16,7 @@ let handleStateRequest = function handleStateRequest (message) {
     let state = new TabScript()
     state.status = TabScript.statuses.script.PENDING
     state.panelStatus = TabScript.statuses.panel.CLOSED
+    // TODO: Ignore build number for now
     const buildNumber = 0
     uiController = new UIController(state, {
       storageAdapter: LocalStorageArea,
