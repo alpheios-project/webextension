@@ -22,7 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let littleIconInHelloText: NSImage! = NSImage.init(named: "alpheios_black_32_inverted")
     
     let headerFontSize: CGFloat = 21
-    let headerFontName: String = "ArialBold"
+    let headerFontName: String = "Arial Bold"
     let headerColor: [String: CGFloat] = ["r": 62, "g": 141, "b": 156] // #3e8d9c
     
     let currentFontSize: CGFloat = 13
