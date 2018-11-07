@@ -100,6 +100,7 @@ document.body.addEventListener('Alpheios_Reload', () => {
 uiController.activate()
   .then(() => {
     messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest, uiController)
+    uiController.removeEventListeners()
     browser.runtime.onMessage.addListener(messagingService.listener.bind(messagingService))
   })
   .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))

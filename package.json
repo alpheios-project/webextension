@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/alpheios-project/webextension#readme",
   "devDependencies": {
-    "alpheios-components": "github:alpheios-project/components",
+    "alpheios-components": "file:../components",
     "alpheios-data-models": "github:alpheios-project/data-models",
     "alpheios-experience": "github:alpheios-project/experience",
     "alpheios-inflection-tables": "github:alpheios-project/inflection-tables",
@@ -98,7 +98,7 @@
     "vue-svg-loader": "^0.11.0",
     "vue-template-compiler": "^2.5.17",
     "webextension-polyfill": "^0.3.1",
-    "webpack": "^4.25.0",
+    "webpack": "^4.25.1",
     "webpack-bundle-analyzer": "^3.0.3",
     "webpack-dev-server": "^3.1.10",
     "webpack-merge": "^4.1.4",
@@ -127,15 +127,24 @@
     ]
   },
   "eslintConfig": {
+    "extends": [
+      "standard",
+      "plugin:vue/essential"
+    ],
     "env": {
       "browser": true,
       "node": true
     },
     "parserOptions": {
       "ecmaVersion": 2017,
-      "sourceType": "module"
+      "sourceType": "module",
+      "experimentalObjectRestSpread": true
     }
   },
+  "eslintIgnore": [
+    "**/dist",
+    "**/support"
+  ],
   "standard": {
     "ignore": [
       "**/dist",
