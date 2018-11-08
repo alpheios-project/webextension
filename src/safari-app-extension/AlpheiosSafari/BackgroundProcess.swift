@@ -40,11 +40,13 @@ class BackgroundProcess {
         return BackgroundProcess.tabs[hashValue]!
     }
     
+    // Sends message to content script to update its state
     func setContentState(tab: TabScript, page: SFSafariPage) {
         let stateRequestMess = StateRequest(body: tab.convertForMessage())
         page.dispatchMessageToScript(withName: "fromBackground", userInfo: stateRequestMess.convertForMessage())
     }
     
+    // This version is used for activations made by a BackgroundProcess
     func activateContent(tab: TabScript, window: SFSafariWindow) {
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
@@ -53,13 +55,15 @@ class BackgroundProcess {
             })
         })
     }
-    
+
+   // This version is used for menu initiated activations
    func activateContent(page: SFSafariPage) {
         let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
         curTab.activate()
         self.setContentState(tab: curTab, page: page)
     }
     
+    // This version is used for deactivations made by a BackgroundProcess
     func deactivateContent(tab: TabScript, window: SFSafariWindow) {
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
@@ -69,6 +73,7 @@ class BackgroundProcess {
         })
     }
     
+    // This version is used for menu initiated deactivations
     func deactivateContent(page: SFSafariPage) {
         let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
         curTab.deactivate()
@@ -91,9 +96,11 @@ class BackgroundProcess {
         }
     }
     
+    // This method is called every time users clicks on an extension icon
     func changeActiveTabStatus(page: SFSafariPage, window: SFSafariWindow) {
         let curTab = self.getTabFromTabsByHash(hashValue: (page.hashValue))
 
+        // Toggle a state active status
         curTab.changeActiveStatus()
         
         if (curTab.isActive) {
@@ -103,17 +110,13 @@ class BackgroundProcess {
         }
     }
     
+    // This method is called when we receive a state message from background
+    // We need to use it to update a state of our tabdata object
     func updateTabData(hashValue: Int, tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
         let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
         if let bodyUserInfo = tabdata?["body"] as? Dictionary<String, Any> {
-            if bodyUserInfo["status"] as! String != "Alpheios_Status_Active" && curTab.isActive {
-                self.reactivate(tab: curTab, page: page)
-            } else {
-                curTab.updateWithData(data: bodyUserInfo)
-            }
-
+            curTab.updateWithData(data: bodyUserInfo)
         }
-        // print("curTab", curTab.convertForMessage())
         return curTab
     }
     
