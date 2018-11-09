@@ -16,6 +16,7 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
 
         // print("recieved message \(messageName), userInfo \(userInfo)")
         
+        // Update a background state every time we receive new state from a content script
         _ = self.backgroundProcess.updateTabData(hashValue: page.hashValue, tabdata: userInfo, page: page)
         // print("updatedTab \(curTab.convertForMessage())")
 

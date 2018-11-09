@@ -25,13 +25,11 @@ let handleStateRequest = function handleStateRequest (message) {
 
     // A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
     document.body.addEventListener('Alpheios_Embedded_Response', () => {
-      console.log(`Alpheios is embedded`)
       // if we weren't already disabled, remember the current state
       // and then deactivate before disabling
       if (!uiController.state.isDisabled()) {
         uiController.state.save()
         if (uiController.state.isActive()) {
-          console.log('Deactivating Alpheios webextension')
           uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
         }
       }
@@ -41,11 +39,12 @@ let handleStateRequest = function handleStateRequest (message) {
     })
 
     document.body.addEventListener('Alpheios_Reload', () => {
-      console.log('Alpheios reload event caught.')
+      console.log('Alpheios reload event caught')
       if (uiController.state.isActive()) {
-        uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+        uiController.deactivate()
+          .then(() => window.location.reload())
+          .catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
       }
-      window.location.reload()
     })
   }
 
@@ -54,11 +53,22 @@ let handleStateRequest = function handleStateRequest (message) {
 
   if (diff.has('status')) {
     if (diff.status === TabScript.statuses.script.ACTIVE) {
-      uiController.activate().catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
-    } else if (diff.status === TabScript.statuses.script.DEACTIVATED) {
-      uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+      uiController.activate()
+        .then(() => sendStateToBackground('updateState'))
+        .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
+    } else if (uiController.isActivated && diff.status === TabScript.statuses.script.DEACTIVATED) {
+      uiController.deactivate()
+        .then(() => sendStateToBackground('updateState'))
+        .catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
     }
-    sendStateToBackground('updateState')
+  }
+
+  if (uiController.isActivated && diff.has('panelStatus')) {
+    if (diff.panelStatus === TabScript.statuses.panel.OPEN) { uiController.panel.open() } else { uiController.panel.close() }
+  }
+
+  if (uiController.isActivated && diff.has('tab') && diff.tab) {
+    uiController.changeTab(diff.tab)
   }
 }
 
