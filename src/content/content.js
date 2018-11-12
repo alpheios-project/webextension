@@ -2,12 +2,25 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service.js'
-import { TabScript, UIController, ExtensionSyncStorage } from 'alpheios-components'
+import { TabScript, UIController, EventController, EventListener, MouseDblClick, GenericEvt, ExtensionSyncStorage } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
 import StateResponse from '../lib/messaging/response/state-response'
 
 let messagingService = null
 let uiController = null
+
+// Provide our own implementation of a UIController builder
+UIController.build = function build (state, options) {
+  let uiController = new UIController(state, options)
+
+  // Attaches an event controller to a UIController instance. This EventController registers a double click as a default `getSelectedText` selector.
+  uiController.evc = new EventController()
+    .registerListenerFor('GetSelectedText', new EventListener(MouseDblClick, 'body'), uiController.getSelectedText.bind(uiController))
+    .registerListenerFor('HandleEscapeKey', new EventListener(GenericEvt, 'document', 'keydown'), uiController.handleEscapeKey.bind(uiController))
+    .registerListenerFor('AlpheiosPageLoad', new EventListener(GenericEvt, 'body', 'Alpheios_Page_Load'), uiController.updateAnnotations.bind(uiController))
+
+  return uiController
+}
 
 /**
  * State request processing function.
@@ -65,7 +78,7 @@ let browserManifest = browser.runtime.getManifest()
 let state = new TabScript()
 state.status = TabScript.statuses.script.PENDING
 state.panelStatus = TabScript.statuses.panel.CLOSED
-uiController = new UIController(state, {
+uiController = UIController.build(state, {
   storageAdapter: ExtensionSyncStorage,
   app: { name: browserManifest.name, version: browserManifest.version }
 })
@@ -100,7 +113,7 @@ document.body.addEventListener('Alpheios_Reload', () => {
 uiController.activate()
   .then(() => {
     messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest, uiController)
-    uiController.removeEventListeners()
+    //    uiController.removeEventListeners()
     browser.runtime.onMessage.addListener(messagingService.listener.bind(messagingService))
   })
   .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
