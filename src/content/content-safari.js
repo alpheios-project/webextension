@@ -7,15 +7,13 @@ import ComponentStyles from '../../node_modules/alpheios-components/dist/style/s
 import Package from '../../package.json'
 
 let uiController = null
+let state = null
 
 /**
  * State request processing function.
  */
 let handleStateRequest = function handleStateRequest (message) {
   if (!uiController) {
-    let state = new TabScript()
-    state.status = TabScript.statuses.script.PENDING
-    state.panelStatus = TabScript.statuses.panel.CLOSED
     uiController = new UIController(state, {
       storageAdapter: LocalStorageArea,
       app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` }
@@ -73,7 +71,7 @@ let handleStateRequest = function handleStateRequest (message) {
 }
 
 let sendStateToBackground = function sendStateToBackground (messageName) {
-  safari.extension.dispatchMessage(messageName, new StateMessage(uiController.state))
+  safari.extension.dispatchMessage(messageName, new StateMessage(state))
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
@@ -88,11 +86,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
   const SAFARI_BLANK_ADDR = 'about:blank'
   const ALPHEIOS_GRAMMAR_ADDR = 'grammars.alpheios.net'
 
+  console.log(`DOM content loaded`)
   if (event.currentTarget.URL.search(`${SAFARI_BLANK_ADDR}|${ALPHEIOS_GRAMMAR_ADDR}`) === -1) {
     if (!HTMLPage.hasFrames && !HTMLPage.isFrame) {
+      console.log(`This is a target page`)
       let messagingService = new MessagingService()
       messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest)
       safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
+
+      state = new TabScript()
+      state.status = TabScript.statuses.script.PENDING
+      state.panelStatus = TabScript.statuses.panel.CLOSED
+      sendStateToBackground('updateState')
     } else {
       console.warn(`Alpheios Safari App Extension cannot be enabled on pages with frames`)
     }

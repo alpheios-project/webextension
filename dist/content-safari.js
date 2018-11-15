@@ -89803,15 +89803,13 @@ var _package_json__WEBPACK_IMPORTED_MODULE_5___namespace = /*#__PURE__*/__webpac
 
 
 let uiController = null
+let state = null
 
 /**
  * State request processing function.
  */
 let handleStateRequest = function handleStateRequest (message) {
   if (!uiController) {
-    let state = new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"]()
-    state.status = alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.script.PENDING
-    state.panelStatus = alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.panel.CLOSED
     uiController = new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["UIController"](state, {
       storageAdapter: alpheios_components__WEBPACK_IMPORTED_MODULE_3__["LocalStorageArea"],
       app: { name: 'Safari App Extension', version: `${_package_json__WEBPACK_IMPORTED_MODULE_5__.version}.${_package_json__WEBPACK_IMPORTED_MODULE_5__.build}` }
@@ -89869,7 +89867,7 @@ let handleStateRequest = function handleStateRequest (message) {
 }
 
 let sendStateToBackground = function sendStateToBackground (messageName) {
-  safari.extension.dispatchMessage(messageName, new _lib_messaging_message_state_message__WEBPACK_IMPORTED_MODULE_1__["default"](uiController.state))
+  safari.extension.dispatchMessage(messageName, new _lib_messaging_message_state_message__WEBPACK_IMPORTED_MODULE_1__["default"](state))
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
@@ -89884,11 +89882,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
   const SAFARI_BLANK_ADDR = 'about:blank'
   const ALPHEIOS_GRAMMAR_ADDR = 'grammars.alpheios.net'
 
+  console.log(`DOM content loaded`)
   if (event.currentTarget.URL.search(`${SAFARI_BLANK_ADDR}|${ALPHEIOS_GRAMMAR_ADDR}`) === -1) {
     if (!alpheios_components__WEBPACK_IMPORTED_MODULE_3__["HTMLPage"].hasFrames && !alpheios_components__WEBPACK_IMPORTED_MODULE_3__["HTMLPage"].isFrame) {
+      console.log(`This is a target page`)
       let messagingService = new _lib_messaging_service_safari_js__WEBPACK_IMPORTED_MODULE_2__["default"]()
       messagingService.addHandler(_lib_messaging_message_message_js__WEBPACK_IMPORTED_MODULE_0__["default"].types.STATE_REQUEST, handleStateRequest)
       safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
+
+      state = new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"]()
+      state.status = alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.script.PENDING
+      state.panelStatus = alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.panel.CLOSED
+      sendStateToBackground('updateState')
     } else {
       console.warn(`Alpheios Safari App Extension cannot be enabled on pages with frames`)
     }
