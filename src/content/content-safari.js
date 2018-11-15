@@ -32,8 +32,6 @@ let handleStateRequest = function handleStateRequest (message) {
         }
       }
       uiController.state.disable()
-      // TODO: Need to handle this in a content. Send state to BG on every state change?
-      // sendStateToBackground()
     })
 
     document.body.addEventListener('Alpheios_Reload', () => {
@@ -86,14 +84,18 @@ document.addEventListener('DOMContentLoaded', (event) => {
   const SAFARI_BLANK_ADDR = 'about:blank'
   const ALPHEIOS_GRAMMAR_ADDR = 'grammars.alpheios.net'
 
-  console.log(`DOM content loaded`)
   if (event.currentTarget.URL.search(`${SAFARI_BLANK_ADDR}|${ALPHEIOS_GRAMMAR_ADDR}`) === -1) {
     if (!HTMLPage.hasFrames && !HTMLPage.isFrame) {
-      console.log(`This is a target page`)
       let messagingService = new MessagingService()
       messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest)
       safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
 
+      /*
+      In situations where a page with an already activated content script is reloaded
+      and UI controller deactivated because of that,
+      we'll need to notify Safari app extension about this
+      so that it could update states of an icon and pop-up menu
+       */
       state = new TabScript()
       state.status = TabScript.statuses.script.PENDING
       state.panelStatus = TabScript.statuses.panel.CLOSED
