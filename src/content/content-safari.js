@@ -7,15 +7,13 @@ import ComponentStyles from '../../node_modules/alpheios-components/dist/style/s
 import Package from '../../package.json'
 
 let uiController = null
+let state = null
 
 /**
  * State request processing function.
  */
 let handleStateRequest = function handleStateRequest (message) {
   if (!uiController) {
-    let state = new TabScript()
-    state.status = TabScript.statuses.script.PENDING
-    state.panelStatus = TabScript.statuses.panel.CLOSED
     uiController = new UIController(state, {
       storageAdapter: LocalStorageArea,
       app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` }
@@ -34,8 +32,6 @@ let handleStateRequest = function handleStateRequest (message) {
         }
       }
       uiController.state.disable()
-      // TODO: Need to handle this in a content. Send state to BG on every state change?
-      // sendStateToBackground()
     })
 
     document.body.addEventListener('Alpheios_Reload', () => {
@@ -73,7 +69,7 @@ let handleStateRequest = function handleStateRequest (message) {
 }
 
 let sendStateToBackground = function sendStateToBackground (messageName) {
-  safari.extension.dispatchMessage(messageName, new StateMessage(uiController.state))
+  safari.extension.dispatchMessage(messageName, new StateMessage(state))
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
@@ -93,6 +89,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
       let messagingService = new MessagingService()
       messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest)
       safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
+
+      /*
+      In situations where a page with an already activated content script is reloaded
+      and UI controller deactivated because of that,
+      we'll need to notify Safari app extension about this
+      so that it could update states of an icon and pop-up menu
+       */
+      state = new TabScript()
+      state.status = TabScript.statuses.script.PENDING
+      state.panelStatus = TabScript.statuses.panel.CLOSED
+      sendStateToBackground('updateState')
     } else {
       console.warn(`Alpheios Safari App Extension cannot be enabled on pages with frames`)
     }
