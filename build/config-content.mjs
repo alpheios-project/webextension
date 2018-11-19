@@ -26,12 +26,12 @@ const webpack = {
 
   production: {
     mode: 'production',
-    output: {filename: 'content.js'}
+    output: { filename: 'content.js' }
   },
 
   development: {
     mode: 'development',
-    output: {filename: 'content.js'}
+    output: { filename: 'content.js' }
   }
 }
 
