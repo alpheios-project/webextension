@@ -14,7 +14,7 @@ let state = null
  */
 let handleStateRequest = function handleStateRequest (message) {
   if (!uiController) {
-    uiController = new UIController(state, {
+    uiController = UIController.build(state, {
       storageAdapter: LocalStorageArea,
       app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` }
     })

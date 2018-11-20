@@ -29867,95 +29867,6 @@ var render = function () {var _vm=this;var _h=_vm.$createElement;var _c=_vm._sel
 
 /***/ }),
 
-/***/ "./lib/controllers/event-controller.js":
-/*!*********************************************!*\
-  !*** ./lib/controllers/event-controller.js ***!
-  \*********************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return EventController; });
-class EventController {
-  constructor () {
-    this.listeners = new Map()
-  }
-
-  /**
-   * Registers a single event listener.
-   * @param {string} name - A name of the listener that can be used to operate it (register, unregister, set, or remove)
-   * @param {EventListener} eventListener - An event listener to register
-   */
-  registerListener (name, eventListener) {
-    if (this.listeners.has(name)) {
-      // Unregister a previously registered event listener
-      this.unregisterListener(name)
-    }
-    this.listeners.set(name, eventListener)
-    return this
-  }
-
-  /**
-   * Registers a single event listener.
-   * @param {string} name - A name of the listener that can be used to operate it (register, unregister, set, or remove).
-   * @param {EventListener} eventListener - An unbound event listener object.
-   * @param {Function} eventHandler - A callback function that will be triggered by the event.
-   */
-  registerListenerFor (name, eventListener, eventHandler) {
-    if (this.listeners.has(name)) {
-      // Unregister a previously registered event listener
-      this.unregisterListener(name)
-    }
-    this.listeners.set(name, eventListener.setEventHandler(eventHandler))
-    return this
-  }
-
-  /**
-   * Unregisters a single event listener.
-   * @param {string} name - A name of the event listener.
-   */
-  unregisterListener (name) {
-    if (this.listeners.has(name)) {
-      this.listeners.get(name).remove()
-    }
-    return this
-  }
-
-  activateListener (name) {
-    if (this.listeners.has(name)) {
-      this.listeners.get(name).set()
-    }
-    return this
-  }
-
-  /**
-   * Activate event listeners that were previously registered.
-   */
-  activateListeners () {
-    Array.from(this.listeners.values()).forEach((el) => el.set())
-    return this
-  }
-
-  deactivateListener (name) {
-    if (this.listeners.has(name)) {
-      this.listeners.get(name).remove()
-    }
-    return this
-  }
-
-  /**
-   * Deactivate event listeners that were previously registered.
-   */
-  deactivateListeners () {
-    Array.from(this.listeners.values()).forEach((el) => el.remove())
-    return this
-  }
-}
-
-
-/***/ }),
-
 /***/ "./lib/controllers/language.js":
 /*!*************************************!*\
   !*** ./lib/controllers/language.js ***!
@@ -30067,14 +29978,12 @@ var _settings_ui_options_defaults_json__WEBPACK_IMPORTED_MODULE_19___namespace =
 /* harmony import */ var _lib_utility_html_page_js__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! @/lib/utility/html-page.js */ "./lib/utility/html-page.js");
 /* harmony import */ var _settings_language_options_defaults_json__WEBPACK_IMPORTED_MODULE_22__ = __webpack_require__(/*! @/settings/language-options-defaults.json */ "./settings/language-options-defaults.json");
 var _settings_language_options_defaults_json__WEBPACK_IMPORTED_MODULE_22___namespace = /*#__PURE__*/__webpack_require__.t(/*! @/settings/language-options-defaults.json */ "./settings/language-options-defaults.json", 1);
-/* harmony import */ var _lib_custom_dom_events_mouse_dbl_click_js__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! @/lib/custom-dom-events/mouse-dbl-click.js */ "./lib/custom-dom-events/mouse-dbl-click.js");
-/* harmony import */ var _lib_custom_dom_events_long_tap_js__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! @/lib/custom-dom-events/long-tap.js */ "./lib/custom-dom-events/long-tap.js");
-/* harmony import */ var _lib_custom_dom_events_generic_evt_js__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! @/lib/custom-dom-events/generic-evt.js */ "./lib/custom-dom-events/generic-evt.js");
-/* harmony import */ var _lib_custom_dom_events_generic_ptr_evt_js__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! @/lib/custom-dom-events/generic-ptr-evt.js */ "./lib/custom-dom-events/generic-ptr-evt.js");
-/* harmony import */ var _lib_custom_dom_events_event_listener_js__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! @/lib/custom-dom-events/event-listener.js */ "./lib/custom-dom-events/event-listener.js");
-/* harmony import */ var _lib_options_options_js__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! @/lib/options/options.js */ "./lib/options/options.js");
-/* harmony import */ var _lib_options_local_storage_area_js__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! @/lib/options/local-storage-area.js */ "./lib/options/local-storage-area.js");
-/* harmony import */ var _lib_controllers_event_controller_js__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! @/lib/controllers/event-controller.js */ "./lib/controllers/event-controller.js");
+/* harmony import */ var _lib_custom_pointer_events_mouse_dbl_click_js__WEBPACK_IMPORTED_MODULE_23__ = __webpack_require__(/*! @/lib/custom-pointer-events/mouse-dbl-click.js */ "./lib/custom-pointer-events/mouse-dbl-click.js");
+/* harmony import */ var _lib_custom_pointer_events_long_tap_js__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! @/lib/custom-pointer-events/long-tap.js */ "./lib/custom-pointer-events/long-tap.js");
+/* harmony import */ var _lib_custom_pointer_events_generic_evt_js__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! @/lib/custom-pointer-events/generic-evt.js */ "./lib/custom-pointer-events/generic-evt.js");
+/* harmony import */ var _lib_options_options_js__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! @/lib/options/options.js */ "./lib/options/options.js");
+/* harmony import */ var _lib_options_local_storage_area_js__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! @/lib/options/local-storage-area.js */ "./lib/options/local-storage-area.js");
+/* harmony import */ var _lib_controllers_ui_event_controller_js__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! @/lib/controllers/ui-event-controller.js */ "./lib/controllers/ui-event-controller.js");
 /* global Event */
 
 
@@ -30088,8 +29997,6 @@ var _settings_language_options_defaults_json__WEBPACK_IMPORTED_MODULE_22___names
 // A panel component
 
 // A popup component
-
-
 
 
 
@@ -30134,9 +30041,9 @@ class UIController {
   constructor (state, options = {}) {
     this.state = state
     this.options = UIController.setOptions(options, UIController.optionsDefaults)
-    this.contentOptions = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_28__["default"](_settings_content_options_defaults_json__WEBPACK_IMPORTED_MODULE_18__, this.options.storageAdapter)
-    this.resourceOptions = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_28__["default"](_settings_language_options_defaults_json__WEBPACK_IMPORTED_MODULE_22__, this.options.storageAdapter)
-    this.uiOptions = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_28__["default"](_settings_ui_options_defaults_json__WEBPACK_IMPORTED_MODULE_19__, this.options.storageAdapter)
+    this.contentOptions = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_26__["default"](_settings_content_options_defaults_json__WEBPACK_IMPORTED_MODULE_18__, this.options.storageAdapter)
+    this.resourceOptions = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_26__["default"](_settings_language_options_defaults_json__WEBPACK_IMPORTED_MODULE_22__, this.options.storageAdapter)
+    this.uiOptions = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_26__["default"](_settings_ui_options_defaults_json__WEBPACK_IMPORTED_MODULE_19__, this.options.storageAdapter)
     this.siteOptions = null // Will be set during an `init` phase
 
     this.options.openPanel = this.uiOptions.items.panelOnActivate.currentValue
@@ -30146,7 +30053,12 @@ class UIController {
     this.isActivated = false
     this.isDeactivated = false
 
-    this.evc = null // Will hold a instance of a UI Controller. Initializes in a `build` method
+    /**
+     * If an event controller be used with an instance of a UI Controller,
+     * this prop will hold an event controller instance. It is usually initialized within a `build` method.
+     * @type {UIEventController}
+     */
+    this.evc = null
 
     this.inflectionsViewSet = null // Holds inflection tables ViewSet
   }
@@ -30159,19 +30071,22 @@ class UIController {
     let uiController = new UIController(state, options)
 
     // Creates on configures an event listener
-    let eventController = new _lib_controllers_event_controller_js__WEBPACK_IMPORTED_MODULE_30__["default"]()
-    if (options.textQueryTrigger !== 'none') {
-      if (options.textQueryTrigger === 'dblClick') {
-        eventController.registerListenerFor('GetSelectedText', new _lib_custom_dom_events_event_listener_js__WEBPACK_IMPORTED_MODULE_27__["default"](_lib_custom_dom_events_mouse_dbl_click_js__WEBPACK_IMPORTED_MODULE_23__["default"], options.textQuerySelector), uiController.getSelectedText.bind(this))
-      } else if (options.textQueryTrigger === 'longTap') {
-        eventController.registerListenerFor('GetSelectedText', new _lib_custom_dom_events_event_listener_js__WEBPACK_IMPORTED_MODULE_27__["default"](_lib_custom_dom_events_long_tap_js__WEBPACK_IMPORTED_MODULE_24__["default"], options.textQuerySelector), uiController.getSelectedText.bind(this))
-      } else {
-        eventController.registerListenerFor('GetSelectedText', new _lib_custom_dom_events_event_listener_js__WEBPACK_IMPORTED_MODULE_27__["default"](_lib_custom_dom_events_generic_ptr_evt_js__WEBPACK_IMPORTED_MODULE_26__["default"], options.textQuerySelector, options.textQueryTrigger), uiController.getSelectedText.bind(this))
-      }
+    let eventController = new _lib_controllers_ui_event_controller_js__WEBPACK_IMPORTED_MODULE_28__["default"]()
+    switch (uiController.options.textQueryTrigger) {
+      case 'dblClick':
+        eventController.registerListener('GetSelectedText', uiController.options.textQuerySelector, uiController.getSelectedText.bind(uiController), _lib_custom_pointer_events_mouse_dbl_click_js__WEBPACK_IMPORTED_MODULE_23__["default"])
+        break
+      case 'longTap':
+        eventController.registerListener('GetSelectedText', uiController.options.textQuerySelector, uiController.getSelectedText.bind(uiController), _lib_custom_pointer_events_long_tap_js__WEBPACK_IMPORTED_MODULE_24__["default"])
+        break
+      default:
+        eventController.registerListener(
+          'GetSelectedText', uiController.options.textQuerySelector, uiController.getSelectedText.bind(uiController), _lib_custom_pointer_events_generic_evt_js__WEBPACK_IMPORTED_MODULE_25__["default"], uiController.options.textQueryTrigger
+        )
     }
 
-    eventController.registerListenerFor('HandleEscapeKey', new _lib_custom_dom_events_event_listener_js__WEBPACK_IMPORTED_MODULE_27__["default"](_lib_custom_dom_events_generic_evt_js__WEBPACK_IMPORTED_MODULE_25__["default"], 'document', 'keydown'), uiController.handleEscapeKey.bind(this))
-    eventController.registerListenerFor('AlpheiosPageLoad', new _lib_custom_dom_events_event_listener_js__WEBPACK_IMPORTED_MODULE_27__["default"](_lib_custom_dom_events_generic_evt_js__WEBPACK_IMPORTED_MODULE_25__["default"], 'body', 'Alpheios_Page_Load'), uiController.updateAnnotations.bind(this))
+    eventController.registerListener('HandleEscapeKey', document, uiController.handleEscapeKey.bind(uiController), _lib_custom_pointer_events_generic_evt_js__WEBPACK_IMPORTED_MODULE_25__["default"], 'keydown')
+    eventController.registerListener('AlpheiosPageLoad', 'body', uiController.updateAnnotations.bind(uiController), _lib_custom_pointer_events_generic_evt_js__WEBPACK_IMPORTED_MODULE_25__["default"], 'Alpheios_Page_Load')
 
     // Attaches an event controller to a UIController instance
     uiController.evc = eventController
@@ -30210,7 +30125,7 @@ class UIController {
         name: 'name',
         version: 'version'
       },
-      storageAdapter: _lib_options_local_storage_area_js__WEBPACK_IMPORTED_MODULE_29__["default"],
+      storageAdapter: _lib_options_local_storage_area_js__WEBPACK_IMPORTED_MODULE_27__["default"],
       openPanel: true,
       textQueryTrigger: 'dblClick',
       textQuerySelector: 'body',
@@ -30256,15 +30171,6 @@ class UIController {
       }
     }
     return result
-  }
-
-  /**
-   * This function is called during a UI controller's initialization.
-   * Provide your own implementation of this method if you want a different set of listeners (or no listeners at all)
-   * to be registered.
-   */
-  registerEventListeners () {
-
   }
 
   async init () {
@@ -30854,9 +30760,6 @@ class UIController {
     this.updateLemmaTranslations()
     this.notifyInflectionBrowser()
 
-    // Register event listeners
-    this.registerEventListeners()
-
     this.state.setWatcher('uiActive', this.updateAnnotations.bind(this))
 
     this.isInitialized = true
@@ -30922,7 +30825,7 @@ class UIController {
     let allSiteOptions = []
     for (let site of _settings_site_options_json__WEBPACK_IMPORTED_MODULE_17__) {
       for (let domain of site.options) {
-        let siteOpts = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_28__["default"](domain, this.options.storageAdapter)
+        let siteOpts = new _lib_options_options_js__WEBPACK_IMPORTED_MODULE_26__["default"](domain, this.options.storageAdapter)
         allSiteOptions.push({ uriMatch: site.uriMatch, resourceOptions: siteOpts })
       }
     }
@@ -31351,22 +31254,438 @@ class UIController {
 
 /***/ }),
 
-/***/ "./lib/custom-dom-events/dom-evt.js":
-/*!******************************************!*\
-  !*** ./lib/custom-dom-events/dom-evt.js ***!
-  \******************************************/
+/***/ "./lib/controllers/ui-event-controller.js":
+/*!************************************************!*\
+  !*** ./lib/controllers/ui-event-controller.js ***!
+  \************************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return DomEvt; });
-/* harmony import */ var _event_element_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./event-element.js */ "./lib/custom-dom-events/event-element.js");
-/* harmony import */ var _event_listener_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./event-listener.js */ "./lib/custom-dom-events/event-listener.js");
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return UIEventController; });
+/**
+ * This is an event controller that is used currently for user interaction event, but can be adapted
+ * to handle events of any type.
+ */
+class UIEventController {
+  constructor () {
+    this.listeners = new Map()
+  }
+
+  /**
+   * Registers a single event listener or a group of event listeners.
+   * @param {string} name - A name of the listener or a group of listeners
+   *        that can be used to operate it (register, unregister, set, or remove).
+   * @param {string} nodeOrSelector - A CSS selector to define HTML elements that will listen to an events
+   *        or an HTML Node element.
+   * @param {Function} eventHandler - An event listener function to register.
+   * @param {PointerEvt} EventType - A constructor function of on of a custom pointer events that will do an event handling.
+   * @param {...*} eventExtraParams - Extra arguments that will be passed to the
+   *        PointerEvt constructor function after two obligatory parameters of HTML element and handler function.
+   * @return {UIEventController} An event controller instance for chaining.
+   */
+  registerListener (name, nodeOrSelector, eventHandler, EventType, ...eventExtraParams) {
+    let events
+    if (!nodeOrSelector || nodeOrSelector instanceof Node) {
+      events = [new EventType(nodeOrSelector, eventHandler, ...eventExtraParams)]
+    } else {
+      events = Array.from(document.querySelectorAll(nodeOrSelector)).map((el) => new EventType(el, eventHandler, ...eventExtraParams))
+    }
+
+    if (this.listeners.has(name)) {
+      // Unregister a previously registered event listener
+      this.unregisterListener(name)
+    }
+    this.listeners.set(name, events)
+    return this
+  }
+
+  /**
+   * Unregisters a single listener or a group of listeners registered under a specific name.
+   * @param {string} name - A name of the event listener or group of event listeners.
+   * @return {UIEventController} An event controller instance for chaining.
+   */
+  unregisterListener (name) {
+    if (this.listeners.has(name)) {
+      this.deactivateListener(name)
+      this.listeners.delete(name)
+    }
+    return this
+  }
+
+  /**
+   * Activates a listener by name.
+   * @param {string} name - A name of a listener to activate.
+   * @return {UIEventController} An event controller instance for chaining.
+   */
+  activateListener (name) {
+    if (this.listeners.has(name)) {
+      this.listeners.get(name).forEach((l) => l.set())
+    }
+    return this
+  }
+
+  /**
+   * Activates all event listeners that were registered previously.
+   * @return {UIEventController} An event controller instance for chaining.
+   */
+  activateListeners () {
+    Array.from(this.listeners.keys()).forEach((name) => this.activateListener(name))
+    return this
+  }
+
+  /**
+   * Deactivates a listener by name.
+   * @param {string} name - A name of a listener to deactivate.
+   * @return {UIEventController} An event controller instance for chaining.
+   */
+  deactivateListener (name) {
+    if (this.listeners.has(name)) {
+      this.listeners.get(name).forEach((l) => l.remove())
+    }
+    return this
+  }
+
+  /**
+   * Deactivates all event listeners that were registered previously.
+   * @return {UIEventController} An event controller instance for chaining.
+   */
+  deactivateListeners () {
+    Array.from(this.listeners.keys()).forEach((name) => this.deactivateListener(name))
+    return this
+  }
+}
+
+
+/***/ }),
+
+/***/ "./lib/custom-pointer-events/event-element.js":
+/*!****************************************************!*\
+  !*** ./lib/custom-pointer-events/event-element.js ***!
+  \****************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return EventElement; });
+/**
+ * Represents either a start or an end point within a pointer event
+ */
+class EventElement {
+  constructor () {
+    /**
+     * Coordinates within a client area. Can be either integer or floating point number depending on the platform.
+     * @type {{x: number, y: number}}
+     */
+    this.client = {
+      x: null,
+      y: null
+    }
+
+    /**
+     * Event target. The same as path[0] but, because on iOS path[0] misses some properties
+     * such as `ownerDocument`. In order to access those properties we have to store event target
+     * in addition to `path`.
+     * @type {HTMLElement}
+     */
+    this.target = null
+
+    /**
+     *  When event took place. An integer number of milliseconds since 1 January 1970 UTC.
+     * @type {number}
+     */
+    this.time = 0
+
+    /**
+     * The first element in an array is the element where an event happened.
+     * The second on is its parent and so on, up until the latest HTML element in hierarchy.
+     * @type {HTMLElement[]}
+     */
+    this.path = []
+
+    /**
+     * Whether this element is excluded from processing an event with special data attribute of the current
+     * element or the one of its parents.
+     * @type {boolean}
+     */
+    this.excluded = false
+  }
+}
+
+
+/***/ }),
+
+/***/ "./lib/custom-pointer-events/generic-evt.js":
+/*!**************************************************!*\
+  !*** ./lib/custom-pointer-events/generic-evt.js ***!
+  \**************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return GenericEvt; });
+/* harmony import */ var _pointer_evt_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./pointer-evt.js */ "./lib/custom-pointer-events/pointer-evt.js");
+/* harmony import */ var _log_html_console_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../log/html-console.js */ "./lib/log/html-console.js");
 
 
 
-class DomEvt {
+/**
+ * This is a Generic Event Class that can be used to
+ * to wrap events for which we haven't explicitly defined wrappers.
+ * @param {Node} element - An HTML Node element
+ * @param {Function} evtHandler - A client's event handler
+ * @param {string} evtType - A type of an event, such as 'click', 'dblclick', etc.
+ */
+class GenericEvt extends _pointer_evt_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
+  constructor (element, evtHandler, evtType) {
+    super()
+    this.element = element
+    this.evtType = evtType
+    this.evtHandler = evtHandler
+    this.boundListener = this.eventListener.bind(this) // A bound event listener of GenericEvt
+  }
+
+  static excludeCpeTest (dataset) {
+    return dataset.hasOwnProperty('alphExcludeGenericEvtCpe')
+  }
+
+  setEndPoint (clientX, clientY, target, path) {
+    super.setEndPoint(clientX, clientY, target, path)
+    if (!(this.start.excluded || this.end.excluded)) {
+      _log_html_console_js__WEBPACK_IMPORTED_MODULE_1__["default"].instance.log(`${this.evtType} (completed), [x,y]: [${this.end.client.x}, ${this.end.client.y}], movement: ${this.mvmntDist},` +
+        `duration: ${this.duration}`)
+    }
+    return !(this.start.excluded || this.end.excluded)
+  }
+
+  /**
+   * A callback that is attached to a native HTML event listener.
+   * It calls a client's event handler if an event is valid.
+   * @param domEvt
+   */
+  eventListener (domEvt) {
+    const valid = this
+      .setStartPoint(domEvt.clientX, domEvt.clientY, domEvt.target, domEvt.path)
+      .setEndPoint(domEvt.clientX, domEvt.clientY, domEvt.target, domEvt.path)
+    if (valid) { this.evtHandler(this, domEvt) }
+  }
+
+  /**
+   * Activates a listener
+   */
+  set () {
+    this.element.addEventListener(this.evtType, this.boundListener, { passive: true })
+  }
+
+  /**
+   * Deactivates a listener
+   */
+  remove () {
+    this.element.removeEventListener(this.evtType, this.boundListener, { passive: true })
+  }
+
+  /**
+   * This static method that allows to set a listener in one function call
+   * TODO: It is here for compatibility with older code. Remove if not used anywhere anymore.
+   * @param {string} selector
+   * @param {Function} evtHandler
+   * @param {string} evtType - A type of an event, such as 'click', 'dblclick', etc.
+   */
+  static listen (selector, evtHandler, evtType) {
+    let elements = document.querySelectorAll(selector)
+    for (const element of elements) {
+      let listener = new this(element, evtHandler, evtType)
+      listener.set()
+    }
+  }
+}
+
+
+/***/ }),
+
+/***/ "./lib/custom-pointer-events/long-tap.js":
+/*!***********************************************!*\
+  !*** ./lib/custom-pointer-events/long-tap.js ***!
+  \***********************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return LongTap; });
+/* harmony import */ var _pointer_evt_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./pointer-evt.js */ "./lib/custom-pointer-events/pointer-evt.js");
+/* harmony import */ var _log_html_console_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../log/html-console.js */ "./lib/log/html-console.js");
+
+
+
+class LongTap extends _pointer_evt_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
+  constructor (element, evtHandler, mvmntThreshold = 5, durationThreshold = 125) {
+    super()
+    this.element = element
+    this.evtStartType = this.constructor.pointerEventSupported ? 'pointerdown' : 'touchstart'
+    this.evtEndType = this.constructor.pointerEventSupported ? 'pointerup' : 'touchend'
+    this.evtHandler = evtHandler
+    this.boundStartListener = this.constructor.pointerEventSupported
+      ? this.constructor.pointerDownListener.bind(this, this)
+      : this.constructor.touchStartListener.bind(this, this)
+    this.boundEndListener = this.constructor.pointerEventSupported
+      ? this.constructor.pointerUpListener.bind(this, this)
+      : this.constructor.touchEndListener.bind(this, this)
+
+    this.mvmntThreshold = mvmntThreshold
+    this.durationThreshold = durationThreshold
+  }
+
+  static excludeCpeTest (dataset) {
+    return dataset.hasOwnProperty('alphExcludeLongTapCpe')
+  }
+
+  setEndPoint (clientX, clientY, target, path) {
+    super.setEndPoint(clientX, clientY, target, path)
+    const completed = this.mvmntDist <= this.mvmntThreshold && this.duration >= this.durationThreshold
+
+    if (!(this.start.excluded || this.end.excluded)) {
+      _log_html_console_js__WEBPACK_IMPORTED_MODULE_1__["default"].instance.log(`Long tap (${completed ? 'completed' : 'not completed'}), [x,y]: [${this.end.client.x}, ${this.end.client.y}], movement: ${this.mvmntDist},` +
+        `duration: ${this.duration}`)
+    }
+    return completed && !this.start.excluded && !this.end.excluded
+  }
+
+  /**
+   * Activates a listener
+   */
+  set () {
+    this.element.addEventListener(this.evtStartType, this.boundStartListener, { passive: true })
+    this.element.addEventListener(this.evtEndType, this.boundEndListener, { passive: true })
+  }
+
+  /**
+   * Deactivates a listener
+   */
+  remove () {
+    this.element.removeEventListener(this.evtStartType, this.boundStartListener, { passive: true })
+    this.element.removeEventListener(this.evtEndType, this.boundEndListener, { passive: true })
+  }
+
+  /**
+   * This static method that allows to set a listener in one function call
+   * TODO: It is here for compatibility with older code. Remove if not used anywhere anymore.
+   */
+  static listen (selector, evtHandler, mvmntThreshold, durationThreshold) {
+    let elements = document.querySelectorAll(selector)
+    for (const element of elements) {
+      let listener = new this(element, mvmntThreshold, durationThreshold)
+      listener.set()
+    }
+  }
+}
+
+
+/***/ }),
+
+/***/ "./lib/custom-pointer-events/mouse-dbl-click.js":
+/*!******************************************************!*\
+  !*** ./lib/custom-pointer-events/mouse-dbl-click.js ***!
+  \******************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return MouseDblClick; });
+/* harmony import */ var _pointer_evt_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./pointer-evt.js */ "./lib/custom-pointer-events/pointer-evt.js");
+/* harmony import */ var _log_html_console_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../log/html-console.js */ "./lib/log/html-console.js");
+
+
+
+class MouseDblClick extends _pointer_evt_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
+  /**
+   * Creates an instance of a class.
+   * @param {Node} element - An HTML Node element
+   * @param {Function} evtHandler - A client's event handler
+   */
+  constructor (element, evtHandler) {
+    super()
+    this.evtType = 'dblclick'
+    this.element = element
+    this.evtHandler = evtHandler // A client's event handler
+    this.boundListener = this.eventListener.bind(this) // A bound event listener of MouseDblClick
+  }
+
+  static excludeCpeTest (dataset) {
+    return dataset.hasOwnProperty('alphExcludeDblClickCpe')
+  }
+
+  setEndPoint (clientX, clientY, target, path) {
+    super.setEndPoint(clientX, clientY, target, path)
+    if (!(this.start.excluded || this.end.excluded)) {
+      _log_html_console_js__WEBPACK_IMPORTED_MODULE_1__["default"].instance.log(`Mouse double click (completed), [x,y]: [${this.end.client.x}, ${this.end.client.y}], movement: ${this.mvmntDist},` +
+        `duration: ${this.duration}`)
+    }
+    return !(this.start.excluded || this.end.excluded)
+  }
+
+  /**
+   * A callback that is attached to a native HTML event listener.
+   * It calls a client's event handler if an event is valid.
+   * @param domEvt
+   */
+  eventListener (domEvt) {
+    const valid = this
+      .setStartPoint(domEvt.clientX, domEvt.clientY, domEvt.target, domEvt.path)
+      .setEndPoint(domEvt.clientX, domEvt.clientY, domEvt.target, domEvt.path)
+    if (valid) { this.evtHandler(this, domEvt) } // Call a client's event handler
+  }
+
+  /**
+   * Activates a listener
+   */
+  set () {
+    this.element.addEventListener(this.evtType, this.boundListener, { passive: true })
+  }
+
+  /**
+   * Deactivates a listener
+   */
+  remove () {
+    this.element.removeEventListener(this.evtType, this.boundListener, { passive: true })
+  }
+
+  /**
+   * This static method that allows to set a listener in one function call
+   * TODO: It is here for compatibility with older code. Remove if not used anywhere anymore.
+   * @param {string} selector
+   * @param {Function} evtHandler
+   */
+  static listen (selector, evtHandler) {
+    let elements = document.querySelectorAll(selector)
+    for (const element of elements) {
+      let listener = new this(element, evtHandler)
+      listener.set()
+    }
+  }
+}
+
+
+/***/ }),
+
+/***/ "./lib/custom-pointer-events/pointer-evt.js":
+/*!**************************************************!*\
+  !*** ./lib/custom-pointer-events/pointer-evt.js ***!
+  \**************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return PointerEvt; });
+/* harmony import */ var _event_element_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./event-element.js */ "./lib/custom-pointer-events/event-element.js");
+
+
+class PointerEvt {
   constructor () {
     this.tracking = false
     this.start = new _event_element_js__WEBPACK_IMPORTED_MODULE_0__["default"]()
@@ -31468,469 +31787,60 @@ class DomEvt {
     return Math.sqrt(Math.pow(this.mvmntX, 2) + Math.pow(this.mvmntY, 2))
   }
 
-  /**
-   * Sets an event listener on elements specified by a CSS selector.
-   * Returns an instance of EventListener that allow to remove a listener when needed.
-   * @param {string} selector - A CSS selector.
-   * @param {Function} evtHandler - An event handler to be called when event occurs.
-   * @return {EventListener}
-   */
-  static listen (selector, evtHandler) {
-    return new _event_listener_js__WEBPACK_IMPORTED_MODULE_1__["default"](this, selector, evtHandler).set()
+  static pointerDownListener (event, domEvt) {
+    event.setStartPoint(domEvt.clientX, domEvt.clientY, domEvt.target, domEvt.path)
   }
 
-  pointerDownListener (evtHandler, domEvt) {
-    this.setStartPoint(domEvt.clientX, domEvt.clientY, domEvt.target, domEvt.path)
+  static pointerUpListener (event, domEvt) {
+    const valid = event.setEndPoint(domEvt.clientX, domEvt.clientY, domEvt.target, domEvt.path)
+    if (valid) { event.evtHandler(event, domEvt) }
   }
 
-  pointerUpListener (evtHandler, domEvt) {
-    const valid = this.setEndPoint(domEvt.clientX, domEvt.clientY, domEvt.target, domEvt.path)
-    if (valid) { evtHandler(this, domEvt) }
+  static touchStartListener (event, domEvt) {
+    event.setStartPoint(domEvt.changedTouches[0].clientX, domEvt.changedTouches[0].clientY, domEvt.target, domEvt.path)
   }
 
-  touchStartListener (evtHandler, domEvt) {
-    this.setStartPoint(domEvt.changedTouches[0].clientX, domEvt.changedTouches[0].clientY, domEvt.target, domEvt.path)
+  static touchEndListener (event, domEvt) {
+    const valid = event.setEndPoint(domEvt.changedTouches[0].clientX, domEvt.changedTouches[0].clientY, domEvt.target, domEvt.path)
+    if (valid) { event.evtHandler(event, domEvt) }
   }
 
-  touchEndListener (evtHandler, domEvt) {
-    const valid = this.setEndPoint(domEvt.changedTouches[0].clientX, domEvt.changedTouches[0].clientY, domEvt.target, domEvt.path)
-    if (valid) { evtHandler(this, domEvt) }
-  }
-}
-
-
-/***/ }),
-
-/***/ "./lib/custom-dom-events/event-element.js":
-/*!************************************************!*\
-  !*** ./lib/custom-dom-events/event-element.js ***!
-  \************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return EventElement; });
-/**
- * Represents either a start or an end point within a pointer event
- */
-class EventElement {
-  constructor () {
-    /**
-     * Coordinates within a client area. Can be either integer or floating point number depending on the platform.
-     * @type {{x: number, y: number}}
-     */
-    this.client = {
-      x: null,
-      y: null
-    }
-
-    /**
-     * Event target. The same as path[0] but, because on iOS path[0] misses some properties
-     * such as `ownerDocument`. In order to access those properties we have to store event target
-     * in addition to `path`.
-     * @type {HTMLElement}
-     */
-    this.target = null
-
-    /**
-     *  When event took place. An integer number of milliseconds since 1 January 1970 UTC.
-     * @type {number}
-     */
-    this.time = 0
-
-    /**
-     * The first element in an array is the element where an event happened.
-     * The second on is its parent and so on, up until the latest HTML element in hierarchy.
-     * @type {HTMLElement[]}
-     */
-    this.path = []
-
-    /**
-     * Whether this element is excluded from processing an event with special data attribute of the current
-     * element or the one of its parents.
-     * @type {boolean}
-     */
-    this.excluded = false
-  }
-}
-
-
-/***/ }),
-
-/***/ "./lib/custom-dom-events/event-listener.js":
-/*!*************************************************!*\
-  !*** ./lib/custom-dom-events/event-listener.js ***!
-  \*************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return EventListener; });
-class EventListener {
-  /**
-   *
-   * @param {GenericEvt} Event
-   * @param {string} selector - A CSS selector specifying elements to which listeners be attached.
-   *        If undefined, or empty string, or "document" then listeners will be attached to `document`.
-   * @param {string} [eventType] - An DOM event type.
-   * @param {Function} eventHandler - An event handler of the client
-   * @param {[]} eventExtraParams - An array of extra parameters to be passed to the Event constructor.
-   */
-  constructor (Event, selector, eventType, eventHandler, eventExtraParams = []) {
-    if (!selector || selector === 'document') {
-      this.events = [new Event(document, eventHandler, eventType, ...eventExtraParams)]
+  static addUpDownListeners (element, event) {
+    if (this.pointerEventSupported) {
+      // Will use pointer events
+      element.addEventListener('pointerdown', this.pointerDownListener.bind(this, event), { passive: true })
+      element.addEventListener('pointerup', this.pointerUpListener.bind(this, event), { passive: true })
     } else {
-      this.events = Array.from(document.querySelectorAll(selector)).map((el) => new Event(el, eventHandler, eventType, ...eventExtraParams))
+      element.addEventListener('touchstart', this.touchStartListener.bind(this, event), { passive: true })
+      element.addEventListener('touchend', this.touchEndListener.bind(this, event), { passive: true })
     }
-    this.isSet = false
-  }
-
-  /**
-   * Sets a specified event handler for all events of a listener
-   * @param eventHandler
-   */
-  setEventHandler (eventHandler) {
-    this.events.forEach((ev) => ev.setEventHandler(eventHandler))
-    return this
-  }
-
-  /**
-   * Activates event listening.
-   * @return {EventListener}
-   */
-  set () {
-    if (!this.isSet) {
-      this.events.forEach((ev) => ev.setListener())
-      this.isSet = true
-    }
-    return this
-  }
-
-  /**
-   * Deactivates event listening.
-   * @return {EventListener}
-   */
-  remove () {
-    if (this.isSet) {
-      this.events.forEach((ev) => ev.removeListener())
-      this.isSet = false
-    }
-    return this
   }
 }
 
 
 /***/ }),
 
-/***/ "./lib/custom-dom-events/generic-evt.js":
-/*!**********************************************!*\
-  !*** ./lib/custom-dom-events/generic-evt.js ***!
-  \**********************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return GenericEvt; });
-/* harmony import */ var _dom_evt_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./dom-evt.js */ "./lib/custom-dom-events/dom-evt.js");
-
-
-/**
- * This is a Generic Event Class that can be used to
- * to wrap keyboard and other general events for which we haven't explicitly defined wrappers.
- * It does not return any pointer coordinates.
- * For pointer events please use GenericPtrEvt instead.
- */
-class GenericEvt extends _dom_evt_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
-  /**
-   * @param {Node} element - An HTML node element that listens for an event'.
-   * @param {Function} eventHandler - An event handler of the client'.
-   * @param {string} eventType - An DOM event type.
-   */
-  constructor (element, eventHandler, eventType) {
-    super()
-    this.element = element
-    this.eventType = eventType
-    // Need to bind it in order to pass the same function to `removeEventListener`
-    this.evtListener = eventHandler ? this.listener.bind(this, eventHandler) : null
-  }
-
-  /**
-   * Sets a specified event handler for all events of a listener
-   * @param eventHandler
-   */
-  setEventHandler (eventHandler) {
-    this.evtListener = this.listener.bind(this, eventHandler)
-    return this
-  }
-
-  static excludeCpeTest (dataset) {
-    return dataset.hasOwnProperty('alphExcludeGenericCpe')
-  }
-
-  /**
-   * This is an own listener for an event. It is a wrapper around a client's event handler.
-   * Needs to be static to be bound in a constructor.
-   * @param {Function} evtHandler - A client's event handler.
-   * @param {Event} domEvt - A native DOM event.
-   */
-  listener (evtHandler, domEvt) {
-    evtHandler(this, domEvt)
-  }
-
-  /**
-   * Activates an event listener on a DOM element.
-   */
-  setListener () {
-    if (this.evtListener) {
-      this.element.addEventListener(this.eventType, this.evtListener, { passive: true })
-    }
-    return this
-  }
-
-  /**
-   * Deactivates an event listener on a DOM element.
-   */
-  removeListener () {
-    if (this.evtListener) {
-      this.element.removeEventListener(this.eventType, this.evtListener, { passive: true })
-    }
-    return this
-  }
-}
-
-
-/***/ }),
-
-/***/ "./lib/custom-dom-events/generic-ptr-evt.js":
-/*!**************************************************!*\
-  !*** ./lib/custom-dom-events/generic-ptr-evt.js ***!
-  \**************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return GenericPtrEvt; });
-/* harmony import */ var _generic_evt_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./generic-evt.js */ "./lib/custom-dom-events/generic-evt.js");
-/* harmony import */ var _log_html_console_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../log/html-console.js */ "./lib/log/html-console.js");
-
-
-
-/**
- * This is a version of Generic Event Class that can be used for pointer events.
- * It does check for a validity of setPoint events.
- */
-class GenericPtrEvt extends _generic_evt_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
-  static excludeCpeTest (dataset) {
-    return dataset.hasOwnProperty('alphExcludeGenericPtrCpe')
-  }
-
-  setEndPoint (clientX, clientY, target, path) {
-    super.setEndPoint(clientX, clientY, target, path)
-    if (!(this.start.excluded || this.end.excluded)) {
-      _log_html_console_js__WEBPACK_IMPORTED_MODULE_1__["default"].instance.log(`${this.evtName} (completed), [x,y]: [${this.end.client.x}, ${this.end.client.y}], movement: ${this.mvmntDist},` +
-        `duration: ${this.duration}`)
-    }
-    return !(this.start.excluded || this.end.excluded)
-  }
-
-  /**
-   * This is an own listener for an event. It is a wrapper around a client's event handler.
-   * Needs to be static to be bound in a constructor.
-   * @param {Function} evtHandler - A client's event handler.
-   * @param {Event} domEvt - A native DOM event.
-   */
-  listener (evtHandler, domEvt) {
-    const valid = this
-      .setStartPoint(domEvt.clientX, domEvt.clientY, domEvt.target, domEvt.path)
-      .setEndPoint(domEvt.clientX, domEvt.clientY, domEvt.target, domEvt.path)
-    if (valid) { evtHandler(this, domEvt) }
-  }
-}
-
-
-/***/ }),
-
-/***/ "./lib/custom-dom-events/long-tap.js":
-/*!*******************************************!*\
-  !*** ./lib/custom-dom-events/long-tap.js ***!
-  \*******************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return LongTap; });
-/* harmony import */ var _dom_evt_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./dom-evt.js */ "./lib/custom-dom-events/dom-evt.js");
-/* harmony import */ var _event_listener_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./event-listener.js */ "./lib/custom-dom-events/event-listener.js");
-/* harmony import */ var _log_html_console_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/html-console.js */ "./lib/log/html-console.js");
-
-
-
-
-class LongTap extends _dom_evt_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
-  /**
-   * @param {Node} element - An HTML node element that listens for an event'.
-   * @param {Function} evtHandler - An event handler of the client'.
-   * @param eventType
-   * @param {number} mvmntThreshold
-   * @param {number} durationThreshold
-   */
-  constructor (element, evtHandler, eventType = 'longTap', mvmntThreshold = 5, durationThreshold = 125) {
-    super()
-    this.element = element
-    if (LongTap.pointerEventSupported) {
-      this.eventTypeStart = 'pointerdown'
-      this.eventTypeEnd = 'pointerup'
-      this.evtStartListener = this.pointerDownListener.bind(this, evtHandler)
-      this.evtEndListener = this.pointerUpListener.bind(this, evtHandler)
-    } else {
-      this.eventTypeStart = 'touchstart'
-      this.eventTypeEnd = 'touchend'
-      this.evtStartListener = this.touchStartListener.bind(this, evtHandler)
-      this.evtEndListener = this.touchEndListener.bind(this, evtHandler)
-    }
-
-    this.eventType = eventType
-    this.mvmntThreshold = mvmntThreshold
-    this.durationThreshold = durationThreshold
-  }
-
-  static excludeCpeTest (dataset) {
-    return dataset.hasOwnProperty('alphExcludeLongTapCpe')
-  }
-
-  setEndPoint (clientX, clientY, target, path) {
-    super.setEndPoint(clientX, clientY, target, path)
-    const completed = this.mvmntDist <= this.mvmntThreshold && this.duration >= this.durationThreshold
-
-    if (!(this.start.excluded || this.end.excluded)) {
-      _log_html_console_js__WEBPACK_IMPORTED_MODULE_2__["default"].instance.log(`Long tap (${completed ? 'completed' : 'not completed'}), [x,y]: [${this.end.client.x}, ${this.end.client.y}], movement: ${this.mvmntDist},` +
-        `duration: ${this.duration}`)
-    }
-    return completed && !this.start.excluded && !this.end.excluded
-  }
-
-  /**
-   * Activates an event listener on a DOM element.
-   */
-  setListener () {
-    this.element.addEventListener(this.eventTypeStart, this.evtStartListener, { passive: true })
-    this.element.addEventListener(this.eventTypeEnd, this.evtEndListener, { passive: true })
-    return this
-  }
-
-  /**
-   * Deactivates an event listener on a DOM element.
-   */
-  removeListener () {
-    this.element.removeEventListener(this.eventTypeStart, this.evtStartListener, { passive: true })
-    this.element.removeEventListener(this.eventTypeEnd, this.evtEndListener, { passive: true })
-    return this
-  }
-
-  /**
-   * Sets an event listener on elements specified by a CSS selector.
-   * Returns an instance of EventListener that allow to remove a listener when needed.
-   * @param {string} selector - A CSS selector.
-   * @param {Function} evtHandler - An event handler to be called when event occurs.
-   * @param {number} mvmntThreshold
-   * @param {number} durationThreshold
-   * @return {EventListener}
-   */
-  static listen (selector, evtHandler, mvmntThreshold, durationThreshold) {
-    return new _event_listener_js__WEBPACK_IMPORTED_MODULE_1__["default"](this, selector, evtHandler, 'longTap', [mvmntThreshold, durationThreshold]).set()
-  }
-}
-
-
-/***/ }),
-
-/***/ "./lib/custom-dom-events/mouse-dbl-click.js":
-/*!**************************************************!*\
-  !*** ./lib/custom-dom-events/mouse-dbl-click.js ***!
-  \**************************************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return MouseDblClick; });
-/* harmony import */ var _generic_ptr_evt_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./generic-ptr-evt.js */ "./lib/custom-dom-events/generic-ptr-evt.js");
-/* harmony import */ var _log_html_console_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../log/html-console.js */ "./lib/log/html-console.js");
-
-
-
-class MouseDblClick extends _generic_ptr_evt_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
-  /**
-   * @param {Node} element - An html node element that listens for an event
-   * @param {Function} evtHandler - An event handler of the client
-   */
-  constructor (element, evtHandler) {
-    super(element, evtHandler, 'dblclick')
-  }
-
-  static excludeCpeTest (dataset) {
-    return dataset.hasOwnProperty('alphExcludeDblClickCpe')
-  }
-
-  setEndPoint (clientX, clientY, target, path) {
-    super.setEndPoint(clientX, clientY, target, path)
-    if (!(this.start.excluded || this.end.excluded)) {
-      _log_html_console_js__WEBPACK_IMPORTED_MODULE_1__["default"].instance.log(`Mouse double click (completed), [x,y]: [${this.end.client.x}, ${this.end.client.y}], movement: ${this.mvmntDist},` +
-        `duration: ${this.duration}`)
-    }
-    return !(this.start.excluded || this.end.excluded)
-  }
-}
-
-
-/***/ }),
-
-/***/ "./lib/custom-dom-events/swipe.js":
-/*!****************************************!*\
-  !*** ./lib/custom-dom-events/swipe.js ***!
-  \****************************************/
+/***/ "./lib/custom-pointer-events/swipe.js":
+/*!********************************************!*\
+  !*** ./lib/custom-pointer-events/swipe.js ***!
+  \********************************************/
 /*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Swipe; });
-/* harmony import */ var _dom_evt_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./dom-evt.js */ "./lib/custom-dom-events/dom-evt.js");
-/* harmony import */ var _event_listener_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./event-listener.js */ "./lib/custom-dom-events/event-listener.js");
-/* harmony import */ var _log_html_console_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../log/html-console.js */ "./lib/log/html-console.js");
+/* harmony import */ var _pointer_evt_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./pointer-evt.js */ "./lib/custom-pointer-events/pointer-evt.js");
+/* harmony import */ var _log_html_console_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../log/html-console.js */ "./lib/log/html-console.js");
 
 
 
-
-class Swipe extends _dom_evt_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
-  /**
-   * @param {Node} element - An HTML node element that listens for an event'.
-   * @param {Function} evtHandler - An event handler of the client'.
-   * @param eventType
-   * @param {number} mvmntThreshold
-   * @param {number} durationThreshold
-   */
-  constructor (element, evtHandler, eventType = 'swipe', mvmntThreshold = 100, durationThreshold = 600) {
+class Swipe extends _pointer_evt_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
+  constructor (element, evtHandler, mvmntThreshold = 100, durationThreshold = 600) {
     super()
     this.element = element
-    if (Swipe.pointerEventSupported) {
-      this.eventTypeStart = 'pointerdown'
-      this.eventTypeEnd = 'pointerup'
-      this.evtStartListener = this.pointerDownListener.bind(this, evtHandler)
-      this.evtEndListener = this.pointerUpListener.bind(this, evtHandler)
-    } else {
-      this.eventTypeStart = 'touchstart'
-      this.eventTypeEnd = 'touchend'
-      this.evtStartListener = this.touchStartListener.bind(this, evtHandler)
-      this.evtEndListener = this.touchEndListener.bind(this, evtHandler)
-    }
+    this.evtHandler = evtHandler
 
-    this.eventType = eventType
     this.mvmntThreshold = mvmntThreshold
     this.durationThreshold = durationThreshold
     this.direction = Swipe.directions.NONE
@@ -31984,41 +31894,17 @@ class Swipe extends _dom_evt_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
     }
 
     if (!(this.start.excluded || this.end.excluded)) {
-      _log_html_console_js__WEBPACK_IMPORTED_MODULE_2__["default"].instance.log(`Swipe (${completed ? 'completed' : 'not completed'}), [x,y]: [${this.end.client.x}, ${this.end.client.y}], movement: ${this.mvmntDist},` +
+      _log_html_console_js__WEBPACK_IMPORTED_MODULE_1__["default"].instance.log(`Swipe (${completed ? 'completed' : 'not completed'}), [x,y]: [${this.end.client.x}, ${this.end.client.y}], movement: ${this.mvmntDist},` +
         `direction: ${this.direction}, duration: ${this.duration}`)
     }
     return completed && !this.start.excluded && !this.end.excluded
   }
 
-  /**
-   * Activates an event listener on a DOM element.
-   */
-  setListener () {
-    this.element.addEventListener(this.eventTypeStart, this.evtStartListener, { passive: true })
-    this.element.addEventListener(this.eventTypeEnd, this.evtEndListener, { passive: true })
-    return this
-  }
-
-  /**
-   * Deactivates an event listener on a DOM element.
-   */
-  removeListener () {
-    this.element.removeEventListener(this.eventTypeStart, this.evtStartListener, { passive: true })
-    this.element.removeEventListener(this.eventTypeEnd, this.evtEndListener, { passive: true })
-    return this
-  }
-
-  /**
-   * Sets an event listener on elements specified by a CSS selector.
-   * Returns an instance of EventListener that allow to remove a listener when needed.
-   * @param {string} selector - A CSS selector.
-   * @param {Function} evtHandler - An event handler to be called when event occurs.
-   * @param {number} mvmntThreshold
-   * @param {number} durationThreshold
-   * @return {EventListener}
-   */
   static listen (selector, evtHandler, mvmntThreshold, durationThreshold) {
-    return new _event_listener_js__WEBPACK_IMPORTED_MODULE_1__["default"](this, selector, evtHandler, 'swipe', [mvmntThreshold, durationThreshold]).set()
+    let elements = document.querySelectorAll(selector)
+    for (const element of elements) {
+      this.addUpDownListeners(element, new this(element, evtHandler, mvmntThreshold, durationThreshold))
+    }
   }
 }
 
@@ -33618,7 +33504,7 @@ class ResourceQuery extends _query_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return AlignmentSelector; });
-/* harmony import */ var _lib_custom_dom_events_dom_evt_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @/lib/custom-dom-events/dom-evt.js */ "./lib/custom-dom-events/dom-evt.js");
+/* harmony import */ var _lib_custom_pointer_events_pointer_evt__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @/lib/custom-pointer-events/pointer-evt */ "./lib/custom-pointer-events/pointer-evt.js");
 /* harmony import */ var jump_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! jump.js */ "../node_modules/jump.js/dist/jump.module.js");
 
 
@@ -33787,7 +33673,7 @@ class AlignmentSelector {
   }
 
   isDisabled (elem) {
-    let path = _lib_custom_dom_events_dom_evt_js__WEBPACK_IMPORTED_MODULE_0__["default"].buildPath(elem)
+    let path = _lib_custom_pointer_events_pointer_evt__WEBPACK_IMPORTED_MODULE_0__["default"].buildPath(elem)
     for (let p of path) {
       if (p.classList.contains(this.settings.disableClass)) {
         return true
@@ -35093,7 +34979,7 @@ var _en_gb_messages_json__WEBPACK_IMPORTED_MODULE_1___namespace = /*#__PURE__*/_
 /*!*******************!*\
   !*** ./plugin.js ***!
   \*******************/
-/*! exports provided: Popup, PopupMobile, Panel, L10n, Locales, enUS, enGB, UIController, EventController, Language, HTMLSelector, AnnotationQuery, LexicalQuery, ResourceQuery, LocalStorageArea, ExtensionSyncStorage, ContentOptionDefaults, LanguageOptionDefaults, UIOptionDefaults, DefaultsLoader, Options, UIStateAPI, Style, Logger, HTMLConsole, EventListener, MouseDblClick, LongTap, Swipe, GenericEvt, GenericPtrEvt, AlignmentSelector, HTMLPage, Tab, TabScript */
+/*! exports provided: Popup, PopupMobile, Panel, L10n, Locales, enUS, enGB, UIController, UIEventController, Language, HTMLSelector, AnnotationQuery, LexicalQuery, ResourceQuery, LocalStorageArea, ExtensionSyncStorage, ContentOptionDefaults, LanguageOptionDefaults, UIOptionDefaults, DefaultsLoader, Options, UIStateAPI, Style, Logger, HTMLConsole, MouseDblClick, LongTap, Swipe, GenericEvt, AlignmentSelector, HTMLPage, Tab, TabScript */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -35125,8 +35011,8 @@ var _locales_en_gb_messages_json__WEBPACK_IMPORTED_MODULE_7___namespace = /*#__P
 /* harmony import */ var _lib_controllers_ui_controller_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./lib/controllers/ui-controller.js */ "./lib/controllers/ui-controller.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "UIController", function() { return _lib_controllers_ui_controller_js__WEBPACK_IMPORTED_MODULE_8__["default"]; });
 
-/* harmony import */ var _lib_controllers_event_controller_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./lib/controllers/event-controller.js */ "./lib/controllers/event-controller.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EventController", function() { return _lib_controllers_event_controller_js__WEBPACK_IMPORTED_MODULE_9__["default"]; });
+/* harmony import */ var _lib_controllers_ui_event_controller_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! @/lib/controllers/ui-event-controller.js */ "./lib/controllers/ui-event-controller.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "UIEventController", function() { return _lib_controllers_ui_event_controller_js__WEBPACK_IMPORTED_MODULE_9__["default"]; });
 
 /* harmony import */ var _lib_state_ui_state_api_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! @/lib/state/ui-state-api.js */ "./lib/state/ui-state-api.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "UIStateAPI", function() { return _lib_state_ui_state_api_js__WEBPACK_IMPORTED_MODULE_10__["default"]; });
@@ -35173,40 +35059,32 @@ var _settings_ui_options_defaults_json__WEBPACK_IMPORTED_MODULE_20___namespace =
 /* harmony import */ var _lib_log_html_console_js__WEBPACK_IMPORTED_MODULE_24__ = __webpack_require__(/*! ./lib/log/html-console.js */ "./lib/log/html-console.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HTMLConsole", function() { return _lib_log_html_console_js__WEBPACK_IMPORTED_MODULE_24__["default"]; });
 
-/* harmony import */ var _lib_custom_dom_events_mouse_dbl_click_js__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./lib/custom-dom-events/mouse-dbl-click.js */ "./lib/custom-dom-events/mouse-dbl-click.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MouseDblClick", function() { return _lib_custom_dom_events_mouse_dbl_click_js__WEBPACK_IMPORTED_MODULE_25__["default"]; });
+/* harmony import */ var _lib_custom_pointer_events_mouse_dbl_click_js__WEBPACK_IMPORTED_MODULE_25__ = __webpack_require__(/*! ./lib/custom-pointer-events/mouse-dbl-click.js */ "./lib/custom-pointer-events/mouse-dbl-click.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MouseDblClick", function() { return _lib_custom_pointer_events_mouse_dbl_click_js__WEBPACK_IMPORTED_MODULE_25__["default"]; });
 
-/* harmony import */ var _lib_custom_dom_events_generic_evt_js__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./lib/custom-dom-events/generic-evt.js */ "./lib/custom-dom-events/generic-evt.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GenericEvt", function() { return _lib_custom_dom_events_generic_evt_js__WEBPACK_IMPORTED_MODULE_26__["default"]; });
+/* harmony import */ var _lib_custom_pointer_events_generic_evt_js__WEBPACK_IMPORTED_MODULE_26__ = __webpack_require__(/*! ./lib/custom-pointer-events/generic-evt.js */ "./lib/custom-pointer-events/generic-evt.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GenericEvt", function() { return _lib_custom_pointer_events_generic_evt_js__WEBPACK_IMPORTED_MODULE_26__["default"]; });
 
-/* harmony import */ var _lib_custom_dom_events_generic_ptr_evt_js__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./lib/custom-dom-events/generic-ptr-evt.js */ "./lib/custom-dom-events/generic-ptr-evt.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "GenericPtrEvt", function() { return _lib_custom_dom_events_generic_ptr_evt_js__WEBPACK_IMPORTED_MODULE_27__["default"]; });
+/* harmony import */ var _lib_custom_pointer_events_long_tap_js__WEBPACK_IMPORTED_MODULE_27__ = __webpack_require__(/*! ./lib/custom-pointer-events/long-tap.js */ "./lib/custom-pointer-events/long-tap.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LongTap", function() { return _lib_custom_pointer_events_long_tap_js__WEBPACK_IMPORTED_MODULE_27__["default"]; });
 
-/* harmony import */ var _lib_custom_dom_events_long_tap_js__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./lib/custom-dom-events/long-tap.js */ "./lib/custom-dom-events/long-tap.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LongTap", function() { return _lib_custom_dom_events_long_tap_js__WEBPACK_IMPORTED_MODULE_28__["default"]; });
+/* harmony import */ var _lib_custom_pointer_events_swipe_js__WEBPACK_IMPORTED_MODULE_28__ = __webpack_require__(/*! ./lib/custom-pointer-events/swipe.js */ "./lib/custom-pointer-events/swipe.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Swipe", function() { return _lib_custom_pointer_events_swipe_js__WEBPACK_IMPORTED_MODULE_28__["default"]; });
 
-/* harmony import */ var _lib_custom_dom_events_swipe_js__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./lib/custom-dom-events/swipe.js */ "./lib/custom-dom-events/swipe.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Swipe", function() { return _lib_custom_dom_events_swipe_js__WEBPACK_IMPORTED_MODULE_29__["default"]; });
+/* harmony import */ var _lib_selection_alignment_alignment_selector_js__WEBPACK_IMPORTED_MODULE_29__ = __webpack_require__(/*! ./lib/selection/alignment/alignment-selector.js */ "./lib/selection/alignment/alignment-selector.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AlignmentSelector", function() { return _lib_selection_alignment_alignment_selector_js__WEBPACK_IMPORTED_MODULE_29__["default"]; });
 
-/* harmony import */ var _lib_custom_dom_events_event_listener_js__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./lib/custom-dom-events/event-listener.js */ "./lib/custom-dom-events/event-listener.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EventListener", function() { return _lib_custom_dom_events_event_listener_js__WEBPACK_IMPORTED_MODULE_30__["default"]; });
+/* harmony import */ var _lib_utility_html_page_js__WEBPACK_IMPORTED_MODULE_30__ = __webpack_require__(/*! ./lib/utility/html-page.js */ "./lib/utility/html-page.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HTMLPage", function() { return _lib_utility_html_page_js__WEBPACK_IMPORTED_MODULE_30__["default"]; });
 
-/* harmony import */ var _lib_selection_alignment_alignment_selector_js__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! ./lib/selection/alignment/alignment-selector.js */ "./lib/selection/alignment/alignment-selector.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AlignmentSelector", function() { return _lib_selection_alignment_alignment_selector_js__WEBPACK_IMPORTED_MODULE_31__["default"]; });
+/* harmony import */ var _lib_state_tab_js__WEBPACK_IMPORTED_MODULE_31__ = __webpack_require__(/*! @/lib/state/tab.js */ "./lib/state/tab.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Tab", function() { return _lib_state_tab_js__WEBPACK_IMPORTED_MODULE_31__["default"]; });
 
-/* harmony import */ var _lib_utility_html_page_js__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! ./lib/utility/html-page.js */ "./lib/utility/html-page.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HTMLPage", function() { return _lib_utility_html_page_js__WEBPACK_IMPORTED_MODULE_32__["default"]; });
-
-/* harmony import */ var _lib_state_tab_js__WEBPACK_IMPORTED_MODULE_33__ = __webpack_require__(/*! @/lib/state/tab.js */ "./lib/state/tab.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Tab", function() { return _lib_state_tab_js__WEBPACK_IMPORTED_MODULE_33__["default"]; });
-
-/* harmony import */ var _lib_state_tab_script_js__WEBPACK_IMPORTED_MODULE_34__ = __webpack_require__(/*! @/lib/state/tab-script.js */ "./lib/state/tab-script.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TabScript", function() { return _lib_state_tab_script_js__WEBPACK_IMPORTED_MODULE_34__["default"]; });
+/* harmony import */ var _lib_state_tab_script_js__WEBPACK_IMPORTED_MODULE_32__ = __webpack_require__(/*! @/lib/state/tab-script.js */ "./lib/state/tab-script.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TabScript", function() { return _lib_state_tab_script_js__WEBPACK_IMPORTED_MODULE_32__["default"]; });
 
 // The following import will not probably used by any client directly,
 // but is required to include Scss file specified in there to a MiniCssExtractPlugin bundle
-
-
 
 
 
@@ -46990,7 +46868,7 @@ class GreekLanguageDataset extends _lib_language_dataset_js__WEBPACK_IMPORTED_MO
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "Index,Text\n1,\"Adjectives agree with the noun they modify in gender, number and case.\"\n2,Adjectives are inflected according to either\n3,\"Only nullus, sōlus, alius (alia, aliud), tōtus, ūllus, ūnus, alter, neuter (neutra,\n            neutrum) and uter (utra, utrum).\"\n4,In a few adjectives of Greek origin.\n5,\"The \"\"two-ending\"\" adjectives use \"\"-is\"\", for both masculine and feminine nominative\n            singular.\"\n6,\"The \"\"one-ending\"\" adjectives use the same consonant ending for all three genders in the\n            nominative singular and the neuter accusative and vocative singular.\"\n7,\"An ablative singular in \"\"e\"\" is common in one-ending adjectives, but is usually confined to\n            poetry in three and two-ending adjectives.\"\n8,\"In comparatives, poetry and some one-ending adjectives.\"\n9,Chiefly in comparatives."
+module.exports = "Index,Text\n1,\"Adjectives agree with the noun they modify in gender, number and case.\"\n2,Adjectives are inflected according to either\n3,\"Only nullus, sōlus, alius (alia, aliud), tōtus, ūllus, ūnus, alter, neuter (neutra,\n            neutrum) and uter (utra, utrum).\"\n4,In a few adjectives of Greek origin.\n5,\"The \"\"two-ending\"\" adjectives use \"\"-is\"\", for both masculine and feminine nominative\n            singular.\"\n6,\"The \"\"one-ending\"\" adjectives use the same consonant ending for all three genders in the\n            nominative singular and the neuter accusative and vocative singular.\"\n7,\"An ablative singular in \"\"e\"\" is common in one-ending adjectives, but is usually confined to\n            poetry in three and two-ending adjectives.\"\n8,\"In comparatives, poetry and some one-ending adjectives.\"\n9,Chiefly in comparatives.\n10,\"Stems ending in ro- preceded by e form the nominative masculine like miser, asper, gibber, lacer, liber, prosper (also prosperus), satur (-ura, -urum), tener; with compounds of -fer and -ger as saetige; also usually dexter.\"\n11,\"Stems in ro- preceded by a consonant form the nominative masculine like niger, aeger, āter, crēber, faber, glaber, integer, lūdicer, macer, piger, pulcher, ruber, sacer, scaber, sinister, taeter, vafer; also the possesives, noster, vester.\"\n"
 
 /***/ }),
 
@@ -47001,7 +46879,7 @@ module.exports = "Index,Text\n1,\"Adjectives agree with the noun they modify in 
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "Ending,Number,Case,Declension,Gender,Type,Footnote\na,singular,nominative,1st 2nd,feminine,regular,\nus,singular,nominative,1st 2nd,masculine,regular,\n-,singular,nominative,1st 2nd,masculine,regular,\num,singular,nominative,1st 2nd,neuter,regular,\nis,singular,nominative,3rd,feminine,regular,\n-,singular,nominative,3rd,feminine,irregular,6\n-,singular,nominative,3rd,masculine,regular,\nis,singular,nominative,3rd,masculine,irregular,5\ne,singular,nominative,3rd,neuter,regular,\n-,singular,nominative,3rd,neuter,irregular,6\nae,singular,genitive,1st 2nd,feminine,regular,\nīus,singular,genitive,1st 2nd,feminine,irregular,3\nī,singular,genitive,1st 2nd,masculine,regular,\nīus,singular,genitive,1st 2nd,masculine,irregular,3\nī,singular,genitive,1st 2nd,neuter,regular,\nīus,singular,genitive,1st 2nd,neuter,irregular,3\nis,singular,genitive,3rd,feminine,regular,\nis,singular,genitive,3rd,masculine,regular,\nis,singular,genitive,3rd,neuter,regular,\nae,singular,dative,1st 2nd,feminine,regular,\nī,singular,dative,1st 2nd,feminine,irregular,3\nō,singular,dative,1st 2nd,masculine,regular,\nī,singular,dative,1st 2nd,masculine,irregular,3\nō,singular,dative,1st 2nd,neuter,regular,\nī,singular,dative,1st 2nd,neuter,irregular,3\nī,singular,dative,3rd,feminine,regular,\nī,singular,dative,3rd,masculine,regular,\nī,singular,dative,3rd,neuter,regular,\nam,singular,accusative,1st 2nd,feminine,regular,\num,singular,accusative,1st 2nd,masculine,regular,\num,singular,accusative,1st 2nd,neuter,regular,\nem,singular,accusative,3rd,feminine,regular,\nem,singular,accusative,3rd,masculine,regular,\ne,singular,accusative,3rd,neuter,regular,\n-,singular,accusative,3rd,neuter,irregular,6\nā,singular,ablative,1st 2nd,feminine,regular,\nō,singular,ablative,1st 2nd,feminine,irregular,4\nō,singular,ablative,1st 2nd,masculine,regular,\nō,singular,ablative,1st 2nd,neuter,regular,\nī,singular,ablative,3rd,feminine,regular,\ne,singular,ablative,3rd,feminine,irregular,7\nī,singular,ablative,3rd,masculine,regular,\ne,singular,ablative,3rd,masculine,irregular,7\nī,singular,ablative,3rd,neuter,regular,\nae,singular,locative,1st 2nd,feminine,regular,\nī,singular,locative,1st 2nd,masculine,regular,\nī,singular,locative,1st 2nd,neuter,regular,\nī,singular,locative,3rd,feminine,regular,\ne,singular,locative,3rd,feminine,irregular,7\nī,singular,locative,3rd,masculine,regular,\nī,singular,locative,3rd,neuter,regular,\na,singular,vocative,1st 2nd,feminine,regular,\ne,singular,vocative,1st 2nd,masculine,regular,\nī,singular,vocative,1st 2nd,masculine,irregular,\n-,singular,vocative,1st 2nd,masculine,regular,\num,singular,vocative,1st 2nd,neuter,regular,\nis,singular,vocative,3rd,feminine,regular,\n-,singular,vocative,3rd,masculine,regular,\ne,singular,vocative,3rd,neuter,regular,\n-,singular,vocative,3rd,neuter,irregular,6\nae,plural,nominative,1st 2nd,feminine,regular,\nī,plural,nominative,1st 2nd,masculine,regular,\na,plural,nominative,1st 2nd,neuter,regular,\nēs,plural,nominative,3rd,feminine,regular,\nēs,plural,nominative,3rd,masculine,regular,\nia,plural,nominative,3rd,neuter,regular,\nārum,plural,genitive,1st 2nd,feminine,regular,\nōrum,plural,genitive,1st 2nd,masculine,regular,\nōrum,plural,genitive,1st 2nd,neuter,regular,\nium,plural,genitive,3rd,feminine,regular,\num,plural,genitive,3rd,feminine,irregular,8\nium,plural,genitive,3rd,masculine,regular,\num,plural,genitive,3rd,masculine,irregular,8\nium,plural,genitive,3rd,neuter,regular,\num,plural,genitive,3rd,neuter,irregular,8\nīs,plural,dative,1st 2nd,feminine,regular,\nīs,plural,dative,1st 2nd,masculine,regular,\nīs,plural,dative,1st 2nd,neuter,regular,\nibus,plural,dative,3rd,feminine,regular,\nibus,plural,dative,3rd,masculine,regular,\nibus,plural,dative,3rd,neuter,regular,\nās,plural,accusative,1st 2nd,feminine,regular,\nōs,plural,accusative,1st 2nd,masculine,regular,\na,plural,accusative,1st 2nd,neuter,regular,\nīs,plural,accusative,3rd,feminine,regular,\nēs,plural,accusative,3rd,feminine,irregular,9\nīs,plural,accusative,3rd,masculine,regular,\nēs,plural,accusative,3rd,masculine,irregular,9\nia,plural,accusative,3rd,neuter,regular,\nīs,plural,ablative,1st 2nd,feminine,regular,\nīs,plural,ablative,1st 2nd,masculine,regular,\nīs,plural,ablative,1st 2nd,neuter,regular,\nibus,plural,ablative,3rd,feminine,regular,\nibus,plural,ablative,3rd,masculine,regular,\nibus,plural,ablative,3rd,neuter,regular,\nīs,plural,locative,1st 2nd,feminine,regular,\nīs,plural,locative,1st 2nd,masculine,regular,\nīs,plural,locative,1st 2nd,neuter,regular,\nibus,plural,locative,3rd,feminine,regular,\nibus,plural,locative,3rd,masculine,regular,\nibus,plural,locative,3rd,neuter,regular,\nae,plural,vocative,1st 2nd,feminine,regular,\nī,plural,vocative,1st 2nd,masculine,regular,\na,plural,vocative,1st 2nd,neuter,regular,\nēs,plural,vocative,3rd,feminine,regular,\nēs,plural,vocative,3rd,masculine,regular,\nia,plural,vocative,3rd,neuter,regular,\n"
+module.exports = "Ending,Number,Case,Declension,Gender,Type,Footnote\na,singular,nominative,1st 2nd,feminine,regular,\nus,singular,nominative,1st 2nd,masculine,regular,\n-,singular,nominative,1st 2nd,masculine,regular,10 11\num,singular,nominative,1st 2nd,neuter,regular,\nis,singular,nominative,3rd,feminine,regular,\n-,singular,nominative,3rd,feminine,irregular,6\n-,singular,nominative,3rd,masculine,regular,\nis,singular,nominative,3rd,masculine,irregular,5\ne,singular,nominative,3rd,neuter,regular,\n-,singular,nominative,3rd,neuter,irregular,6\nae,singular,genitive,1st 2nd,feminine,regular,\nīus,singular,genitive,1st 2nd,feminine,irregular,3\nī,singular,genitive,1st 2nd,masculine,regular,\nīus,singular,genitive,1st 2nd,masculine,irregular,3\nī,singular,genitive,1st 2nd,neuter,regular,\nīus,singular,genitive,1st 2nd,neuter,irregular,3\nis,singular,genitive,3rd,feminine,regular,\nis,singular,genitive,3rd,masculine,regular,\nis,singular,genitive,3rd,neuter,regular,\nae,singular,dative,1st 2nd,feminine,regular,\nī,singular,dative,1st 2nd,feminine,irregular,3\nō,singular,dative,1st 2nd,masculine,regular,\nī,singular,dative,1st 2nd,masculine,irregular,3\nō,singular,dative,1st 2nd,neuter,regular,\nī,singular,dative,1st 2nd,neuter,irregular,3\nī,singular,dative,3rd,feminine,regular,\nī,singular,dative,3rd,masculine,regular,\nī,singular,dative,3rd,neuter,regular,\nam,singular,accusative,1st 2nd,feminine,regular,\num,singular,accusative,1st 2nd,masculine,regular,\num,singular,accusative,1st 2nd,neuter,regular,\nem,singular,accusative,3rd,feminine,regular,\nem,singular,accusative,3rd,masculine,regular,\ne,singular,accusative,3rd,neuter,regular,\n-,singular,accusative,3rd,neuter,irregular,6\nā,singular,ablative,1st 2nd,feminine,regular,\nō,singular,ablative,1st 2nd,feminine,irregular,4\nō,singular,ablative,1st 2nd,masculine,regular,\nō,singular,ablative,1st 2nd,neuter,regular,\nī,singular,ablative,3rd,feminine,regular,\ne,singular,ablative,3rd,feminine,irregular,7\nī,singular,ablative,3rd,masculine,regular,\ne,singular,ablative,3rd,masculine,irregular,7\nī,singular,ablative,3rd,neuter,regular,\nae,singular,locative,1st 2nd,feminine,regular,\nī,singular,locative,1st 2nd,masculine,regular,\nī,singular,locative,1st 2nd,neuter,regular,\nī,singular,locative,3rd,feminine,regular,\ne,singular,locative,3rd,feminine,irregular,7\nī,singular,locative,3rd,masculine,regular,\nī,singular,locative,3rd,neuter,regular,\na,singular,vocative,1st 2nd,feminine,regular,\ne,singular,vocative,1st 2nd,masculine,regular,\nī,singular,vocative,1st 2nd,masculine,irregular,\n-,singular,vocative,1st 2nd,masculine,regular,10 11\num,singular,vocative,1st 2nd,neuter,regular,\nis,singular,vocative,3rd,feminine,regular,\n-,singular,vocative,3rd,masculine,regular,\ne,singular,vocative,3rd,neuter,regular,\n-,singular,vocative,3rd,neuter,irregular,6\nae,plural,nominative,1st 2nd,feminine,regular,\nī,plural,nominative,1st 2nd,masculine,regular,\na,plural,nominative,1st 2nd,neuter,regular,\nēs,plural,nominative,3rd,feminine,regular,\nēs,plural,nominative,3rd,masculine,regular,\nia,plural,nominative,3rd,neuter,regular,\nārum,plural,genitive,1st 2nd,feminine,regular,\nōrum,plural,genitive,1st 2nd,masculine,regular,\nōrum,plural,genitive,1st 2nd,neuter,regular,\nium,plural,genitive,3rd,feminine,regular,\num,plural,genitive,3rd,feminine,irregular,8\nium,plural,genitive,3rd,masculine,regular,\num,plural,genitive,3rd,masculine,irregular,8\nium,plural,genitive,3rd,neuter,regular,\num,plural,genitive,3rd,neuter,irregular,8\nīs,plural,dative,1st 2nd,feminine,regular,\nīs,plural,dative,1st 2nd,masculine,regular,\nīs,plural,dative,1st 2nd,neuter,regular,\nibus,plural,dative,3rd,feminine,regular,\nibus,plural,dative,3rd,masculine,regular,\nibus,plural,dative,3rd,neuter,regular,\nās,plural,accusative,1st 2nd,feminine,regular,\nōs,plural,accusative,1st 2nd,masculine,regular,\na,plural,accusative,1st 2nd,neuter,regular,\nīs,plural,accusative,3rd,feminine,regular,\nēs,plural,accusative,3rd,feminine,irregular,9\nīs,plural,accusative,3rd,masculine,regular,\nēs,plural,accusative,3rd,masculine,irregular,9\nia,plural,accusative,3rd,neuter,regular,\nīs,plural,ablative,1st 2nd,feminine,regular,\nīs,plural,ablative,1st 2nd,masculine,regular,\nīs,plural,ablative,1st 2nd,neuter,regular,\nibus,plural,ablative,3rd,feminine,regular,\nibus,plural,ablative,3rd,masculine,regular,\nibus,plural,ablative,3rd,neuter,regular,\nīs,plural,locative,1st 2nd,feminine,regular,\nīs,plural,locative,1st 2nd,masculine,regular,\nīs,plural,locative,1st 2nd,neuter,regular,\nibus,plural,locative,3rd,feminine,regular,\nibus,plural,locative,3rd,masculine,regular,\nibus,plural,locative,3rd,neuter,regular,\nae,plural,vocative,1st 2nd,feminine,regular,\nī,plural,vocative,1st 2nd,masculine,regular,\na,plural,vocative,1st 2nd,neuter,regular,\nēs,plural,vocative,3rd,feminine,regular,\nēs,plural,vocative,3rd,masculine,regular,\nia,plural,vocative,3rd,neuter,regular,\n"
 
 /***/ }),
 
@@ -92412,10 +92290,10 @@ alpheios_components__WEBPACK_IMPORTED_MODULE_3__["UIController"].build = functio
   let uiController = new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["UIController"](state, options)
 
   // Attaches an event controller to a UIController instance. This EventController registers a double click as a default `getSelectedText` selector.
-  uiController.evc = new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["EventController"]()
-    .registerListenerFor('GetSelectedText', new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["EventListener"](alpheios_components__WEBPACK_IMPORTED_MODULE_3__["MouseDblClick"], 'body'), uiController.getSelectedText.bind(uiController))
-    .registerListenerFor('HandleEscapeKey', new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["EventListener"](alpheios_components__WEBPACK_IMPORTED_MODULE_3__["GenericEvt"], 'document', 'keydown'), uiController.handleEscapeKey.bind(uiController))
-    .registerListenerFor('AlpheiosPageLoad', new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["EventListener"](alpheios_components__WEBPACK_IMPORTED_MODULE_3__["GenericEvt"], 'body', 'Alpheios_Page_Load'), uiController.updateAnnotations.bind(uiController))
+  uiController.evc = new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["UIEventController"]()
+    .registerListener('GetSelectedText', 'body', uiController.getSelectedText.bind(uiController), alpheios_components__WEBPACK_IMPORTED_MODULE_3__["MouseDblClick"])
+    .registerListener('HandleEscapeKey', document, uiController.handleEscapeKey.bind(uiController), alpheios_components__WEBPACK_IMPORTED_MODULE_3__["GenericEvt"], 'keydown')
+    .registerListener('AlpheiosPageLoad', 'body', uiController.updateAnnotations.bind(uiController), alpheios_components__WEBPACK_IMPORTED_MODULE_3__["GenericEvt"], 'Alpheios_Page_Load')
 
   return uiController
 }
@@ -92511,7 +92389,6 @@ document.body.addEventListener('Alpheios_Reload', () => {
 uiController.activate()
   .then(() => {
     messagingService.addHandler(_lib_messaging_message_message_js__WEBPACK_IMPORTED_MODULE_0__["default"].types.STATE_REQUEST, handleStateRequest, uiController)
-    //    uiController.removeEventListeners()
     browser.runtime.onMessage.addListener(messagingService.listener.bind(messagingService))
   })
   .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
