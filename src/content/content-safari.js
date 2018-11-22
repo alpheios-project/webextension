@@ -3,7 +3,7 @@ import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
 import { TabScript, UIController, LocalStorageArea, HTMLPage } from 'alpheios-components'
-import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
+import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style-safari.min.css' // eslint-disable-line
 import Package from '../../package.json'
 
 let uiController = null
