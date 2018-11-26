@@ -105,7 +105,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(true)
-		module.exports = factory(__webpack_require__(/*! alpheios-data-models */ "../../node_modules/alpheios-data-models/dist/alpheios-data-models.js"), __webpack_require__(/*! alpheios-inflection-tables */ "../../node_modules/alpheios-inflection-tables/dist/alpheios-inflection-tables.js"), __webpack_require__(/*! alpheios-lemma-client */ "../../node_modules/alpheios-lemma-client/dist/alpheios-lemma-client.js"), __webpack_require__(/*! alpheios-lexicon-client */ "../../node_modules/alpheios-lexicon-client/dist/alpheios-lexicon-client.js"), __webpack_require__(/*! alpheios-morph-client */ "../../node_modules/alpheios-morph-client/dist/alpheios-morph-client.js"), __webpack_require__(/*! alpheios-res-client */ "../../node_modules/alpheios-res-client/dist/alpheios-res-client.js"), __webpack_require__(/*! intl-messageformat */ "../../../components/node_modules/intl-messageformat/index.js"));
+		module.exports = factory(__webpack_require__(/*! alpheios-data-models */ "../../../data-models/dist/alpheios-data-models.js"), __webpack_require__(/*! alpheios-inflection-tables */ "../../node_modules/alpheios-inflection-tables/dist/alpheios-inflection-tables.js"), __webpack_require__(/*! alpheios-lemma-client */ "../../node_modules/alpheios-lemma-client/dist/alpheios-lemma-client.js"), __webpack_require__(/*! alpheios-lexicon-client */ "../../node_modules/alpheios-lexicon-client/dist/alpheios-lexicon-client.js"), __webpack_require__(/*! alpheios-morph-client */ "../../node_modules/alpheios-morph-client/dist/alpheios-morph-client.js"), __webpack_require__(/*! alpheios-res-client */ "../../node_modules/alpheios-res-client/dist/alpheios-res-client.js"), __webpack_require__(/*! intl-messageformat */ "../../../components/node_modules/intl-messageformat/index.js"));
 	else { var i, a; }
 })(window, function(__WEBPACK_EXTERNAL_MODULE_alpheios_data_models__, __WEBPACK_EXTERNAL_MODULE_alpheios_inflection_tables__, __WEBPACK_EXTERNAL_MODULE_alpheios_lemma_client__, __WEBPACK_EXTERNAL_MODULE_alpheios_lexicon_client__, __WEBPACK_EXTERNAL_MODULE_alpheios_morph_client__, __WEBPACK_EXTERNAL_MODULE_alpheios_res_client__, __WEBPACK_EXTERNAL_MODULE_intl_messageformat__) {
 return /******/ (function(modules) { // webpackBootstrap
@@ -29815,6 +29815,10 @@ const languageNames = new Map([
 class UIController {
   /**
    * @constructor
+   * The best way to create a configured instance of a UIController is to use its `create` method.
+   * It configures and attaches all UIController's modules.
+   * If you need a custom configuration of a UIController, replace its `create` method with your own.
+   *
    * @param {UIStateAPI} state - An object to store a UI state.
    * @param {Object} options - UI controller options object.
    * See `optionsDefaults` getter for detailed parameter description: @see {@link optionsDefaults}
@@ -29849,7 +29853,7 @@ class UIController {
 
   /**
    * Creates an instance of a UI controller with default options. Provide your own implementation of this method
-   * if you want to initialize a UI controller differently.
+   * if you want to create a different configuration of a UI controller.
    */
   static create (state, options) {
     let uiController = new UIController(state, options)
@@ -29883,6 +29887,14 @@ class UIController {
     _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].evt.LEMMA_TRANSL_READY.sub(uiController.onLemmaTranslationsReady.bind(uiController))
     _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].evt.DEFS_READY.sub(uiController.onDefinitionsReady.bind(uiController))
     _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].evt.DEFS_NOT_FOUND.sub(uiController.onDefinitionsNotFound.bind(uiController))
+
+    // Subscribe to ResourceQuery events
+    _lib_queries_resource_query_js__WEBPACK_IMPORTED_MODULE_15__["default"].evt.RESOURCE_QUERY_COMPLETE.sub(uiController.onResourceQueryComplete.bind(uiController))
+    _lib_queries_resource_query_js__WEBPACK_IMPORTED_MODULE_15__["default"].evt.GRAMMAR_AVAILABLE.sub(uiController.onGrammarAvailable.bind(uiController))
+    _lib_queries_resource_query_js__WEBPACK_IMPORTED_MODULE_15__["default"].evt.GRAMMAR_NOT_FOUND.sub(uiController.onGrammarNotFound.bind(uiController))
+
+    // Subscribe to AnnotationQuery events
+    _lib_queries_annotation_query_js__WEBPACK_IMPORTED_MODULE_16__["default"].evt.ANNOTATIONS_AVAILABLE.sub(uiController.onAnnotationsAvailable.bind(uiController))
 
     return uiController
   }
@@ -31048,7 +31060,7 @@ class UIController {
   /**
    * Issues an AnnotationQuery to find and apply annotations for the currently loaded document
    */
-  updateAnnotations (event, nativeEvent) {
+  updateAnnotations () {
     if (this.state.isActive() && this.state.uiIsActive()) {
       _lib_queries_annotation_query_js__WEBPACK_IMPORTED_MODULE_16__["default"].create({
         document: document,
@@ -31783,123 +31795,6 @@ class Swipe extends _pointer_evt_js__WEBPACK_IMPORTED_MODULE_0__["default"] {
     for (const element of elements) {
       this.addUpDownListeners(element, new this(element, evtHandler, mvmntThreshold, durationThreshold))
     }
-  }
-}
-
-
-/***/ }),
-
-/***/ "./lib/events/event-data.js":
-/*!**********************************!*\
-  !*** ./lib/events/event-data.js ***!
-  \**********************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return EventData; });
-/**
- * A public information about published event that is returned to subscriber.
- * It can be used by subscribers that are listening for more than one event
- * to distinguish between different event types.
- * We could pass an Event object to subscribers instead of EventData
- * but it's better not to expose some details of Event implementation to the outside.
- * This will help to avoid creating dependencies on Event internals within subscribers functions.
- * Thus an EventData object can be considered as a publicly exposed part of Event data.
- * If needed, EventData can present Event data to subscriber differently,
- * not in the way Event stores it. This makes sense as subscriber might be interested in
- * a different angle of Event information. EventData may add properties or methods
- * that do not needed within an Event, but might be useful to subscribers.
- */
-class EventData {
-  /**
-   * @param {Event} event - An event that is being published.
-   */
-  constructor (event) {
-    this.name = event.name
-    this.publisher = event.publisher
-  }
-}
-
-
-/***/ }),
-
-/***/ "./lib/events/event.js":
-/*!*****************************!*\
-  !*** ./lib/events/event.js ***!
-  \*****************************/
-/*! exports provided: default */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return Event; });
-/* harmony import */ var _lib_events_event_data_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @/lib/events/event-data.js */ "./lib/events/event-data.js");
-
-
-/**
- * An event in pub/sub (publish–subscribe) design pattern
- */
-class Event {
-  /**
-   * @param {string} name - A name of the event.
-   * @param {Function} publisher - A constructor function of a publisher.
-   *        Event uses its `name` property to set its publisher name field.
-   */
-  constructor (name, publisher) {
-    /**
-     * A name of the event.
-     * @type {string}
-     */
-    this.name = name
-
-    /**
-     * A name of the publisher.
-     * @type {string}
-     */
-    this.publisher = publisher.name
-
-    /**
-     * A subscribers that listens to the published event.
-     * @type {Function[]} - A subscriber function
-     */
-    this._subscribers = []
-  }
-
-  /**
-   * This function is called when an event is published.
-   * @callback EventSubscriber
-   * @param {Object} data - An event-specific data associated with the event.
-   * @param {EventData} eventData - A data about the event being published.
-   *        Event data allows generic subscribers (i.e. functions that are subscribed to
-   *        more than one event) to distinguish between an event being published.
-   */
-
-  /**
-   * Return a list of subscribers for the current event.
-   * @return {EventSubscriber[]} An array of event subscriber functions.
-   */
-  get subscribers () {
-    return this._subscribers
-  }
-
-  /**
-   * Subscribes a function to the published event.
-   * When event is published, a @type {Event~subscriber} function is called.
-   * @param {EventSubscriber} subscriber - A subscriber function.
-   */
-  sub (subscriber) {
-    this._subscribers.push(subscriber)
-  }
-
-  /**
-   * Publishes an event with data related to it. All subscribers will receive an
-   * event notification along with event data.
-   * @param {Object} [data={}] - An event-specific data associated with the event.
-   */
-  pub (data = {}) {
-    this._subscribers.forEach(l => l(data, new _lib_events_event_data_js__WEBPACK_IMPORTED_MODULE_0__["default"](this)))
   }
 }
 
@@ -32926,7 +32821,8 @@ class TempStorageArea extends _storage_adapter_js__WEBPACK_IMPORTED_MODULE_0__["
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return AnnotationQuery; });
 /* harmony import */ var _query_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./query.js */ "./lib/queries/query.js");
-/* harmony import */ var _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/lib/events/event.js */ "./lib/events/event.js");
+/* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! alpheios-data-models */ "alpheios-data-models");
+/* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__);
 
 
 
@@ -32980,7 +32876,7 @@ AnnotationQuery.evt = {
    * Published when annotations become available.
    * Data: annotations - An annotations data.
    */
-  ANNOTATIONS_AVAILABLE: new _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__["default"]('Annotations Become Available', AnnotationQuery)
+  ANNOTATIONS_AVAILABLE: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__["PsEvent"]('Annotations Become Available', AnnotationQuery)
 }
 
 
@@ -33065,13 +32961,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return LexicalQuery; });
 /* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! alpheios-data-models */ "alpheios-data-models");
 /* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/lib/events/event.js */ "./lib/events/event.js");
-/* harmony import */ var _query_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./query.js */ "./lib/queries/query.js");
+/* harmony import */ var _query_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./query.js */ "./lib/queries/query.js");
 
 
 
-
-class LexicalQuery extends _query_js__WEBPACK_IMPORTED_MODULE_2__["default"] {
+class LexicalQuery extends _query_js__WEBPACK_IMPORTED_MODULE_1__["default"] {
   constructor (name, selector, options) {
     super(name)
     this.selector = selector
@@ -33089,7 +32983,7 @@ class LexicalQuery extends _query_js__WEBPACK_IMPORTED_MODULE_2__["default"] {
   }
 
   static create (selector, options) {
-    return _query_js__WEBPACK_IMPORTED_MODULE_2__["default"].create(LexicalQuery, selector, options)
+    return _query_js__WEBPACK_IMPORTED_MODULE_1__["default"].create(LexicalQuery, selector, options)
   }
 
   async getData () {
@@ -33099,7 +32993,7 @@ class LexicalQuery extends _query_js__WEBPACK_IMPORTED_MODULE_2__["default"] {
     let result = iterator.next()
     while (true) {
       if (!this.active) { this.finalize() }
-      if (_query_js__WEBPACK_IMPORTED_MODULE_2__["default"].isPromise(result.value)) {
+      if (_query_js__WEBPACK_IMPORTED_MODULE_1__["default"].isPromise(result.value)) {
         try {
           let resolvedValue = await result.value
           result = iterator.next(resolvedValue)
@@ -33264,7 +33158,7 @@ class LexicalQuery extends _query_js__WEBPACK_IMPORTED_MODULE_2__["default"] {
       resultStatus: resultStatus,
       homonym: this.homonym
     })
-    _query_js__WEBPACK_IMPORTED_MODULE_2__["default"].destroy(this)
+    _query_js__WEBPACK_IMPORTED_MODULE_1__["default"].destroy(this)
     return result
   }
 
@@ -33300,31 +33194,31 @@ LexicalQuery.evt = {
       {Homonym} homonym - A homonym data
    * }
    */
-  LEXICAL_QUERY_COMPLETE: new _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__["default"]('Lexical Query Complete', LexicalQuery),
+  LEXICAL_QUERY_COMPLETE: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["PsEvent"]('Lexical Query Complete', LexicalQuery),
 
   /**
    * Published when morphological data becomes available.
    * Data: an empty object.
    */
-  MORPH_DATA_READY: new _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__["default"](`Morph Data Ready`, LexicalQuery),
+  MORPH_DATA_READY: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["PsEvent"](`Morph Data Ready`, LexicalQuery),
 
   /**
    * Published when no morphological data has been found.
    * Data: an empty object.
    */
-  MORPH_DATA_NOT_FOUND: new _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__["default"](`Morph Data Not Found`, LexicalQuery),
+  MORPH_DATA_NOT_FOUND: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["PsEvent"](`Morph Data Not Found`, LexicalQuery),
 
   /**
    * Published when no morphological data has been found.
    * Data: {Homonym} homonym - A homonym object.
    */
-  HOMONYM_READY: new _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__["default"](`Homonym Ready`, LexicalQuery),
+  HOMONYM_READY: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["PsEvent"](`Homonym Ready`, LexicalQuery),
 
   /**
    * Published when lemma translations becomes available.
    * Data: {Homonym} homonym - A homonym object.
    */
-  LEMMA_TRANSL_READY: new _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__["default"](`Lemma Translations Ready`, LexicalQuery),
+  LEMMA_TRANSL_READY: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["PsEvent"](`Lemma Translations Ready`, LexicalQuery),
 
   /**
    * Published when definitions data becomes available.
@@ -33334,7 +33228,7 @@ LexicalQuery.evt = {
    *   homonym: this.homonym
    * }
    */
-  DEFS_READY: new _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__["default"](`Definitions Data Ready`, LexicalQuery),
+  DEFS_READY: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["PsEvent"](`Definitions Data Ready`, LexicalQuery),
 
   /**
    * Published when definitions data has been not found.
@@ -33343,7 +33237,7 @@ LexicalQuery.evt = {
    *   word: definitionRequest.lexeme.lemma.word
    * }
    */
-  DEFS_NOT_FOUND: new _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__["default"](`Definitions Data Not Found`, LexicalQuery)
+  DEFS_NOT_FOUND: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["PsEvent"](`Definitions Data Not Found`, LexicalQuery)
 }
 
 
@@ -33471,7 +33365,8 @@ Query.resultStatus = {
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return ResourceQuery; });
 /* harmony import */ var _query_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./query.js */ "./lib/queries/query.js");
-/* harmony import */ var _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @/lib/events/event.js */ "./lib/events/event.js");
+/* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! alpheios-data-models */ "alpheios-data-models");
+/* harmony import */ var alpheios_data_models__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__);
 
 
 
@@ -33568,19 +33463,19 @@ ResourceQuery.evt = {
    *  {symbol} resultStatus - A lexical query result status
    * }
    */
-  RESOURCE_QUERY_COMPLETE: new _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__["default"]('Resource Query Complete', ResourceQuery),
+  RESOURCE_QUERY_COMPLETE: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__["PsEvent"]('Resource Query Complete', ResourceQuery),
 
   /**
    * Published when some new piece of grammar data becomes available.
    * Data: {Array} url - A grammar data URLs.
    */
-  GRAMMAR_AVAILABLE: new _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__["default"]('Grammar Data is Available', ResourceQuery),
+  GRAMMAR_AVAILABLE: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__["PsEvent"]('Grammar Data is Available', ResourceQuery),
 
   /**
    * Published when a no grammar information is found.
    * Data: {symbol} languageID - a language ID of a selected text.
    */
-  GRAMMAR_NOT_FOUND: new _lib_events_event_js__WEBPACK_IMPORTED_MODULE_1__["default"]('Grammar Not Found', ResourceQuery)
+  GRAMMAR_NOT_FOUND: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_1__["PsEvent"]('Grammar Not Found', ResourceQuery)
 }
 
 
@@ -39572,10 +39467,10 @@ exports.hop = hop;
 
 /***/ }),
 
-/***/ "../../node_modules/alpheios-data-models/dist/alpheios-data-models.js":
-/*!************************************************************************************************************!*\
-  !*** C:/uds/projects/alpheios/webextension/node_modules/alpheios-data-models/dist/alpheios-data-models.js ***!
-  \************************************************************************************************************/
+/***/ "../../../data-models/dist/alpheios-data-models.js":
+/*!*************************************************************************!*\
+  !*** C:/uds/projects/alpheios/data-models/dist/alpheios-data-models.js ***!
+  \*************************************************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -40493,7 +40388,7 @@ class Definition {
 /*!*******************!*\
   !*** ./driver.js ***!
   \*******************/
-/*! exports provided: Constants, Definition, DefinitionSet, Feature, GrmFeature, FeatureType, FeatureList, FeatureImporter, Inflection, LanguageModelFactory, Homonym, Lexeme, Lemma, LatinLanguageModel, GreekLanguageModel, ArabicLanguageModel, PersianLanguageModel, GeezLanguageModel, ResourceProvider, Translation */
+/*! exports provided: Constants, Definition, DefinitionSet, Feature, GrmFeature, FeatureType, FeatureList, FeatureImporter, Inflection, LanguageModelFactory, Homonym, Lexeme, Lemma, LatinLanguageModel, GreekLanguageModel, ArabicLanguageModel, PersianLanguageModel, GeezLanguageModel, ResourceProvider, Translation, PsEvent, PsEventData */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -40554,8 +40449,16 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _resource_provider_js__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./resource_provider.js */ "./resource_provider.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "ResourceProvider", function() { return _resource_provider_js__WEBPACK_IMPORTED_MODULE_18__["default"]; });
 
-/* harmony import */ var _translation_js__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./translation.js */ "./translation.js");
-/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Translation", function() { return _translation_js__WEBPACK_IMPORTED_MODULE_19__["default"]; });
+/* harmony import */ var _ps_events_ps_event_js__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./ps-events/ps-event.js */ "./ps-events/ps-event.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PsEvent", function() { return _ps_events_ps_event_js__WEBPACK_IMPORTED_MODULE_19__["default"]; });
+
+/* harmony import */ var _ps_events_ps_event_data_js__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./ps-events/ps-event-data.js */ "./ps-events/ps-event-data.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "PsEventData", function() { return _ps_events_ps_event_data_js__WEBPACK_IMPORTED_MODULE_20__["default"]; });
+
+/* harmony import */ var _translation_js__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ./translation.js */ "./translation.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Translation", function() { return _translation_js__WEBPACK_IMPORTED_MODULE_21__["default"]; });
+
+
 
 
 
@@ -44276,6 +44179,123 @@ class PersianLanguageModel extends _language_model_js__WEBPACK_IMPORTED_MODULE_0
 
 /***/ }),
 
+/***/ "./ps-events/ps-event-data.js":
+/*!************************************!*\
+  !*** ./ps-events/ps-event-data.js ***!
+  \************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return PsEventData; });
+/**
+ * A public information about published event that is returned to subscriber.
+ * It can be used by subscribers that are listening for more than one event
+ * to distinguish between different event types.
+ * We could pass an PsEvent object to subscribers instead of PsEventData
+ * but it's better not to expose some details of PsEvent implementation to the outside.
+ * This will help to avoid creating dependencies on PsEvent internals within subscribers functions.
+ * Thus an PsEventData object can be considered as a publicly exposed part of PsEvent data.
+ * If needed, PsEventData can present PsEvent data to subscriber differently,
+ * not in the way PsEvent stores it. This makes sense as subscriber might be interested in
+ * a different angle of PsEvent information. PsEventData may add properties or methods
+ * that do not needed within an PsEvent, but might be useful to subscribers.
+ */
+class PsEventData {
+  /**
+   * @param {PsEvent} event - An event that is being published.
+   */
+  constructor (event) {
+    this.name = event.name
+    this.publisher = event.publisher
+  }
+}
+
+
+/***/ }),
+
+/***/ "./ps-events/ps-event.js":
+/*!*******************************!*\
+  !*** ./ps-events/ps-event.js ***!
+  \*******************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return PsEvent; });
+/* harmony import */ var _src_ps_events_ps_event_data_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../src/ps-events/ps-event-data.js */ "./ps-events/ps-event-data.js");
+
+
+/**
+ * An event in pub/sub (publish–subscribe) design pattern
+ */
+class PsEvent {
+  /**
+   * @param {string} name - A name of the event.
+   * @param {Function} publisher - A constructor function of a publisher.
+   *        PsEvent uses its `name` property to set its publisher name field.
+   */
+  constructor (name, publisher) {
+    /**
+     * A name of the event.
+     * @type {string}
+     */
+    this.name = name
+
+    /**
+     * A name of the publisher.
+     * @type {string}
+     */
+    this.publisher = publisher.name
+
+    /**
+     * A subscribers that listens to the published event.
+     * @type {Function[]} - A subscriber function
+     */
+    this._subscribers = []
+  }
+
+  /**
+   * This function is called when an event is published.
+   * @callback EventSubscriber
+   * @param {Object} data - An event-specific data associated with the event.
+   * @param {PsEventData} eventData - A data about the event being published.
+   *        PsEvent data allows generic subscribers (i.e. functions that are subscribed to
+   *        more than one event) to distinguish between an event being published.
+   */
+
+  /**
+   * Return a list of subscribers for the current event.
+   * @return {EventSubscriber[]} An array of event subscriber functions.
+   */
+  get subscribers () {
+    return this._subscribers
+  }
+
+  /**
+   * Subscribes a function to the published event.
+   * When event is published, a @type {Event~subscriber} function is called.
+   * @param {EventSubscriber} subscriber - A subscriber function.
+   */
+  sub (subscriber) {
+    this._subscribers.push(subscriber)
+  }
+
+  /**
+   * Publishes an event with data related to it. All subscribers will receive an
+   * event notification along with event data.
+   * @param {Object} [data={}] - An event-specific data associated with the event.
+   */
+  pub (data = {}) {
+    this._subscribers.forEach(l => l(data, new _src_ps_events_ps_event_data_js__WEBPACK_IMPORTED_MODULE_0__["default"](this)))
+  }
+}
+
+
+/***/ }),
+
 /***/ "./resource_provider.js":
 /*!******************************!*\
   !*** ./resource_provider.js ***!
@@ -44401,7 +44421,7 @@ class Translation {
 
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(true)
-		module.exports = factory(__webpack_require__(/*! alpheios-data-models */ "../../node_modules/alpheios-data-models/dist/alpheios-data-models.js"), __webpack_require__(/*! intl-messageformat */ "../../node_modules/intl-messageformat/index.js"));
+		module.exports = factory(__webpack_require__(/*! alpheios-data-models */ "../../../data-models/dist/alpheios-data-models.js"), __webpack_require__(/*! intl-messageformat */ "../../node_modules/intl-messageformat/index.js"));
 	else { var i, a; }
 })(window, function(__WEBPACK_EXTERNAL_MODULE_alpheios_data_models__, __WEBPACK_EXTERNAL_MODULE_intl_messageformat__) {
 return /******/ (function(modules) { // webpackBootstrap
@@ -63026,7 +63046,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_intl_messageformat__;
 
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(true)
-		module.exports = factory(__webpack_require__(/*! alpheios-data-models */ "../../node_modules/alpheios-data-models/dist/alpheios-data-models.js"));
+		module.exports = factory(__webpack_require__(/*! alpheios-data-models */ "../../../data-models/dist/alpheios-data-models.js"));
 	else { var i, a; }
 })(window, function(__WEBPACK_EXTERNAL_MODULE_alpheios_data_models__) {
 return /******/ (function(modules) { // webpackBootstrap
@@ -66422,7 +66442,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_alpheios_data_models__;
 
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(true)
-		module.exports = factory(__webpack_require__(/*! alpheios-data-models */ "../../node_modules/alpheios-data-models/dist/alpheios-data-models.js"));
+		module.exports = factory(__webpack_require__(/*! alpheios-data-models */ "../../../data-models/dist/alpheios-data-models.js"));
 	else { var i, a; }
 })(window, function(__WEBPACK_EXTERNAL_MODULE_alpheios_data_models__) {
 return /******/ (function(modules) { // webpackBootstrap
@@ -77302,7 +77322,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_alpheios_data_models__;
 
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(true)
-		module.exports = factory(__webpack_require__(/*! alpheios-data-models */ "../../node_modules/alpheios-data-models/dist/alpheios-data-models.js"));
+		module.exports = factory(__webpack_require__(/*! alpheios-data-models */ "../../../data-models/dist/alpheios-data-models.js"));
 	else { var i, a; }
 })(window, function(__WEBPACK_EXTERNAL_MODULE_alpheios_data_models__) {
 return /******/ (function(modules) { // webpackBootstrap
@@ -80815,7 +80835,7 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_alpheios_data_models__;
 
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(true)
-		module.exports = factory(__webpack_require__(/*! alpheios-data-models */ "../../node_modules/alpheios-data-models/dist/alpheios-data-models.js"));
+		module.exports = factory(__webpack_require__(/*! alpheios-data-models */ "../../../data-models/dist/alpheios-data-models.js"));
 	else { var i, a; }
 })(window, function(__WEBPACK_EXTERNAL_MODULE_alpheios_data_models__) {
 return /******/ (function(modules) { // webpackBootstrap
@@ -91993,7 +92013,7 @@ module.exports = v4;
 /*! exports provided: name, version, build, description, main, scripts, repository, author, license, bugs, homepage, devDependencies, engines, jest, eslintConfig, eslintIgnore, standard, dependencies, default */
 /***/ (function(module) {
 
-module.exports = {"name":"webextension","version":"2.1.0","build":"11","description":"A WebExtension implementation of Alpheios","main":"index.js","scripts":{"build":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs","build-prod":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content-safari.mjs","build-dev":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs","build-safari":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs","build-safari-dev":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs","standard":"standard","test":"jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","zip":"node ./build/zip.js"},"repository":{"type":"git","url":"git+https://github.com/alpheios-project/webextension.git"},"author":"The Alpheios Project, Ltd.","license":"ISC","bugs":{"url":"https://github.com/alpheios-project/webextension/issues"},"homepage":"https://github.com/alpheios-project/webextension#readme","devDependencies":{"alpheios-components":"file:../components","alpheios-data-models":"github:alpheios-project/data-models","alpheios-experience":"github:alpheios-project/experience","alpheios-inflection-tables":"github:alpheios-project/inflection-tables","alpheios-lemma-client":"github:alpheios-project/lemma-client","alpheios-lexicon-client":"github:alpheios-project/lexicon-client","alpheios-morph-client":"github:alpheios-project/morph-client","alpheios-node-build":"github:alpheios-project/node-build","alpheios-res-client":"github:alpheios-project/res-client","autoprefixer":"^9.3.1","babel-core":"^6.26.3","babel-eslint":"^10.0.1","babel-jest":"^23.6.0","babel-loader":"^8.0.4","babel-plugin-dynamic-import-node":"^2.2.0","babel-plugin-transform-es2015-modules-commonjs":"^6.26.2","babel-plugin-transform-runtime":"^6.22.0","babel-preset-env":"^1.7.0","babel-preset-es2015":"^6.24.1","babel-preset-stage-2":"^6.22.0","babel-register":"^6.22.0","bytes":"^3.0.0","chalk":"^2.4.1","copy-webpack-plugin":"^4.6.0","copyfiles":"^2.1.0","coveralls":"^3.0.1","css-loader":"^1.0.1","element-closest":"^2.0.2","eslint":"^5.9.0","eslint-plugin-import":"^2.14.0","extract-text-webpack-plugin":"^3.0.2","file-loader":"^2.0.0","font-awesome-svg-png":"^1.2.2","friendly-errors-webpack-plugin":"^1.7.0","html-loader":"^0.5.5","html-loader-jest":"^0.2.1","html-webpack-plugin":"^3.2.0","imagemin":"^6.0.0","imagemin-jpegtran":"^6.0.0","imagemin-optipng":"^6.0.0","imagemin-svgo":"^7.0.0","interactjs":"^1.3.4","intl-messageformat":"^2.2.0","jest":"^23.6.0","jest-environment-jsdom-11.0.0":"^20.0.9","jest-serializer-vue":"^2.0.2","jest-vue-preprocessor":"^1.4.0","mini-css-extract-plugin":"^0.4.5","mkdirp":"^0.5.1","node-sass":"^4.11.0","optimize-css-assets-webpack-plugin":"^5.0.1","parallel-webpack":"^2.3.0","path":"^0.12.7","postcss-import":"^12.0.1","postcss-loader":"^3.0.0","raw-loader":"^0.5.1","sass-loader":"^7.1.0","semver":"^5.6.0","shelljs":"^0.8.3","source-map-loader":"^0.2.4","standard":"^12.0.1","style-loader":"^0.23.1","uglifyjs-webpack-plugin":"^2.0.0","uikit":"^3.0.0-rc.9-dev.bd39d353","url-loader":"^1.1.2","uuid":"^3.3.0","vue":"^2.5.17","vue-jest":"^3.0.0","vue-loader":"^15.4.2","vue-style-loader":"^4.1.2","vue-svg-loader":"^0.11.0","vue-template-compiler":"^2.5.17","webextension-polyfill":"^0.3.1","webpack":"^4.26.0","webpack-bundle-analyzer":"^3.0.3","webpack-dev-server":"^3.1.10","webpack-merge":"^4.1.4","zip-folder":"^1.0.0"},"engines":{"node":">= 10.5.0","npm":">= 5.6.1"},"jest":{"verbose":true,"transform":{"^.+\\.htmlf$":"html-loader-jest","^.+\\.jsx?$":"babel-jest",".*\\.(vue)$":"<rootDir>/node_modules/jest-vue-preprocessor"},"transformIgnorePatterns":["!node_modules/alpheios-data-models/"],"moduleNameMapper":{"^vue$":"vue/dist/vue.common.js"},"moduleFileExtensions":["js","vue"]},"eslintConfig":{"extends":["standard","plugin:vue/essential"],"env":{"browser":true,"node":true},"parserOptions":{"ecmaVersion":2018,"sourceType":"module"}},"eslintIgnore":["**/dist","**/support"],"standard":{"ignore":["**/dist","**/support"]},"dependencies":{}};
+module.exports = {"name":"webextension","version":"2.1.0","build":"11","description":"A WebExtension implementation of Alpheios","main":"index.js","scripts":{"build":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs","build-prod":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content-safari.mjs","build-dev":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs","build-safari":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs","build-safari-dev":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs","standard":"standard","test":"jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","zip":"node ./build/zip.js"},"repository":{"type":"git","url":"git+https://github.com/alpheios-project/webextension.git"},"author":"The Alpheios Project, Ltd.","license":"ISC","bugs":{"url":"https://github.com/alpheios-project/webextension/issues"},"homepage":"https://github.com/alpheios-project/webextension#readme","devDependencies":{"alpheios-components":"file:../components","alpheios-data-models":"file:../data-models","alpheios-experience":"github:alpheios-project/experience","alpheios-inflection-tables":"github:alpheios-project/inflection-tables","alpheios-lemma-client":"github:alpheios-project/lemma-client","alpheios-lexicon-client":"github:alpheios-project/lexicon-client","alpheios-morph-client":"github:alpheios-project/morph-client","alpheios-node-build":"github:alpheios-project/node-build","alpheios-res-client":"github:alpheios-project/res-client","autoprefixer":"^9.3.1","babel-core":"^6.26.3","babel-eslint":"^10.0.1","babel-jest":"^23.6.0","babel-loader":"^8.0.4","babel-plugin-dynamic-import-node":"^2.2.0","babel-plugin-transform-es2015-modules-commonjs":"^6.26.2","babel-plugin-transform-runtime":"^6.22.0","babel-preset-env":"^1.7.0","babel-preset-es2015":"^6.24.1","babel-preset-stage-2":"^6.22.0","babel-register":"^6.22.0","bytes":"^3.0.0","chalk":"^2.4.1","copy-webpack-plugin":"^4.6.0","copyfiles":"^2.1.0","coveralls":"^3.0.1","css-loader":"^1.0.1","element-closest":"^2.0.2","eslint":"^5.9.0","eslint-plugin-import":"^2.14.0","extract-text-webpack-plugin":"^3.0.2","file-loader":"^2.0.0","font-awesome-svg-png":"^1.2.2","friendly-errors-webpack-plugin":"^1.7.0","html-loader":"^0.5.5","html-loader-jest":"^0.2.1","html-webpack-plugin":"^3.2.0","imagemin":"^6.0.0","imagemin-jpegtran":"^6.0.0","imagemin-optipng":"^6.0.0","imagemin-svgo":"^7.0.0","interactjs":"^1.3.4","intl-messageformat":"^2.2.0","jest":"^23.6.0","jest-environment-jsdom-11.0.0":"^20.0.9","jest-serializer-vue":"^2.0.2","jest-vue-preprocessor":"^1.4.0","mini-css-extract-plugin":"^0.4.5","mkdirp":"^0.5.1","node-sass":"^4.11.0","optimize-css-assets-webpack-plugin":"^5.0.1","parallel-webpack":"^2.3.0","path":"^0.12.7","postcss-import":"^12.0.1","postcss-loader":"^3.0.0","raw-loader":"^0.5.1","sass-loader":"^7.1.0","semver":"^5.6.0","shelljs":"^0.8.3","source-map-loader":"^0.2.4","standard":"^12.0.1","style-loader":"^0.23.1","uglifyjs-webpack-plugin":"^2.0.0","uikit":"^3.0.0-rc.9-dev.bd39d353","url-loader":"^1.1.2","uuid":"^3.3.0","vue":"^2.5.17","vue-jest":"^3.0.0","vue-loader":"^15.4.2","vue-style-loader":"^4.1.2","vue-svg-loader":"^0.11.0","vue-template-compiler":"^2.5.17","webextension-polyfill":"^0.3.1","webpack":"^4.26.0","webpack-bundle-analyzer":"^3.0.3","webpack-dev-server":"^3.1.10","webpack-merge":"^4.1.4","zip-folder":"^1.0.0"},"engines":{"node":">= 10.5.0","npm":">= 5.6.1"},"jest":{"verbose":true,"transform":{"^.+\\.htmlf$":"html-loader-jest","^.+\\.jsx?$":"babel-jest",".*\\.(vue)$":"<rootDir>/node_modules/jest-vue-preprocessor"},"transformIgnorePatterns":["!node_modules/alpheios-data-models/"],"moduleNameMapper":{"^vue$":"vue/dist/vue.common.js"},"moduleFileExtensions":["js","vue"]},"eslintConfig":{"extends":["standard","plugin:vue/essential"],"env":{"browser":true,"node":true},"parserOptions":{"ecmaVersion":2018,"sourceType":"module"}},"eslintIgnore":["**/dist","**/support"],"standard":{"ignore":["**/dist","**/support"]},"dependencies":{}};
 
 /***/ }),
 
