@@ -2,7 +2,8 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service.js'
-import { TabScript, UIController, UIEventController, ExtensionSyncStorage, MouseDblClick, GenericEvt } from 'alpheios-components'
+import { TabScript, UIController, UIEventController, ExtensionSyncStorage, MouseDblClick, GenericEvt,
+  LexicalQuery, ResourceQuery, AnnotationQuery } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
 import StateResponse from '../lib/messaging/response/state-response'
 
@@ -10,7 +11,7 @@ let messagingService = null
 let uiController = null
 
 // Provide our own implementation of a UIController builder
-UIController.build = function build (state, options) {
+UIController.create = function build (state, options) {
   let uiController = new UIController(state, options)
 
   // Attaches an event controller to a UIController instance. This EventController registers a double click as a default `getSelectedText` selector.
@@ -18,6 +19,23 @@ UIController.build = function build (state, options) {
     .registerListener('GetSelectedText', 'body', uiController.getSelectedText.bind(uiController), MouseDblClick)
     .registerListener('HandleEscapeKey', document, uiController.handleEscapeKey.bind(uiController), GenericEvt, 'keydown')
     .registerListener('AlpheiosPageLoad', 'body', uiController.updateAnnotations.bind(uiController), GenericEvt, 'Alpheios_Page_Load')
+
+  // Subscribe to LexicalQuery events
+  LexicalQuery.evt.LEXICAL_QUERY_COMPLETE.sub(uiController.onLexicalQueryComplete.bind(uiController))
+  LexicalQuery.evt.MORPH_DATA_READY.sub(uiController.onMorphDataReady.bind(uiController))
+  LexicalQuery.evt.MORPH_DATA_NOT_FOUND.sub(uiController.onMorphDataNotFound.bind(uiController))
+  LexicalQuery.evt.HOMONYM_READY.sub(uiController.onHomonymReady.bind(uiController))
+  LexicalQuery.evt.LEMMA_TRANSL_READY.sub(uiController.onLemmaTranslationsReady.bind(uiController))
+  LexicalQuery.evt.DEFS_READY.sub(uiController.onDefinitionsReady.bind(uiController))
+  LexicalQuery.evt.DEFS_NOT_FOUND.sub(uiController.onDefinitionsNotFound.bind(uiController))
+
+  // Subscribe to ResourceQuery events
+  ResourceQuery.evt.RESOURCE_QUERY_COMPLETE.sub(uiController.onResourceQueryComplete.bind(uiController))
+  ResourceQuery.evt.GRAMMAR_AVAILABLE.sub(uiController.onGrammarAvailable.bind(uiController))
+  ResourceQuery.evt.GRAMMAR_NOT_FOUND.sub(uiController.onGrammarNotFound.bind(uiController))
+
+  // Subscribe to AnnotationQuery events
+  AnnotationQuery.evt.ANNOTATIONS_AVAILABLE.sub(uiController.onAnnotationsAvailable.bind(uiController))
 
   return uiController
 }
@@ -78,7 +96,7 @@ let browserManifest = browser.runtime.getManifest()
 let state = new TabScript()
 state.status = TabScript.statuses.script.PENDING
 state.panelStatus = TabScript.statuses.panel.CLOSED
-uiController = UIController.build(state, {
+uiController = UIController.create(state, {
   storageAdapter: ExtensionSyncStorage,
   app: { name: browserManifest.name, version: browserManifest.version }
 })
