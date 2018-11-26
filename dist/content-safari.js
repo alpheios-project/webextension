@@ -29881,8 +29881,8 @@ class UIController {
 
     // Subscribe to LexicalQuery events
     _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].evt.LEXICAL_QUERY_COMPLETE.sub(uiController.onLexicalQueryComplete.bind(uiController))
-    _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].evt.MORPH_DATA_READY.sub(uiController.onMorphDataReady.bind(uiController))
-    _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].evt.MORPH_DATA_NOT_FOUND.sub(uiController.onMorphDataNotFound.bind(uiController))
+    _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].evt.TREEBANK_DATA_READY.sub(uiController.onMorphDataReady.bind(uiController))
+    _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].evt.TREEBANK_DATA_NOTAVAILABLE.sub(uiController.onMorphDataNotFound.bind(uiController))
     _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].evt.HOMONYM_READY.sub(uiController.onHomonymReady.bind(uiController))
     _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].evt.LEMMA_TRANSL_READY.sub(uiController.onLemmaTranslationsReady.bind(uiController))
     _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].evt.DEFS_READY.sub(uiController.onDefinitionsReady.bind(uiController))
@@ -31015,7 +31015,7 @@ class UIController {
           })
           .getData() */
 
-        _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].create(textSelector, {
+        let lexQuery = _lib_queries_lexical_query_js__WEBPACK_IMPORTED_MODULE_14__["default"].create(textSelector, {
           htmlSelector: htmlSelector,
           maAdapter: this.maAdapter,
           lexicons: alpheios_lexicon_client__WEBPACK_IMPORTED_MODULE_2__["Lexicons"],
@@ -31023,7 +31023,7 @@ class UIController {
           siteOptions: [],
           lemmaTranslations: this.enableLemmaTranslations(textSelector) ? { adapter: alpheios_lemma_client__WEBPACK_IMPORTED_MODULE_4__["LemmaTranslations"], locale: this.contentOptions.items.locale.currentValue } : null,
           langOpts: { [alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Constants"].LANG_PERSIAN]: { lookupMorphLast: true } } // TODO this should be externalized
-        }).getData()
+        })
 
         this.setTargetRect(htmlSelector.targetRect)
         this.newLexicalRequest(textSelector.languageID)
@@ -31031,6 +31031,8 @@ class UIController {
         this.showStatusInfo(textSelector.normalizedText, textSelector.languageID)
         this.updateLanguage(textSelector.languageID)
         this.updateWordAnnotationData(textSelector.data)
+
+        lexQuery.getData()
       }
     }
   }
@@ -33021,12 +33023,12 @@ class LexicalQuery extends _query_js__WEBPACK_IMPORTED_MODULE_1__["default"] {
         if (this.annotatedHomonym) {
           this.homonym = alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Homonym"].disambiguate(this.homonym, [this.annotatedHomonym])
         }
-        LexicalQuery.evt.MORPH_DATA_READY.pub()
+        LexicalQuery.evt.TREEBANK_DATA_READY.pub()
       } else {
         if (this.annotatedHomonym) {
           this.homonym = this.annotatedHomonym
         } else {
-          LexicalQuery.evt.MORPH_DATA_NOT_FOUND.pub()
+          LexicalQuery.evt.TREEBANK_DATA_NOTAVAILABLE.pub()
           this.homonym = new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["Homonym"]([formLexeme], this.selector.normalizedText)
         }
       }
@@ -33200,13 +33202,13 @@ LexicalQuery.evt = {
    * Published when morphological data becomes available.
    * Data: an empty object.
    */
-  MORPH_DATA_READY: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["PsEvent"](`Morph Data Ready`, LexicalQuery),
+  TREEBANK_DATA_READY: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["PsEvent"](`Morph Data Ready`, LexicalQuery),
 
   /**
    * Published when no morphological data has been found.
    * Data: an empty object.
    */
-  MORPH_DATA_NOT_FOUND: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["PsEvent"](`Morph Data Not Found`, LexicalQuery),
+  TREEBANK_DATA_NOTAVAILABLE: new alpheios_data_models__WEBPACK_IMPORTED_MODULE_0__["PsEvent"](`Morph Data Not Found`, LexicalQuery),
 
   /**
    * Published when no morphological data has been found.
@@ -92013,7 +92015,7 @@ module.exports = v4;
 /*! exports provided: name, version, build, description, main, scripts, repository, author, license, bugs, homepage, devDependencies, engines, jest, eslintConfig, eslintIgnore, standard, dependencies, default */
 /***/ (function(module) {
 
-module.exports = {"name":"webextension","version":"2.1.0","build":"11","description":"A WebExtension implementation of Alpheios","main":"index.js","scripts":{"build":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs","build-prod":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content-safari.mjs","build-dev":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs","build-safari":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs","build-safari-dev":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs","standard":"standard","test":"jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","zip":"node ./build/zip.js"},"repository":{"type":"git","url":"git+https://github.com/alpheios-project/webextension.git"},"author":"The Alpheios Project, Ltd.","license":"ISC","bugs":{"url":"https://github.com/alpheios-project/webextension/issues"},"homepage":"https://github.com/alpheios-project/webextension#readme","devDependencies":{"alpheios-components":"file:../components","alpheios-data-models":"file:../data-models","alpheios-experience":"github:alpheios-project/experience","alpheios-inflection-tables":"github:alpheios-project/inflection-tables","alpheios-lemma-client":"github:alpheios-project/lemma-client","alpheios-lexicon-client":"github:alpheios-project/lexicon-client","alpheios-morph-client":"github:alpheios-project/morph-client","alpheios-node-build":"github:alpheios-project/node-build","alpheios-res-client":"github:alpheios-project/res-client","autoprefixer":"^9.3.1","babel-core":"^6.26.3","babel-eslint":"^10.0.1","babel-jest":"^23.6.0","babel-loader":"^8.0.4","babel-plugin-dynamic-import-node":"^2.2.0","babel-plugin-transform-es2015-modules-commonjs":"^6.26.2","babel-plugin-transform-runtime":"^6.22.0","babel-preset-env":"^1.7.0","babel-preset-es2015":"^6.24.1","babel-preset-stage-2":"^6.22.0","babel-register":"^6.22.0","bytes":"^3.0.0","chalk":"^2.4.1","copy-webpack-plugin":"^4.6.0","copyfiles":"^2.1.0","coveralls":"^3.0.1","css-loader":"^1.0.1","element-closest":"^2.0.2","eslint":"^5.9.0","eslint-plugin-import":"^2.14.0","extract-text-webpack-plugin":"^3.0.2","file-loader":"^2.0.0","font-awesome-svg-png":"^1.2.2","friendly-errors-webpack-plugin":"^1.7.0","html-loader":"^0.5.5","html-loader-jest":"^0.2.1","html-webpack-plugin":"^3.2.0","imagemin":"^6.0.0","imagemin-jpegtran":"^6.0.0","imagemin-optipng":"^6.0.0","imagemin-svgo":"^7.0.0","interactjs":"^1.3.4","intl-messageformat":"^2.2.0","jest":"^23.6.0","jest-environment-jsdom-11.0.0":"^20.0.9","jest-serializer-vue":"^2.0.2","jest-vue-preprocessor":"^1.4.0","mini-css-extract-plugin":"^0.4.5","mkdirp":"^0.5.1","node-sass":"^4.11.0","optimize-css-assets-webpack-plugin":"^5.0.1","parallel-webpack":"^2.3.0","path":"^0.12.7","postcss-import":"^12.0.1","postcss-loader":"^3.0.0","raw-loader":"^0.5.1","sass-loader":"^7.1.0","semver":"^5.6.0","shelljs":"^0.8.3","source-map-loader":"^0.2.4","standard":"^12.0.1","style-loader":"^0.23.1","uglifyjs-webpack-plugin":"^2.0.0","uikit":"^3.0.0-rc.9-dev.bd39d353","url-loader":"^1.1.2","uuid":"^3.3.0","vue":"^2.5.17","vue-jest":"^3.0.0","vue-loader":"^15.4.2","vue-style-loader":"^4.1.2","vue-svg-loader":"^0.11.0","vue-template-compiler":"^2.5.17","webextension-polyfill":"^0.3.1","webpack":"^4.26.0","webpack-bundle-analyzer":"^3.0.3","webpack-dev-server":"^3.1.10","webpack-merge":"^4.1.4","zip-folder":"^1.0.0"},"engines":{"node":">= 10.5.0","npm":">= 5.6.1"},"jest":{"verbose":true,"transform":{"^.+\\.htmlf$":"html-loader-jest","^.+\\.jsx?$":"babel-jest",".*\\.(vue)$":"<rootDir>/node_modules/jest-vue-preprocessor"},"transformIgnorePatterns":["!node_modules/alpheios-data-models/"],"moduleNameMapper":{"^vue$":"vue/dist/vue.common.js"},"moduleFileExtensions":["js","vue"]},"eslintConfig":{"extends":["standard","plugin:vue/essential"],"env":{"browser":true,"node":true},"parserOptions":{"ecmaVersion":2018,"sourceType":"module"}},"eslintIgnore":["**/dist","**/support"],"standard":{"ignore":["**/dist","**/support"]},"dependencies":{}};
+module.exports = {"name":"webextension","version":"2.1.0","build":"11","description":"A WebExtension implementation of Alpheios","main":"index.js","scripts":{"build":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs","build-prod":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content-safari.mjs","build-dev":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs","build-safari":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs","build-safari-dev":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs","standard":"standard","test":"jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","zip":"node ./build/zip.js"},"repository":{"type":"git","url":"git+https://github.com/alpheios-project/webextension.git"},"author":"The Alpheios Project, Ltd.","license":"ISC","bugs":{"url":"https://github.com/alpheios-project/webextension/issues"},"homepage":"https://github.com/alpheios-project/webextension#readme","devDependencies":{"alpheios-components":"github:alpheios-project/components","alpheios-data-models":"github:alpheios-project/data-models","alpheios-experience":"github:alpheios-project/experience","alpheios-inflection-tables":"github:alpheios-project/inflection-tables","alpheios-lemma-client":"github:alpheios-project/lemma-client","alpheios-lexicon-client":"github:alpheios-project/lexicon-client","alpheios-morph-client":"github:alpheios-project/morph-client","alpheios-node-build":"github:alpheios-project/node-build","alpheios-res-client":"github:alpheios-project/res-client","autoprefixer":"^9.3.1","babel-core":"^6.26.3","babel-eslint":"^10.0.1","babel-jest":"^23.6.0","babel-loader":"^8.0.4","babel-plugin-dynamic-import-node":"^2.2.0","babel-plugin-transform-es2015-modules-commonjs":"^6.26.2","babel-plugin-transform-runtime":"^6.22.0","babel-preset-env":"^1.7.0","babel-preset-es2015":"^6.24.1","babel-preset-stage-2":"^6.22.0","babel-register":"^6.22.0","bytes":"^3.0.0","chalk":"^2.4.1","copy-webpack-plugin":"^4.6.0","copyfiles":"^2.1.0","coveralls":"^3.0.1","css-loader":"^1.0.1","element-closest":"^2.0.2","eslint":"^5.9.0","eslint-plugin-import":"^2.14.0","extract-text-webpack-plugin":"^3.0.2","file-loader":"^2.0.0","font-awesome-svg-png":"^1.2.2","friendly-errors-webpack-plugin":"^1.7.0","html-loader":"^0.5.5","html-loader-jest":"^0.2.1","html-webpack-plugin":"^3.2.0","imagemin":"^6.0.0","imagemin-jpegtran":"^6.0.0","imagemin-optipng":"^6.0.0","imagemin-svgo":"^7.0.0","interactjs":"^1.3.4","intl-messageformat":"^2.2.0","jest":"^23.6.0","jest-environment-jsdom-11.0.0":"^20.0.9","jest-serializer-vue":"^2.0.2","jest-vue-preprocessor":"^1.4.0","mini-css-extract-plugin":"^0.4.5","mkdirp":"^0.5.1","node-sass":"^4.11.0","optimize-css-assets-webpack-plugin":"^5.0.1","parallel-webpack":"^2.3.0","path":"^0.12.7","postcss-import":"^12.0.1","postcss-loader":"^3.0.0","raw-loader":"^0.5.1","sass-loader":"^7.1.0","semver":"^5.6.0","shelljs":"^0.8.3","source-map-loader":"^0.2.4","standard":"^12.0.1","style-loader":"^0.23.1","uglifyjs-webpack-plugin":"^2.0.0","uikit":"^3.0.0-rc.9-dev.bd39d353","url-loader":"^1.1.2","uuid":"^3.3.0","vue":"^2.5.17","vue-jest":"^3.0.0","vue-loader":"^15.4.2","vue-style-loader":"^4.1.2","vue-svg-loader":"^0.11.0","vue-template-compiler":"^2.5.17","webextension-polyfill":"^0.3.1","webpack":"^4.26.0","webpack-bundle-analyzer":"^3.0.3","webpack-dev-server":"^3.1.10","webpack-merge":"^4.1.4","zip-folder":"^1.0.0"},"engines":{"node":">= 10.5.0","npm":">= 5.6.1"},"jest":{"verbose":true,"transform":{"^.+\\.htmlf$":"html-loader-jest","^.+\\.jsx?$":"babel-jest",".*\\.(vue)$":"<rootDir>/node_modules/jest-vue-preprocessor"},"transformIgnorePatterns":["!node_modules/alpheios-data-models/"],"moduleNameMapper":{"^vue$":"vue/dist/vue.common.js"},"moduleFileExtensions":["js","vue"]},"eslintConfig":{"extends":["standard","plugin:vue/essential"],"env":{"browser":true,"node":true},"parserOptions":{"ecmaVersion":2018,"sourceType":"module"}},"eslintIgnore":["**/dist","**/support"],"standard":{"ignore":["**/dist","**/support"]},"dependencies":{}};
 
 /***/ }),
 
