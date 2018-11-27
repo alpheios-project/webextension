@@ -37,41 +37,7 @@ export default class BackgroundProcess {
     }
   }
 
-  static get defaults () {
-    console.log('add messages')
-    let l10n = new L10n()
-      .addMessages(enUS, Locales.en_US)
-      .addMessages(enGB, Locales.en_GB)
-      .setLocale(Locales.en_US)
-    return {
-      activateBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_ACTIVATE,
-      deactivateBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_DEACTIVATE,
-      disabledBrowserActionTitle: l10n.messages.LABEL_BROWSERACTION_DISABLED,
-      activateMenuItemId: 'activate-alpheios-content',
-      activateMenuItemText: l10n.messages.LABEL_CTXTMENU_ACTIVATE,
-      deactivateMenuItemId: 'deactivate-alpheios-content',
-      deactivateMenuItemText: l10n.messages.LABEL_CTXTMENU_DEACTIVATE,
-      disabledMenuItemId: 'disabled-alpheios-content',
-      disabledMenuItemText: l10n.messages.LABEL_CTXTMENU_DISABLED,
-      openPanelMenuItemId: 'open-alpheios-panel',
-      openPanelMenuItemText: l10n.messages.LABEL_CTXTMENU_OPENPANEL,
-      infoMenuItemId: 'show-alpheios-panel-info',
-      infoMenuItemText: l10n.messages.LABEL_CTXTMENU_INFO,
-      separatorOneId: 'separator-one',
-      sendExperiencesMenuItemId: 'send-experiences',
-      sendExperiencesMenuItemText: l10n.messages.LABEL_CTXTMENU_SENDEXP,
-      contentCSSFileNames: ['style/style.min.css'],
-      contentScriptFileName: 'content.js',
-      browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
-      experienceStorageCheckInterval: 10000,
-      experienceStorageThreshold: 3,
-      contentScriptLoaded: false
-    }
-  }
-
   initialize () {
-    console.log('Background script initialization started ...')
-
     this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
@@ -230,6 +196,11 @@ export default class BackgroundProcess {
     )
   }
 
+  /**
+   * Loads scripts and styles to a page that does not have them loaded yet.
+   * @param tabScript
+   * @return {Promise} Will be resolved when all scripts are loaded successfully.
+   */
   loadContentData (tabScript) {
     let polyfillScript = this.loadPolyfill(tabScript.tabObj.tabId)
     let contentScript = this.loadContentScript(tabScript.tabObj.tabId)
@@ -240,6 +211,12 @@ export default class BackgroundProcess {
     return Promise.all([polyfillScript, contentScript, ...contentCSS])
   }
 
+  /**
+   * Handles a state message from a content script
+   * (content script notifies background of a content script state change)
+   * @param message
+   * @param sender
+   */
   stateMessageHandler (message, sender) {
     let contentState = TabScript.readObject(message.body)
     contentState.updateTabObject(sender.tab.id, sender.tab.windowId)
@@ -484,4 +461,34 @@ export default class BackgroundProcess {
       this.menuItems.info.enable()
     }
   }
+}
+
+BackgroundProcess.l10n = new L10n()
+  .addMessages(enUS, Locales.en_US)
+  .addMessages(enGB, Locales.en_GB)
+  .setLocale(Locales.en_US)
+
+BackgroundProcess.defaults = {
+  activateBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_ACTIVATE,
+  deactivateBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_DEACTIVATE,
+  disabledBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_DISABLED,
+  activateMenuItemId: 'activate-alpheios-content',
+  activateMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_ACTIVATE,
+  deactivateMenuItemId: 'deactivate-alpheios-content',
+  deactivateMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_DEACTIVATE,
+  disabledMenuItemId: 'disabled-alpheios-content',
+  disabledMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_DISABLED,
+  openPanelMenuItemId: 'open-alpheios-panel',
+  openPanelMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_OPENPANEL,
+  infoMenuItemId: 'show-alpheios-panel-info',
+  infoMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_INFO,
+  separatorOneId: 'separator-one',
+  sendExperiencesMenuItemId: 'send-experiences',
+  sendExperiencesMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_SENDEXP,
+  contentCSSFileNames: ['style/style.min.css'],
+  contentScriptFileName: 'content.js',
+  browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
+  experienceStorageCheckInterval: 10000,
+  experienceStorageThreshold: 3,
+  contentScriptLoaded: false
 }

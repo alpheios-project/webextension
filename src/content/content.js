@@ -12,7 +12,7 @@ let uiController = null
 /**
  * State request processing function.
  */
-let handleStateRequest = function handleStateRequest (request, sender) {
+let handleStateRequest = function handleStateRequest (request) {
   let requestState = TabScript.readObject(request.body)
   let diff = uiController.state.diff(requestState)
 
@@ -31,6 +31,8 @@ let handleStateRequest = function handleStateRequest (request, sender) {
 
   if (diff.has('status')) {
     if (diff.status === TabScript.statuses.script.ACTIVE) {
+      // If activation request has a desired panel status, set it now so that UI controller would open/not open panel according to it
+      if (requestState.panelStatus) { uiController.state.panelStatus = requestState.panelStatus }
       uiController.activate().catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
     } else if (diff.status === TabScript.statuses.script.DEACTIVATED) {
       uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
@@ -64,7 +66,6 @@ messagingService = new MessagingService()
 let browserManifest = browser.runtime.getManifest()
 let state = new TabScript()
 state.status = TabScript.statuses.script.PENDING
-state.panelStatus = TabScript.statuses.panel.CLOSED
 uiController = UIController.create(state, {
   storageAdapter: ExtensionSyncStorage,
   app: { name: browserManifest.name, version: browserManifest.version }
@@ -97,7 +98,7 @@ document.body.addEventListener('Alpheios_Reload', () => {
   window.location.reload()
 })
 
-uiController.activate()
+uiController.init()
   .then(() => {
     messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest, uiController)
     browser.runtime.onMessage.addListener(messagingService.listener.bind(messagingService))
