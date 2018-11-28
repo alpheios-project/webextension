@@ -50,8 +50,10 @@ class BackgroundProcess {
     func activateContent(tab: TabScript, window: SFSafariWindow) {
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
-                self.setContentState(tab: tab, page: activePage!)
-                self.updateIcon(active: true, window: window)
+                if tab.status != TabScript.props["status_disabled"] {
+                    self.setContentState(tab: tab, page: activePage!)
+                    self.updateIcon(active: true, window: window)
+                }
             })
         })
     }
@@ -100,13 +102,17 @@ class BackgroundProcess {
     func changeActiveTabStatus(page: SFSafariPage, window: SFSafariWindow) {
         let curTab = self.getTabFromTabsByHash(hashValue: (page.hashValue))
 
-        // Toggle a state active status
-        curTab.changeActiveStatus()
-        
-        if (curTab.isActive) {
-            self.activateContent(tab: curTab, window: window)
-        } else {
-            self.deactivateContent(tab: curTab, window: window)
+        // We cannot activate content script if it's disabled due to page incompatibility
+        if (curTab.status != TabScript.props["status_disabled"]) {
+            // Toggle a state active status
+            curTab.changeActiveStatus()
+            
+            // Do not act
+            if (curTab.isActive) {
+                self.activateContent(tab: curTab, window: window)
+            } else {
+                self.deactivateContent(tab: curTab, window: window)
+            }
         }
     }
     
@@ -114,8 +120,24 @@ class BackgroundProcess {
     // We need to use it to update a state of our tabdata object
     func updateTabData(hashValue: Int, tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
         let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
-        if let bodyUserInfo = tabdata?["body"] as? Dictionary<String, Any> {
-            curTab.updateWithData(data: bodyUserInfo)
+        if let messageBody = tabdata?["body"] as? Dictionary<String, Any> {
+            // If we receive a request with a "PENDING" status and we already have stat of same tab stored
+            // then it is a page reload and we should restore its state to what it was before reloading.
+            // In this case we don't need to update a tab status, but send a request to update
+            // content state to what it was before reloading.
+            let status = messageBody["status"] as? String
+            if status == TabScript.props["status_pending"] {
+                // Tab content has been loaded
+                let storedStatus = curTab.status
+                if storedStatus != "" {
+                    // Since we do have a stored state of a tab, this is a reload, not a new tab load.
+                    // We will send a state message to content so it will update its state
+                    // to what we have been stored by the background.
+                    self.setContentState(tab: curTab, page: page)
+                }
+            } else {
+                curTab.updateWithData(data: messageBody)
+            }
         }
         return curTab
     }
@@ -136,7 +158,8 @@ class BackgroundProcess {
     
     func checkContextMenuIconVisibility(command: String, hashValue: Int) -> Bool {
         let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
-        if (command == "Activate" && !curTab.isActive) {
+        // Hide this menu item if content script is disabled
+        if (command == "Activate" && !curTab.isActive && curTab.status != TabScript.props["status_disabled"]) {
             return true
         }
         if (command == "Deactivate" && curTab.isActive) {

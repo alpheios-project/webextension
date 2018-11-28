@@ -12,7 +12,7 @@ let state = null
 /**
  * State request processing function.
  */
-let handleStateRequest = function handleStateRequest (message) {
+let handleStateRequest = async function handleStateRequest (message) {
   if (!uiController) {
     uiController = UIController.create(state, {
       storageAdapter: LocalStorageArea,
@@ -20,6 +20,8 @@ let handleStateRequest = function handleStateRequest (message) {
     })
     uiController.state.setWatcher('panelStatus', sendStateToBackground)
     uiController.state.setWatcher('tab', sendStateToBackground)
+
+    await uiController.init()
 
     // A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
     document.body.addEventListener('Alpheios_Embedded_Response', () => {
@@ -33,15 +35,6 @@ let handleStateRequest = function handleStateRequest (message) {
       }
       uiController.state.disable()
     })
-
-    document.body.addEventListener('Alpheios_Reload', () => {
-      console.log('Alpheios reload event caught')
-      if (uiController.state.isActive()) {
-        uiController.deactivate()
-          .then(() => window.location.reload())
-          .catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
-      }
-    })
   }
 
   let requestState = TabScript.readObject(message.body)
@@ -49,6 +42,9 @@ let handleStateRequest = function handleStateRequest (message) {
 
   if (diff.has('status')) {
     if (diff.status === TabScript.statuses.script.ACTIVE) {
+      if (requestState.panelStatus) {
+        uiController.state.panelStatus = requestState.panelStatus
+      }
       uiController.activate()
         .then(() => sendStateToBackground('updateState'))
         .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
@@ -102,6 +98,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
       sendStateToBackground('updateState')
     } else {
       console.warn(`Alpheios Safari App Extension cannot be enabled on pages with frames`)
+      state = new TabScript()
+      state.status = TabScript.statuses.script.DISABLED
+      // Notify an app extension that content script cannot be activated on this page
+      sendStateToBackground('updateState')
     }
   }
 })

@@ -20,7 +20,8 @@ class TabScript {
         "status_panel_closed": "Alpheios_Status_PanelClosed",
         "status_pending": "Alpheios_Status_Pending",
         "status_active": "Alpheios_Status_Active",
-        "status_deactivated": "Alpheios_Status_Deactivated"
+        "status_deactivated": "Alpheios_Status_Deactivated",
+        "status_disabled": "Alpheios_Status_Disabled" // Content script is incompatible with a page and cannot be activated
     ]
     
     var isActive: Bool {
