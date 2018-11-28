@@ -65,7 +65,7 @@ let browserManifest = browser.runtime.getManifest()
 let state = new TabScript()
 state.status = TabScript.statuses.script.PENDING
 state.panelStatus = TabScript.statuses.panel.CLOSED
-uiController = new UIController(state, {
+uiController = UIController.create(state, {
   storageAdapter: ExtensionSyncStorage,
   app: { name: browserManifest.name, version: browserManifest.version }
 })
