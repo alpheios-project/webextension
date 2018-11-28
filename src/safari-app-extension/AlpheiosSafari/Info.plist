@@ -51,12 +51,6 @@
 			</dict>
 			<dict>
 				<key>Command</key>
-				<string>OpenPanel</string>
-				<key>Text</key>
-				<string>Alpheios Open Panel</string>
-			</dict>
-			<dict>
-				<key>Command</key>
 				<string>ShowInfo</string>
 				<key>Text</key>
 				<string>Alpheios Show Info</string>
