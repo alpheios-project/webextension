@@ -441,7 +441,12 @@ export default class BackgroundProcess {
         if (tab.isActive()) {
           this.menuItems.activate.disable()
           this.menuItems.deactivate.enable()
-          this.menuItems.info.enable()
+
+          if (tab.isPanelOpen()) {
+            this.menuItems.info.disable()
+          } else {
+            this.menuItems.info.enable()
+          }
 
           this.updateIcon(true, tabId)
         } else if (tab.isDeactivated()) {
