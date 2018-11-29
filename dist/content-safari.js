@@ -34669,6 +34669,7 @@ class HTMLPage {
    * @returns {boolean}
    */
   static get hasFrames () {
+    console.log(`hasFrames = ${window.frames.length}`, window.frames)
     return (window.frames.length > 0)
   }
 
@@ -34677,6 +34678,7 @@ class HTMLPage {
    * @returns {boolean}
    */
   static get isFrame () {
+    console.log(`isFrame = ${window.self !== window.top}`, window.self, window.top)
     return (window.self !== window.top)
   }
 
@@ -34686,6 +34688,40 @@ class HTMLPage {
    */
   static get isAtTop () {
     return (window.self === window.top)
+  }
+
+  /**
+   * Checks wither the current browsing content (represented by window object)
+   * is a valid target for a UI controller activation.
+   * The browsing context could be either the topmost window within a browser tab
+   * or a window within a frame that is part of the topmost or any other window.
+   * @returns {boolean} - True if the browsing content is valid, false otherwise.
+   */
+  static get isValidTarget () {
+    // Check if page URL is not excluded
+    for (const url of HTMLPage.targetRequirements.excludedURLs) {
+      if (window.document.URL.search(url) !== -1) {
+        return false
+      }
+    }
+
+    if (!window.document.body) {
+      return false
+    }
+
+    if (window.document.body.clientWidth < HTMLPage.targetRequirements.minWidth) {
+      return false
+    }
+
+    if (window.document.body.clientHeight < HTMLPage.targetRequirements.minHeight) {
+      return false
+    }
+
+    if (window.document.body.innerText.length < HTMLPage.targetRequirements.minCharCount) {
+      return false
+    }
+
+    return true
   }
 
   /**
@@ -34731,6 +34767,16 @@ class HTMLPage {
     }
     return zIndexMax
   }
+}
+
+HTMLPage.targetRequirements = {
+  minWidth: 500, // A minimal width for a browsing context to qualify for showing a desktop UI
+  minHeight: 400, // A minimal height for a browsing context to qualify for showing a desktop UI
+  minCharCount: 1, // A minimal number of characters in a browsing context
+  excludedURLs: [
+    'about:blank',
+    'grammars.alpheios.net'
+  ]
 }
 
 
@@ -92021,11 +92067,13 @@ var _package_json__WEBPACK_IMPORTED_MODULE_5___namespace = /*#__PURE__*/__webpac
 
 let uiController = null
 let state = null
+let initialized = false
 
 /**
  * State request processing function.
  */
 let handleStateRequest = async function handleStateRequest (message) {
+  console.log(`State request received`, message)
   if (!uiController) {
     uiController = alpheios_components__WEBPACK_IMPORTED_MODULE_3__["UIController"].create(state, {
       storageAdapter: alpheios_components__WEBPACK_IMPORTED_MODULE_3__["LocalStorageArea"],
@@ -92083,39 +92131,32 @@ let sendStateToBackground = function sendStateToBackground (messageName) {
 
 document.addEventListener('DOMContentLoaded', (event) => {
   /*
-  In Safari, content script is loaded for the "main" page (the page whose URL is shown in an address bar) AND
-  for each of the "derivative" pages. These could be pages loaded within iframes of the main page.
-  Safari might also load content script for one or several blank pages that are created during Vue.js component rendering.
-  We need to filter out loading for the main page (this is when a content process should be created and initialized)
-  from the calls to the derivative pages (when content process is already created and we should not create it again).
-  For this, we can use a `URL` prop from `event.currentTarget`.
+  In Safari, if page contains several documents (as in case with frames), a content script is
+  loaded for the "main" document (the topmost document) AND for each of the child documents
+  (i.e. frames). Safari might also load content script for one or several blank documents
+  that are created during Vue.js component rendering.
+  We will use `HTMLPage.isValidTarget` to filter out documents where an Alpheios UI can and should
+  be shown from those where it can not. If we're lucky, a single document will be selected.
+  If not, we should adjust filtering rules to accommodate such cases.
    */
-  const SAFARI_BLANK_ADDR = 'about:blank'
-  const ALPHEIOS_GRAMMAR_ADDR = 'grammars.alpheios.net'
 
-  if (event.currentTarget.URL.search(`${SAFARI_BLANK_ADDR}|${ALPHEIOS_GRAMMAR_ADDR}`) === -1) {
-    if (!alpheios_components__WEBPACK_IMPORTED_MODULE_3__["HTMLPage"].hasFrames && !alpheios_components__WEBPACK_IMPORTED_MODULE_3__["HTMLPage"].isFrame) {
-      let messagingService = new _lib_messaging_service_safari_js__WEBPACK_IMPORTED_MODULE_2__["default"]()
-      messagingService.addHandler(_lib_messaging_message_message_js__WEBPACK_IMPORTED_MODULE_0__["default"].types.STATE_REQUEST, handleStateRequest)
-      safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
+  if (alpheios_components__WEBPACK_IMPORTED_MODULE_3__["HTMLPage"].isValidTarget) {
+    initialized = true
+    console.log(`Activating a messaging service, initialized: ${initialized}`)
+    let messagingService = new _lib_messaging_service_safari_js__WEBPACK_IMPORTED_MODULE_2__["default"]()
+    messagingService.addHandler(_lib_messaging_message_message_js__WEBPACK_IMPORTED_MODULE_0__["default"].types.STATE_REQUEST, handleStateRequest)
+    safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
 
-      /*
-      In situations where a page with an already activated content script is reloaded
-      and UI controller deactivated because of that,
-      we'll need to notify Safari app extension about this
-      so that it could update states of an icon and pop-up menu
-       */
-      state = new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"]()
-      state.status = alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.script.PENDING
-      state.panelStatus = alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.panel.CLOSED
-      sendStateToBackground('updateState')
-    } else {
-      console.warn(`Alpheios Safari App Extension cannot be enabled on pages with frames`)
-      state = new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"]()
-      state.status = alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.script.DISABLED
-      // Notify an app extension that content script cannot be activated on this page
-      sendStateToBackground('updateState')
-    }
+    /*
+    In situations where a page with an already activated content script is reloaded
+    and a UI controller is deactivated because of that,
+    we need to notify Safari app extension about this
+    so that it could update states of an icon and a pop-up menu
+     */
+    state = new alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"]()
+    state.status = alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.script.PENDING
+    state.panelStatus = alpheios_components__WEBPACK_IMPORTED_MODULE_3__["TabScript"].statuses.panel.CLOSED
+    sendStateToBackground('updateState')
   }
 })
 
