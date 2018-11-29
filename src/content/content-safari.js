@@ -8,13 +8,22 @@ import Package from '../../package.json'
 
 let uiController = null
 let state = null
-let initialized = false
 
 /**
  * State request processing function.
  */
 let handleStateRequest = async function handleStateRequest (message) {
-  console.log(`State request received`, message)
+  /*
+  As opposed to webextension, where content script is injected into a document (i.e. `window.document`)
+  by a background script, Safari app extension injects content script into each document within a page
+  (including documents within frames) on every page load. Since it happens automatically, script injection
+  occurs event if extension is not activated by the user. That's why we don't want to create a controller
+  instance when a script is injected (i.e. in DOMContentLoaded callback): if Alpheios extension will never
+  be activated on a particular page (document) we would still waste resources creating an instance
+  of a UI controller that will never be used. The more rational approach would be on page load
+  to activate a message listener instead that, when an activation request from Safari App Extension is
+  received, would create an instance of a UI controller, following a lazy initialization approach.
+   */
   if (!uiController) {
     uiController = UIController.create(state, {
       storageAdapter: LocalStorageArea,
@@ -82,8 +91,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
    */
 
   if (HTMLPage.isValidTarget) {
-    initialized = true
-    console.log(`Activating a messaging service, initialized: ${initialized}`)
     let messagingService = new MessagingService()
     messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest)
     safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
