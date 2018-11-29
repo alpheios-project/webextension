@@ -52,7 +52,6 @@ export default class BackgroundProcess {
     this.menuItems = {
       activate: new ContextMenuItem(BackgroundProcess.defaults.activateMenuItemId, BackgroundProcess.defaults.activateMenuItemText),
       deactivate: new ContextMenuItem(BackgroundProcess.defaults.deactivateMenuItemId, BackgroundProcess.defaults.deactivateMenuItemText),
-      openPanel: new ContextMenuItem(BackgroundProcess.defaults.openPanelMenuItemId, BackgroundProcess.defaults.openPanelMenuItemText),
       separatorOne: new ContentMenuSeparator(BackgroundProcess.defaults.separatorOneId),
       info: new ContextMenuItem(BackgroundProcess.defaults.infoMenuItemId, BackgroundProcess.defaults.infoMenuItemText),
       disabled: new ContextMenuItem(BackgroundProcess.defaults.disabledMenuItemId, BackgroundProcess.defaults.disabledMenuItemText)
@@ -365,8 +364,6 @@ export default class BackgroundProcess {
       this.activateContent(new Tab(tab.id, tab.windowId))
     } else if (info.menuItemId === this.settings.deactivateMenuItemId) {
       this.deactivateContent(new Tab(tab.id, tab.windowId))
-    } else if (info.menuItemId === this.settings.openPanelMenuItemId) {
-      this.openPanel(new Tab(tab.id, tab.windowId))
     } else if (info.menuItemId === this.settings.infoMenuItemId) {
       this.openInfoTab(new Tab(tab.id, tab.windowId))
     }
@@ -410,7 +407,6 @@ export default class BackgroundProcess {
     // Deactivate all previously activated menu items to keep an order intact
     this.menuItems.activate.disable()
     this.menuItems.deactivate.disable()
-    this.menuItems.openPanel.disable()
     this.menuItems.separatorOne.disable()
     this.menuItems.info.disable()
     this.menuItems.disabled.disable()
@@ -422,43 +418,35 @@ export default class BackgroundProcess {
         if (tab.isActive()) {
           this.menuItems.activate.disable()
           this.menuItems.deactivate.enable()
-          this.menuItems.openPanel.enable()
-          this.menuItems.info.enable()
+
+          if (tab.isPanelOpen()) {
+            this.menuItems.info.disable()
+          } else {
+            this.menuItems.info.enable()
+          }
 
           this.updateIcon(true, tabId)
         } else if (tab.isDeactivated()) {
           this.menuItems.deactivate.disable()
           this.menuItems.activate.enable()
-          this.menuItems.openPanel.disable()
-          this.menuItems.info.enable()
+          this.menuItems.info.disable()
 
           this.updateIcon(false, tabId)
         } else if (tab.isDisabled()) {
           this.menuItems.activate.disable()
           this.menuItems.deactivate.disable()
           this.menuItems.disabled.enable()
-          this.menuItems.openPanel.disable()
           this.menuItems.info.disable()
           this.updateIcon(false, tabId)
         }
       }
-
-      if (tab.hasOwnProperty('panelStatus')) {
-        if (tab.isActive() && tab.isPanelClosed()) {
-          this.menuItems.openPanel.enable()
-        } else {
-          this.menuItems.openPanel.disable()
-        }
-      }
-
       this.menuItems.separatorOne.enable()
     } else {
       // If tab is not provided will set menu do an initial state
       this.menuItems.activate.enable()
       this.menuItems.deactivate.disable()
-      this.menuItems.openPanel.disable()
       this.menuItems.separatorOne.enable()
-      this.menuItems.info.enable()
+      this.menuItems.info.disable()
     }
   }
 }
