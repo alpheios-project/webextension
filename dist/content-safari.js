@@ -30130,16 +30130,29 @@ class UIController {
         },
 
         changeTab (name) {
-          if (this.panelData.tabs.hasOwnProperty(name)) {
-            // If this is a valid tab name
-            for (let key of Object.keys(this.panelData.tabs)) {
-              if (this.panelData.tabs[key]) { this.panelData.tabs[key] = false }
-            }
-            this.panelData.tabs[name] = true
-            this.state.changeTab(name) // Reflect a tab change in a state
-          } else {
-            console.warn(`Cannot switch to an unknown tab ${name}`)
+          for (let key of Object.keys(this.panelData.tabs)) {
+            if (this.panelData.tabs[key]) { this.panelData.tabs[key] = false }
           }
+
+          const inflectionsAvailable = Boolean(this.panelData && this.panelData.inflectionComponentData && this.panelData.inflectionComponentData.inflDataReady)
+          const grammarAvailable = Boolean(this.panelData && this.panelData.grammarAvailable)
+          const statusAvailable = Boolean(this.panelData && this.panelData.verboseMode)
+
+          // TODO: With state refactoring, eliminate similar code in `panel.vue`
+          const treebankTabAvaliable = Boolean(this.panelData && this.panelData.treebankComponentData && this.panelData.treebankComponentData.data &&
+          ((this.panelData.treebankComponentData.data.page && this.panelData.treebankComponentData.data.page.src) ||
+            (this.panelData.treebankComponentData.data.word && this.panelData.treebankComponentData.data.word.src)))
+          // If tab is disabled, switch to a default one
+          if (
+            (!inflectionsAvailable && name === 'inflections') ||
+            (!grammarAvailable && name === 'grammar') ||
+            (!treebankTabAvaliable && name === 'treebank') ||
+            (!statusAvailable && name === 'status')
+          ) {
+            name = this.uiController.tabStateDefault
+          }
+          this.panelData.tabs[name] = true
+          this.state.changeTab(name) // Reflect a tab change in a state
           return this
         },
 
@@ -34702,6 +34715,7 @@ class HTMLPage {
    * @returns {boolean}
    */
   static get hasFrames () {
+    console.log(`hasFrames = ${window.frames.length}`, window.frames)
     return (window.frames.length > 0)
   }
 
@@ -34710,6 +34724,7 @@ class HTMLPage {
    * @returns {boolean}
    */
   static get isFrame () {
+    console.log(`isFrame = ${window.self !== window.top}`, window.self, window.top)
     return (window.self !== window.top)
   }
 
@@ -34732,24 +34747,33 @@ class HTMLPage {
     // Check if page URL is not excluded
     for (const url of HTMLPage.targetRequirements.excludedURLs) {
       if (window.document.URL.search(url) !== -1) {
+        console.warn(`Not valid, URL is in the excluded list (${window.document.URL})`)
         return false
       }
     }
 
     if (!window.document.body) {
+      console.warn(`Not valid, has no body (${window.document.URL})`)
       return false
     }
 
     // TODO: This will need to be changed when a mobile support be added
     if (window.document.body.clientWidth < HTMLPage.targetRequirements.minWidth) {
+      console.warn(`Not valid, min width is too small (${window.document.URL})`)
       return false
     }
 
     if (window.document.body.clientHeight < HTMLPage.targetRequirements.minHeight) {
+      if (this.isAtTop && !this.hasFrames) {
+        // We could still allow no height for top level documents that have no frames
+        return true
+      }
+      console.warn(`Not valid, min height is too small (${window.document.URL})`)
       return false
     }
 
     if (window.document.body.innerText.length < HTMLPage.targetRequirements.minCharCount) {
+      console.warn(`Not valid, has too little characters (${window.document.URL})`)
       return false
     }
 
@@ -91916,7 +91940,7 @@ module.exports = v4;
 /*! exports provided: name, version, build, description, main, scripts, repository, author, license, bugs, homepage, devDependencies, engines, jest, eslintConfig, eslintIgnore, standard, dependencies, default */
 /***/ (function(module) {
 
-module.exports = {"name":"webextension","version":"2.1.0","build":"12","description":"A WebExtension implementation of Alpheios","main":"index.js","scripts":{"build":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs","build-prod":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content-safari.mjs","build-dev":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs","build-safari":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs","build-safari-dev":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs","standard":"standard","test":"jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","zip":"node ./build/zip.js"},"repository":{"type":"git","url":"git+https://github.com/alpheios-project/webextension.git"},"author":"The Alpheios Project, Ltd.","license":"ISC","bugs":{"url":"https://github.com/alpheios-project/webextension/issues"},"homepage":"https://github.com/alpheios-project/webextension#readme","devDependencies":{"alpheios-components":"github:alpheios-project/components#release-2.1.0.x","alpheios-data-models":"github:alpheios-project/data-models","alpheios-experience":"github:alpheios-project/experience","alpheios-inflection-tables":"github:alpheios-project/inflection-tables","alpheios-lemma-client":"github:alpheios-project/lemma-client","alpheios-lexicon-client":"github:alpheios-project/lexicon-client","alpheios-morph-client":"github:alpheios-project/morph-client","alpheios-node-build":"github:alpheios-project/node-build","alpheios-res-client":"github:alpheios-project/res-client","autoprefixer":"^9.3.1","babel-core":"^6.26.3","babel-eslint":"^10.0.1","babel-jest":"^23.6.0","babel-loader":"^8.0.4","babel-plugin-dynamic-import-node":"^2.2.0","babel-plugin-transform-es2015-modules-commonjs":"^6.26.2","babel-plugin-transform-runtime":"^6.22.0","babel-preset-env":"^1.7.0","babel-preset-es2015":"^6.24.1","babel-preset-stage-2":"^6.22.0","babel-register":"^6.22.0","bytes":"^3.0.0","chalk":"^2.4.1","copy-webpack-plugin":"^4.6.0","copyfiles":"^2.1.0","coveralls":"^3.0.1","css-loader":"^1.0.1","element-closest":"^2.0.2","eslint":"^5.9.0","eslint-plugin-import":"^2.14.0","extract-text-webpack-plugin":"^3.0.2","file-loader":"^2.0.0","font-awesome-svg-png":"^1.2.2","friendly-errors-webpack-plugin":"^1.7.0","html-loader":"^0.5.5","html-loader-jest":"^0.2.1","html-webpack-plugin":"^3.2.0","imagemin":"^6.0.0","imagemin-jpegtran":"^6.0.0","imagemin-optipng":"^6.0.0","imagemin-svgo":"^7.0.0","interactjs":"^1.3.4","intl-messageformat":"^2.2.0","jest":"^23.6.0","jest-environment-jsdom-11.0.0":"^20.0.9","jest-serializer-vue":"^2.0.2","jest-vue-preprocessor":"^1.4.0","mini-css-extract-plugin":"^0.4.5","mkdirp":"^0.5.1","node-sass":"^4.11.0","optimize-css-assets-webpack-plugin":"^5.0.1","parallel-webpack":"^2.3.0","path":"^0.12.7","postcss-import":"^12.0.1","postcss-loader":"^3.0.0","raw-loader":"^0.5.1","sass-loader":"^7.1.0","semver":"^5.6.0","shelljs":"^0.8.3","source-map-loader":"^0.2.4","standard":"^12.0.1","style-loader":"^0.23.1","uglifyjs-webpack-plugin":"^2.0.0","uikit":"^3.0.0-rc.9-dev.bd39d353","url-loader":"^1.1.2","uuid":"^3.3.0","vue":"^2.5.17","vue-jest":"^3.0.1","vue-loader":"^15.4.2","vue-style-loader":"^4.1.2","vue-svg-loader":"^0.11.0","vue-template-compiler":"^2.5.17","webextension-polyfill":"^0.3.1","webpack":"^4.26.1","webpack-bundle-analyzer":"^3.0.3","webpack-dev-server":"^3.1.10","webpack-merge":"^4.1.4","zip-folder":"^1.0.0"},"engines":{"node":">= 10.5.0","npm":">= 5.6.1"},"jest":{"verbose":true,"transform":{"^.+\\.htmlf$":"html-loader-jest","^.+\\.jsx?$":"babel-jest",".*\\.(vue)$":"<rootDir>/node_modules/jest-vue-preprocessor"},"transformIgnorePatterns":["!node_modules/alpheios-data-models/"],"moduleNameMapper":{"^vue$":"vue/dist/vue.common.js"},"moduleFileExtensions":["js","vue"]},"eslintConfig":{"extends":["standard","plugin:vue/essential"],"env":{"browser":true,"node":true},"parserOptions":{"ecmaVersion":2018,"sourceType":"module"}},"eslintIgnore":["**/dist","**/support"],"standard":{"ignore":["**/dist","**/support"]},"dependencies":{}};
+module.exports = {"name":"webextension","version":"2.1.0","build":"12","description":"A WebExtension implementation of Alpheios","main":"index.js","scripts":{"build":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs","build-prod":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content-safari.mjs","build-dev":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs","build-safari":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs","build-safari-dev":"standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs","standard":"standard","test":"jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js","zip":"node ./build/zip.js"},"repository":{"type":"git","url":"git+https://github.com/alpheios-project/webextension.git"},"author":"The Alpheios Project, Ltd.","license":"ISC","bugs":{"url":"https://github.com/alpheios-project/webextension/issues"},"homepage":"https://github.com/alpheios-project/webextension#readme","devDependencies":{"alpheios-components":"github:alpheios-project/components#webext-i170-171","alpheios-data-models":"github:alpheios-project/data-models","alpheios-experience":"github:alpheios-project/experience","alpheios-inflection-tables":"github:alpheios-project/inflection-tables","alpheios-lemma-client":"github:alpheios-project/lemma-client","alpheios-lexicon-client":"github:alpheios-project/lexicon-client","alpheios-morph-client":"github:alpheios-project/morph-client","alpheios-node-build":"github:alpheios-project/node-build","alpheios-res-client":"github:alpheios-project/res-client","autoprefixer":"^9.3.1","babel-core":"^6.26.3","babel-eslint":"^10.0.1","babel-jest":"^23.6.0","babel-loader":"^8.0.4","babel-plugin-dynamic-import-node":"^2.2.0","babel-plugin-transform-es2015-modules-commonjs":"^6.26.2","babel-plugin-transform-runtime":"^6.22.0","babel-preset-env":"^1.7.0","babel-preset-es2015":"^6.24.1","babel-preset-stage-2":"^6.22.0","babel-register":"^6.22.0","bytes":"^3.0.0","chalk":"^2.4.1","copy-webpack-plugin":"^4.6.0","copyfiles":"^2.1.0","coveralls":"^3.0.1","css-loader":"^1.0.1","element-closest":"^2.0.2","eslint":"^5.9.0","eslint-plugin-import":"^2.14.0","extract-text-webpack-plugin":"^3.0.2","file-loader":"^2.0.0","font-awesome-svg-png":"^1.2.2","friendly-errors-webpack-plugin":"^1.7.0","html-loader":"^0.5.5","html-loader-jest":"^0.2.1","html-webpack-plugin":"^3.2.0","imagemin":"^6.0.0","imagemin-jpegtran":"^6.0.0","imagemin-optipng":"^6.0.0","imagemin-svgo":"^7.0.0","interactjs":"^1.3.4","intl-messageformat":"^2.2.0","jest":"^23.6.0","jest-environment-jsdom-11.0.0":"^20.0.9","jest-serializer-vue":"^2.0.2","jest-vue-preprocessor":"^1.4.0","mini-css-extract-plugin":"^0.4.5","mkdirp":"^0.5.1","node-sass":"^4.11.0","optimize-css-assets-webpack-plugin":"^5.0.1","parallel-webpack":"^2.3.0","path":"^0.12.7","postcss-import":"^12.0.1","postcss-loader":"^3.0.0","raw-loader":"^0.5.1","sass-loader":"^7.1.0","semver":"^5.6.0","shelljs":"^0.8.3","source-map-loader":"^0.2.4","standard":"^12.0.1","style-loader":"^0.23.1","uglifyjs-webpack-plugin":"^2.0.0","uikit":"^3.0.0-rc.9-dev.bd39d353","url-loader":"^1.1.2","uuid":"^3.3.0","vue":"^2.5.17","vue-jest":"^3.0.1","vue-loader":"^15.4.2","vue-style-loader":"^4.1.2","vue-svg-loader":"^0.11.0","vue-template-compiler":"^2.5.17","webextension-polyfill":"^0.3.1","webpack":"^4.26.1","webpack-bundle-analyzer":"^3.0.3","webpack-dev-server":"^3.1.10","webpack-merge":"^4.1.4","zip-folder":"^1.0.0"},"engines":{"node":">= 10.5.0","npm":">= 5.6.1"},"jest":{"verbose":true,"transform":{"^.+\\.htmlf$":"html-loader-jest","^.+\\.jsx?$":"babel-jest",".*\\.(vue)$":"<rootDir>/node_modules/jest-vue-preprocessor"},"transformIgnorePatterns":["!node_modules/alpheios-data-models/"],"moduleNameMapper":{"^vue$":"vue/dist/vue.common.js"},"moduleFileExtensions":["js","vue"]},"eslintConfig":{"extends":["standard","plugin:vue/essential"],"env":{"browser":true,"node":true},"parserOptions":{"ecmaVersion":2018,"sourceType":"module"}},"eslintIgnore":["**/dist","**/support"],"standard":{"ignore":["**/dist","**/support"]},"dependencies":{}};
 
 /***/ }),
 
@@ -92105,7 +92129,6 @@ let state = null
  * State request processing function.
  */
 let handleStateRequest = async function handleStateRequest (message) {
-  console.log(`State request`, message.body)
   /*
   As opposed to webextension, where content script is injected into a document (i.e. `window.document`)
   by a background script, Safari app extension injects content script into each document within a page

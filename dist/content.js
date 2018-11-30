@@ -30130,16 +30130,29 @@ class UIController {
         },
 
         changeTab (name) {
-          if (this.panelData.tabs.hasOwnProperty(name)) {
-            // If this is a valid tab name
-            for (let key of Object.keys(this.panelData.tabs)) {
-              if (this.panelData.tabs[key]) { this.panelData.tabs[key] = false }
-            }
-            this.panelData.tabs[name] = true
-            this.state.changeTab(name) // Reflect a tab change in a state
-          } else {
-            console.warn(`Cannot switch to an unknown tab ${name}`)
+          for (let key of Object.keys(this.panelData.tabs)) {
+            if (this.panelData.tabs[key]) { this.panelData.tabs[key] = false }
           }
+
+          const inflectionsAvailable = Boolean(this.panelData && this.panelData.inflectionComponentData && this.panelData.inflectionComponentData.inflDataReady)
+          const grammarAvailable = Boolean(this.panelData && this.panelData.grammarAvailable)
+          const statusAvailable = Boolean(this.panelData && this.panelData.verboseMode)
+
+          // TODO: With state refactoring, eliminate similar code in `panel.vue`
+          const treebankTabAvaliable = Boolean(this.panelData && this.panelData.treebankComponentData && this.panelData.treebankComponentData.data &&
+          ((this.panelData.treebankComponentData.data.page && this.panelData.treebankComponentData.data.page.src) ||
+            (this.panelData.treebankComponentData.data.word && this.panelData.treebankComponentData.data.word.src)))
+          // If tab is disabled, switch to a default one
+          if (
+            (!inflectionsAvailable && name === 'inflections') ||
+            (!grammarAvailable && name === 'grammar') ||
+            (!treebankTabAvaliable && name === 'treebank') ||
+            (!statusAvailable && name === 'status')
+          ) {
+            name = this.uiController.tabStateDefault
+          }
+          this.panelData.tabs[name] = true
+          this.state.changeTab(name) // Reflect a tab change in a state
           return this
         },
 
@@ -34702,6 +34715,7 @@ class HTMLPage {
    * @returns {boolean}
    */
   static get hasFrames () {
+    console.log(`hasFrames = ${window.frames.length}`, window.frames)
     return (window.frames.length > 0)
   }
 
@@ -34710,6 +34724,7 @@ class HTMLPage {
    * @returns {boolean}
    */
   static get isFrame () {
+    console.log(`isFrame = ${window.self !== window.top}`, window.self, window.top)
     return (window.self !== window.top)
   }
 
@@ -34732,24 +34747,33 @@ class HTMLPage {
     // Check if page URL is not excluded
     for (const url of HTMLPage.targetRequirements.excludedURLs) {
       if (window.document.URL.search(url) !== -1) {
+        console.warn(`Not valid, URL is in the excluded list (${window.document.URL})`)
         return false
       }
     }
 
     if (!window.document.body) {
+      console.warn(`Not valid, has no body (${window.document.URL})`)
       return false
     }
 
     // TODO: This will need to be changed when a mobile support be added
     if (window.document.body.clientWidth < HTMLPage.targetRequirements.minWidth) {
+      console.warn(`Not valid, min width is too small (${window.document.URL})`)
       return false
     }
 
     if (window.document.body.clientHeight < HTMLPage.targetRequirements.minHeight) {
+      if (this.isAtTop && !this.hasFrames) {
+        // We could still allow no height for top level documents that have no frames
+        return true
+      }
+      console.warn(`Not valid, min height is too small (${window.document.URL})`)
       return false
     }
 
     if (window.document.body.innerText.length < HTMLPage.targetRequirements.minCharCount) {
+      console.warn(`Not valid, has too little characters (${window.document.URL})`)
       return false
     }
 
