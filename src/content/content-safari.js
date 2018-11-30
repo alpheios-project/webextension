@@ -53,9 +53,8 @@ let handleStateRequest = async function handleStateRequest (message) {
 
   if (diff.has('status')) {
     if (diff.status === TabScript.statuses.script.ACTIVE) {
-      if (requestState.panelStatus) {
-        uiController.state.panelStatus = requestState.panelStatus
-      }
+      if (requestState.panelStatus) { uiController.state.panelStatus = requestState.panelStatus }
+      if (requestState.tab) { uiController.changeTab(requestState.tab) }
       uiController.activate()
         .then(() => sendStateToBackground('updateState'))
         .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
