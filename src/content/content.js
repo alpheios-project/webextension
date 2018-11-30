@@ -33,6 +33,7 @@ let handleStateRequest = function handleStateRequest (request) {
     if (diff.status === TabScript.statuses.script.ACTIVE) {
       // If activation request has a desired panel status, set it now so that UI controller would open/not open panel according to it
       if (requestState.panelStatus) { uiController.state.panelStatus = requestState.panelStatus }
+      if (requestState.tab) { uiController.changeTab(requestState.tab) }
       uiController.activate().catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
     } else if (diff.status === TabScript.statuses.script.DEACTIVATED) {
       uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
