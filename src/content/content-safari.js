@@ -45,7 +45,12 @@ let handleStateRequest = async function handleStateRequest (message) {
         }
       }
       uiController.state.disable()
+      // and update the background to know that we have been disabled
+      sendStateToBackground('updateState')
     })
+
+    // add now actually send the Alpheios_Embedded_Check event to the document so that it can respond
+    document.body.dispatchEvent('Alpheios_Embedded_Check')
   }
 
   let requestState = TabScript.readObject(message.body)

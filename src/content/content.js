@@ -38,7 +38,9 @@ let handleStateRequest = function handleStateRequest (request) {
     } else if (diff.status === TabScript.statuses.script.DEACTIVATED) {
       uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
     } else if (diff.status === TabScript.statuses.script.DISABLED) {
-      // TODO: Do we really need this state?
+      // this is used if the extension has been disabled as a result of the embedded library check
+      // we disable the extension if the page already has the alpheios embedded lib directly included
+      // so that we don't have conflicts
       uiController.state.disable()
     }
   }
@@ -87,8 +89,14 @@ document.body.addEventListener('Alpheios_Embedded_Response', () => {
     }
   }
   uiController.state.disable()
-  // TODO: Need to handle this in a content. Send state to BG on every state change?
-  // sendStateToBackground()
+  // we need to make sure the background script knows we have been disabled
+  // so we update the state. This could mean we update the state in the background
+  // multiple times in this method, first when we deactivate the uiController and
+  // then again when we disable it, but we cannot avoid this because we want to save
+  // the state when we deactivate distinct from being disabled, so that we can return
+  // to that state later if we navigate off a page which forced the disabled state (such as
+  // when we are on a page with the Alpehios embeded library, the point of this handler)
+  sendStateToBackground()
 })
 
 document.body.addEventListener('Alpheios_Reload', () => {
