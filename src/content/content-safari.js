@@ -6,8 +6,18 @@ import { TabScript, UIController, LocalStorageArea, HTMLPage } from 'alpheios-co
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style-safari.min.css' // eslint-disable-line
 import Package from '../../package.json'
 
+const pingInterval = 15000 // How often to ping background with a state message, in ms
 let uiController = null
 let state = null
+
+/**
+ * Sends a state message to background, if UI Controller is in an active state.
+ */
+let pingBg = function pingBg () {
+  if (state && state.isActive()) {
+    sendStateToBackground('updateState')
+  }
+}
 
 /**
  * State request processing function.
@@ -53,8 +63,16 @@ let handleStateRequest = async function handleStateRequest (message) {
 
   if (diff.has('status')) {
     if (diff.status === TabScript.statuses.script.ACTIVE) {
-      if (requestState.panelStatus) { uiController.state.panelStatus = requestState.panelStatus }
-      if (requestState.tab) { uiController.changeTab(requestState.tab) }
+      if (uiController.state.isPending()) {
+        // This is a new activation (an activation after page reload)
+        // If activation request has a desired panel status, set it now so that UI controller would open/not open panel according to it
+        if (requestState.panelStatus) { uiController.state.panelStatus = requestState.panelStatus }
+        if (requestState.tab) { uiController.changeTab(requestState.tab) }
+      } else if (uiController.state.isDeactivated()) {
+        // This is an activation after the previous deactivation
+        // Panel status and tabs will be set to their default values
+        uiController.setDefaultPanelState().setDefaultTabState()
+      }
       uiController.activate()
         .then(() => sendStateToBackground('updateState'))
         .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
@@ -104,5 +122,17 @@ document.addEventListener('DOMContentLoaded', (event) => {
     state.status = TabScript.statuses.script.PENDING
     state.panelStatus = TabScript.statuses.panel.CLOSED
     sendStateToBackground('updateState')
+
+    /*
+    If Safari with an activated Alpheios Safari App Extension is moved out of focus,
+    as when user is temporarily switched to some other application,  Safari App
+    Extension will automatically be deactivated. Thus usually happens after a few
+    dozen seconds (exact amount of time is not clear). As a result of this, an icon
+    of an extension will be switched to an inactive state. To prevent this, we have
+    to ping a background with a state message periodically.
+    There might be a more elegant way to handle this in future versions of
+    Safari App Extension API, but for now it seems to be the only way.
+     */
+    window.setInterval(pingBg, pingInterval)
   }
 })
