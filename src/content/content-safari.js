@@ -7,15 +7,37 @@ import ComponentStyles from '../../node_modules/alpheios-components/dist/style/s
 import Package from '../../package.json'
 
 const pingInterval = 15000 // How often to ping background with a state message, in ms
+let pingIntervalID = null
 let uiController = null
 let state = null
 
 /**
- * Sends a state message to background, if UI Controller is in an active state.
+ * Activates a ping that will send state to background periodically
  */
-let pingBg = function pingBg () {
-  if (state && state.isActive()) {
-    sendStateToBackground('updateState')
+let activatePing = function activatePing () {
+  /*
+If Safari with an activated Alpheios Safari App Extension is moved out of focus,
+as when user is temporarily switched to some other application,  Safari App
+Extension will automatically be deactivated. Thus usually happens after a few
+dozen seconds (exact amount of time is not clear). As a result of this, an icon
+of an extension will be switched to an inactive state. To prevent this, we have
+to ping a background with a state message periodically.
+There might be a more elegant way to handle this in future versions of
+Safari App Extension API, but for now it seems to be the only way.
+ */
+  pingIntervalID = window.setInterval(() => {
+    if (state && state.isActive()) {
+      sendStateToBackground('updateState')
+    }
+  }, pingInterval)
+}
+
+/**
+ * Deactivates a ping that was set by `activatePing`
+ */
+let deactivatePing = function deactivatePing () {
+  if (pingIntervalID) {
+    window.clearInterval(pingIntervalID)
   }
 }
 
@@ -52,6 +74,7 @@ let handleStateRequest = async function handleStateRequest (message) {
         uiController.state.save()
         if (uiController.state.isActive()) {
           uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+          deactivatePing()
         }
       }
       uiController.state.disable()
@@ -74,12 +97,16 @@ let handleStateRequest = async function handleStateRequest (message) {
         uiController.setDefaultPanelState().setDefaultTabState()
       }
       uiController.activate()
-        .then(() => sendStateToBackground('updateState'))
+        .then(() => {
+          sendStateToBackground('updateState')
+          activatePing() // Start pinging background
+        })
         .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
     } else if (uiController.isActivated && diff.status === TabScript.statuses.script.DEACTIVATED) {
       uiController.deactivate()
         .then(() => sendStateToBackground('updateState'))
         .catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+      deactivatePing()
     }
   }
 
@@ -122,17 +149,5 @@ document.addEventListener('DOMContentLoaded', (event) => {
     state.status = TabScript.statuses.script.PENDING
     state.panelStatus = TabScript.statuses.panel.CLOSED
     sendStateToBackground('updateState')
-
-    /*
-    If Safari with an activated Alpheios Safari App Extension is moved out of focus,
-    as when user is temporarily switched to some other application,  Safari App
-    Extension will automatically be deactivated. Thus usually happens after a few
-    dozen seconds (exact amount of time is not clear). As a result of this, an icon
-    of an extension will be switched to an inactive state. To prevent this, we have
-    to ping a background with a state message periodically.
-    There might be a more elegant way to handle this in future versions of
-    Safari App Extension API, but for now it seems to be the only way.
-     */
-    window.setInterval(pingBg, pingInterval)
   }
 })
