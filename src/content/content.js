@@ -31,9 +31,17 @@ let handleStateRequest = function handleStateRequest (request) {
 
   if (diff.has('status')) {
     if (diff.status === TabScript.statuses.script.ACTIVE) {
-      // If activation request has a desired panel status, set it now so that UI controller would open/not open panel according to it
-      if (requestState.panelStatus) { uiController.state.panelStatus = requestState.panelStatus }
-      if (requestState.tab) { uiController.changeTab(requestState.tab) }
+      if (uiController.state.isPending()) {
+        // This is a new activation (an activation after page reload)
+        // If activation request has a desired panel status, set it now so that UI controller would open/not open panel according to it
+        if (requestState.panelStatus) { uiController.state.panelStatus = requestState.panelStatus }
+        if (requestState.tab) { uiController.changeTab(requestState.tab) }
+      } else if (uiController.state.isDeactivated()) {
+        // This is an activation after the previous deactivation
+        // Panel status and tabs will be set to their default values
+        uiController.setDefaultPanelState().setDefaultTabState()
+      }
+
       uiController.activate().catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
     } else if (diff.status === TabScript.statuses.script.DEACTIVATED) {
       uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
