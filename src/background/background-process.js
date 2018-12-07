@@ -38,12 +38,13 @@ export default class BackgroundProcess {
   }
 
   initialize () {
+    this.messagingService.addHandler(Message.types.CONTENT_READY_MESSAGE, this.contentReadyMessageHandler, this)
+    this.messagingService.addHandler(Message.types.EMBED_LIB_MESSAGE, this.embedLibMessageHandler, this)
     this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
     browser.tabs.onDetached.addListener(this.tabDetachedListener.bind(this))
     browser.tabs.onAttached.addListener(this.tabAttachedListener.bind(this))
-    // browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
     browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
     browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
     browser.runtime.onUpdateAvailable.addListener(this.updateAvailableListener.bind(this))
@@ -71,6 +72,11 @@ export default class BackgroundProcess {
     browser.browserAction.setIcon(params)
   }
 
+  setIconState (tab) {
+    const iconState = tab.isActive() && !tab.isEmbedLibActive()
+    this.updateIcon(iconState, tab.tabObj.tabId)
+  }
+
   /**
    * handler for the runtime.onInstalled event
    */
@@ -95,21 +101,51 @@ export default class BackgroundProcess {
     }
   }
 
+  /**
+   * UI controls were used to activate a webextension
+   * @param tabObj
+   * @returns {Promise<void>}
+   */
   async activateContent (tabObj) {
-    if (!this.tabs.has(tabObj.uniqueId)) { await this.createTab(tabObj) }
-
-    let tab = TabScript.create(this.tabs.get(tabObj.uniqueId)).activate()
-    this.setContentState(tab)
-    this.checkEmbeddedContent(tabObj.tabId)
-    this.updateIcon(true, tabObj.tabId)
+    if (!this.tabs.has(tabObj.uniqueId)) {
+      /*
+      This is a first activation of an extension within the tab.
+      `createTab` will load a content script into the tab.
+      Once content script is fully activated, it will send a ContentReadyMessage.
+      In this message callback we send a state message to the content script.
+       */
+      await this.createTab(tabObj)
+      let tab = this.tabs.get(tabObj.uniqueId)
+      this.setDefaultTabState(tab)
+      tab.activate()
+      this.updateUI(tab)
+    } else {
+      /*
+      This is an activation on a page where content script is already loaded.
+      We can send a state request to it right away.
+       */
+      let tab = this.tabs.get(tabObj.uniqueId)
+      this.setDefaultTabState(tab)
+      tab.activate()
+      this.updateUI(tab)
+      // Require content script to update its state
+      this.setContentState(tab)
+    }
   }
 
   async deactivateContent (tabObj) {
-    if (!this.tabs.has(tabObj.uniqueId)) { await this.createTab(tabObj) }
-
-    let tab = TabScript.create(this.tabs.get(tabObj.uniqueId)).deactivate().setPanelClosed()
-    this.setContentState(tab)
-    this.updateIcon(false, tabObj.tabId)
+    if (this.tabs.has(tabObj.uniqueId)) {
+      /*
+      This is a deactivation on a page where content script is already loaded.
+      We can send a state request to it right away.
+       */
+      let tab = this.tabs.get(tabObj.uniqueId)
+      this.setDefaultTabState(tab)
+      tab.deactivate()
+      this.updateUI(tab)
+      // Require content script to update its state
+      this.setContentState(tab)
+    }
   }
 
   async openPanel (tabObj) {
@@ -179,15 +215,8 @@ export default class BackgroundProcess {
     this.messagingService.sendRequestToTab(new StateRequest(tab), 10000, tab.tabObj.tabId).then(
       message => {
         let contentState = TabScript.readObject(message.body)
-        /*
-        ContentState is an actual state content script is in. It may not match a desired state because
-        content script may fail in one or several operations.
-         */
-        let diff = tab.diff(contentState)
-        if (!diff.isEmpty()) {
-          console.warn(`Content script was not able to update the following properties:`, diff.keys())
-        }
-        this.updateTabState(tab.tabID, contentState)
+        tab.update(contentState)
+        this.updateUI(tab)
       },
       error => {
         console.log(`No status confirmation from tab ${tab.tabID} on state request: ${error.message}`)
@@ -211,6 +240,34 @@ export default class BackgroundProcess {
   }
 
   /**
+   * With this message content script informs us that it is ready and can execute background commands
+   * @param message
+   * @param sender
+   */
+  contentReadyMessageHandler (message, sender) {
+    let contentState = TabScript.readObject(message.body)
+    contentState.updateTabObject(sender.tab.id, sender.tab.windowId)
+    let tab = this.tabs.get(contentState.tabID)
+    // Update an embedded lib status
+    tab.embedLibStatus = contentState.embedLibStatus
+
+    if (!tab.isEmbedLibActive()) {
+      // Send an activation state message to the content script
+      this.setContentState(tab)
+    }
+    this.updateUI(tab)
+  }
+
+  embedLibMessageHandler (message, sender) {
+    let contentState = TabScript.readObject(message.body)
+    contentState.updateTabObject(sender.tab.id, sender.tab.windowId)
+    let tab = this.tabs.get(contentState.tabID)
+    // Update an embedded lib status
+    tab.embedLibStatus = contentState.embedLibStatus
+    this.updateUI(tab)
+  }
+
+  /**
    * Handles a state message from a content script
    * (content script notifies background of a content script state change)
    * @param message
@@ -220,7 +277,17 @@ export default class BackgroundProcess {
     let contentState = TabScript.readObject(message.body)
     contentState.updateTabObject(sender.tab.id, sender.tab.windowId)
 
-    this.updateTabState(contentState.tabID, contentState)
+    if (!contentState.isPending()) {
+      if (!contentState.isEmbedLibActive()) {
+        let tab = this.tabs.get(contentState.tabID)
+        tab.update(contentState)
+        this.updateUI(tab)
+      }
+    } else {
+      let tab = this.tabs.get(contentState.tabID)
+      tab.embedLibStatus = contentState.embedLibStatus
+      this.updateUI(tab)
+    }
   }
 
   tabActivationListener (info) {
@@ -277,18 +344,16 @@ export default class BackgroundProcess {
    */
   async navigationCompletedListener (details) {
     let finalWindowId = this.defineCurrentWindowIdForActivation(details)
-
     let tmpTabUniqueId = Tab.createUniqueId(details.tabId, finalWindowId)
 
     if (this.tabs.has(tmpTabUniqueId)) {
+      let tab = this.tabs.get(tmpTabUniqueId)
       // make sure this is a tab we know about
       if (details.frameId === 0) {
         // AND that it's not an iframe event
-        // If content script was loaded to that tab, restore it to the state it had before
-        let tab = this.tabs.get(tmpTabUniqueId)
-        tab.restore()
         try {
           await this.loadContentData(tab)
+          this.setDefaultTabState(tab)
           this.setContentState(tab)
           this.checkEmbeddedContent(details.tabId)
           this.notifyPageLoad(details.tabId)
@@ -298,8 +363,8 @@ export default class BackgroundProcess {
       // but if it is an iFrame event
       // firefox resets the browserAction icon and title when the user navigates to a new page
       // even when the navigation is in a frame so we need to be sure it's updated
-      } else if (this.tabs.get(tmpTabUniqueId).isActive()) {
-        this.updateIcon(true, details.tabId)
+      } else if (tab.isActive()) {
+        this.setIconState(tab)
         this.updateBrowserActionForTab(this.tabs.get(tmpTabUniqueId))
       }
     }
@@ -374,30 +439,32 @@ export default class BackgroundProcess {
 
     if (this.tabs.has(tmpTabUniqueId) && this.tabs.get(tmpTabUniqueId).isActive()) {
       this.deactivateContent(new Tab(tab.id, tab.windowId))
-      this.updateIcon(false, tab.id)
     } else {
       this.activateContent(new Tab(tab.id, tab.windowId))
-      this.updateIcon(true, tab.id)
     }
   }
 
-  updateTabState (tabID, newState) {
-    let tab = this.tabs.get(tabID)
-    tab.update(newState)
+  setDefaultTabState (tab) {
+    tab.setPanelDefault()
+    tab.setTabDefault()
+    return this
+  }
 
-    // Menu state should reflect a status of a content script
+  updateUI (tab) {
+    // Menu and icon states should reflect a status of a content script
     this.updateBrowserActionForTab(tab)
     this.setMenuForTab(tab)
+    this.setIconState(tab)
   }
 
   updateBrowserActionForTab (tab) {
     if (tab && tab.hasOwnProperty('status')) {
-      if (tab.isActive()) {
+      if (tab.isEmbedLibActive() || tab.isDisabled()) {
+        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.disabledBrowserActionTitle, tabId: tab.tabObj.tabId })
+      } else if (tab.isActive()) {
         browser.browserAction.setTitle({ title: BackgroundProcess.defaults.deactivateBrowserActionTitle, tabId: tab.tabObj.tabId })
       } else if (tab.isDeactivated()) {
         browser.browserAction.setTitle({ title: BackgroundProcess.defaults.activateBrowserActionTitle, tabId: tab.tabObj.tabId })
-      } else if (tab.isDisabled()) {
-        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.disabledBrowserActionTitle, tabId: tab.tabObj.tabId })
       }
     }
   }
@@ -415,7 +482,13 @@ export default class BackgroundProcess {
       let tabId = tab.tabObj.tabId
       // Menu state should reflect a status of a content script
       if (tab.hasOwnProperty('status')) {
-        if (tab.isActive()) {
+        if (tab.isEmbedLibActive() || tab.isDisabled()) {
+          this.menuItems.activate.disable()
+          this.menuItems.deactivate.disable()
+          this.menuItems.disabled.enable()
+          this.menuItems.info.disable()
+          this.updateIcon(false, tabId)
+        } else if (tab.isActive()) {
           this.menuItems.activate.disable()
           this.menuItems.deactivate.enable()
 
@@ -431,12 +504,6 @@ export default class BackgroundProcess {
           this.menuItems.activate.enable()
           this.menuItems.info.disable()
 
-          this.updateIcon(false, tabId)
-        } else if (tab.isDisabled()) {
-          this.menuItems.activate.disable()
-          this.menuItems.deactivate.disable()
-          this.menuItems.disabled.enable()
-          this.menuItems.info.disable()
           this.updateIcon(false, tabId)
         }
       }

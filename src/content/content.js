@@ -1,13 +1,33 @@
 /* global browser */
 import Message from '@/lib/messaging/message/message.js'
+import ContentReadyMessage from '@/lib/messaging/message/content-ready-message.js'
+import EmbedLibMessage from '@/lib/messaging/message/embed-lib-message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service.js'
-import { TabScript, UIController, ExtensionSyncStorage } from 'alpheios-components'
+import { TabScript, UIController, ExtensionSyncStorage, HTMLPage } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
 import StateResponse from '../lib/messaging/response/state-response'
 
 let messagingService = null
 let uiController = null
+
+let sendContentReadyToBackground = function sendContentReadToBackground () {
+  messagingService.sendMessageToBg(new ContentReadyMessage(uiController.state))
+    .catch((error) => console.error('Unable to send content ready message to background', error))
+}
+
+let sendStateToBackground = function sendStateToBackground () {
+  messagingService.sendMessageToBg(new StateMessage(uiController.state))
+    .catch((error) => console.error('Unable to send state to background', error))
+}
+
+let sendResponseToBackground = function sendResponseToBackground (request, state = uiController.state) {
+  messagingService.sendResponseToBg(new StateResponse(request, state)).catch(
+    (error) => {
+      console.error('Unable to send a response to a state request', error)
+    }
+  )
+}
 
 /**
  * State request processing function.
@@ -15,6 +35,17 @@ let uiController = null
 let handleStateRequest = function handleStateRequest (request) {
   let requestState = TabScript.readObject(request.body)
   let diff = uiController.state.diff(requestState)
+  // Set script state to what controller wants it to be
+  // uiController.state.update(requestState)
+  // If there is an Alpheios embedded library present, ignore all requests from background
+  // and send a response back informing that an embedded lib is enabled
+  uiController.state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
+  if (uiController.state.isEmbedLibActive()) {
+    // Notify background if an embedded library is active
+    requestState.setEmbedLibActiveStatus()
+    sendResponseToBackground(request, requestState)
+    return
+  }
 
   if (diff.has('tabID')) {
     if (!uiController.state.tabID) {
@@ -29,82 +60,62 @@ let handleStateRequest = function handleStateRequest (request) {
     }
   }
 
-  if (diff.has('status')) {
-    if (diff.status === TabScript.statuses.script.ACTIVE) {
-      if (uiController.state.isPending()) {
-        // This is a new activation (an activation after page reload)
-        // If activation request has a desired panel status, set it now so that UI controller would open/not open panel according to it
-        if (requestState.panelStatus) { uiController.state.panelStatus = requestState.panelStatus }
-        if (requestState.tab) { uiController.changeTab(requestState.tab) }
-      } else if (uiController.state.isDeactivated()) {
-        // This is an activation after the previous deactivation
-        // Panel status and tabs will be set to their default values
-        uiController.setDefaultPanelState().setDefaultTabState()
-      }
-
-      uiController.activate().catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
-    } else if (diff.status === TabScript.statuses.script.DEACTIVATED) {
-      uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
-    } else if (diff.status === TabScript.statuses.script.DISABLED) {
-      // this is used if the extension has been disabled as a result of the embedded library check
-      // we disable the extension if the page already has the alpheios embedded lib directly included
-      // so that we don't have conflicts
-      uiController.state.disable()
-    }
+  if (diff.has('status') && diff.status === TabScript.statuses.script.ACTIVE) {
+    // This is an activation request
+    uiController.activate()
+      .then(() => {
+        // Set watchers after UI Controller activation so they will not notify background of activation-related events
+        uiController.state.setWatcher('panelStatus', sendStateToBackground)
+        uiController.state.setWatcher('tab', sendStateToBackground)
+        sendResponseToBackground(request)
+      })
+      .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
+  } else if (diff.has('status') && diff.status === TabScript.statuses.script.DEACTIVATED) {
+    // This is a deactivation request
+    uiController.deactivate()
+      .then(() => {
+        sendResponseToBackground(request)
+      })
+      .catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
   }
 
   if (diff.has('panelStatus')) {
-    if (diff.panelStatus === TabScript.statuses.panel.OPEN) { uiController.panel.open() } else { uiController.panel.close() }
+    if (diff.panelStatus === TabScript.statuses.panel.OPEN) {
+      uiController.panel.open()
+    } else if (diff.panelStatus === TabScript.statuses.panel.CLOSED) {
+      uiController.panel.close()
+    }
   }
 
   if (diff.has('tab') && diff.tab) {
     uiController.changeTab(diff.tab)
   }
 
-  messagingService.sendResponseToBg(new StateResponse(request, uiController.state)).catch(
-    (error) => {
-      console.error('Unable to send a response to a state request', error)
-    }
-  )
-}
-
-let sendStateToBackground = function sendStateToBackground () {
-  messagingService.sendMessageToBg(new StateMessage(uiController.state))
-    .catch((error) => console.error('Unable to send state to background', error))
+  sendResponseToBackground(request)
 }
 
 messagingService = new MessagingService()
 let browserManifest = browser.runtime.getManifest()
 let state = new TabScript()
+// A message with PENDING status do not cause background object state updates
 state.status = TabScript.statuses.script.PENDING
+state.setPanelDefault()
+state.setTabDefault()
 uiController = UIController.create(state, {
   storageAdapter: ExtensionSyncStorage,
   app: { name: browserManifest.name, version: browserManifest.version }
 })
-uiController.state.setWatcher('panelStatus', sendStateToBackground)
-uiController.state.setWatcher('tab', sendStateToBackground)
 
 // A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
 document.body.addEventListener('Alpheios_Embedded_Response', () => {
   console.log(`Alpheios is embedded`)
-  // if we weren't already disabled, remember the current state
-  // and then deactivate before disabling
-  if (!uiController.state.isDisabled()) {
-    uiController.state.save()
-    if (uiController.state.isActive()) {
-      console.log('Deactivating Alpheios webextension')
-      uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
-    }
+
+  uiController.state.setEmbedLibActiveStatus()
+  messagingService.sendMessageToBg(new EmbedLibMessage(uiController.state))
+    .catch((error) => console.error('Unable to send embed lib message to background', error))
+  if (uiController.state.isActive()) {
+    uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
   }
-  uiController.state.disable()
-  // we need to make sure the background script knows we have been disabled
-  // so we update the state. This could mean we update the state in the background
-  // multiple times in this method, first when we deactivate the uiController and
-  // then again when we disable it, but we cannot avoid this because we want to save
-  // the state when we deactivate distinct from being disabled, so that we can return
-  // to that state later if we navigate off a page which forced the disabled state (such as
-  // when we are on a page with the Alpehios embeded library, the point of this handler)
-  sendStateToBackground()
 })
 
 document.body.addEventListener('Alpheios_Reload', () => {
@@ -117,7 +128,9 @@ document.body.addEventListener('Alpheios_Reload', () => {
 
 uiController.init()
   .then(() => {
+    uiController.state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
     messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest, uiController)
     browser.runtime.onMessage.addListener(messagingService.listener.bind(messagingService))
+    sendContentReadyToBackground()
   })
   .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))

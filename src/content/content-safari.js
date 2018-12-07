@@ -1,4 +1,4 @@
-/* global safari */
+/* global safari, Event */
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
@@ -27,7 +27,7 @@ Safari App Extension API, but for now it seems to be the only way.
  */
   pingIntervalID = window.setInterval(() => {
     if (state && state.isActive()) {
-      sendStateToBackground('updateState')
+      sendMessageToBackground('ping')
     }
   }, pingInterval)
 }
@@ -41,10 +41,40 @@ let deactivatePing = function deactivatePing () {
   }
 }
 
+let deactivateUIController = function deactivateUIController () {
+  uiController.deactivate()
+    .then(() => {
+      sendMessageToBackground('updateState')
+      deactivatePing()
+    })
+    .catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+}
+
+/**
+ * A listener for an Alpheios embedded library event message.
+ */
+let embeddedLibListener = function embeddedLibListener () {
+  // We discovered that an Alpheios embedded lib is active
+  state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
+  // Notify background that an embed lib is active
+  sendMessageToBackground('embedLibActive')
+  if (state.isActive()) { deactivateUIController() }
+}
+
 /**
  * State request processing function.
  */
 let handleStateRequest = async function handleStateRequest (message) {
+  state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
+  if (state.isEmbedLibActive()) {
+    // Inform a background that an Alpheios embedded library is active
+    sendMessageToBackground('embedLibActive')
+    return
+  }
+
+  let requestState = TabScript.readObject(message.body)
+  let diff = state.diff(requestState)
+
   /*
   As opposed to webextension, where content script is injected into a document (i.e. `window.document`)
   by a background script, Safari app extension injects content script into each document within a page
@@ -57,74 +87,53 @@ let handleStateRequest = async function handleStateRequest (message) {
   received, would create an instance of a UI controller, following a lazy initialization approach.
    */
   if (!uiController) {
-    uiController = UIController.create(state, {
-      storageAdapter: LocalStorageArea,
-      app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` }
-    })
-    uiController.state.setWatcher('panelStatus', sendStateToBackground)
-    uiController.state.setWatcher('tab', sendStateToBackground)
-
-    await uiController.init()
-
-    // A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
-    document.body.addEventListener('Alpheios_Embedded_Response', () => {
-      // if we weren't already disabled, remember the current state
-      // and then deactivate before disabling
-      if (!uiController.state.isDisabled()) {
-        uiController.state.save()
-        if (uiController.state.isActive()) {
-          uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
-          deactivatePing()
-        }
-      }
-      uiController.state.disable()
-      // and update the background to know that we have been disabled
-      sendStateToBackground('updateState')
-    })
-
-    // add now actually send the Alpheios_Embedded_Check event to the document so that it can respond
-    document.body.dispatchEvent('Alpheios_Embedded_Check')
-  }
-
-  let requestState = TabScript.readObject(message.body)
-  let diff = uiController.state.diff(requestState)
-
-  if (diff.has('status')) {
-    if (diff.status === TabScript.statuses.script.ACTIVE) {
-      if (uiController.state.isPending()) {
-        // This is a new activation (an activation after page reload)
-        // If activation request has a desired panel status, set it now so that UI controller would open/not open panel according to it
-        if (requestState.panelStatus) { uiController.state.panelStatus = requestState.panelStatus }
-        if (requestState.tab) { uiController.changeTab(requestState.tab) }
-      } else if (uiController.state.isDeactivated()) {
-        // This is an activation after the previous deactivation
-        // Panel status and tabs will be set to their default values
-        uiController.setDefaultPanelState().setDefaultTabState()
-      }
-      uiController.activate()
-        .then(() => {
-          sendStateToBackground('updateState')
-          activatePing() // Start pinging background
-        })
-        .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
-    } else if (uiController.isActivated && diff.status === TabScript.statuses.script.DEACTIVATED) {
-      uiController.deactivate()
-        .then(() => sendStateToBackground('updateState'))
-        .catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
-      deactivatePing()
+    if (diff.has('status') && diff.status === TabScript.statuses.script.ACTIVE) {
+      uiController = UIController.create(state, {
+        storageAdapter: LocalStorageArea,
+        app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` }
+      })
+      await uiController.init()
+    } else {
+      // If uninitialized, ignore all other requests other than activate
+      // TODO: This is due to Safari background sending state request after reload. Need to fix
+      return
     }
   }
 
-  if (uiController.isActivated && diff.has('panelStatus')) {
-    if (diff.panelStatus === TabScript.statuses.panel.OPEN) { uiController.panel.open() } else { uiController.panel.close() }
+  // Set script state to what controller wants it to be
+  // uiController.state.update(requestState)
+
+  if (diff.has('status') && diff.status === TabScript.statuses.script.ACTIVE) {
+    // This is an activation request
+    state.setTabDefault() // Always reset tab state to default on activation
+    uiController.activate()
+      .then(() => {
+        // Set watchers after UI Controller activation so they will not notify background of activation-related events
+        uiController.state.setWatcher('panelStatus', sendMessageToBackground.bind(this, 'updateState'))
+        uiController.state.setWatcher('tab', sendMessageToBackground.bind(this, 'updateState'))
+        activatePing()
+        sendMessageToBackground('updateState')
+      })
+      .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
+    return
+  } else if (diff.has('status') && diff.status === TabScript.statuses.script.DEACTIVATED) {
+    // This is a deactivation request
+    deactivateUIController()
+    return
   }
 
-  if (uiController.isActivated && diff.has('tab') && diff.tab) {
-    uiController.changeTab(diff.tab)
+  if (diff.has('panelStatus')) {
+    if (diff.panelStatus === TabScript.statuses.panel.OPEN) {
+      uiController.panel.open()
+    } else if (diff.panelStatus === TabScript.statuses.panel.CLOSED) {
+      uiController.panel.close()
+    }
   }
+  if (diff.has('tab') && diff.tab) { uiController.changeTab(diff.tab) }
+  sendMessageToBackground('updateState')
 }
 
-let sendStateToBackground = function sendStateToBackground (messageName) {
+let sendMessageToBackground = function sendStateToBackground (messageName) {
   safari.extension.dispatchMessage(messageName, new StateMessage(state))
 }
 
@@ -151,8 +160,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
     so that it could update states of an icon and a pop-up menu
      */
     state = new TabScript()
-    state.status = TabScript.statuses.script.PENDING
-    state.panelStatus = TabScript.statuses.panel.CLOSED
-    sendStateToBackground('updateState')
+    state.deactivate()
+    state.setPanelDefault()
+    state.setTabDefault()
+    state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
+    if (!state.isEmbedLibActive()) {
+      // We did not discover embedded library right away. Let's set a message listener for its response
+      // and fire an event to double check
+      document.body.addEventListener('Alpheios_Embedded_Response', embeddedLibListener)
+      document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))
+    }
+    sendMessageToBackground('contentReady')
   }
 })

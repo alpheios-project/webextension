@@ -15,7 +15,7 @@ class BackgroundProcess {
     
     static var tabs: [Int: TabScript] = [:]
     
-    func updateIcon(active: Bool, window: SFSafariWindow) {
+    func updateIcon(active: Bool, window: SFSafariWindow, embedLibActive: Bool) {
         window.getToolbarItem { toolbarItem in
             var icon = BackgroundProcess.browserIcons["nonactive"]
             
@@ -25,13 +25,19 @@ class BackgroundProcess {
                 toolbarItem?.setLabel("Deactivate Alpheios")
             } else {
                 toolbarItem?.setBadgeText("")
-                toolbarItem?.setLabel("Activate Alpheios")
+                if (embedLibActive) {
+                    toolbarItem?.setLabel("(Alpheios Extension Disabled For Page)")
+                } else {
+                    toolbarItem?.setLabel("Activate Alpheios")
+                }
             }
             
             toolbarItem?.setImage(icon)
         }
     }
     
+    // Returns a stored value of a TabScript or creates a new TabScript instance
+    // if stored value is not found
     func getTabFromTabsByHash(hashValue: Int) -> TabScript {
         if (BackgroundProcess.tabs[hashValue] == nil) {
             let curPage = TabScript(hashValue: hashValue)
@@ -51,31 +57,33 @@ class BackgroundProcess {
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
                 if tab.status != TabScript.props["status_disabled"] {
+                    tab.setTablDefault() // Reset tab value on deactivation
                     self.setContentState(tab: tab, page: activePage!)
-                    self.updateIcon(active: true, window: window)
+                    self.updateIcon(active: true, window: window, embedLibActive: tab.isEmbedLibActive)
                 }
             })
         })
     }
 
-   // This version is used for menu initiated activations
+   // This function is used for menu initiated activations
    func activateContent(page: SFSafariPage) {
         let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
         curTab.activate()
+        curTab.setTablDefault() // Reset tab value on deactivation
         self.setContentState(tab: curTab, page: page)
     }
     
-    // This version is used for deactivations made by a BackgroundProcess
+    // This function is used for deactivations made by a BackgroundProcess
     func deactivateContent(tab: TabScript, window: SFSafariWindow) {
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
                 self.setContentState(tab: tab, page: activePage!)
-                self.updateIcon(active: false, window: window)
+                self.updateIcon(active: false, window: window, embedLibActive: tab.isEmbedLibActive)
             })
         })
     }
     
-    // This version is used for menu initiated deactivations
+    // This function is used for menu initiated deactivations
     func deactivateContent(page: SFSafariPage) {
         let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
         curTab.deactivate()
@@ -103,11 +111,11 @@ class BackgroundProcess {
         let curTab = self.getTabFromTabsByHash(hashValue: (page.hashValue))
 
         // We cannot activate content script if it's disabled due to page incompatibility
-        if (curTab.status != TabScript.props["status_disabled"]) {
+        if ((curTab.embedLibStatus != TabScript.props["status_embed_lib_active"]) && (curTab.status != TabScript.props["status_disabled"])) {
             // Toggle a state active status
             curTab.changeActiveStatus()
             
-            // Do not act
+            // Toggle an icon state
             if (curTab.isActive) {
                 self.activateContent(tab: curTab, window: window)
             } else {
@@ -116,59 +124,79 @@ class BackgroundProcess {
         }
     }
     
-    // This method is called when we receive a state message from background
-    // We need to use it to update a state of our tabdata object
-    func updateTabData(hashValue: Int, tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
+    // This method is called when we receive a "contentReady" message
+    // It means that a new instance of content script is loaded and is ready to receive background commands
+    func contentReadyHandler(hashValue: Int, tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
+        var isNew:Bool = false
+        if (BackgroundProcess.tabs[hashValue] == nil) {
+            isNew = true
+        }
         let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
         if let messageBody = tabdata?["body"] as? Dictionary<String, Any> {
-            // If we receive a request with a "PENDING" status and we already have stat of same tab stored
-            // then it is a page reload and we should restore its state to what it was before reloading.
-            // In this case we don't need to update a tab status, but send a request to update
-            // content state to what it was before reloading.
-            let status = messageBody["status"] as? String
-            if status == TabScript.props["status_pending"] {
-                // Tab content has been loaded
-                let storedStatus = curTab.status
-                if storedStatus != "" {
-                    // Since we do have a stored state of a tab, this is a reload, not a new tab load.
-                    // We will send a state message to content so it will update its state
-                    // to what we have been stored by the background.
-                    self.setContentState(tab: curTab, page: page)
-                }
+            let embedLibtatus = messageBody["embedLibStatus"] as? String
+            if (embedLibtatus == TabScript.props["status_embed_lib_active"]) {
+                // There is an embedded lib discoverd on a page
+                curTab.setEmbedLibActive()
             } else {
-                curTab.updateWithData(data: messageBody)
+                curTab.setEmbedLibInactive()
+            }
+
+            if (!isNew) {
+                // This is a page reload of an existing tab. Send tab informtion to the content script
+                let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
+                // Set panel and tab to default states upon reload
+                curTab.setPanelDefault()
+                curTab.setTablDefault()
+                self.setContentState(tab: curTab, page: page)
+                return curTab
             }
         }
         return curTab
     }
     
-    func reactivate(tab: TabScript, page: SFSafariPage) {
-        self.setContentState(tab: tab, page: page)
+    // A notification that an active embedded library is found on a page
+    func embedLibActiveHandler(hashValue: Int, tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
+        let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
+        curTab.setEmbedLibActive()
+        return curTab
+    }
+    
+    // This method is called when we receive a state message from background
+    // We need to use it to update a state of our tabdata object
+    func updateTabData(hashValue: Int, tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
+        let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
+        if let messageBody = tabdata?["body"] as? Dictionary<String, Any> {
+            curTab.updateWithData(data: messageBody)
+        }
+        return curTab
     }
     
     func checkToolbarIcon(page: SFSafariPage, window: SFSafariWindow) {
         let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
 
-        if (curTab.isActive) {
-            self.updateIcon(active: true, window: window)
+        if (curTab.isActive && curTab.isEmbedLibInactive) {
+            self.updateIcon(active: true, window: window, embedLibActive: curTab.isEmbedLibActive)
         } else {
-            self.updateIcon(active: false, window: window)
+            self.updateIcon(active: false, window: window, embedLibActive: curTab.isEmbedLibActive)
         }
     }
     
     func checkContextMenuIconVisibility(command: String, hashValue: Int) -> Bool {
         let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
         // Hide this menu item if content script is disabled
-        if (command == "Activate" && !curTab.isActive && curTab.status != TabScript.props["status_disabled"]) {
+        if (command == "Activate" && !curTab.isActive && curTab.isEmbedLibInactive) {
             return true
         }
-        if (command == "Deactivate" && curTab.isActive) {
+        if (command == "Deactivate" && curTab.isActive && curTab.isEmbedLibInactive) {
             return true
         }
-        if (command == "OpenPanel" && curTab.isActive && !curTab.isPanelOpen) {
+        
+        if (command == "ShowInfo"  && curTab.isActive && !curTab.isPanelOpen && curTab.isEmbedLibInactive) {
             return true
         }
-        if (command == "ShowInfo"  && curTab.isActive && !curTab.isPanelOpen) {
+        
+        if (command == "Disabled"  &&  curTab.isEmbedLibActive) {
+            // Hide menu if embedded lib is active
             return true
         }
             

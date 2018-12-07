@@ -43,3 +43,48 @@ It seems that sendResponse is not supported by webextension-polyfill:
 [https://github.com/mozilla/webextension-polyfill/issues/16/#issuecomment-296693219]
 The reason seems to be that a response callback might be removed from `onMessage` some time later. 
 Because of that, we have to implement our own request-response matching mechanism with `MessagingService`.
+
+## Default parameters
+
+### Webextension state (active or inactive)
+Default webextension state is "inactive".
+
+### Panel state (open or closed)
+Default panel state is determined by a setting in configuration. If not configured by user explicitly,
+it is "open".
+
+### Selected panel tab
+Default panel tab is "info".
+
+## Usage Scenarios
+
+Webextension uses a tab object to start state of an extension within a certain browser tab or window.
+Because of this, each tab has its own state that is completely isolated. All secenarios listed below
+will describe behavior of webextension within a single tab.
+
+### Activate for the first time in a tab
+When extension is activated in a tab for the first time, it uses default parameters to set its state.
+
+### Activated, navigate to the new page
+When an extension is activated, and user navigate to the other page, the webextension retains its
+active state. All other state parameters (panel state and selected tab) are set to their default values.
+
+### Activated, navigate to the new page with Alpheios embedded library
+Alpheios embedded library provides its own functionality that conflicts with webextension. Because of this,
+on all pages where embedded library is present and active, webextension will be deactivated. Webextension
+user controls will be updated to reflect the fact that it has been disabled.
+
+### Activated, navigate to the new page with Alpheios embedded library, return to the same page
+Webextension should restore its state to what it was when the page was left. If webextension was
+activated on a page and then disabled after navigating to a page with embedded library, it should
+restore its active state. Its other settings, however, should be set to default values. Similar rules
+apply to a situation when a webextension was deactivated initially. After return to a page a
+webextension state should be "inactive".
+
+### Activated, navigate to the new page, deactivate, navigate back
+In this case an extension should be deactivated on the original page: it wll keep its deactivated state
+across pages.
+
+### On the same page: activated, deactivated, then activated again
+In this case an extension should should reset its state to default after the second activation:
+deactivation should always reset a webextension state to default.

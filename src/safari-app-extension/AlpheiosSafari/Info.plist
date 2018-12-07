@@ -55,6 +55,12 @@
 				<key>Text</key>
 				<string>Alpheios Show Info</string>
 			</dict>
+			<dict>
+				<key>Command</key>
+				<string>Disabled</string>
+				<key>Text</key>
+				<string>(Disabled)</string>
+			</dict>
 		</array>
 		<key>SFSafariStyleSheet</key>
 		<array>
