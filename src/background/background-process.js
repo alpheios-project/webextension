@@ -353,7 +353,6 @@ export default class BackgroundProcess {
         // AND that it's not an iframe event
         try {
           await this.loadContentData(tab)
-          this.setDefaultTabState(tab)
           this.setContentState(tab)
           this.checkEmbeddedContent(details.tabId)
           this.notifyPageLoad(details.tabId)
