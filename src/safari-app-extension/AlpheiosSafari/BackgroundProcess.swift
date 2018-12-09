@@ -57,7 +57,6 @@ class BackgroundProcess {
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
                 if tab.status != TabScript.props["status_disabled"] {
-                    tab.setTablDefault() // Reset tab value on deactivation
                     self.setContentState(tab: tab, page: activePage!)
                     self.updateIcon(active: true, window: window, embedLibActive: tab.isEmbedLibActive)
                 }
@@ -77,6 +76,8 @@ class BackgroundProcess {
     func deactivateContent(tab: TabScript, window: SFSafariWindow) {
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
+                tab.setPanelDefault() // Reset panel state to a default
+                tab.setTablDefault() // Reset tab value on deactivation
                 self.setContentState(tab: tab, page: activePage!)
                 self.updateIcon(active: false, window: window, embedLibActive: tab.isEmbedLibActive)
             })
@@ -87,6 +88,8 @@ class BackgroundProcess {
     func deactivateContent(page: SFSafariPage) {
         let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
         curTab.deactivate()
+        curTab.setPanelDefault() // Reset panel state to a default
+        curTab.setTablDefault() // Reset tab value on deactivation
         self.setContentState(tab: curTab, page: page)
     }
     
@@ -119,6 +122,8 @@ class BackgroundProcess {
             if (curTab.isActive) {
                 self.activateContent(tab: curTab, window: window)
             } else {
+                curTab.setPanelDefault() // Reset panel state to a default
+                curTab.setTablDefault() // Reset tab value on deactivation
                 self.deactivateContent(tab: curTab, window: window)
             }
         }
@@ -144,9 +149,6 @@ class BackgroundProcess {
             if (!isNew) {
                 // This is a page reload of an existing tab. Send tab informtion to the content script
                 let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
-                // Set panel and tab to default states upon reload
-                curTab.setPanelDefault()
-                curTab.setTablDefault()
                 self.setContentState(tab: curTab, page: page)
                 return curTab
             }

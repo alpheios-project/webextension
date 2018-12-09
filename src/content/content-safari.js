@@ -105,7 +105,10 @@ let handleStateRequest = async function handleStateRequest (message) {
 
   if (diff.has('status') && diff.status === TabScript.statuses.script.ACTIVE) {
     // This is an activation request
-    state.setTabDefault() // Always reset tab state to default on activation
+
+    // Set state according to activation request data
+    if (diff.has('panelStatus')) { state.panelStatus = diff.panelStatus }
+    if (diff.has('tab')) { state.tab = diff.tab }
     uiController.activate()
       .then(() => {
         // Set watchers after UI Controller activation so they will not notify background of activation-related events
@@ -118,6 +121,10 @@ let handleStateRequest = async function handleStateRequest (message) {
     return
   } else if (diff.has('status') && diff.status === TabScript.statuses.script.DEACTIVATED) {
     // This is a deactivation request
+
+    // Set state according to activation request data
+    if (diff.has('panelStatus')) { state.panelStatus = diff.panelStatus }
+    if (diff.has('tab')) { state.tab = diff.tab }
     deactivateUIController()
     return
   }
