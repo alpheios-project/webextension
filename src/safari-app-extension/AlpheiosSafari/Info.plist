@@ -59,7 +59,7 @@
 				<key>Command</key>
 				<string>Disabled</string>
 				<key>Text</key>
-				<string>(Alpheios Disabled)</string>
+				<string>(Disabled)</string>
 			</dict>
 		</array>
 		<key>SFSafariStyleSheet</key>
