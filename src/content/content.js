@@ -35,8 +35,7 @@ let sendResponseToBackground = function sendResponseToBackground (request, state
 let handleStateRequest = function handleStateRequest (request) {
   let requestState = TabScript.readObject(request.body)
   let diff = uiController.state.diff(requestState)
-  // Set script state to what controller wants it to be
-  // uiController.state.update(requestState)
+
   // If there is an Alpheios embedded library present, ignore all requests from background
   // and send a response back informing that an embedded lib is enabled
   uiController.state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)

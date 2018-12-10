@@ -138,8 +138,8 @@ class BackgroundProcess {
         }
         let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
         if let messageBody = tabdata?["body"] as? Dictionary<String, Any> {
-            let embedLibtatus = messageBody["embedLibStatus"] as? String
-            if (embedLibtatus == TabScript.props["status_embed_lib_active"]) {
+            let embedLibStatus = messageBody["embedLibStatus"] as? String
+            if (embedLibStatus == TabScript.props["status_embed_lib_active"]) {
                 // There is an embedded lib discoverd on a page
                 curTab.setEmbedLibActive()
             } else {

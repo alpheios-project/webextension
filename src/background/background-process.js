@@ -111,8 +111,13 @@ export default class BackgroundProcess {
       /*
       This is a first activation of an extension within the tab.
       `createTab` will load a content script into the tab.
+      It will take time for content script JS file and other related resources to be loaded
+      and content script code to be initialized. That's why we don't want to send
+      a state request (`setContentState()`) here.
       Once content script is fully activated, it will send a ContentReadyMessage.
       In this message callback we send a state message to the content script.
+      This way it will be guaranteed that the content script will be fully ready
+      to enter the state we would like it to be.
        */
       await this.createTab(tabObj)
       let tab = this.tabs.get(tabObj.uniqueId)
@@ -278,6 +283,14 @@ export default class BackgroundProcess {
     contentState.updateTabObject(sender.tab.id, sender.tab.windowId)
 
     if (!contentState.isPending()) {
+      /*
+      If we receive a message with the PENDING state, this means that controller is not fully
+      initialized yet. Because of this, it has no valid state at the moment and most of its state
+      information presents no value and should be ignored. Except for the one piece: whether an
+      embedded library is active on a page. Due to presence of an embedded library attribute
+      content script can discover that early, and it's useful for us to pick up this info
+      in order to update our UI.
+       */
       if (!contentState.isEmbedLibActive()) {
         let tab = this.tabs.get(contentState.tabID)
         tab.update(contentState)

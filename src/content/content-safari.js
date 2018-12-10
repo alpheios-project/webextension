@@ -100,9 +100,6 @@ let handleStateRequest = async function handleStateRequest (message) {
     }
   }
 
-  // Set script state to what controller wants it to be
-  // uiController.state.update(requestState)
-
   if (diff.has('status') && diff.status === TabScript.statuses.script.ACTIVE) {
     // This is an activation request
 
