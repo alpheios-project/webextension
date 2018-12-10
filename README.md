@@ -58,33 +58,34 @@ Default panel tab is "info".
 
 ## Usage Scenarios
 
-Webextension uses a tab object to start state of an extension within a certain browser tab or window.
-Because of this, each tab has its own state that is completely isolated. All secenarios listed below
-will describe behavior of webextension within a single tab.
+Webextension uses a tab object to store state of an extension within a certain browser tab or window.
+Because of this, each tab has its own state that is completely isolated from the state of the other tab.
+
+Below are some scenarios that describe desired behavior of a webextension within a single tab.
 
 ### Activate for the first time in a tab
-When extension is activated in a tab for the first time, it uses default parameters to set its state.
+When an extension is activated in a tab for the first time, it uses default parameters to set its state.
 
 ### Activated, navigate to the new page
-When an extension is activated, and user navigate to the other page, the webextension retains its
-active state. All other state parameters (panel state and selected tab) are set to their default values.
+When an extension is activated, and user navigates to the other page, the webextension retains its
+active state, as well as whether a panel is open or not and what tab is active within a panel.
 
 ### Activated, navigate to the new page with Alpheios embedded library
-Alpheios embedded library provides its own functionality that conflicts with webextension. Because of this,
-on all pages where embedded library is present and active, webextension will be deactivated. Webextension
-user controls will be updated to reflect the fact that it has been disabled.
+An Alpheios embedded library provides its own functionality that conflicts with webextension. Because of this,
+on all pages where an embedded library is present and active, webextension will be deactivated. Webextension
+UI will be updated to reflect the fact that it has been disabled.
 
-### Activated, navigate to the new page with Alpheios embedded library, return to the same page
-Webextension should restore its state to what it was when the page was left. If webextension was
-activated on a page and then disabled after navigating to a page with embedded library, it should
-restore its active state. Its other settings, however, should be set to default values. Similar rules
-apply to a situation when a webextension was deactivated initially. After return to a page a
-webextension state should be "inactive".
+### Activated, navigate to the new page with Alpheios embedded library, return to the previous page
+Webextension should restore its state to what it had when the page was left. If webextension was
+activated on a page and then disabled automatically after navigating to a page with embedded library, it should
+restore its active state. Same applies to other settings such as panel open or closed status and
+active tab name. Similar rules apply to scenarios when a webextension was deactivated initially. 
+After returning to a previous page a webextension state should be "inactive".
 
 ### Activated, navigate to the new page, deactivate, navigate back
-In this case an extension should be deactivated on the original page: it wll keep its deactivated state
+In this case an extension should be deactivated on the initial page: it wll keep its inactive state
 across pages.
 
 ### On the same page: activated, deactivated, then activated again
-In this case an extension should should reset its state to default after the second activation:
+In this case an extension should should reset its state to a default one right before the second activation:
 deactivation should always reset a webextension state to default.
