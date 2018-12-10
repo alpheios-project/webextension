@@ -1,7 +1,7 @@
 {
   "name": "webextension",
   "version": "2.1.0",
-  "build": "14",
+  "build": "15",
   "description": "A WebExtension implementation of Alpheios",
   "main": "index.js",
   "scripts": {
@@ -53,7 +53,7 @@
     "coveralls": "^3.0.1",
     "css-loader": "^1.0.1",
     "element-closest": "^2.0.2",
-    "eslint": "^5.9.0",
+    "eslint": "^5.10.0",
     "eslint-plugin-import": "^2.14.0",
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^2.0.0",
@@ -91,17 +91,17 @@
     "uikit": "^3.0.0-rc.9-dev.bd39d353",
     "url-loader": "^1.1.2",
     "uuid": "^3.3.0",
-    "vue": "^2.5.18",
+    "vue": "^2.5.19",
     "vue-jest": "^3.0.1",
     "vue-loader": "^15.4.2",
     "vue-style-loader": "^4.1.2",
     "vue-svg-loader": "^0.11.0",
-    "vue-template-compiler": "^2.5.18",
+    "vue-template-compiler": "^2.5.19",
     "webextension-polyfill": "^0.3.1",
     "webpack": "^4.27.1",
     "webpack-bundle-analyzer": "^3.0.3",
     "webpack-dev-server": "^3.1.10",
-    "webpack-merge": "^4.1.4",
+    "webpack-merge": "^4.1.5",
     "zip-folder": "^1.0.0"
   },
   "engines": {
