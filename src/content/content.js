@@ -61,6 +61,10 @@ let handleStateRequest = function handleStateRequest (request) {
 
   if (diff.has('status') && diff.status === TabScript.statuses.script.ACTIVE) {
     // This is an activation request
+
+    // Set state according to activation request data
+    if (diff.has('panelStatus')) { uiController.state.panelStatus = diff.panelStatus }
+    if (diff.has('tab')) { uiController.state.tab = diff.tab }
     uiController.activate()
       .then(() => {
         // Set watchers after UI Controller activation so they will not notify background of activation-related events
@@ -69,6 +73,7 @@ let handleStateRequest = function handleStateRequest (request) {
         sendResponseToBackground(request)
       })
       .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
+    return
   } else if (diff.has('status') && diff.status === TabScript.statuses.script.DEACTIVATED) {
     // This is a deactivation request
     uiController.deactivate()
@@ -76,6 +81,7 @@ let handleStateRequest = function handleStateRequest (request) {
         sendResponseToBackground(request)
       })
       .catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+    return
   }
 
   if (diff.has('panelStatus')) {

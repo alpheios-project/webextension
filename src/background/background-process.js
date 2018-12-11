@@ -220,7 +220,16 @@ export default class BackgroundProcess {
     this.messagingService.sendRequestToTab(new StateRequest(tab), 10000, tab.tabObj.tabId).then(
       message => {
         let contentState = TabScript.readObject(message.body)
-        tab.update(contentState)
+        if (contentState.isDeactivated() && !contentState.isEmbedLibActive()) {
+          /*
+          If this is a user initiated deactivation (not the one caused by the presence
+          of an embedded library), reset to default panel and tab status then.
+           */
+          this.setDefaultTabState(tab)
+        } else {
+          // This is an activation or forced deactivation (due to embedded library's presence)
+          tab.update(contentState)
+        }
         this.updateUI(tab)
       },
       error => {
