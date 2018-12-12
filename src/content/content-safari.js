@@ -2,7 +2,7 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
-import { TabScript, UIController, LocalStorageArea, HTMLPage } from 'alpheios-components'
+import { TabScript, UIController, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style-safari.min.css' // eslint-disable-line
 import Package from '../../package.json'
 
@@ -41,10 +41,17 @@ let deactivatePing = function deactivatePing () {
   }
 }
 
-let deactivateUIController = function deactivateUIController () {
+/**
+ * Deactivates a UI controller and notifies Safari app extension about it,
+ * depending on the `notify` parameter value.
+ * @param {Boolean} notify - Will notify app extension only if this parameter is true.
+ */
+let deactivateUIController = function deactivateUIController (notify = true) {
   uiController.deactivate()
     .then(() => {
-      sendMessageToBackground('updateState')
+      if (notify) {
+        sendMessageToBackground('updateState')
+      }
       deactivatePing()
     })
     .catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
@@ -58,7 +65,13 @@ let embeddedLibListener = function embeddedLibListener () {
   state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
   // Notify background that an embed lib is active
   sendMessageToBackground('embedLibActive')
-  if (state.isActive()) { deactivateUIController() }
+  if (state.isActive()) {
+    // Display a panel with a warning about extension being deactivated
+    let l10n = new L10n().addMessages(enUS, Locales.en_US).addMessages(enGB, Locales.en_GB).setLocale(Locales.en_US)
+    let embedLibWarning = UIController.getEmbedLibWarning(l10n.messages.EMBED_LIB_WARNING_TEXT)
+    document.body.appendChild(embedLibWarning.$el)
+    deactivateUIController(false)
+  }
 }
 
 /**
