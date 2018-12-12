@@ -4,7 +4,7 @@ import ContentReadyMessage from '@/lib/messaging/message/content-ready-message.j
 import EmbedLibMessage from '@/lib/messaging/message/embed-lib-message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service.js'
-import { TabScript, UIController, ExtensionSyncStorage, HTMLPage } from 'alpheios-components'
+import { TabScript, UIController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
 import StateResponse from '../lib/messaging/response/state-response'
 
@@ -119,6 +119,9 @@ document.body.addEventListener('Alpheios_Embedded_Response', () => {
   messagingService.sendMessageToBg(new EmbedLibMessage(uiController.state))
     .catch((error) => console.error('Unable to send embed lib message to background', error))
   if (uiController.state.isActive()) {
+    let l10n = new L10n().addMessages(enUS, Locales.en_US).addMessages(enGB, Locales.en_GB).setLocale(Locales.en_US)
+    let embedLibWarning = UIController.getEmbedLibWarning(l10n.messages.EMBED_LIB_WARNING_TEXT)
+    document.body.appendChild(embedLibWarning.$el)
     uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
   }
 })
