@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>2.1.0</string>
 	<key>CFBundleVersion</key>
-	<string>18</string>
+	<string>19</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSExtension</key>
@@ -41,25 +41,25 @@
 				<key>Command</key>
 				<string>Activate</string>
 				<key>Text</key>
-				<string>Alpheios Activate</string>
+				<string>Activate Alpheios Reading Tools</string>
 			</dict>
 			<dict>
 				<key>Command</key>
 				<string>Deactivate</string>
 				<key>Text</key>
-				<string>Alpheios Deactivate</string>
+				<string>Deactivate Alpheios Reading Tools</string>
 			</dict>
 			<dict>
 				<key>Command</key>
 				<string>ShowInfo</string>
 				<key>Text</key>
-				<string>Alpheios Show Info</string>
+				<string>About Alpheios Reading Tools</string>
 			</dict>
 			<dict>
 				<key>Command</key>
 				<string>Disabled</string>
 				<key>Text</key>
-				<string>(Alpheios Disabled)</string>
+				<string>(Alpheios Reading Tools Disabled)</string>
 			</dict>
 		</array>
 		<key>SFSafariStyleSheet</key>
@@ -78,7 +78,7 @@
 			<key>Image</key>
 			<string>alpheios.pdf</string>
 			<key>Label</key>
-			<string>Activate Alpheios</string>
+			<string>Activate Alpheios Reading Tools</string>
 		</dict>
 		<key>SFSafariWebsiteAccess</key>
 		<dict>
@@ -89,6 +89,6 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2018 The Alpheios Project. All rights reserved.</string>
 	<key>NSHumanReadableDescription</key>
-	<string>Alpheios Reading Tools for Safari on MacOS</string>
+	<string>Add clickable access to dictionary entries, morphological analyses, inflection tables and grammars for any Latin or Ancient Greek word, with limited support for Classical Arabic and Persian. Activate by clicking on the Alpheios toolbar icon in the Safari toolbar then double-click on any word.</string>
 </dict>
 </plist>
