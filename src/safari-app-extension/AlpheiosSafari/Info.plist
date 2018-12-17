@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>AlpheiosReadingTools</string>
+	<string>Alpheios Reading Tools</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -89,6 +89,6 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2018 The Alpheios Project. All rights reserved.</string>
 	<key>NSHumanReadableDescription</key>
-	<string>Add clickable access to dictionary entries, morphological analyses, inflection tables and grammars for any Latin or Ancient Greek word, with limited support for Classical Arabic and Persian. Activate by clicking on the Alpheios toolbar icon in the Safari toolbar then double-click on any word.</string>
+	<string>Adds access to language resources at double-click for any Latin, Ancient Greek, Classical Arabic or Persian word.</string>
 </dict>
 </plist>
