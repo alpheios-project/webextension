@@ -1,11 +1,10 @@
-import VueLoaderPlugin from '../node_modules/vue-loader/lib/plugin.js'
 import path from 'path'
 const projectRoot = process.cwd()
 
 const webpack = {
   common: {
-    context: path.join(projectRoot, 'src/background'),
-    entry: './background.js',
+    context: path.join(projectRoot, 'src/lib/auth0-chrome/src/'),
+    entry: ['@babel/polyfill', './ChromeClient.js'],
     resolve: {
       alias: {
         'alpheios-data-models$': path.join(projectRoot, 'node_modules/alpheios-data-models/dist/alpheios-data-models.js'),
@@ -18,20 +17,17 @@ const webpack = {
         'alpheios-morph-client$': path.join(projectRoot, 'node_modules/alpheios-morph-client/dist/alpheios-morph-client.js'),
         '@': path.join(projectRoot, 'src')
       }
-    },
-    plugins: [
-      new VueLoaderPlugin()
-    ]
+    }
   },
 
   production: {
     mode: 'production',
-    output: { filename: 'background.js' }
+    output: { filename: 'auth0.js' }
   },
 
   development: {
     mode: 'development',
-    output: { filename: 'background.js' }
+    output: { filename: 'auth0.js' }
   }
 }
 

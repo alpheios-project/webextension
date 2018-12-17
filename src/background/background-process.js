@@ -1,8 +1,9 @@
-/* global browser */
+/* global browser, Auth0Chrome, auth0Env */
 import { enUS, enGB, Locales, L10n, Tab, TabScript } from 'alpheios-components'
 import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
+import LoginResponse from '../lib/messaging/response/login-response.js'
 import ContextMenuItem from './context-menu-item.js'
 import ContentMenuSeparator from './context-menu-separator.js'
 
@@ -73,6 +74,7 @@ export default class BackgroundProcess {
     console.log('Background script initialization started ...')
 
     this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
+    this.messagingService.addHandler(Message.types.LOGIN_REQUEST, this.authMessageHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
     browser.tabs.onDetached.addListener(this.tabDetachedListener.bind(this))
@@ -245,6 +247,39 @@ export default class BackgroundProcess {
     contentState.updateTabObject(sender.tab.id, sender.tab.windowId)
 
     this.updateTabState(contentState.tabID, contentState)
+  }
+
+  authMessageHandler (request, sender) {
+    console.log(sender)
+    console.log(`Login request received`)
+
+    // scope
+    //  - openid if you want an id_token returned
+    //  - offline_access if you want a refresh_token returned
+    //  - profile if you want an additional claims like name, nickname, picture and updated_at.
+    // device
+    //  - required if requesting the offline_access scope.
+    let options = {
+      scope: 'openid profile offline_access',
+      device: 'chrome-extension'
+    }
+
+    new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
+      .authenticate(options)
+      .then(authResult => {
+        // localStorage.authResult = JSON.stringify(authResult)
+        console.log(`Authenticated successfully`, authResult)
+
+        this.messagingService.sendResponseToTab(new LoginResponse(request, true), sender.tab.id).catch(
+          error => console.error(`Unable to send a response to a login request: ${error.message}`)
+        )
+      })
+      .catch(err => {
+        console.log(`Authentication error: ${err}`)
+        this.messagingService.sendResponseToTab(new LoginResponse(request, false), sender.tab.id).catch(
+          error => console.error(`Unable to send a response to a login request: ${error.message}`)
+        )
+      })
   }
 
   tabActivationListener (info) {

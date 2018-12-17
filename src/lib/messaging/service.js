@@ -69,6 +69,12 @@ export default class Service extends BaseService {
     return promise
   }
 
+  /**
+   * Sends a request to the background with a specified timout.
+   * @param request
+   * @param timeout
+   * @return {Promise}
+   */
   sendRequestToBg (request, timeout) {
     let promise = this.registerRequest(request, timeout)
     browser.runtime.sendMessage(request).then(

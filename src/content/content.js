@@ -1,6 +1,7 @@
 /* global browser */
 import Message from '@/lib/messaging/message/message.js'
-import StateMessage from '@/lib/messaging/message/state-message'
+import StateMessage from '@/lib/messaging/message/state-message.js'
+import LoginRequest from '@/lib/messaging/request/login-request.js'
 import MessagingService from '@/lib/messaging/service.js'
 import { TabScript, UIController, ExtensionSyncStorage } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
@@ -8,6 +9,33 @@ import StateResponse from '../lib/messaging/response/state-response'
 
 let messagingService = null
 let uiController = null
+
+class Authenticator {
+  static authenticate () {
+    console.log('Authenticate called')
+    return new Promise((resolve, reject) => {
+      messagingService.sendRequestToBg(new LoginRequest(), Authenticator.DEFAULT_MSG_TIMEOUT).then(
+        message => {
+          console.log(`Authentication response received`, message.body)
+          if (message.body.result) {
+            resolve()
+          } else {
+            reject(new Error(`Authentification failed`))
+          }
+        },
+        error => {
+          console.log(`Login request failed: ${error.message}`)
+          reject(new Error(`Authentification failed`))
+        }
+      )
+    })
+
+    //    messagingService.sendRequestToBg(new AuthMessage())
+    //      .catch((error) => console.error('Unable to send authentication message to background', error))
+  }
+}
+// Defaults
+Authenticator.DEFAULT_MSG_TIMEOUT = 10000
 
 /**
  * State request processing function.
@@ -69,6 +97,7 @@ uiController = UIController.create(state, {
   storageAdapter: ExtensionSyncStorage,
   app: { name: browserManifest.name, version: browserManifest.version }
 })
+uiController.auth = Authenticator
 uiController.state.setWatcher('panelStatus', sendStateToBackground)
 uiController.state.setWatcher('tab', sendStateToBackground)
 
