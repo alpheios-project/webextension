@@ -89,6 +89,6 @@
 	<key>NSHumanReadableCopyright</key>
 	<string>Copyright © 2018 The Alpheios Project. All rights reserved.</string>
 	<key>NSHumanReadableDescription</key>
-	<string>Adds access to language resources at double-click for any Latin, Ancient Greek, Classical Arabic or Persian word.</string>
+	<string>Activates access to reading tools at double-click on any Latin, Ancient Greek, Classical Arabic or Persian word.</string>
 </dict>
 </plist>

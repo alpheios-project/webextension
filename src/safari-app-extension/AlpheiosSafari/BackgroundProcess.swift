@@ -22,13 +22,13 @@ class BackgroundProcess {
             if (active) {
                 icon = BackgroundProcess.browserIcons["active"]
                 toolbarItem?.setBadgeText("\u{1f4d6}") // Open book icon
-                toolbarItem?.setLabel("Deactivate Alpheios")
+                toolbarItem?.setLabel("Deactivate Alpheios Reading Tools")
             } else {
                 toolbarItem?.setBadgeText("")
                 if (embedLibActive) {
-                    toolbarItem?.setLabel("(Alpheios Extension Disabled For Page)")
+                    toolbarItem?.setLabel("(Alpheios Reading Tools Disabled For Page)")
                 } else {
-                    toolbarItem?.setLabel("Activate Alpheios")
+                    toolbarItem?.setLabel("Activate Alpheios Reading Tools")
                 }
             }
             
