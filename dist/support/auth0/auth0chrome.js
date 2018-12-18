@@ -245,8 +245,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var _ref3 = _asyncToGenerator(function* () {
 	        var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
 	        var interactive = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
-	
-	        console.log('authenticate');
 	        var domain = this.domain,
 	            clientId = this.clientId;
 	

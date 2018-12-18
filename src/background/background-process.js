@@ -4,6 +4,7 @@ import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
 import LoginResponse from '../lib/messaging/response/login-response.js'
+import UserInfoResponse from '../lib/messaging/response/user-info-response.js'
 import ContextMenuItem from './context-menu-item.js'
 import ContentMenuSeparator from './context-menu-separator.js'
 
@@ -36,6 +37,8 @@ export default class BackgroundProcess {
         32: 'icons/alpheios_black_32.png'
       }
     }
+
+    this.authResult = null // A result of Auth0 authentication
   }
 
   static get defaults () {
@@ -74,7 +77,8 @@ export default class BackgroundProcess {
     console.log('Background script initialization started ...')
 
     this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
-    this.messagingService.addHandler(Message.types.LOGIN_REQUEST, this.authMessageHandler, this)
+    this.messagingService.addHandler(Message.types.LOGIN_REQUEST, this.loginRequestHandler, this)
+    this.messagingService.addHandler(Message.types.USER_INFO_REQUEST, this.userInfoRequestHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
     browser.tabs.onDetached.addListener(this.tabDetachedListener.bind(this))
@@ -249,7 +253,7 @@ export default class BackgroundProcess {
     this.updateTabState(contentState.tabID, contentState)
   }
 
-  authMessageHandler (request, sender) {
+  loginRequestHandler (request, sender) {
     console.log(sender)
     console.log(`Login request received`)
 
@@ -269,6 +273,7 @@ export default class BackgroundProcess {
       .then(authResult => {
         // localStorage.authResult = JSON.stringify(authResult)
         console.log(`Authenticated successfully`, authResult)
+        this.authResult = authResult
 
         this.messagingService.sendResponseToTab(new LoginResponse(request, true), sender.tab.id).catch(
           error => console.error(`Unable to send a response to a login request: ${error.message}`)
@@ -277,6 +282,32 @@ export default class BackgroundProcess {
       .catch(err => {
         console.log(`Authentication error: ${err}`)
         this.messagingService.sendResponseToTab(new LoginResponse(request, false), sender.tab.id).catch(
+          error => console.error(`Unable to send a response to a login request: ${error.message}`)
+        )
+      })
+  }
+
+  userInfoRequestHandler (request, sender) {
+    console.log(sender)
+    console.log(`User info request received`)
+
+    if (!this.authResult) {
+      console.error(`Get user info: not authenticated`)
+    }
+
+    window.fetch(`https://${auth0Env.AUTH0_DOMAIN}/userinfo`, {
+      headers: {
+        'Authorization': `Bearer ${this.authResult.access_token}`
+      }
+    })
+      .then(resp => resp.json()).then((profile) => {
+        this.messagingService.sendResponseToTab(new UserInfoResponse(request, profile), sender.tab.id).catch(
+          error => console.error(`Unable to send a response to a login request: ${error.message}`)
+        )
+      })
+      .catch(err => {
+        console.log(`Authentication error: ${err}`)
+        this.messagingService.sendResponseToTab(new UserInfoResponse(request, {}), sender.tab.id).catch(
           error => console.error(`Unable to send a response to a login request: ${error.message}`)
         )
       })

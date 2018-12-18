@@ -2,6 +2,7 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message.js'
 import LoginRequest from '@/lib/messaging/request/login-request.js'
+import UserInfoRequest from '@/lib/messaging/request/user-info-request.js'
 import MessagingService from '@/lib/messaging/service.js'
 import { TabScript, UIController, ExtensionSyncStorage } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
@@ -29,9 +30,22 @@ class Authenticator {
         }
       )
     })
+  }
 
-    //    messagingService.sendRequestToBg(new AuthMessage())
-    //      .catch((error) => console.error('Unable to send authentication message to background', error))
+  static getUserInfo () {
+    console.log(`Get user info`)
+    return new Promise((resolve, reject) => {
+      messagingService.sendRequestToBg(new UserInfoRequest(), Authenticator.DEFAULT_MSG_TIMEOUT).then(
+        message => {
+          console.log(`Obtained the following user info`, message.body)
+          resolve(message.body)
+        },
+        error => {
+          console.log(`User info request failed: ${error.message}`)
+          reject(new Error(`User info request failed: ${error.message}`))
+        }
+      )
+    })
   }
 }
 // Defaults

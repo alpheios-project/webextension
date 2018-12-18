@@ -10,6 +10,9 @@
     "build-dev": "standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs",
     "build-safari": "standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs",
     "build-safari-dev": "standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs",
+    "auth0-update": "node --experimental-modules ./build/auth0.mjs update",
+    "auth0-env-update": "node --experimental-modules ./build/protected-config.mjs update",
+    "auth0-env-upload": "node --experimental-modules ./build/protected-config.mjs upload",
     "standard": "standard",
     "test": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "zip": "node ./build/zip.js"
