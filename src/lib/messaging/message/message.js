@@ -18,7 +18,11 @@ export default class Message {
       ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
       DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
       OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
-      PANEL_STATUS_CHANGE_REQUEST: Symbol.for('Alpheios_PanelStatusChangeRequest')
+      PANEL_STATUS_CHANGE_REQUEST: Symbol.for('Alpheios_PanelStatusChangeRequest'),
+      // Indicates that a content script if fully loaded and is ready to accept commands from a background script
+      CONTENT_READY_MESSAGE: Symbol.for('Alpheios_ContentReadyMessage'),
+      // Notifies background about the state of an embedded library
+      EMBED_LIB_MESSAGE: Symbol.for('Alpheios_EmbedLibMessage')
     }
   }
 

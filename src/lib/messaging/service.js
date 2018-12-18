@@ -8,8 +8,6 @@ export default class Service extends BaseService {
    * A message dispatcher function
    */
   listener (message, sender) {
-    console.log(`New message received:`, message)
-    console.log(`From:`, sender)
     if (!message.type) {
       console.error(`Skipping a message of an unknown type`)
       return false
