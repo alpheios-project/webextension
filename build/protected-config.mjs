@@ -1,3 +1,6 @@
+/**
+ * Use this script to copy protected configuration files between a protected config dir and a target dir
+ */
 import process from 'process'
 import fs from 'fs'
 import path from 'path'

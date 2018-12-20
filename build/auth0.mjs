@@ -1,3 +1,6 @@
+/**
+ * Use this script to copy Auth0 script into a target directory within `webextension`
+ */
 import process from 'process'
 import fs from 'fs'
 import path from 'path'

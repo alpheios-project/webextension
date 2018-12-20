@@ -254,9 +254,6 @@ export default class BackgroundProcess {
   }
 
   loginRequestHandler (request, sender) {
-    console.log(sender)
-    console.log(`Login request received`)
-
     // scope
     //  - openid if you want an id_token returned
     //  - offline_access if you want a refresh_token returned
@@ -271,8 +268,6 @@ export default class BackgroundProcess {
     new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
       .authenticate(options)
       .then(authResult => {
-        // localStorage.authResult = JSON.stringify(authResult)
-        console.log(`Authenticated successfully`, authResult)
         this.authResult = authResult
 
         this.messagingService.sendResponseToTab(new LoginResponse(request, true), sender.tab.id).catch(
@@ -288,9 +283,6 @@ export default class BackgroundProcess {
   }
 
   userInfoRequestHandler (request, sender) {
-    console.log(sender)
-    console.log(`User info request received`)
-
     if (!this.authResult) {
       console.error(`Get user info: not authenticated`)
     }
@@ -306,7 +298,7 @@ export default class BackgroundProcess {
         )
       })
       .catch(err => {
-        console.log(`Authentication error: ${err}`)
+        console.log(`Authentication error: ${err.message}`)
         this.messagingService.sendResponseToTab(new UserInfoResponse(request, {}), sender.tab.id).catch(
           error => console.error(`Unable to send a response to a login request: ${error.message}`)
         )
