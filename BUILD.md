@@ -2,7 +2,7 @@
 
 Prerequisites: Node 10.5.0
 
-1. Set the version/build number
+**1. Set the version/build number**
 
 Set the build number in the following files:
 
@@ -12,7 +12,7 @@ Set the build number in the following files:
 * src/safari-app-extension/AlpheiosSafari/Info.plist (Safari App Extension)
 
 
-2. Build the distribution Javascript and CSS files
+**2. Build the distribution Javascript and CSS files**
 
 ```
 npm install
@@ -22,7 +22,7 @@ npm run build
 
 This uses Webpack to build the distribution Javascript and CSS files for Chrome, FF and Safari
 
-3. Commit the build
+**3. Commit the build**
 
 Commit the distribution files to GitHub
 
@@ -31,7 +31,7 @@ git add .
 git commit 
 ```
 
-4. Build Firefox and Chrome Package
+**4. Build Firefox and Chrome Package**
 
 ```
 npm run zip <version>
@@ -39,7 +39,7 @@ npm run zip <version>
 
 Creates the zip file for upload to the Chrome Developer Dashboard and FF Add-Ons site
 
-5. Build Safari Package (Development/QA Build)
+**5. Build Safari Package**
 
 Prerequisites: 
 
@@ -48,7 +48,7 @@ Prerequisites:
 * Developer Certificate Registered with the Alpheios Apple Developer Account installed in your XCode environment
 
 
-*If producing a development build:*
+***If producing a development build:***
 
 In **XCode**
 
@@ -68,7 +68,7 @@ A development build can be packaged using the MacOS **Disk Utility** application
 
 This creates a .dmg file which can be opened directly to mount the application disk image.
 
-An installatino package for a development build can be produced:
+An installation package for a development build can be produced:
 
 In **XCode**
 
@@ -87,7 +87,7 @@ This packgae should be installable using
 sudo installer -store -pkg Alpheios.pkg -target /
 ```
 
-*If producing an AppStore build:*
+***If producing an AppStore build:***
 
 In **XCode**
 
