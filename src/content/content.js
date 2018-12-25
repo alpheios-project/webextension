@@ -49,7 +49,7 @@ let handleStateRequest = function handleStateRequest (request, sender) {
     uiController.changeTab(diff.tab)
   }
 
-  messagingService.sendResponseToBg(new StateResponse(request, uiController.state)).catch(
+  messagingService.sendResponseToBg(StateResponse.Success(request, uiController.state)).catch(
     (error) => {
       console.error('Unable to send a response to a state request', error)
     }

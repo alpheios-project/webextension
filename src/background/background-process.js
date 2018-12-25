@@ -4,7 +4,9 @@ import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
 import LoginResponse from '../lib/messaging/response/login-response.js'
-import UserInfoResponse from '../lib/messaging/response/user-info-response.js'
+import UserProfileResponse from '../lib/messaging/response/user-profile-response.js'
+import UserDataResponse from '../lib/messaging/response/user-data-response.js'
+import AuthError from '../lib/auth/errors/auth-error.js'
 import ContextMenuItem from './context-menu-item.js'
 import ContentMenuSeparator from './context-menu-separator.js'
 
@@ -42,7 +44,6 @@ export default class BackgroundProcess {
   }
 
   static get defaults () {
-    console.log('add messages')
     let l10n = new L10n()
       .addMessages(enUS, Locales.en_US)
       .addMessages(enGB, Locales.en_GB)
@@ -78,7 +79,8 @@ export default class BackgroundProcess {
 
     this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
     this.messagingService.addHandler(Message.types.LOGIN_REQUEST, this.loginRequestHandler, this)
-    this.messagingService.addHandler(Message.types.USER_INFO_REQUEST, this.userInfoRequestHandler, this)
+    this.messagingService.addHandler(Message.types.USER_PROFILE_REQUEST, this.userProfileRequestHandler, this)
+    this.messagingService.addHandler(Message.types.USER_DATA_REQUEST, this.userDataRequestHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
     browser.tabs.onDetached.addListener(this.tabDetachedListener.bind(this))
@@ -253,6 +255,13 @@ export default class BackgroundProcess {
     this.updateTabState(contentState.tabID, contentState)
   }
 
+  /**
+   * Authenticates user with Auth0.
+   * If succeeds, sends a response to content with SUCCESS response code.
+   * If fails, sends a response with ERROR code and Error-like object in the response body.
+   * @param {RequestMessage} request - A request object received from a content script.
+   * @param {Object} sender - A sender object
+   */
   loginRequestHandler (request, sender) {
     // scope
     //  - openid if you want an id_token returned
@@ -268,21 +277,27 @@ export default class BackgroundProcess {
     new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
       .authenticate(options)
       .then(authResult => {
+        console.log(`Background: Auth result is `, authResult)
         this.authResult = authResult
 
-        this.messagingService.sendResponseToTab(new LoginResponse(request, true), sender.tab.id).catch(
-          error => console.error(`Unable to send a response to a login request: ${error.message}`)
-        )
+        this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
+          .catch(error => console.error(`Unable to send a response to a login request: ${error.message}`))
       })
       .catch(err => {
-        console.log(`Authentication error: ${err}`)
-        this.messagingService.sendResponseToTab(new LoginResponse(request, false), sender.tab.id).catch(
-          error => console.error(`Unable to send a response to a login request: ${error.message}`)
-        )
+        console.error(`Authentication error: ${err}`)
+        this.messagingService.sendResponseToTab(LoginResponse.Error(request, new AuthError(err.message)), sender.tab.id)
+          .catch(error => console.error(`Unable to send an error response to a login request: ${error.message}`))
       })
   }
 
-  userInfoRequestHandler (request, sender) {
+  /**
+   * Retrieves user profile data from Auth0.
+   * If succeeds, sends a response to content with SUCCESS response code and user profile data in the response body.
+   * If fails, sends a response with ERROR code and Error-like object in the response body.
+   * @param {RequestMessage} request - A request object received from a content script.
+   * @param {Object} sender - A sender object
+   */
+  userProfileRequestHandler (request, sender) {
     if (!this.authResult) {
       console.error(`Get user info: not authenticated`)
     }
@@ -293,14 +308,46 @@ export default class BackgroundProcess {
       }
     })
       .then(resp => resp.json()).then((profile) => {
-        this.messagingService.sendResponseToTab(new UserInfoResponse(request, profile), sender.tab.id).catch(
-          error => console.error(`Unable to send a response to a login request: ${error.message}`)
-        )
+        this.messagingService.sendResponseToTab(UserProfileResponse.Success(request, profile), sender.tab.id)
+          .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
       })
       .catch(err => {
-        console.log(`Authentication error: ${err.message}`)
-        this.messagingService.sendResponseToTab(new UserInfoResponse(request, {}), sender.tab.id).catch(
-          error => console.error(`Unable to send a response to a login request: ${error.message}`)
+        console.log(`User data cannot be retrieved: ${err.message}`)
+        this.messagingService.sendResponseToTab(UserProfileResponse.Error(request, new AuthError(err.message)), sender.tab.id)
+          .catch(error => console.error(`Unable to send an error response to a user profile request: ${error.message}`))
+      })
+  }
+
+  /**
+   * Retrieves user data from a third-party service authorized via Auth0.
+   * If succeeds, sends a response to content with SUCCESS response code and user data in the response body.
+   * If fails, sends a response with ERROR code and Error-like object in the response body.
+   * @param {RequestMessage} request - A request object received from a content script.
+   * @param {Object} sender - A sender object
+   */
+  userDataRequestHandler (request, sender) {
+    if (!this.authResult) {
+      console.error(`Get user info: not authenticated`)
+    }
+
+    // TODO: In this request we're sending an ID Token because that's what an endpoint server requires
+    //       But we should be sending an access token instead
+    window.fetch(auth0Env.ENDPOINT, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.authResult.id_token}`
+      }
+    })
+      .then(response => response.json())
+      .then((data) => {
+        this.messagingService.sendResponseToTab(UserDataResponse.Success(request, data), sender.tab.id).catch(
+          error => console.error(`Unable to send a response to a user data request: ${error.message}`)
+        )
+      })
+      .catch((err) => {
+        console.log(`User data cannot be retrieved: ${err.message}`)
+        this.messagingService.sendResponseToTab(UserDataResponse.Error(request, new AuthError(err.message)), sender.tab.id).catch(
+          error => console.error(`Unable to send a response to a user data request: ${error.message}`)
         )
       })
   }

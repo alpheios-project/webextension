@@ -29,7 +29,7 @@
   },
   "background": {
     "scripts": [
-      "env.js",
+      "env-webext.js",
       "support/auth0/auth0chrome.js",
       "background.js"
     ]
