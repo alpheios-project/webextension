@@ -51,12 +51,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		7832F8852147A4CC00CD96CB /* AlpheiosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlpheiosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7832F8852147A4CC00CD96CB /* "Alpheios Reading Tools.app" */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Alpheios Reading Tools.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7832F8882147A4CC00CD96CB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7832F88A2147A4CC00CD96CB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7832F88D2147A4CC00CD96CB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		7832F88F2147A4CC00CD96CB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		7832F8902147A4CC00CD96CB /* AlpheiosApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AlpheiosApp.entitlements; sourceTree = "<group>"; };
+		7832F8902147A4CC00CD96CB /* AlpheiosReadingTools.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AlpheiosReadingTools.entitlements; sourceTree = "<group>"; };
 		7832F89A2147A4E400CD96CB /* AlpheiosSafari.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = AlpheiosSafari.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		7832F89C2147A4E400CD96CB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		7832F89F2147A4E400CD96CB /* SafariExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariExtensionHandler.swift; sourceTree = "<group>"; };
@@ -97,7 +97,7 @@
 		7832F87C2147A4CC00CD96CB = {
 			isa = PBXGroup;
 			children = (
-				7832F8872147A4CC00CD96CB /* AlpheiosApp */,
+				7832F8872147A4CC00CD96CB /* AlpheiosReadingTools */,
 				7832F89E2147A4E400CD96CB /* AlpheiosSafari */,
 				7832F89B2147A4E400CD96CB /* Frameworks */,
 				7832F8862147A4CC00CD96CB /* Products */,
@@ -107,22 +107,22 @@
 		7832F8862147A4CC00CD96CB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7832F8852147A4CC00CD96CB /* AlpheiosApp.app */,
+				7832F8852147A4CC00CD96CB /* "Alpheios Reading Tools.app" */,
 				7832F89A2147A4E400CD96CB /* AlpheiosSafari.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		7832F8872147A4CC00CD96CB /* AlpheiosApp */ = {
+		7832F8872147A4CC00CD96CB /* AlpheiosReadingTools */ = {
 			isa = PBXGroup;
 			children = (
 				7832F8882147A4CC00CD96CB /* AppDelegate.swift */,
 				7832F88A2147A4CC00CD96CB /* Assets.xcassets */,
 				7832F88C2147A4CC00CD96CB /* MainMenu.xib */,
 				7832F88F2147A4CC00CD96CB /* Info.plist */,
-				7832F8902147A4CC00CD96CB /* AlpheiosApp.entitlements */,
+				7832F8902147A4CC00CD96CB /* AlpheiosReadingTools.entitlements */,
 			);
-			path = AlpheiosApp;
+			path = AlpheiosReadingTools;
 			sourceTree = "<group>";
 		};
 		7832F89B2147A4E400CD96CB /* Frameworks */ = {
@@ -173,9 +173,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7832F8842147A4CC00CD96CB /* AlpheiosApp */ = {
+		7832F8842147A4CC00CD96CB /* "Alpheios Reading Tools" */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 7832F8932147A4CC00CD96CB /* Build configuration list for PBXNativeTarget "AlpheiosApp" */;
+			buildConfigurationList = 7832F8932147A4CC00CD96CB /* Build configuration list for PBXNativeTarget "Alpheios Reading Tools" */;
 			buildPhases = (
 				7832F8812147A4CC00CD96CB /* Sources */,
 				7832F8822147A4CC00CD96CB /* Frameworks */,
@@ -187,9 +187,9 @@
 			dependencies = (
 				7832F8AD2147A4E400CD96CB /* PBXTargetDependency */,
 			);
-			name = AlpheiosApp;
-			productName = AlpheiosV2;
-			productReference = 7832F8852147A4CC00CD96CB /* AlpheiosApp.app */;
+			name = "Alpheios Reading Tools";
+			productName = "Alpheios Reading Tools";
+			productReference = 7832F8852147A4CC00CD96CB /* Alpheios Reading Tools.app */;
 			productType = "com.apple.product-type.application";
 		};
 		7832F8992147A4E400CD96CB /* AlpheiosSafari */ = {
@@ -250,7 +250,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				7832F8842147A4CC00CD96CB /* AlpheiosApp */,
+				7832F8842147A4CC00CD96CB /* "Alpheios Reading Tools" */,
 				7832F8992147A4E400CD96CB /* AlpheiosSafari */,
 			);
 		};
@@ -451,19 +451,19 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = AlpheiosApp/AlpheiosApp.entitlements;
+				CODE_SIGN_ENTITLEMENTS = AlpheiosReadingTools/AlpheiosReadingTools.entitlements;
 				CODE_SIGN_IDENTITY = "Mac Developer";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = W79WNX2NKZ;
-				INFOPLIST_FILE = AlpheiosApp/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/AlpheiosReadingTools/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = net.alpheios.webextension;
+				PRODUCT_BUNDLE_IDENTIFIER = net.alpheios.safari;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "Alpheios App Developer Profile";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
@@ -473,19 +473,19 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = AlpheiosApp/AlpheiosApp.entitlements;
-				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_ENTITLEMENTS = AlpheiosReadingTools/AlpheiosReadingTools.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = W79WNX2NKZ;
-				INFOPLIST_FILE = AlpheiosApp/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/AlpheiosReadingTools/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = net.alpheios.webextension;
+				PRODUCT_BUNDLE_IDENTIFIER = net.alpheios.safari;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "Alpheios App AppStore Distribution Profile";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
@@ -495,7 +495,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = AlpheiosSafari/AlpheiosSafari.entitlements;
 				CODE_SIGN_IDENTITY = "Mac Developer";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = W79WNX2NKZ;
 				INFOPLIST_FILE = AlpheiosSafari/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -503,9 +503,9 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = net.alpheios.webextension.safari;
+				PRODUCT_BUNDLE_IDENTIFIER = net.alpheios.safari.ext;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "Alpheios Safari Developer Profile";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 4.2;
 			};
@@ -515,8 +515,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = AlpheiosSafari/AlpheiosSafari.entitlements;
-				CODE_SIGN_IDENTITY = "3rd Party Mac Developer Application";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = W79WNX2NKZ;
 				INFOPLIST_FILE = AlpheiosSafari/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -524,9 +524,9 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = net.alpheios.webextension.safari;
+				PRODUCT_BUNDLE_IDENTIFIER = net.alpheios.safari.ext;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE_SPECIFIER = "Alpheios Extension AppStore Profile";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 4.2;
 			};
@@ -544,7 +544,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7832F8932147A4CC00CD96CB /* Build configuration list for PBXNativeTarget "AlpheiosApp" */ = {
+		7832F8932147A4CC00CD96CB /* Build configuration list for PBXNativeTarget "AlpheiosReadingTools" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7832F8942147A4CC00CD96CB /* Debug */,

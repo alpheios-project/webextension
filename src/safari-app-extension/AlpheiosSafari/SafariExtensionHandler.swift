@@ -16,10 +16,20 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
 
         // print("recieved message \(messageName), userInfo \(userInfo)")
         
-        // Update a background state every time we receive new state from a content script
-        _ = self.backgroundProcess.updateTabData(hashValue: page.hashValue, tabdata: userInfo, page: page)
-        // print("updatedTab \(curTab.convertForMessage())")
-
+        if (messageName == "contentReady") {
+            // A page in a tab has been reloaded
+            _ = self.backgroundProcess.contentReadyHandler(hashValue: page.hashValue, tabdata: userInfo, page: page)
+            SFSafariApplication.setToolbarItemsNeedUpdate()
+        } else if (messageName == "embedLibActive") {
+            // A notification about an active embedded lib
+            _ = self.backgroundProcess.embedLibActiveHandler(hashValue: page.hashValue, tabdata: userInfo, page: page)
+            SFSafariApplication.setToolbarItemsNeedUpdate()
+        } else if (messageName == "updateState") {
+            // This is a state update message
+            _ = self.backgroundProcess.updateTabData(hashValue: page.hashValue, tabdata: userInfo, page: page)
+        } else if (messageName == "ping") {
+            // This is a ping message to keep extension alive
+        }
     }
     
     override func toolbarItemClicked(in window: SFSafariWindow) {
@@ -76,7 +86,4 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
     override func popoverViewController() -> SFSafariExtensionViewController {
         return SafariExtensionViewController.shared
     }
-    
-
-    
 }

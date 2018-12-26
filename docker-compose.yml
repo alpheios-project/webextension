@@ -1,0 +1,9 @@
+version: '2'
+services:
+  web:
+    image: 'nginx:latest'
+    container_name: webext-nginx
+    ports:
+      - '8016:80'
+    volumes:
+      - ./:/usr/share/nginx/html
