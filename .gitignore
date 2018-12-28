@@ -8,7 +8,7 @@ alpheios.zip
 alpheios.xpi
 
 ## sensitive environment information
-/dist/env.js
+/dist/env-webext.js
 
 ### Xcode ###
 # Xcode
