@@ -10,7 +10,7 @@
     "build-dev": "standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs",
     "build-safari": "standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs",
     "build-safari-dev": "standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs",
-    "auth0-code-update": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=../auth0-chrome/dist --t=dist/support/auth0",
+    "auth0-code-update": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/auth0-chrome/dist --t=dist/support/auth0",
     "auth0-env-update": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=../protected-config/auth0 --t=dist --f=env-webext.js",
     "standard": "standard",
     "test": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
@@ -148,5 +148,8 @@
       "**/dist",
       "**/support"
     ]
+  },
+  "dependencies": {
+    "auth0-chrome": "github:alpheios-project/auth0-chrome"
   }
 }
