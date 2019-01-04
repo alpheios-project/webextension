@@ -11,7 +11,7 @@ export default class ContentMenuItem {
     if (!this.isActive) {
       browser.contextMenus.create({
         id: this.id,
-        title: this.title
+        title: this.title.get()
       })
       this.isActive = true
     }
