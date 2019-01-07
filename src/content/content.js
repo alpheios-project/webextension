@@ -122,7 +122,7 @@ document.body.addEventListener('Alpheios_Embedded_Response', () => {
     .catch((error) => console.error('Unable to send embed lib message to background', error))
   if (uiController.state.isActive()) {
     let l10n = new L10n().addMessages(enUS, Locales.en_US).addMessages(enGB, Locales.en_GB).setLocale(Locales.en_US)
-    let embedLibWarning = UIController.getEmbedLibWarning(l10n.messages.EMBED_LIB_WARNING_TEXT)
+    let embedLibWarning = UIController.getEmbedLibWarning(l10n.messages.EMBED_LIB_WARNING_TEXT.get())
     document.body.appendChild(embedLibWarning.$el)
     uiController.deactivate().catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
   }
@@ -143,4 +143,4 @@ uiController.init()
     browser.runtime.onMessage.addListener(messagingService.listener.bind(messagingService))
     sendContentReadyToBackground()
   })
-  .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
+  .catch((error) => console.error(`Cannot activate a UI controller: ${error}`, error))
