@@ -22,9 +22,15 @@ Experience library [documentation](../experience/README.md).
 
 ## Development Notes
 
+### Auth0
+Webextension uses an Auth0 script from <https://github.com/alpheios-project/auth0-chrome>. This repository
+should be installed alongside with `webextension` (both `webextension` and `auth0-chrome` should be located
+within the same directory). Use `npm run auth0-update` helper command from `package.json` to copy an updated
+script version from `auth0-chrome/dist` into `webextension/support/auth0`.
+
 ### Stateful Functions
-The functions that are monitored should be statefull. They should have a `Statefull` word in their names
-by convention. For more information on statefull functions please check "Statefull Functions" section in
+The functions that are monitored should be stateful. They should have a `Statefull` word in their names
+by convention. For more information on stateful functions please check "Stateful Functions" section in
 Experience Monitor documentation.
 
 ### WebExtension ID

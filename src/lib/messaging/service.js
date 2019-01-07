@@ -3,6 +3,13 @@ import BaseService from '@/lib/messaging/base-service'
 import ResponseMessage from './response/response-message'
 import StoredOutgoingRequest from './stored-request'
 
+// Errors that are known to the Service
+import TransferrableError from '@/lib/messaging/error/transferrable-error.js'
+import AuthError from '@/lib/auth/errors/auth-error.js'
+const knownErrors = new Map([
+  [AuthError.name, AuthError]
+])
+
 export default class Service extends BaseService {
   /**
    * A message dispatcher function
@@ -23,10 +30,9 @@ export default class Service extends BaseService {
       // Pass message to a registered handler if there are any
       this.listeners.get(Symbol.for(message.type))(message, sender)
     } else {
-      console.log(`Either no listeners has been registered for a message of type "${message.type}" or
+      console.warn(`Either no listeners has been registered for a message of type "${message.type}" or
       this is a response message with a timeout expired. Ignoring`)
     }
-
     return false // Indicate that we are not sending any response back
   }
 
@@ -39,48 +45,43 @@ export default class Service extends BaseService {
    */
   registerRequest (request, timeout = undefined) {
     let requestInfo = new StoredOutgoingRequest(request)
-    console.log(requestInfo)
     this.messages.set(request.ID, requestInfo)
     if (timeout) {
       requestInfo.timeoutID = window.setTimeout((requestID) => {
         let requestInfo = this.messages.get(requestID)
-        console.log('Timeout has been expired')
         requestInfo.reject(new Error(`Timeout has been expired`))
         this.messages.delete(requestID) // Remove from map
-        console.log(`Map length is ${this.messages.size}`)
       }, timeout, request.ID)
     }
-    console.log(`Map length is ${this.messages.size}`)
     return requestInfo.promise
   }
 
   sendRequestToTab (request, timeout, tabID) {
     let promise = this.registerRequest(request, timeout)
 
-    browser.tabs.sendMessage(tabID, request).then(
-      () => { console.log(`Successfully sent a request to a tab`) },
-      (error) => {
-        console.error(`tabs.sendMessage() failed: ${error.message}`, error)
-        this.rejectRequest(request.ID, error)
-      }
-    )
+    browser.tabs.sendMessage(tabID, request).catch(error => {
+      console.error(`tabs.sendMessage() failed:`, error)
+      this.rejectRequest(request.ID, error)
+    })
     return promise
   }
 
+  /**
+   * Sends a request to the background with a specified timout.
+   * @param request
+   * @param timeout
+   * @return {Promise}
+   */
   sendRequestToBg (request, timeout) {
     let promise = this.registerRequest(request, timeout)
-    browser.runtime.sendMessage(request).then(
-      () => { console.log(`Successfully sent a request to a background`) },
-      (error) => {
-        console.error(`Sending request to a background failed: ${error.message}`, error)
-        this.rejectRequest(request.ID, error)
-      }
-    )
+    browser.runtime.sendMessage(request).catch(error => {
+      console.error(`Sending request to a background failed:`, error)
+      this.rejectRequest(request.ID, error)
+    })
     return promise
   }
 
   sendResponseToTab (message, tabID) {
-    console.log(`Sending response to a tab ID ${tabID}`)
     return browser.tabs.sendMessage(tabID, message)
   }
 
@@ -88,13 +89,37 @@ export default class Service extends BaseService {
     return browser.runtime.sendMessage(message)
   }
 
+  /**
+   * Passes a response information to the request callback by resolving or rejecting a promise.
+   * If request has been completed successfully, promise is resolved with the response message object.
+   * If request failed, a responseCode is ERROR and a response body contains
+   * a TranferrableError JSON-like object. In this case an error instance will be created
+   * and a promise will be rejected with this error object.
+   * @param responseMessage
+   */
   fulfillRequest (responseMessage) {
     if (this.messages.has(responseMessage.requestID)) {
-      let requestInfo = this.messages.get(responseMessage.requestID)
+      const requestInfo = this.messages.get(responseMessage.requestID)
+      const responseCode = ResponseMessage.responseCode(responseMessage)
       window.clearTimeout(requestInfo.timeoutID) // Clear a timeout
-      requestInfo.resolve(responseMessage) // Resolve with a response message
+      if (responseCode === ResponseMessage.responseCodes.ERROR) {
+        // There was an error
+        if (!responseMessage.body.name) {
+          // No error information in the message body
+          requestInfo.reject(responseMessage) // Resolve with a response message body
+        } else if (knownErrors.has(responseMessage.body.name)) {
+          // This is a known error
+          requestInfo.reject(knownErrors.get(responseMessage.body.name).fromJSON(responseMessage.body))
+        } else {
+          // It is an error, but not known to the Service. Reject with a base error object.
+          requestInfo.reject(TransferrableError.fromJSON(responseMessage.body))
+        }
+      } else {
+        // Request was processed without errors
+        requestInfo.resolve(responseMessage)
+      }
+
       this.messages.delete(responseMessage.requestID) // Remove request from a map
-      console.log(`Map length is ${this.messages.size}`)
     }
   }
 
@@ -104,7 +129,6 @@ export default class Service extends BaseService {
       window.clearTimeout(requestInfo.timeoutID) // Clear a timeout
       requestInfo.reject(error)
       this.messages.delete(requestID) // Remove request from a map
-      console.log(`Map length is ${this.messages.size}`)
     }
   }
 

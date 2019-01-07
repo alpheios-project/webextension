@@ -4,7 +4,7 @@ const projectRoot = process.cwd()
 
 const webpack = {
   common: {
-    context: path.join(projectRoot,'src/background'),
+    context: path.join(projectRoot, 'src/background'),
     entry: './background.js',
     resolve: {
       alias: {
@@ -18,18 +18,18 @@ const webpack = {
       }
     },
     plugins: [
-      new VueLoaderPlugin(),
+      new VueLoaderPlugin()
     ]
   },
 
   production: {
     mode: 'production',
-    output: {filename: 'background.js'}
+    output: { filename: 'background.js' }
   },
 
   development: {
     mode: 'development',
-    output: {filename: 'background.js'},
+    output: { filename: 'background.js' }
   }
 }
 

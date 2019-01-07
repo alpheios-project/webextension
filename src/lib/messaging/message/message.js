@@ -8,45 +8,47 @@ export default class Message {
     this.ID = uuidv4()
     this.body = body
   }
+}
 
-  static get types () {
-    return {
-      GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
-      STATE_MESSAGE: Symbol.for('Alpheios_StateMessage'),
-      STATE_REQUEST: Symbol.for('Alpheios_StateRequest'),
-      STATE_RESPONSE: Symbol.for('Alpheios_StateResponse'),
-      ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
-      DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
-      OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
-      PANEL_STATUS_CHANGE_REQUEST: Symbol.for('Alpheios_PanelStatusChangeRequest'),
-      // Indicates that a content script if fully loaded and is ready to accept commands from a background script
-      CONTENT_READY_MESSAGE: Symbol.for('Alpheios_ContentReadyMessage'),
-      // Notifies background about the state of an embedded library
-      EMBED_LIB_MESSAGE: Symbol.for('Alpheios_EmbedLibMessage')
-    }
-  }
+/**
+ * Specifies a message type
+ */
+Message.types = {
+  // Messages: a one way communication vehicles
+  GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
+  STATE_MESSAGE: Symbol.for('Alpheios_StateMessage'),
 
-  static get roles () {
-    return {
-      REQUEST: Symbol.for('Alpheios_Request'),
-      RESPONSE: Symbol.for('Alpheios_Response')
-    }
-  }
+  // Requests; a two way communication vehicles
+  // State: updates state of a UIStateAPI object
+  STATE_REQUEST: Symbol.for('Alpheios_StateRequest'),
+  STATE_RESPONSE: Symbol.for('Alpheios_StateResponse'),
 
-  static get statuses () {
-    return {
-      DATA_FOUND: Symbol.for('Alpheios_DataFound'), // Requested word's data has been found
-      NO_DATA_FOUND: Symbol.for('Alpheios_NoDataFound'), // Requested word's data has not been found,
-      ACTIVE: Symbol.for('Alpheios_Active'), // Content script is loaded and active
-      DEACTIVATED: Symbol.for('Alpheios_Deactivated') // Content script has been loaded, but is deactivated
-    }
-  }
+  // Login: logs the user in
+  LOGIN_REQUEST: Symbol.for('Alpheios_LoginRequest'),
+  LOGIN_RESPONSE: Symbol.for('Alpheios_LoginResponse'),
 
-  static statusSym (message) {
-    return Symbol.for(message.status)
-  }
+  // User profile: retrieves user profile information from an identity or authentication provider
+  USER_PROFILE_REQUEST: Symbol.for('Alpheios_UserProfileRequest'),
+  USER_PROFILE_RESPONSE: Symbol.for('Alpheios_UserProfileResponse'),
 
-  static statusSymIs (message, status) {
-    return Message.statusSym(message) === status
-  }
+  // User profile: retrieves user data from a user data storage provider (e.g. Alpheios)
+  USER_DATA_REQUEST: Symbol.for('Alpheios_UserDataRequest'),
+  USER_DATA_RESPONSE: Symbol.for('Alpheios_UserDataResponse'),
+
+  ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
+  DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
+  OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
+  PANEL_STATUS_CHANGE_REQUEST: Symbol.for('Alpheios_PanelStatusChangeRequest'),
+  // Indicates that a content script if fully loaded and is ready to accept commands from a background script
+  CONTENT_READY_MESSAGE: Symbol.for('Alpheios_ContentReadyMessage'),
+  // Notifies background about the state of an embedded library
+  EMBED_LIB_MESSAGE: Symbol.for('Alpheios_EmbedLibMessage')
+}
+
+/**
+ * Specifies whether a message is a request or response
+ */
+Message.roles = {
+  REQUEST: Symbol.for('Alpheios_Request'),
+  RESPONSE: Symbol.for('Alpheios_Response')
 }

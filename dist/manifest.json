@@ -19,7 +19,8 @@
     "activeTab",
     "contextMenus",
     "storage",
-    "webNavigation"
+    "webNavigation",
+    "identity"
   ],
   "browser_action": {
     "default_icon": "icons/alpheios_black_32.png",
@@ -28,6 +29,8 @@
   },
   "background": {
     "scripts": [
+      "env-webext.js",
+      "support/auth0/auth0chrome.js",
       "background.js"
     ]
   },

@@ -6,6 +6,10 @@ npm-debug.log*
 coverage
 alpheios.zip
 alpheios.xpi
+
+## sensitive environment information
+/dist/env-webext.js
+
 ### Xcode ###
 # Xcode
 #
