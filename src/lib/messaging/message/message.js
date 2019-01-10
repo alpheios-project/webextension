@@ -35,6 +35,10 @@ Message.types = {
   USER_DATA_REQUEST: Symbol.for('Alpheios_UserDataRequest'),
   USER_DATA_RESPONSE: Symbol.for('Alpheios_UserDataResponse'),
 
+  // Logout: logs the user out
+  LOGOUT_REQUEST: Symbol.for('Alpheios_LogoutRequest'),
+  LOGOUT_RESPONSE: Symbol.for('Alpheios_LogoutResponse'),
+
   ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
   DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
   OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
