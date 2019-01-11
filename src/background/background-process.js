@@ -338,6 +338,7 @@ export default class BackgroundProcess {
     // device
     //  - required if requesting the offline_access scope.
     let options = {
+      audience: auth0Env.AUDIENCE,
       scope: 'openid profile offline_access',
       device: 'chrome-extension'
     }
@@ -403,7 +404,7 @@ export default class BackgroundProcess {
     window.fetch(auth0Env.ENDPOINT, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${this.authResult.id_token}`
+        Authorization: `Bearer ${this.authResult.access_token}`
       }
     })
       .then(response => response.json())
