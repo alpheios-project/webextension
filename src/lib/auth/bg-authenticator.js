@@ -1,4 +1,5 @@
 import LoginRequest from '@/lib/messaging/request/login-request.js'
+import LogoutRequest from '@/lib/messaging/request/logout-request.js'
 import UserProfileRequest from '@/lib/messaging/request/user-profile-request.js'
 import UserDataRequest from '@/lib/messaging/request/user-data-request.js'
 
@@ -43,6 +44,16 @@ export default class BgAuthenticator {
   getUserData () {
     return new Promise((resolve, reject) => {
       this.messagingService.sendRequestToBg(new UserDataRequest(), BgAuthenticator.DEFAULT_MSG_TIMEOUT)
+        .then(message => resolve(message.body), error => reject(error))
+    })
+  }
+
+  /**
+   * Logs the user out
+   */
+  logout () {
+    return new Promise((resolve, reject) => {
+      this.messagingService.sendRequestToBg(new LogoutRequest(), BgAuthenticator.DEFAULT_MSG_TIMEOUT)
         .then(message => resolve(message.body), error => reject(error))
     })
   }

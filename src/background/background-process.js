@@ -4,6 +4,7 @@ import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
 import LoginResponse from '../lib/messaging/response/login-response.js'
+import LogoutResponse from '../lib/messaging/response/logout-response.js'
 import UserProfileResponse from '../lib/messaging/response/user-profile-response.js'
 import UserDataResponse from '../lib/messaging/response/user-data-response.js'
 import AuthError from '../lib/auth/errors/auth-error.js'
@@ -48,6 +49,7 @@ export default class BackgroundProcess {
     this.messagingService.addHandler(Message.types.EMBED_LIB_MESSAGE, this.embedLibMessageHandler, this)
     this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
     this.messagingService.addHandler(Message.types.LOGIN_REQUEST, this.loginRequestHandler, this)
+    this.messagingService.addHandler(Message.types.LOGOUT_REQUEST, this.logoutRequestHandler, this)
     this.messagingService.addHandler(Message.types.USER_PROFILE_REQUEST, this.userProfileRequestHandler, this)
     this.messagingService.addHandler(Message.types.USER_DATA_REQUEST, this.userDataRequestHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
@@ -416,6 +418,30 @@ export default class BackgroundProcess {
         this.messagingService.sendResponseToTab(UserDataResponse.Error(request, new AuthError(err.message)), sender.tab.id).catch(
           error => console.error(`Unable to send a response to a user data request: ${error.message}`)
         )
+      })
+  }
+
+  /**
+   * Logs the user out
+   * If succeeds, sends a response to content with SUCCESS response code and user data in the response body.
+   * If fails, sends a response with ERROR code and Error-like object in the response body.
+   * @param {RequestMessage} request - A request object received from a content script.
+   * @param {Object} sender - A sender object
+   */
+  logoutRequestHandler (request, sender) {
+    let options = {
+      returnTo: auth0Env.LOGOUT_URL
+    }
+    new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
+      .logout(options)
+      .thenthen(resp => resp.text()).then((data) => {
+        this.messagingService.sendResponseToTab(LogoutResponse.Success(request, data), sender.tab.id)
+          .catch(error => console.error(`Unable to send a response to a logout request: ${error.message}`))
+      })
+      .catch(err => {
+        console.log(`Logout failed: ${err.message}`)
+        this.messagingService.sendResponseToTab(LogoutResponse.Error(request, new AuthError(err.message)), sender.tab.id)
+          .catch(error => console.error(`Unable to send an error response to a logout request: ${error.message}`))
       })
   }
 

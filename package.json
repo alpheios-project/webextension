@@ -97,7 +97,7 @@
     "vue-svg-loader": "^0.11.0",
     "vue-template-compiler": "^2.5.21",
     "webextension-polyfill": "^0.3.1",
-    "webpack": "^4.28.3",
+    "webpack": "^4.28.4",
     "webpack-bundle-analyzer": "^3.0.3",
     "webpack-dev-server": "^3.1.14",
     "webpack-merge": "^4.2.1",
@@ -150,6 +150,6 @@
     ]
   },
   "dependencies": {
-    "auth0-chrome": "github:alpheios-project/auth0-chrome"
+    "auth0-chrome": "github:alpheios-project/auth0-chrome#feature-logout"
   }
 }
