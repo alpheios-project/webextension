@@ -435,12 +435,12 @@ export default class BackgroundProcess {
       .logout(options)
       .thenthen(resp => resp.text()).then((data) => {
         this.messagingService.sendResponseToTab(LogoutResponse.Success(request, data), sender.tab.id)
-          .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
+          .catch(error => console.error(`Unable to send a response to a logout request: ${error.message}`))
       })
       .catch(err => {
-        console.log(`User data cannot be retrieved: ${err.message}`)
+        console.log(`Logout failed: ${err.message}`)
         this.messagingService.sendResponseToTab(LogoutResponse.Error(request, new AuthError(err.message)), sender.tab.id)
-          .catch(error => console.error(`Unable to send an error response to a user profile request: ${error.message}`))
+          .catch(error => console.error(`Unable to send an error response to a logout request: ${error.message}`))
       })
   }
 
