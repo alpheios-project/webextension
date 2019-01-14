@@ -4,6 +4,7 @@ import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
 import LoginResponse from '../lib/messaging/response/login-response.js'
+import LogoutResponse from '../lib/messaging/response/logout-response.js'
 import UserProfileResponse from '../lib/messaging/response/user-profile-response.js'
 import UserDataResponse from '../lib/messaging/response/user-data-response.js'
 import AuthError from '../lib/auth/errors/auth-error.js'
@@ -48,6 +49,7 @@ export default class BackgroundProcess {
     this.messagingService.addHandler(Message.types.EMBED_LIB_MESSAGE, this.embedLibMessageHandler, this)
     this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
     this.messagingService.addHandler(Message.types.LOGIN_REQUEST, this.loginRequestHandler, this)
+    this.messagingService.addHandler(Message.types.LOGOUT_REQUEST, this.logoutRequestHandler, this)
     this.messagingService.addHandler(Message.types.USER_PROFILE_REQUEST, this.userProfileRequestHandler, this)
     this.messagingService.addHandler(Message.types.USER_DATA_REQUEST, this.userDataRequestHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
@@ -336,6 +338,7 @@ export default class BackgroundProcess {
     // device
     //  - required if requesting the offline_access scope.
     let options = {
+      audience: auth0Env.AUDIENCE,
       scope: 'openid profile offline_access',
       device: 'chrome-extension'
     }
@@ -401,7 +404,7 @@ export default class BackgroundProcess {
     window.fetch(auth0Env.ENDPOINT, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${this.authResult.id_token}`
+        Authorization: `Bearer ${this.authResult.access_token}`
       }
     })
       .then(response => response.json())
@@ -415,6 +418,30 @@ export default class BackgroundProcess {
         this.messagingService.sendResponseToTab(UserDataResponse.Error(request, new AuthError(err.message)), sender.tab.id).catch(
           error => console.error(`Unable to send a response to a user data request: ${error.message}`)
         )
+      })
+  }
+
+  /**
+   * Logs the user out
+   * If succeeds, sends a response to content with SUCCESS response code and user data in the response body.
+   * If fails, sends a response with ERROR code and Error-like object in the response body.
+   * @param {RequestMessage} request - A request object received from a content script.
+   * @param {Object} sender - A sender object
+   */
+  logoutRequestHandler (request, sender) {
+    let options = {
+      returnTo: auth0Env.LOGOUT_URL
+    }
+    new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
+      .logout(options)
+      .thenthen(resp => resp.text()).then((data) => {
+        this.messagingService.sendResponseToTab(LogoutResponse.Success(request, data), sender.tab.id)
+          .catch(error => console.error(`Unable to send a response to a logout request: ${error.message}`))
+      })
+      .catch(err => {
+        console.log(`Logout failed: ${err.message}`)
+        this.messagingService.sendResponseToTab(LogoutResponse.Error(request, new AuthError(err.message)), sender.tab.id)
+          .catch(error => console.error(`Unable to send an error response to a logout request: ${error.message}`))
       })
   }
 
@@ -651,22 +678,22 @@ BackgroundProcess.l10n = new L10n()
   .setLocale(Locales.en_US)
 
 BackgroundProcess.defaults = {
-  activateBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_ACTIVATE,
-  deactivateBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_DEACTIVATE,
-  disabledBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_DISABLED,
+  activateBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_ACTIVATE.get(),
+  deactivateBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_DEACTIVATE.get(),
+  disabledBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_DISABLED.get(),
   activateMenuItemId: 'activate-alpheios-content',
-  activateMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_ACTIVATE,
+  activateMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_ACTIVATE.get(),
   deactivateMenuItemId: 'deactivate-alpheios-content',
-  deactivateMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_DEACTIVATE,
+  deactivateMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_DEACTIVATE.get(),
   disabledMenuItemId: 'disabled-alpheios-content',
-  disabledMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_DISABLED,
+  disabledMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_DISABLED.get(),
   openPanelMenuItemId: 'open-alpheios-panel',
-  openPanelMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_OPENPANEL,
+  openPanelMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_OPENPANEL.get(),
   infoMenuItemId: 'show-alpheios-panel-info',
-  infoMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_INFO,
+  infoMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_INFO.get(),
   separatorOneId: 'separator-one',
   sendExperiencesMenuItemId: 'send-experiences',
-  sendExperiencesMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_SENDEXP,
+  sendExperiencesMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_SENDEXP.get(),
   contentCSSFileNames: ['style/style.min.css'],
   contentScriptFileName: 'content.js',
   browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
