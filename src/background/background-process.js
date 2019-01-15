@@ -434,7 +434,7 @@ export default class BackgroundProcess {
     }
     new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
       .logout(options)
-      .thenthen(resp => resp.text()).then((data) => {
+      .then(resp => resp.text()).then((data) => {
         this.messagingService.sendResponseToTab(LogoutResponse.Success(request, data), sender.tab.id)
           .catch(error => console.error(`Unable to send a response to a logout request: ${error.message}`))
       })
@@ -678,22 +678,22 @@ BackgroundProcess.l10n = new L10n()
   .setLocale(Locales.en_US)
 
 BackgroundProcess.defaults = {
-  activateBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_ACTIVATE.get(),
-  deactivateBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_DEACTIVATE.get(),
-  disabledBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_DISABLED.get(),
+  activateBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_ACTIVATE,
+  deactivateBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_DEACTIVATE,
+  disabledBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_DISABLED,
   activateMenuItemId: 'activate-alpheios-content',
-  activateMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_ACTIVATE.get(),
+  activateMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_ACTIVATE,
   deactivateMenuItemId: 'deactivate-alpheios-content',
-  deactivateMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_DEACTIVATE.get(),
+  deactivateMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_DEACTIVATE,
   disabledMenuItemId: 'disabled-alpheios-content',
-  disabledMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_DISABLED.get(),
+  disabledMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_DISABLED,
   openPanelMenuItemId: 'open-alpheios-panel',
-  openPanelMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_OPENPANEL.get(),
+  openPanelMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_OPENPANEL,
   infoMenuItemId: 'show-alpheios-panel-info',
-  infoMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_INFO.get(),
+  infoMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_INFO,
   separatorOneId: 'separator-one',
   sendExperiencesMenuItemId: 'send-experiences',
-  sendExperiencesMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_SENDEXP.get(),
+  sendExperiencesMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_SENDEXP,
   contentCSSFileNames: ['style/style.min.css'],
   contentScriptFileName: 'content.js',
   browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
