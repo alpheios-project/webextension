@@ -87,9 +87,9 @@ let handleStateRequest = function handleStateRequest (request) {
 
   if (diff.has('panelStatus')) {
     if (diff.panelStatus === TabScript.statuses.panel.OPEN) {
-      uiController.openPanel()
+      uiController.api.ui.openPanel()
     } else if (diff.panelStatus === TabScript.statuses.panel.CLOSED) {
-      uiController.closePanel()
+      uiController.api.ui.closePanel()
     }
   }
 
