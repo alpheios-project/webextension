@@ -614,11 +614,11 @@ export default class BackgroundProcess {
   updateBrowserActionForTab (tab) {
     if (tab && tab.hasOwnProperty('status')) {
       if (tab.isEmbedLibActive() || tab.isDisabled()) {
-        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.disabledBrowserActionTitle.get(), tabId: tab.tabObj.tabId })
+        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.disabledBrowserActionTitle, tabId: tab.tabObj.tabId })
       } else if (tab.isActive()) {
-        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.deactivateBrowserActionTitle.get(), tabId: tab.tabObj.tabId })
+        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.deactivateBrowserActionTitle, tabId: tab.tabObj.tabId })
       } else if (tab.isDeactivated()) {
-        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.activateBrowserActionTitle.get(), tabId: tab.tabObj.tabId })
+        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.activateBrowserActionTitle, tabId: tab.tabObj.tabId })
       }
     }
   }
@@ -678,22 +678,22 @@ BackgroundProcess.l10n = new L10n()
   .setLocale(Locales.en_US)
 
 BackgroundProcess.defaults = {
-  activateBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_ACTIVATE,
-  deactivateBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_DEACTIVATE,
-  disabledBrowserActionTitle: BackgroundProcess.l10n.messages.LABEL_BROWSERACTION_DISABLED,
+  activateBrowserActionTitle: BackgroundProcess.l10n.getMsg(`LABEL_BROWSERACTION_ACTIVATE`),
+  deactivateBrowserActionTitle: BackgroundProcess.l10n.getMsg(`LABEL_BROWSERACTION_DEACTIVATE`),
+  disabledBrowserActionTitle: BackgroundProcess.l10n.getMsg(`LABEL_BROWSERACTION_DISABLED`),
   activateMenuItemId: 'activate-alpheios-content',
-  activateMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_ACTIVATE,
+  activateMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_ACTIVATE`),
   deactivateMenuItemId: 'deactivate-alpheios-content',
-  deactivateMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_DEACTIVATE,
+  deactivateMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_DEACTIVATE`),
   disabledMenuItemId: 'disabled-alpheios-content',
-  disabledMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_DISABLED,
+  disabledMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_DISABLED`),
   openPanelMenuItemId: 'open-alpheios-panel',
-  openPanelMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_OPENPANEL,
+  openPanelMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_OPENPANEL`),
   infoMenuItemId: 'show-alpheios-panel-info',
-  infoMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_INFO,
+  infoMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_INFO`),
   separatorOneId: 'separator-one',
   sendExperiencesMenuItemId: 'send-experiences',
-  sendExperiencesMenuItemText: BackgroundProcess.l10n.messages.LABEL_CTXTMENU_SENDEXP,
+  sendExperiencesMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_SENDEXP`),
   contentCSSFileNames: ['style/style.min.css'],
   contentScriptFileName: 'content.js',
   browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',

@@ -68,7 +68,7 @@ let embeddedLibListener = function embeddedLibListener () {
   if (state.isActive()) {
     // Display a panel with a warning about extension being deactivated
     let l10n = new L10n().addMessages(enUS, Locales.en_US).addMessages(enGB, Locales.en_GB).setLocale(Locales.en_US)
-    let embedLibWarning = UIController.getEmbedLibWarning(l10n.messages.EMBED_LIB_WARNING_TEXT.get())
+    let embedLibWarning = UIController.getEmbedLibWarning(l10n.getMsg('EMBED_LIB_WARNING_TEXT'))
     document.body.appendChild(embedLibWarning.$el)
     deactivateUIController(false)
   }
