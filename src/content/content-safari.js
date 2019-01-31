@@ -42,6 +42,20 @@ let deactivatePing = function deactivatePing () {
 }
 
 /**
+ * Dispatch an Alpheios_Active event to the page
+ */
+let notifyPageActive = function () {
+  document.body.dispatchEvent(new Event('Alpheios_Active'))
+}
+
+/**
+ * Dispatch an Alpheios_Inactive event to the page
+ */
+let notifyPageInactive = function () {
+  document.body.dispatchEvent(new Event('Alpheios_Inctive'))
+}
+
+/**
  * Deactivates a UI controller and notifies Safari app extension about it,
  * depending on the `notify` parameter value.
  * @param {Boolean} notify - Will notify app extension only if this parameter is true.
@@ -53,6 +67,7 @@ let deactivateUIController = function deactivateUIController (notify = true) {
         sendMessageToBackground('updateState')
       }
       deactivatePing()
+      notifyPageInactive()
     })
     .catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
 }
@@ -125,6 +140,7 @@ let handleStateRequest = async function handleStateRequest (message) {
         uiController.state.setWatcher('panelStatus', sendMessageToBackground.bind(this, 'updateState'))
         uiController.state.setWatcher('tab', sendMessageToBackground.bind(this, 'updateState'))
         activatePing()
+        notifyPageActive()
         sendMessageToBackground('updateState')
       })
       .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
