@@ -52,7 +52,7 @@ let notifyPageActive = function () {
  * Dispatch an Alpheios_Inactive event to the page
  */
 let notifyPageInactive = function () {
-  document.body.dispatchEvent(new Event('Alpheios_Inctive'))
+  document.body.dispatchEvent(new Event('Alpheios_Inactive'))
 }
 
 /**
