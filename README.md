@@ -25,8 +25,10 @@ Experience library [documentation](../experience/README.md).
 ### Auth0
 Webextension uses an Auth0 script from <https://github.com/alpheios-project/auth0-chrome>. This repository
 should be installed alongside with `webextension` (both `webextension` and `auth0-chrome` should be located
-within the same directory). Use `npm run auth0-update` helper command from `package.json` to copy an updated
+within the same directory). Use `npm run auth0-code-update` helper command from `package.json` to copy an updated
 script version from `auth0-chrome/dist` into `webextension/support/auth0`.
+
+The secrets for auth must be in a sibling directory and can be installed using the `npm run auth0-env-update` or `npm run auth0-env-dev-update` command. The latter will install the dev secrets, including the dev test id.  
 
 ### Stateful Functions
 The functions that are monitored should be stateful. They should have a `Statefull` word in their names

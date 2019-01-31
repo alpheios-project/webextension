@@ -343,20 +343,30 @@ export default class BackgroundProcess {
       device: 'chrome-extension'
     }
 
-    new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
-      .authenticate(options)
-      .then(authResult => {
-        console.log(`Background: Auth result is `, authResult)
-        this.authResult = authResult
+    // Test/dev environment only
+    if (auth0Env.TEST_ID) {
+      this.authResult = {
+        access_token: auth0Env.TEST_ID,
+        is_test_user: true
+      }
+      this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
+        .catch(error => console.error(`Unable to send a response to a login request: ${error.message}`))
+    } else {
+      new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
+        .authenticate(options)
+        .then(authResult => {
+          console.log(`Background: Auth result is `, authResult)
+          this.authResult = authResult
 
-        this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
-          .catch(error => console.error(`Unable to send a response to a login request: ${error.message}`))
-      })
-      .catch(err => {
-        console.error(`Authentication error: ${err}`)
-        this.messagingService.sendResponseToTab(LoginResponse.Error(request, new AuthError(err.message)), sender.tab.id)
-          .catch(error => console.error(`Unable to send an error response to a login request: ${error.message}`))
-      })
+          this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
+            .catch(error => console.error(`Unable to send a response to a login request: ${error.message}`))
+        })
+        .catch(err => {
+          console.error(`Authentication error: ${err}`)
+          this.messagingService.sendResponseToTab(LoginResponse.Error(request, new AuthError(err.message)), sender.tab.id)
+            .catch(error => console.error(`Unable to send an error response to a login request: ${error.message}`))
+        })
+    }
   }
 
   /**
@@ -371,20 +381,29 @@ export default class BackgroundProcess {
       console.error(`Get user info: not authenticated`)
     }
 
-    window.fetch(`https://${auth0Env.AUTH0_DOMAIN}/userinfo`, {
-      headers: {
-        'Authorization': `Bearer ${this.authResult.access_token}`
+    if (this.authResult.is_test_user) {
+      let testProfile = {
+        name: 'Alpheios Test User',
+        nickname: 'testuser'
       }
-    })
-      .then(resp => resp.json()).then((profile) => {
-        this.messagingService.sendResponseToTab(UserProfileResponse.Success(request, profile), sender.tab.id)
-          .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
+      this.messagingService.sendResponseToTab(UserProfileResponse.Success(request, testProfile), sender.tab.id)
+        .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
+    } else {
+      window.fetch(`https://${auth0Env.AUTH0_DOMAIN}/userinfo`, {
+        headers: {
+          'Authorization': `Bearer ${this.authResult.access_token}`
+        }
       })
-      .catch(err => {
-        console.log(`User data cannot be retrieved: ${err.message}`)
-        this.messagingService.sendResponseToTab(UserProfileResponse.Error(request, new AuthError(err.message)), sender.tab.id)
-          .catch(error => console.error(`Unable to send an error response to a user profile request: ${error.message}`))
-      })
+        .then(resp => resp.json()).then((profile) => {
+          this.messagingService.sendResponseToTab(UserProfileResponse.Success(request, profile), sender.tab.id)
+            .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
+        })
+        .catch(err => {
+          console.log(`User data cannot be retrieved: ${err.message}`)
+          this.messagingService.sendResponseToTab(UserProfileResponse.Error(request, new AuthError(err.message)), sender.tab.id)
+            .catch(error => console.error(`Unable to send an error response to a user profile request: ${error.message}`))
+        })
+    }
   }
 
   /**
