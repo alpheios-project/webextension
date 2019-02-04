@@ -16,6 +16,7 @@ const webpack = {
         'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-components/dist/alpheios-components.js'),
         'alpheios-inflection-tables$': path.join(projectRoot, 'node_modules/alpheios-inflection-tables/dist/alpheios-inflection-tables.js'),
         'alpheios-component-styles$': path.join(projectRoot, 'node_modules/alpheios-components/dist/style/style.min.css'),
+        'alpheios-wordlist$': path.join(projectRoot, 'node_modules/alpheios-wordlist/dist/alpheios-wordlist.min.js'),
         '@': path.join(projectRoot, 'src'),
         '@safari': path.join(projectRoot, 'src/content-safari')
       }
