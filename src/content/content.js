@@ -60,7 +60,7 @@ const createUiController = (state, options) => {
   LexicalQuery.evt.MORPH_DATA_NOTAVAILABLE.sub(uiController.onMorphDataNotFound.bind(uiController))
   LexicalQuery.evt.HOMONYM_READY.sub(uiController.onHomonymReady.bind(uiController))
   LexicalQuery.evt.LEMMA_TRANSL_READY.sub(uiController.updateTranslations.bind(uiController))
-  LexicalQuery.evt.WORD_USAGE_EXAMPLES_READY.sub(uiController.onWordUsageExamplesReady.bind(uiController))
+  LexicalQuery.evt.WORD_USAGE_EXAMPLES_READY.sub(uiController.updateWordUsageExamples.bind(uiController))
   LexicalQuery.evt.DEFS_READY.sub(uiController.onDefinitionsReady.bind(uiController))
   LexicalQuery.evt.DEFS_NOT_FOUND.sub(uiController.onDefinitionsNotFound.bind(uiController))
 
