@@ -25,12 +25,10 @@ const createUiController = (state, options) => {
   // Register UI modules
   uiController.registerUiModule(PanelModule, {
     mountPoint: '#alpheios-panel', // To what element a panel will be mounted
-    panelComponent: 'panel', // A Vue component that will represent a panel
-    tabs: uiController.tabState // TODO: should be accessed via a public API, not via a direct link. This is a temporary solutions
+    panelComponent: 'panel' // A Vue component that will represent a panel
   })
   uiController.registerUiModule(PopupModule, {
-    mountPoint: '#alpheios-popup',
-    uiController: uiController // Some child UI components require direct link to a uiController. TODO: remove during refactoring
+    mountPoint: '#alpheios-popup'
   })
 
   // Creates on configures an event listener
