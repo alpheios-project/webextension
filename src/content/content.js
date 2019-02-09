@@ -6,74 +6,12 @@ import StateMessage from '@/lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
 import MessagingService from '@/lib/messaging/service.js'
 import BgAuthenticator from '@/lib/auth/bg-authenticator.js'
-import { TabScript, UIController, UIEventController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB,
-  LexicalQuery, ResourceQuery, AnnotationQuery, L10nModule, AuthModule, PanelModule, PopupModule,
-  MouseDblClick, LongTap, GenericEvt } from 'alpheios-components'
+import { TabScript, UIController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB,
+  AuthModule, PanelModule, PopupModule } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
 
 let messagingService = null
 let uiController = null
-
-/*
-A UI controller's builder function customized for webextension
- */
-const createUiController = (state, options) => {
-  let uiController = new UIController(state, options)
-
-  // Register data modules
-  uiController.registerDataModule(L10nModule, Locales.en_US, Locales.bundleArr())
-  uiController.registerDataModule(AuthModule, new BgAuthenticator(messagingService))
-
-  // Register UI modules
-  uiController.registerUiModule(PanelModule, {
-    mountPoint: '#alpheios-panel', // To what element a panel will be mounted
-    panelComponent: 'panel' // A Vue component that will represent a panel
-  })
-  uiController.registerUiModule(PopupModule, {
-    mountPoint: '#alpheios-popup'
-  })
-
-  // Creates on configures an event listener
-  let eventController = new UIEventController()
-  switch (uiController.options.textQueryTrigger) {
-    case 'dblClick':
-      eventController.registerListener('GetSelectedText', uiController.options.textQuerySelector, uiController.getSelectedText.bind(uiController), MouseDblClick)
-      break
-    case 'longTap':
-      eventController.registerListener('GetSelectedText', uiController.options.textQuerySelector, uiController.getSelectedText.bind(uiController), LongTap)
-      break
-    default:
-      eventController.registerListener(
-        'GetSelectedText', uiController.options.textQuerySelector, uiController.getSelectedText.bind(uiController), GenericEvt, uiController.options.textQueryTrigger
-      )
-  }
-
-  eventController.registerListener('HandleEscapeKey', document, uiController.handleEscapeKey.bind(uiController), GenericEvt, 'keydown')
-  eventController.registerListener('AlpheiosPageLoad', 'body', uiController.updateAnnotations.bind(uiController), GenericEvt, 'Alpheios_Page_Load')
-
-  // Attaches an event controller to a UIController instance
-  uiController.evc = eventController
-
-  // Subscribe to LexicalQuery events
-  LexicalQuery.evt.LEXICAL_QUERY_COMPLETE.sub(uiController.onLexicalQueryComplete.bind(uiController))
-  LexicalQuery.evt.MORPH_DATA_READY.sub(uiController.onMorphDataReady.bind(uiController))
-  LexicalQuery.evt.MORPH_DATA_NOTAVAILABLE.sub(uiController.onMorphDataNotFound.bind(uiController))
-  LexicalQuery.evt.HOMONYM_READY.sub(uiController.onHomonymReady.bind(uiController))
-  LexicalQuery.evt.LEMMA_TRANSL_READY.sub(uiController.updateTranslations.bind(uiController))
-  LexicalQuery.evt.WORD_USAGE_EXAMPLES_READY.sub(uiController.updateWordUsageExamples.bind(uiController))
-  LexicalQuery.evt.DEFS_READY.sub(uiController.onDefinitionsReady.bind(uiController))
-  LexicalQuery.evt.DEFS_NOT_FOUND.sub(uiController.onDefinitionsNotFound.bind(uiController))
-
-  // Subscribe to ResourceQuery events
-  ResourceQuery.evt.RESOURCE_QUERY_COMPLETE.sub(uiController.onResourceQueryComplete.bind(uiController))
-  ResourceQuery.evt.GRAMMAR_AVAILABLE.sub(uiController.onGrammarAvailable.bind(uiController))
-  ResourceQuery.evt.GRAMMAR_NOT_FOUND.sub(uiController.onGrammarNotFound.bind(uiController))
-
-  // Subscribe to AnnotationQuery events
-  AnnotationQuery.evt.ANNOTATIONS_AVAILABLE.sub(uiController.onAnnotationsAvailable.bind(uiController))
-
-  return uiController
-}
 
 let sendContentReadyToBackground = function sendContentReadToBackground () {
   messagingService.sendMessageToBg(new ContentReadyMessage(uiController.state))
@@ -170,11 +108,19 @@ let state = new TabScript()
 state.status = TabScript.statuses.script.PENDING
 state.setPanelDefault()
 state.setTabDefault()
-uiController = createUiController(state, {
+uiController = UIController.create(state, {
   storageAdapter: ExtensionSyncStorage,
   app: { name: browserManifest.name, version: browserManifest.version }
 })
-// uiController.auth = new BgAuthenticator(messagingService)
+// Do environment-specific initializations
+uiController.registerDataModule(AuthModule, new BgAuthenticator(messagingService))
+uiController.registerUiModule(PanelModule, {
+  mountPoint: '#alpheios-panel', // To what element a panel will be mounted
+  panelComponent: 'panel' // A Vue component that will represent a panel
+})
+uiController.registerUiModule(PopupModule, {
+  mountPoint: '#alpheios-popup'
+})
 
 // A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
 document.body.addEventListener('Alpheios_Embedded_Response', () => {
