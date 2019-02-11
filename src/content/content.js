@@ -108,9 +108,17 @@ let state = new TabScript()
 state.status = TabScript.statuses.script.PENDING
 state.setPanelDefault()
 state.setTabDefault()
+
+// Set an application's mode from URL params
+// If it is `dev` or `development`, an app will show additional options
+let url = new URL(window.location.href)
+let mode = url.searchParams.get('mode')
+mode = (['dev', 'development'].includes(mode)) ? 'development' : 'production'
+
 uiController = UIController.create(state, {
   storageAdapter: ExtensionSyncStorage,
-  app: { name: browserManifest.name, version: browserManifest.version }
+  app: { name: browserManifest.name, version: browserManifest.version },
+  mode: mode
 })
 // Do environment-specific initializations
 uiController.registerDataModule(AuthModule, new BgAuthenticator(messagingService))
