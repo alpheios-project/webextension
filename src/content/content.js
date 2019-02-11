@@ -6,7 +6,8 @@ import StateMessage from '@/lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
 import MessagingService from '@/lib/messaging/service.js'
 import BgAuthenticator from '@/lib/auth/bg-authenticator.js'
-import { TabScript, UIController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB } from 'alpheios-components'
+import { TabScript, UIController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB,
+  AuthModule, PanelModule, PopupModule } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style.min.css' // eslint-disable-line
 
 let messagingService = null
@@ -111,7 +112,15 @@ uiController = UIController.create(state, {
   storageAdapter: ExtensionSyncStorage,
   app: { name: browserManifest.name, version: browserManifest.version }
 })
-uiController.auth = new BgAuthenticator(messagingService)
+// Do environment-specific initializations
+uiController.registerDataModule(AuthModule, new BgAuthenticator(messagingService))
+uiController.registerUiModule(PanelModule, {
+  mountPoint: '#alpheios-panel', // To what element a panel will be mounted
+  panelComponent: 'panel' // A Vue component that will represent a panel
+})
+uiController.registerUiModule(PopupModule, {
+  mountPoint: '#alpheios-popup'
+})
 
 // A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
 document.body.addEventListener('Alpheios_Embedded_Response', () => {

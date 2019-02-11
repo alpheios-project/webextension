@@ -2,7 +2,7 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
-import { TabScript, UIController, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
+import { TabScript, UIController, PanelModule, PopupModule, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style-safari.min.css' // eslint-disable-line
 import Package from '../../package.json'
 
@@ -104,6 +104,13 @@ let handleStateRequest = async function handleStateRequest (message) {
       uiController = UIController.create(state, {
         storageAdapter: LocalStorageArea,
         app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` }
+      })
+      uiController.registerUiModule(PanelModule, {
+        mountPoint: '#alpheios-panel', // To what element a panel will be mounted
+        panelComponent: 'panel' // A Vue component that will represent a panel
+      })
+      uiController.registerUiModule(PopupModule, {
+        mountPoint: '#alpheios-popup'
       })
       await uiController.init()
     } else {
