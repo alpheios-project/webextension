@@ -244,7 +244,7 @@ export default class BackgroundProcess {
         this.updateUI(tab)
       },
       error => {
-        console.log(`No status confirmation from tab ${tab.tabID} on state request: ${error.message}`)
+        console.log(`No status confirmation from tab ${tab.tabObj.tabId}, windows ${tab.tabObj.windowId} on state request: ${error.message}`)
       }
     )
   }
