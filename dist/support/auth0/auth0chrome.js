@@ -24976,7 +24976,7 @@ function (_PKCEClient) {
   _createClass(ChromeClient, [{
     key: "getAuthResult",
     value: function getAuthResult(url, interactive) {
-      if (typeof browser === 'undefined') {
+      if (!window.browserFeatures.browserNamespace) {
         return new Promise(function (resolve, reject) {
           var started = Date.now();
           console.info("Launching a web auth flow in Chrome");

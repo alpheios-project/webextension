@@ -3,15 +3,15 @@ import Process from './background-process'
 import { Monitor as ExperienceMonitor } from 'alpheios-experience'
 
 // Detect browser features
-let browserFeatures = new Browser().inspect().getFeatures()
-console.log(`Support of a "browser" namespace: ${browserFeatures.browserNamespace}`)
-if (!browserFeatures.browserNamespace) {
+window.browserFeatures = new Browser().inspect().getFeatures()
+console.log(`Support of a "browser" namespace: ${window.browserFeatures.browserNamespace}`)
+if (!window.browserFeatures.browserNamespace) {
   console.log('"browser" namespace is not supported, will load a WebExtensions polyfill into the background script')
   window.browser = require('../../dist/support/webextension-polyfill/browser-polyfill')
 }
 
 let monitoredBackgroundProcess = ExperienceMonitor.track(
-  new Process(browserFeatures),
+  new Process(window.browserFeatures),
   [
     {
       monitoredFunction: 'getHomonymStatefully',
