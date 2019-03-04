@@ -29,7 +29,7 @@
   "homepage": "https://github.com/alpheios-project/webextension#readme",
   "devDependencies": {
     "alpheios-client-adapters": "github:alpheios-project/client-adapters",
-    "alpheios-components": "github:alpheios-project/components",
+    "alpheios-components": "file:../components",
     "alpheios-data-models": "github:alpheios-project/data-models",
     "alpheios-experience": "github:alpheios-project/experience",
     "alpheios-inflection-tables": "github:alpheios-project/inflection-tables",
@@ -154,6 +154,6 @@
     ]
   },
   "dependencies": {
-    "auth0-chrome": "github:alpheios-project/auth0-chrome#feature-logout"
+    "auth0-chrome": "github:alpheios-project/auth0-chrome#ff-support"
   }
 }

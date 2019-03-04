@@ -352,10 +352,13 @@ export default class BackgroundProcess {
       this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
         .catch(error => console.error(`Unable to send a response to a login request: ${error.message}`))
     } else {
+      const authStartTime = Date.now()
+      console.info(`Starting authentication in background`)
       new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
         .authenticate(options)
         .then(authResult => {
           console.log(`Background: Auth result is `, authResult)
+          console.info(`Authentication successful, duration: ${Date.now() - authStartTime}`)
           this.authResult = authResult
 
           this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
