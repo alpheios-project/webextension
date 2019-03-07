@@ -135,6 +135,7 @@ export default class BackgroundProcess {
       this.setDefaultTabState(tab)
       tab.activate()
       this.updateUI(tab)
+      this.notifyPageActive(tab.tabObj.tabId)
     } else {
       /*
       This is an activation on a page where content script is already loaded.
@@ -146,6 +147,7 @@ export default class BackgroundProcess {
       this.updateUI(tab)
       // Require content script to update its state
       this.setContentState(tab)
+      this.notifyPageActive(tab.tabObj.tabId)
     }
   }
 
@@ -161,6 +163,7 @@ export default class BackgroundProcess {
       this.updateUI(tab)
       // Require content script to update its state
       this.setContentState(tab)
+      this.notifyPageInactive(tab.tabObj.tabId)
     }
   }
 
@@ -526,6 +529,9 @@ export default class BackgroundProcess {
           this.setContentState(tab)
           this.checkEmbeddedContent(details.tabId)
           this.notifyPageLoad(details.tabId)
+          if (tab.isActive()) {
+            this.notifyPageActive(details.tabId)
+          }
         } catch (error) {
           console.error(`Cannot load content script for a tab with an ID of tabId = ${details.tabId}, windowId = ${details.windowId}`)
         }
@@ -572,6 +578,34 @@ export default class BackgroundProcess {
     try {
       browser.tabs.executeScript(tabId, {
         code: "document.body.dispatchEvent(new Event('Alpheios_Page_Load'))"
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  /**
+   * Dispatches an Alpheios_Active event to the page
+   * @param {String} tabId  the id of the tab to notify
+   */
+  notifyPageActive (tabId) {
+    try {
+      browser.tabs.executeScript(tabId, {
+        code: "document.body.dispatchEvent(new Event('Alpheios_Active'))"
+      })
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  /**
+   * Dispatches an Alpheios_Inactive event to the page
+   * @param {String} tabId  the id of the tab to notify
+   */
+  notifyPageInactive (tabId) {
+    try {
+      browser.tabs.executeScript(tabId, {
+        code: "document.body.dispatchEvent(new Event('Alpheios_Inactive'))"
       })
     } catch (e) {
       console.error(e)
