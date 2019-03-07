@@ -24976,42 +24976,18 @@ function (_PKCEClient) {
   _createClass(ChromeClient, [{
     key: "getAuthResult",
     value: function getAuthResult(url, interactive) {
-      if (!window.browserFeatures.browserNamespace) {
-        return new Promise(function (resolve, reject) {
-          var started = Date.now();
-          console.info("Launching a web auth flow in Chrome");
-          chrome.identity.launchWebAuthFlow({
-            url: url,
-            interactive: interactive
-          }, function (callbackURL) {
-            console.info("Web auth flow finished, duration: ".concat(Date.now() - started));
+      return new Promise(function (resolve, reject) {
+        chrome.identity.launchWebAuthFlow({
+          url: url,
+          interactive: interactive
+        }, function (callbackURL) {
+          if (chrome.runtime.lastError) {
+            return reject(new Error(chrome.runtime.lastError.message));
+          }
 
-            if (chrome.runtime.lastError) {
-              return reject(new Error(chrome.runtime.lastError.message));
-            }
-
-            resolve(callbackURL);
-          });
+          resolve(callbackURL);
         });
-      } else {
-        return new Promise(function (resolve, reject) {
-          var started = Date.now();
-          console.info("Launching a web auth flow in Firefox");
-          var authorizing = browser.identity.launchWebAuthFlow({
-            url: url,
-            interactive: interactive
-          }).then(function (redirectURL) {
-            // Is result a callback URL?
-            console.info("Web auth flow finished successfully, duration: ".concat(Date.now() - started));
-            console.info(redirectURL);
-            resolve(redirectURL);
-          }).catch(function (error) {
-            console.info("Web auth flow failed, duration: ".concat(Date.now() - started));
-            console.info(error);
-            reject(error);
-          });
-        });
-      }
+      });
     }
   }, {
     key: "getRedirectURL",
@@ -25063,12 +25039,12 @@ function _applyDecoratedDescriptor(target, property, decorators, descriptor, con
 
 
 var qs = url_parse__WEBPACK_IMPORTED_MODULE_2___default.a.qs;
-console.log(qs);
 /*
   Generic JavaScript PKCE Client, you can subclass this for React-Native,
   Cordova, Chrome, Some Other Environment which has its own handling for
   OAuth flows (like Windows?)
 */
+// @annotation
 
 var PKCEClient = (_class =
 /*#__PURE__*/
@@ -25234,6 +25210,19 @@ function () {
 
       return authenticate;
     }()
+    /**
+     * Logs the user out using the same `identity.launchWebAuthFlow()` that was used for logging in.
+     * Implemented according to a suggestion from
+     * https://stackoverflow.com/questions/26080632/how-do-i-log-out-of-a-chrome-identity-oauth-provider
+     * In order to not show any logout pages, default value of `interactive` is set to `false`.
+     * This call, however, produces a user interaction error.
+     * As this, in the context of this function, can be considered a "normal" outcome,
+     * we ignore errors with the user interaction message and resolve the promise as success.
+     * @param options
+     * @param interactive
+     * @return {Promise<void> | Promise<Error>}
+     */
+
   }, {
     key: "logout",
     value: function () {
@@ -25242,6 +25231,8 @@ function () {
       _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee4() {
         var options,
             interactive,
+            INTERACTION_MSG_CHROME,
+            INTERACTION_MSG_FF,
             domain,
             clientId,
             url,
@@ -25251,21 +25242,36 @@ function () {
             switch (_context4.prev = _context4.next) {
               case 0:
                 options = _args4.length > 0 && _args4[0] !== undefined ? _args4[0] : {};
-                interactive = _args4.length > 1 && _args4[1] !== undefined ? _args4[1] : true;
+                interactive = _args4.length > 1 && _args4[1] !== undefined ? _args4[1] : false;
+                INTERACTION_MSG_CHROME = "User interaction required.";
+                INTERACTION_MSG_FF = "Requires user interaction";
                 domain = this.domain, clientId = this.clientId;
-                url = "https://".concat(domain, "/v2/logout?").concat(qs.stringify(options));
-                _context4.next = 6;
-                return this.getAuthResult(url, interactive);
+                url = "https://".concat(domain, "/v2/logout");
+                _context4.prev = 6;
+                _context4.next = 9;
+                return this.getAuthResult(url, false);
 
-              case 6:
-                return _context4.abrupt("return");
+              case 9:
+                _context4.next = 15;
+                break;
 
-              case 7:
+              case 11:
+                _context4.prev = 11;
+                _context4.t0 = _context4["catch"](6);
+
+                if (!(_context4.t0.message !== INTERACTION_MSG_CHROME && _context4.t0.message !== INTERACTION_MSG_FF)) {
+                  _context4.next = 15;
+                  break;
+                }
+
+                throw _context4.t0;
+
+              case 15:
               case "end":
                 return _context4.stop();
             }
           }
-        }, _callee4, this);
+        }, _callee4, this, [[6, 11]]);
       }));
 
       function logout() {

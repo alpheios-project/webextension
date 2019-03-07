@@ -10,7 +10,7 @@ export default class ResponseMessage extends Message {
    * @param {symbol} responseCode - A status code for a request that initiated this response
    * (i.e. Success, Failure, etc.)
    */
-  constructor (request, body, responseCode = ResponseMessage.responseCodes.UNDEFINED) {
+  constructor (request, body = {}, responseCode = ResponseMessage.responseCodes.UNDEFINED) {
     super(body)
     this.role = Symbol.keyFor(Message.roles.RESPONSE)
     this.requestID = request.ID // ID of the request to match request and response

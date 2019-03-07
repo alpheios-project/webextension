@@ -352,13 +352,10 @@ export default class BackgroundProcess {
       this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
         .catch(error => console.error(`Unable to send a response to a login request: ${error.message}`))
     } else {
-      const authStartTime = Date.now()
-      console.info(`Starting authentication in background`)
       new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
         .authenticate(options)
         .then(authResult => {
           console.log(`Background: Auth result is `, authResult)
-          console.info(`Authentication successful, duration: ${Date.now() - authStartTime}`)
           this.authResult = authResult
 
           this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
@@ -451,17 +448,13 @@ export default class BackgroundProcess {
    * @param {Object} sender - A sender object
    */
   logoutRequestHandler (request, sender) {
-    let options = {
-      returnTo: auth0Env.LOGOUT_URL
-    }
     new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
-      .logout(options)
-      .then(resp => resp.text()).then((data) => {
-        this.messagingService.sendResponseToTab(LogoutResponse.Success(request, data), sender.tab.id)
+      .logout()
+      .then(() => {
+        this.messagingService.sendResponseToTab(LogoutResponse.Success(request), sender.tab.id)
           .catch(error => console.error(`Unable to send a response to a logout request: ${error.message}`))
       })
       .catch(err => {
-        console.log(`Logout failed: ${err.message}`)
         this.messagingService.sendResponseToTab(LogoutResponse.Error(request, new AuthError(err.message)), sender.tab.id)
           .catch(error => console.error(`Unable to send an error response to a logout request: ${error.message}`))
       })
