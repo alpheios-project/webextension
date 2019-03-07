@@ -25044,7 +25044,6 @@ var qs = url_parse__WEBPACK_IMPORTED_MODULE_2___default.a.qs;
   Cordova, Chrome, Some Other Environment which has its own handling for
   OAuth flows (like Windows?)
 */
-// @annotation
 
 var PKCEClient = (_class =
 /*#__PURE__*/
@@ -25249,7 +25248,7 @@ function () {
                 url = "https://".concat(domain, "/v2/logout");
                 _context4.prev = 6;
                 _context4.next = 9;
-                return this.getAuthResult(url, false);
+                return this.getAuthResult(url, interactive);
 
               case 9:
                 _context4.next = 15;
