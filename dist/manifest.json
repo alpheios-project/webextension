@@ -1,11 +1,7 @@
 {
   "manifest_version": 2,
   "name": "__MSG_extensionName__",
-<<<<<<< HEAD
   "version": "3.0.0.1",
-=======
-  "version": "2.1.0.20",
->>>>>>> v2.1.0.19-patch
   "default_locale": "en",
   "description": "__MSG_extensionDescription__",
   "icons": {
