@@ -419,28 +419,14 @@ export default class BackgroundProcess {
   userDataRequestHandler (request, sender) {
     if (!this.authResult) {
       console.error(`Get user info: not authenticated`)
+      this.messagingService.sendResponseToTab(UserDataResponse.Error(request, new AuthError('Not Authenticated')), sender.tab.id).catch(
+        error => console.error(`Unable to send a response to a user data request: ${error.message}`)
+      )
+    } else {
+      this.messagingService.sendResponseToTab(UserDataResponse.Success(request, this.authResult.access_token), sender.tab.id).catch(
+        error => console.error(`Unable to send a response to a user data request: ${error.message}`)
+      )
     }
-
-    // TODO: In this request we're sending an ID Token because that's what an endpoint server requires
-    //       But we should be sending an access token instead
-    window.fetch(auth0Env.ENDPOINT, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.authResult.access_token}`
-      }
-    })
-      .then(response => response.json())
-      .then((data) => {
-        this.messagingService.sendResponseToTab(UserDataResponse.Success(request, data), sender.tab.id).catch(
-          error => console.error(`Unable to send a response to a user data request: ${error.message}`)
-        )
-      })
-      .catch((err) => {
-        console.log(`User data cannot be retrieved: ${err.message}`)
-        this.messagingService.sendResponseToTab(UserDataResponse.Error(request, new AuthError(err.message)), sender.tab.id).catch(
-          error => console.error(`Unable to send a response to a user data request: ${error.message}`)
-        )
-      })
   }
 
   /**
