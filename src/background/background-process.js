@@ -7,6 +7,7 @@ import LoginResponse from '../lib/messaging/response/login-response.js'
 import LogoutResponse from '../lib/messaging/response/logout-response.js'
 import UserProfileResponse from '../lib/messaging/response/user-profile-response.js'
 import UserDataResponse from '../lib/messaging/response/user-data-response.js'
+import EndpointsResponse from '../lib/messaging/response/endpoints-response.js'
 import AuthError from '../lib/auth/errors/auth-error.js'
 import ContextMenuItem from './context-menu-item.js'
 import ContentMenuSeparator from './context-menu-separator.js'
@@ -51,6 +52,7 @@ export default class BackgroundProcess {
     this.messagingService.addHandler(Message.types.LOGIN_REQUEST, this.loginRequestHandler, this)
     this.messagingService.addHandler(Message.types.LOGOUT_REQUEST, this.logoutRequestHandler, this)
     this.messagingService.addHandler(Message.types.USER_PROFILE_REQUEST, this.userProfileRequestHandler, this)
+    this.messagingService.addHandler(Message.types.ENDPOINTS_REQUEST, this.endpointsRequestHandler, this)
     this.messagingService.addHandler(Message.types.USER_DATA_REQUEST, this.userDataRequestHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
@@ -407,6 +409,18 @@ export default class BackgroundProcess {
             .catch(error => console.error(`Unable to send an error response to a user profile request: ${error.message}`))
         })
     }
+  }
+
+  /**
+   * Retrieves service endpoint config from environment
+   * If succeeds, sends a response to content with SUCCESS response code and user profile data in the response body.
+   * If fails, sends a response with ERROR code and Error-like object in the response body.
+   * @param {RequestMessage} request - A request object received from a content script.
+   * @param {Object} sender - A sender object
+   */
+  endpointsRequestHandler (request, sender) {
+    this.messagingService.sendResponseToTab(EndpointsResponse.Success(request, auth0Env.ENDPOINTS), sender.tab.id)
+      .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
   }
 
   /**

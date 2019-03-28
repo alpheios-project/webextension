@@ -39,6 +39,10 @@ Message.types = {
   LOGOUT_REQUEST: Symbol.for('Alpheios_LogoutRequest'),
   LOGOUT_RESPONSE: Symbol.for('Alpheios_LogoutResponse'),
 
+  // Retrieves endpoints
+  ENDPOINTS_REQUEST: Symbol.for('Alpheios_EndpointsRequest'),
+  ENDPOINTS_RESPONSE: Symbol.for('Alpheios_EndpointsResponse'),
+
   ACTIVATION_REQUEST: Symbol.for('Alpheios_ActivateRequest'),
   DEACTIVATION_REQUEST: Symbol.for('Alpheios_DeactivateRequest'),
   OPEN_PANEL_REQUEST: Symbol.for('Alpheios_OpenPanelRequest'),
