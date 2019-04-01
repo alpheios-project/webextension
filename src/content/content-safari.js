@@ -2,7 +2,7 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
-import { TabScript, UIController, PanelModule, PopupModule, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
+import { TabScript, UIController, AuthModule, NavModule, PanelModule, PopupModule, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
 import ComponentStyles from '../../node_modules/alpheios-components/dist/style/style-safari.min.css' // eslint-disable-line
 import Package from '../../package.json'
 
@@ -122,7 +122,7 @@ let handleStateRequest = async function handleStateRequest (message) {
       })
       uiController.registerModule(AuthModule, { auth: null })
       uiController.registerModule(PanelModule, {
-        mountPoint: '#alpheios-panel', // To what element a panel will be mounted
+        mountPoint: '#alpheios-panel' // To what element a panel will be mounted
       })
       uiController.registerModule(PopupModule, {
         mountPoint: '#alpheios-popup'
