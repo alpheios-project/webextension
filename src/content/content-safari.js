@@ -120,13 +120,14 @@ let handleStateRequest = async function handleStateRequest (message) {
         storageAdapter: LocalStorageArea,
         app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` }
       })
-      uiController.registerUiModule(PanelModule, {
+      uiController.registerModule(AuthModule, { auth: null })
+      uiController.registerModule(PanelModule, {
         mountPoint: '#alpheios-panel', // To what element a panel will be mounted
-        panelComponent: 'panel' // A Vue component that will represent a panel
       })
-      uiController.registerUiModule(PopupModule, {
+      uiController.registerModule(PopupModule, {
         mountPoint: '#alpheios-popup'
       })
+      uiController.registerModule(NavModule, {})
       await uiController.init()
     } else {
       // If uninitialized, ignore all other requests other than activate
