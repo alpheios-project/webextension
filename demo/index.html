@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <title>WebExtension Demo Page</title>
     <style>
+        :root {
+            /* Redefine CSS custom props of a theme here */
+        }
         .alpheios-demo-page-instructions {
             background: lightblue;
             padding: 10px 20px;
@@ -57,7 +60,7 @@
     </p>
 </div>
 
-<h2>General tests for Latin</h2>
+<h2>Tests for Latin</h2>
 <p lang="lat">
     Nunc maximus ex id tincidunt pretium. Nunc vel dignissim magna, ut hendrerit <span
         class='alpheios-demo-target-word'>cupidinibus</span> [noun]. Proin aliquet purus at
@@ -89,7 +92,7 @@
     lingua Latina, et ea quae sunt in consuetudine apud populum et ea quae inveniuntur apud poetas.
 </p>
 
-<h2>General tests for Greek</h2>
+<h2>Tests for Greek</h2>
 <p lang='grc'>
     Sed non orci <span class='alpheios-demo-target-word'>φιλόσοφος</span> [noun],
     iaculis ipsum <span class='alpheios-demo-target-word'>ξηρή</span> [noun, adjective], luctus orci. In et auctor.
@@ -118,7 +121,12 @@
     accumsan massa.
 </p>
 
-<h2>General tests for Persian</h2>
+<h2 lang="eng" data-alpheios-ignore="all">Tests for Arabic</h2>
+<div lang="ara" dir="rtl">
+    1 اَلدٌّنيَا دَارُ مَمَرٍ لاَ دَارُ مَقَرٍ * سُلطَان بِلاَ عَدلٍ كَنَهرٍ
+</div>
+
+<h2>Tests for Persian</h2>
 <p lang="per" dir="rtl">
 <ol>
 
