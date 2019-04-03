@@ -7,6 +7,7 @@ import LoginResponse from '../lib/messaging/response/login-response.js'
 import LogoutResponse from '../lib/messaging/response/logout-response.js'
 import UserProfileResponse from '../lib/messaging/response/user-profile-response.js'
 import UserDataResponse from '../lib/messaging/response/user-data-response.js'
+import EndpointsResponse from '../lib/messaging/response/endpoints-response.js'
 import AuthError from '../lib/auth/errors/auth-error.js'
 import ContextMenuItem from './context-menu-item.js'
 import ContentMenuSeparator from './context-menu-separator.js'
@@ -51,6 +52,7 @@ export default class BackgroundProcess {
     this.messagingService.addHandler(Message.types.LOGIN_REQUEST, this.loginRequestHandler, this)
     this.messagingService.addHandler(Message.types.LOGOUT_REQUEST, this.logoutRequestHandler, this)
     this.messagingService.addHandler(Message.types.USER_PROFILE_REQUEST, this.userProfileRequestHandler, this)
+    this.messagingService.addHandler(Message.types.ENDPOINTS_REQUEST, this.endpointsRequestHandler, this)
     this.messagingService.addHandler(Message.types.USER_DATA_REQUEST, this.userDataRequestHandler, this)
     browser.runtime.onMessage.addListener(this.messagingService.listener.bind(this.messagingService))
     browser.tabs.onActivated.addListener(this.tabActivationListener.bind(this))
@@ -410,6 +412,18 @@ export default class BackgroundProcess {
   }
 
   /**
+   * Retrieves service endpoint config from environment
+   * If succeeds, sends a response to content with SUCCESS response code and user profile data in the response body.
+   * If fails, sends a response with ERROR code and Error-like object in the response body.
+   * @param {RequestMessage} request - A request object received from a content script.
+   * @param {Object} sender - A sender object
+   */
+  endpointsRequestHandler (request, sender) {
+    this.messagingService.sendResponseToTab(EndpointsResponse.Success(request, auth0Env.ENDPOINTS), sender.tab.id)
+      .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
+  }
+
+  /**
    * Retrieves user data from a third-party service authorized via Auth0.
    * If succeeds, sends a response to content with SUCCESS response code and user data in the response body.
    * If fails, sends a response with ERROR code and Error-like object in the response body.
@@ -419,28 +433,14 @@ export default class BackgroundProcess {
   userDataRequestHandler (request, sender) {
     if (!this.authResult) {
       console.error(`Get user info: not authenticated`)
+      this.messagingService.sendResponseToTab(UserDataResponse.Error(request, new AuthError('Not Authenticated')), sender.tab.id).catch(
+        error => console.error(`Unable to send a response to a user data request: ${error.message}`)
+      )
+    } else {
+      this.messagingService.sendResponseToTab(UserDataResponse.Success(request, this.authResult.access_token), sender.tab.id).catch(
+        error => console.error(`Unable to send a response to a user data request: ${error.message}`)
+      )
     }
-
-    // TODO: In this request we're sending an ID Token because that's what an endpoint server requires
-    //       But we should be sending an access token instead
-    window.fetch(auth0Env.ENDPOINT, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.authResult.access_token}`
-      }
-    })
-      .then(response => response.json())
-      .then((data) => {
-        this.messagingService.sendResponseToTab(UserDataResponse.Success(request, data), sender.tab.id).catch(
-          error => console.error(`Unable to send a response to a user data request: ${error.message}`)
-        )
-      })
-      .catch((err) => {
-        console.log(`User data cannot be retrieved: ${err.message}`)
-        this.messagingService.sendResponseToTab(UserDataResponse.Error(request, new AuthError(err.message)), sender.tab.id).catch(
-          error => console.error(`Unable to send a response to a user data request: ${error.message}`)
-        )
-      })
   }
 
   /**

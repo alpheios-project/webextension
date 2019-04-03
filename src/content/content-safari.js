@@ -2,7 +2,7 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
-import { TabScript, UIController, PanelModule, PopupModule, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
+import { TabScript, UIController, AuthModule, NavModule, PanelModule, PopupModule, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
 import Package from '../../package.json'
 
 const pingInterval = 15000 // How often to ping background with a state message, in ms
@@ -119,13 +119,14 @@ let handleStateRequest = async function handleStateRequest (message) {
         storageAdapter: LocalStorageArea,
         app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` }
       })
-      uiController.registerUiModule(PanelModule, {
-        mountPoint: '#alpheios-panel', // To what element a panel will be mounted
-        panelComponent: 'panel' // A Vue component that will represent a panel
+      uiController.registerModule(AuthModule, { auth: null })
+      uiController.registerModule(PanelModule, {
+        mountPoint: '#alpheios-panel' // To what element a panel will be mounted
       })
-      uiController.registerUiModule(PopupModule, {
+      uiController.registerModule(PopupModule, {
         mountPoint: '#alpheios-popup'
       })
+      uiController.registerModule(NavModule, {})
       await uiController.init()
     } else {
       // If uninitialized, ignore all other requests other than activate

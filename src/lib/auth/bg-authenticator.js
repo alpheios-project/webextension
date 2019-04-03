@@ -2,6 +2,7 @@ import LoginRequest from '@/lib/messaging/request/login-request.js'
 import LogoutRequest from '@/lib/messaging/request/logout-request.js'
 import UserProfileRequest from '@/lib/messaging/request/user-profile-request.js'
 import UserDataRequest from '@/lib/messaging/request/user-data-request.js'
+import EndpointsRequest from '@/lib/messaging/request/endpoints-request.js'
 
 /**
  * An authentication object that sends messages to the background script.
@@ -13,6 +14,32 @@ export default class BgAuthenticator {
    */
   constructor (messagingService) {
     this.messagingService = messagingService
+  }
+
+  /**
+   * Whether or not this authentication module supports login
+   * @return {Boolean} true for client side auth
+   */
+  enableLogin () {
+    return true
+  }
+
+  getEndPoints () {
+    return new Promise((resolve, reject) => {
+      this.messagingService.sendRequestToBg(new EndpointsRequest(), BgAuthenticator.AUTH_TIMEOUT)
+        .then(message => {
+          resolve(message.body)
+        }, error => reject(error))
+    })
+  }
+
+  /**
+   * No session for client side login
+   */
+  session () {
+    return new Promise((resolve, reject) => {
+      reject(new Error('No session provider'))
+    })
   }
 
   /**
