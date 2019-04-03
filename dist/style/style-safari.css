@@ -1459,9 +1459,13 @@ a.alpheios-popup__providers-link {
   display: none;
   position: relative !important;
   padding: calc(var(--alpheios-base-text-size) * 0.625) calc(var(--alpheios-base-text-size) * 1.25) !important;
+  color: var(--alpheios-color-neutral-lightest) !important;
   background: var(--alpheios-color-muted) !important;
   flex: 0 0 calc(var(--alpheios-base-text-size) * 3.75) !important;
   overflow: hidden !important;
+}
+.alpheios-popup__notifications-auth-msg {
+  margin-bottom: calc(var(--alpheios-base-text-size) * 0.625) !important;
 }
 .alpheios-popup__notifications-close-btn {
   position: absolute !important;
@@ -1537,15 +1541,6 @@ a.alpheios-popup__providers-link {
   fill: var(--alpheios-icon-color-active) !important;
   stroke: var(--alpheios-icon-color-active) !important;
   background-color: var(--alpheios-icon-bg-color-active) !important;
-}
-.alpheios-navbuttons--large .alpheios-navbuttons__btn {
-  width: 20px !important;
-  height: 20px !important;
-  margin: 10px 3px !important;
-}
-.alpheios-navbuttons--large .alpheios-navbuttons__btn svg {
-  width: 20px !important;
-  height: 20px !important;
 }
 /*
  Calculates a size of text elements relative to the base size.
@@ -2132,10 +2127,6 @@ h3.alpheios-inflections__credits-title {
   margin-top: 10px !important;
   margin-bottom: 10px !important;
 }
-.alpheios-info .alpheios-info__helptext p {
-  font-size: calc(var(--alpheios-base-text-size) * 0.875) !important;
-  color: var(--alpheios-text-color) !important;
-}
 .alpheios-info .alpheios-info__versiontext {
   font-size: calc(var(--alpheios-base-text-size) * 0.75) !important;
 }
@@ -2309,8 +2300,11 @@ h3.alpheios-inflections__credits-title {
 .alpheios-user-auth__notifications {
   display: none;
   position: relative !important;
-  padding: 10px 20px !important;
+  padding: calc(var(--alpheios-base-text-size) * 0.625) calc(var(--alpheios-base-text-size) * 1.25) !important;
+  margin-top: calc(var(--alpheios-base-text-size) * 0.625) !important;
+  color: var(--alpheios-color-neutral-lightest) !important;
   background: var(--alpheios-color-muted) !important;
+  border-radius: calc(var(--alpheios-base-ui-size) * 0.625) !important;
   flex: 0 0 60px !important;
   box-sizing: border-box !important;
   overflow: hidden !important;
