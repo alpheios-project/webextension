@@ -2,7 +2,7 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
-import { TabScript, UIController, AuthModule, NavModule, PanelModule, PopupModule, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
+import { TabScript, UIController, AuthModule, ToolbarModule, PanelModule, PopupModule, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
 import Package from '../../package.json'
 
 const pingInterval = 15000 // How often to ping background with a state message, in ms
@@ -126,7 +126,7 @@ let handleStateRequest = async function handleStateRequest (message) {
       uiController.registerModule(PopupModule, {
         mountPoint: '#alpheios-popup'
       })
-      uiController.registerModule(NavModule, {})
+      uiController.registerModule(ToolbarModule, {})
       await uiController.init()
     } else {
       // If uninitialized, ignore all other requests other than activate
