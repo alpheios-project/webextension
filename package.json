@@ -36,10 +36,10 @@
     "alpheios-node-build": "github:alpheios-project/node-build",
     "alpheios-res-client": "github:alpheios-project/res-client",
     "alpheios-wordlist": "github:alpheios-project/wordlist",
-    "autoprefixer": "^9.5.0",
+    "autoprefixer": "^9.5.1",
     "babel-core": "^6.26.3",
     "babel-eslint": "^10.0.1",
-    "babel-jest": "^24.5.0",
+    "babel-jest": "^24.7.1",
     "babel-loader": "^8.0.5",
     "babel-plugin-dynamic-import-node": "^2.2.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
@@ -71,7 +71,7 @@
     "imagemin-svgo": "^7.0.0",
     "interactjs": "^1.3.4",
     "intl-messageformat": "^2.2.0",
-    "jest": "^24.5.0",
+    "jest": "^24.7.1",
     "jest-environment-jsdom-11.0.0": "^20.1.9",
     "jest-serializer-vue": "^2.0.2",
     "jest-vue-preprocessor": "^1.5.0",
@@ -100,7 +100,7 @@
     "vue-template-compiler": "^2.6.10",
     "webextension-polyfill": "^0.4.0",
     "webpack": "^4.29.6",
-    "webpack-bundle-analyzer": "^3.1.0",
+    "webpack-bundle-analyzer": "^3.2.0",
     "webpack-dev-server": "^3.2.1",
     "webpack-merge": "^4.2.1",
     "wrap-range-text": "^1.0.1",
@@ -153,6 +153,6 @@
     ]
   },
   "dependencies": {
-    "auth0-chrome": "file:../auth0-chrome"
+    "auth0-chrome": "github:alpheios-project/auth0-chrome"
   }
 }
