@@ -389,7 +389,8 @@ export default class BackgroundProcess {
     if (this.authResult.is_test_user) {
       let testProfile = {
         name: 'Alpheios Test User',
-        nickname: 'testuser'
+        nickname: 'testuser',
+        sub: 'alpheiosMockUserId'
       }
       this.messagingService.sendResponseToTab(UserProfileResponse.Success(request, testProfile), sender.tab.id)
         .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
@@ -419,7 +420,7 @@ export default class BackgroundProcess {
    * @param {Object} sender - A sender object
    */
   endpointsRequestHandler (request, sender) {
-    this.messagingService.sendResponseToTab(EndpointsResponse.Success(request, auth0Env.ENDPOINTS), sender.tab.id)
+    this.messagingService.sendResponseToTab(EndpointsResponse.Success(request, auth0Env.ENDPOINTS ? auth0Env.ENDPOINTS : { wordlist: auth0Env.ENDPOINT }), sender.tab.id)
       .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
   }
 
