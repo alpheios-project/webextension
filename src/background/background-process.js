@@ -345,7 +345,8 @@ export default class BackgroundProcess {
     let options = {
       audience: auth0Env.AUDIENCE,
       scope: 'openid profile offline_access',
-      device: 'chrome-extension'
+      device: 'chrome-extension',
+      prompt: 'consent select_account'
     }
 
     // Test/dev environment only
