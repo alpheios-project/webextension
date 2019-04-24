@@ -7,6 +7,7 @@ import LoginResponse from '../lib/messaging/response/login-response.js'
 import LogoutResponse from '../lib/messaging/response/logout-response.js'
 import UserProfileResponse from '../lib/messaging/response/user-profile-response.js'
 import UserDataResponse from '../lib/messaging/response/user-data-response.js'
+import UserSessionResponse from '../lib/messaging/response/user-session-response.js'
 import EndpointsResponse from '../lib/messaging/response/endpoints-response.js'
 import AuthError from '../lib/auth/errors/auth-error.js'
 import ContextMenuItem from './context-menu-item.js'
@@ -50,6 +51,7 @@ export default class BackgroundProcess {
     this.messagingService.addHandler(Message.types.EMBED_LIB_MESSAGE, this.embedLibMessageHandler, this)
     this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
     this.messagingService.addHandler(Message.types.LOGIN_REQUEST, this.loginRequestHandler, this)
+    this.messagingService.addHandler(Message.types.USER_SESSION_REQUEST, this.sessionRequestHandler, this)
     this.messagingService.addHandler(Message.types.LOGOUT_REQUEST, this.logoutRequestHandler, this)
     this.messagingService.addHandler(Message.types.USER_PROFILE_REQUEST, this.userProfileRequestHandler, this)
     this.messagingService.addHandler(Message.types.ENDPOINTS_REQUEST, this.endpointsRequestHandler, this)
@@ -363,15 +365,31 @@ export default class BackgroundProcess {
         .then(authResult => {
           console.log(`Background: Auth result is `, authResult)
           this.authResult = authResult
-
           this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
             .catch(error => console.error(`Unable to send a response to a login request: ${error.message}`))
-        })
-        .catch(err => {
+        }).catch(err => {
           console.error(`Authentication error: ${err}`)
           this.messagingService.sendResponseToTab(LoginResponse.Error(request, new AuthError(err.message)), sender.tab.id)
             .catch(error => console.error(`Unable to send an error response to a login request: ${error.message}`))
         })
+    }
+  }
+
+  sessionRequestHandler (request, sender) {
+    if (this.authResult && !this.authResult.is_test_user) {
+      window.fetch(`https://${auth0Env.AUTH0_DOMAIN}/userinfo`, {
+        headers: {
+          'Authorization': `Bearer ${this.authResult.access_token}`
+        }
+      }).then(resp => resp.json()).then((profile) => {
+        this.messagingService.sendResponseToTab(UserSessionResponse.Success(request, profile), sender.tab.id)
+          .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
+      }).catch(err => {
+        // TODO this is where we could use a refresh_token
+        console.log(`Invalid session: ${err.message}`)
+        this.messagingService.sendResponseToTab(UserSessionResponse.Error(request, new AuthError(err.message)), sender.tab.id)
+          .catch(error => console.error(`Unable to send an error response to a user profile request: ${error.message}`))
+      })
     }
   }
 
@@ -386,7 +404,6 @@ export default class BackgroundProcess {
     if (!this.authResult) {
       console.error(`Get user info: not authenticated`)
     }
-
     if (this.authResult.is_test_user) {
       let testProfile = {
         name: 'Alpheios Test User',

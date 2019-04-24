@@ -2,6 +2,7 @@ import LoginRequest from '@/lib/messaging/request/login-request.js'
 import LogoutRequest from '@/lib/messaging/request/logout-request.js'
 import UserProfileRequest from '@/lib/messaging/request/user-profile-request.js'
 import UserDataRequest from '@/lib/messaging/request/user-data-request.js'
+import UserSessionRequest from '@/lib/messaging/request/user-session-request.js'
 import EndpointsRequest from '@/lib/messaging/request/endpoints-request.js'
 
 /**
@@ -34,11 +35,14 @@ export default class BgAuthenticator {
   }
 
   /**
-   * No session for client side login
+   * check access token expiration
    */
   session () {
     return new Promise((resolve, reject) => {
-      reject(new Error('No session provider'))
+      this.messagingService.sendRequestToBg(new UserSessionRequest(), BgAuthenticator.AUTH_TIMEOUT)
+        .then(message => {
+          resolve(message.body)
+        }, error => reject(error))
     })
   }
 
