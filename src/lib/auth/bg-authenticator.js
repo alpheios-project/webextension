@@ -18,11 +18,19 @@ export default class BgAuthenticator {
   }
 
   /**
-   * Whether or not this authentication module supports login
-   * @return {Boolean} true for client side auth
+   * a link for login external to the alpheios components
+   * @return null for client side login
    */
-  enableLogin () {
-    return true
+  loginUrl () {
+    return null
+  }
+
+  /**
+   * a link for logout external to the alpheios components
+   * @return null for client side login
+   */
+  logoutUrl () {
+    return null
   }
 
   getEndPoints () {
