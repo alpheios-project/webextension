@@ -31,6 +31,10 @@ Message.types = {
   USER_PROFILE_REQUEST: Symbol.for('Alpheios_UserProfileRequest'),
   USER_PROFILE_RESPONSE: Symbol.for('Alpheios_UserProfileResponse'),
 
+  // User session: checks access token expiration
+  USER_SESSION_REQUEST: Symbol.for('Alpheios_UserSessionRequest'),
+  USER_SESSION_RESPONSE: Symbol.for('Alpheios_UserSessionResponse'),
+
   // User profile: retrieves user data from a user data storage provider (e.g. Alpheios)
   USER_DATA_REQUEST: Symbol.for('Alpheios_UserDataRequest'),
   USER_DATA_RESPONSE: Symbol.for('Alpheios_UserDataResponse'),
