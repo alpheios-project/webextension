@@ -7,7 +7,7 @@ import StateResponse from '../lib/messaging/response/state-response'
 import MessagingService from '@/lib/messaging/service.js'
 import BgAuthenticator from '@/lib/auth/bg-authenticator.js'
 import { TabScript, UIController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB,
-  AuthModule, PanelModule, PopupModule, ToolbarModule } from 'alpheios-components'
+  AuthModule, PanelModule, PopupModule, ToolbarModule, ActionPanelModule } from 'alpheios-components'
 
 let messagingService = null
 let uiController = null
@@ -127,7 +127,8 @@ uiController.registerModule(PanelModule, {
 uiController.registerModule(PopupModule, {
   mountPoint: '#alpheios-popup'
 })
-uiController.registerModule(ToolbarModule, {})
+uiController.registerModule(ToolbarModule)
+uiController.registerModule(ActionPanelModule)
 
 // A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
 document.body.addEventListener('Alpheios_Embedded_Response', () => {
