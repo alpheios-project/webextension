@@ -1552,7 +1552,7 @@ select.alpheios-setting__control,
 .alpheios-popup__toolbar {
   position: relative !important;
   display: flex;
-  flex: 1 0 !important;
+  flex: 0 0 !important;
   justify-content: space-between !important;
   align-items: center !important;
   margin-bottom: calc(var(--alpheios-base-text-size) * 0.625) !important;
@@ -1640,56 +1640,6 @@ a:not([href]):not([tabindex]).alpheios-popup__providers-link:hover {
   fill: var(--alpheios-icon-color-active) !important;
   stroke: var(--alpheios-icon-color-active) !important;
   background-color: var(--alpheios-icon-bg-color-active) !important;
-}
-/*
- Calculates a size of text elements relative to the base size.
- Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
- */
-/*
- Calculates a size of UI elements relative to the base size.
- Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
- */
-.alpheios-navmenu {
-  background: #FFF !important;
-  display: flex;
-  flex-direction: column !important;
-  flex: 1 1 auto !important;
-}
-.alpheios-navmenu__item {
-  display: flex;
-  padding: 10px 20px 10px 30px !important;
-  border-bottom: 1px solid var(--alpheios-color-neutral-light) !important;
-  cursor: pointer !important;
-}
-.alpheios-navmenu__item:hover, .alpheios-navmenu__item:focus {
-  color: var(--alpheios-color-vivid-hover) !important;
-}
-.alpheios-navmenu__item.active {
-  color: var(--alpheios-color-vivid) !important;
-}
-.alpheios-navmenu__item .alpheios-navbuttons__icon, .alpheios-navmenu__item:hover .alpheios-navbuttons__icon, .alpheios-navmenu__item.active:focus .alpheios-navbuttons__icon {
-  fill: var(--alpheios-color-vivid) !important;
-  stroke: var(--alpheios-color-vivid) !important;
-}
-.alpheios-navmenu__item:hover .alpheios-navbuttons__icon, .alpheios-navmenu__item:focus .alpheios-navbuttons__icon, .alpheios-navmenu__item.active .alpheios-navbuttons__icon {
-  fill: var(--alpheios-color-vivid-hover) !important;
-  stroke: var(--alpheios-color-vivid-hover) !important;
-}
-.alpheios-navbuttons__icon-cont {
-  flex-grow: 0 !important;
-  width: 40px !important;
-  height: 40px !important;
-  margin-right: 40px !important;
-}
-.alpheios-navbuttons__icon {
-  width: 40px !important;
-  height: 40px !important;
-}
-.alpheios-navmenu div.alpheios-navmenu__text {
-  font-size: 20px !important;
-  line-height: 1.2 !important;
-  top: 10px !important;
-  position: relative !important;
 }
 /*
  Calculates a size of text elements relative to the base size.
@@ -2603,11 +2553,11 @@ h3.alpheios-inflections__credits-title {
 }
 .alpheios-worditem__targetWord {
   font-weight: bold !important;
-  width: 30% !important;
+  width: 28% !important;
   cursor: pointer !important;
 }
 .alpheios-worditem__lemmasList {
-  width: 38% !important;
+  width: 34% !important;
 }
 .alpheios-visibility__hidden {
   visibility: hidden !important;
@@ -2647,7 +2597,7 @@ h3.alpheios-inflections__credits-title {
   width: 80% !important;
 }
 .alpheios-wordlist-filters .alpheios-wordlist-header-input-filterBy {
-  width: 80% !important;
+  width: 100% !important;
 }
 .alpheios-wordlist-filters .alpheios-wordlist-header-clear-icon {
   width: 20px !important;
@@ -2661,6 +2611,45 @@ h3.alpheios-inflections__credits-title {
   height: 100% !important;
   display: inline-block;
   vertical-align: top !important;
+}
+.alpheios-wordlist-filters .alpheios-select-input-group {
+  position: relative !important;
+  width: 80% !important;
+  display: inline-block;
+}
+.alpheios-wordlist-filters .alpheios-select-input-group.alpheios-select-input-group-show-select .alpheios-wordlist-header-input-filterBy {
+  border-bottom-right-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+.alpheios-wordlist-filters .alpheios-select-input-group.alpheios-select-input-group-show-select .alpheios-select-list {
+  display: block;
+  border-bottom-right-radius: calc(var(--alpheios-base-text-size) * 0.625) !important;
+  border-bottom-left-radius: calc(var(--alpheios-base-text-size) * 0.625) !important;
+}
+.alpheios-wordlist-filters .alpheios-select-list {
+  position: absolute !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  margin: 0 !important;
+  background: var(--alpheios-color-neutral-lightest) !important;
+  padding: 5px 0 !important;
+  border: 1px solid var(--alpheios-border-color) !important;
+  border-top: 0 !important;
+  max-height: 110px !important;
+  overflow-y: auto !important;
+  list-style: none !important;
+  display: none;
+}
+.alpheios-wordlist-filters .alpheios-select-list li {
+  cursor: pointer !important;
+  padding: 0 5px !important;
+}
+.alpheios-wordlist-filters .alpheios-select-list li:hover {
+  background-color: var(--alpheios-color-bright-hover) !important;
+}
+.alpheios-wordlist-filters .alpheios-select-list li .alpheios-select-input-filter-part {
+  font-weight: bold !important;
+  color: var(--alpheios-color-vivid) !important;
 }
 /*
  Calculates a size of text elements relative to the base size.
@@ -2821,6 +2810,13 @@ h3.alpheios-inflections__credits-title {
 .alpheios-panel__menu-icon.menu-open {
   fill: var(--alpheios-color-bright) !important;
 }
+.alpheios-panel__header-btn-group--start {
+  display: flex;
+  flex-wrap: nowrap !important;
+  justify-content: flex-start !important;
+  box-sizing: border-box !important;
+  align-items: stretch !important;
+}
 .alpheios-panel__header-btn-group--end {
   display: flex;
   flex-wrap: nowrap !important;
@@ -2829,7 +2825,9 @@ h3.alpheios-inflections__credits-title {
   align-items: stretch !important;
 }
 .alpheios-panel__header-btn {
+  padding: 0 0 0 10px !important;
   fill: var(--alpheios-color-neutral-lightest) !important;
+  stroke: var(--alpheios-color-neutral-lightest) !important;
 }
 .alpheios-panel__header-btn svg {
   width: 40px !important;
@@ -2840,9 +2838,12 @@ h3.alpheios-inflections__credits-title {
 }
 .alpheios-panel__header-btn:hover {
   fill: var(--alpheios-color-bright-hover) !important;
+  stroke: var(--alpheios-color-bright-hover) !important;
 }
-.alpheios-panel__header-btn:active {
+.alpheios-panel__header-btn:active,
+.alpheios-panel__header-btn .alpheios-navbuttons__icon-active {
   fill: var(--alpheios-color-bright-pressed) !important;
+  stroke: var(--alpheios-color-bright-pressed) !important;
 }
 .alpheios-panel__close-btn {
   width: calc(var(--alpheios-base-ui-size) * 3.75) !important;
@@ -2993,6 +2994,15 @@ h3.alpheios-inflections__credits-title {
 }
 .alpheios-panel.alpheios-panel--expanded .alpheios-panel__header {
   border-radius: 0 !important;
+}
+.alpheios-panel--compact .alpheios-panel__tab__inflections h1 {
+  margin-bottom: 0 !important;
+}
+.alpheios-panel--compact .alpheios-panel__tab__inflections .alpheios-inflections__forms-cont {
+  margin-bottom: 0 !important;
+}
+.alpheios-panel--compact .alpheios-panel__close-btn {
+  margin-left: calc(var(--alpheios-base-ui-size) * 0.75) !important;
 }
 /*
  Calculates a size of text elements relative to the base size.
