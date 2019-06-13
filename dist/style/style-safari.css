@@ -1521,7 +1521,7 @@ select.alpheios-setting__control,
   cursor: pointer !important;
   fill: var(--alpheios-icon-color) !important;
   stroke: var(--alpheios-icon-color) !important;
-  stroke-width: 2.5 !important;
+  stroke-width: 0 !important;
 }
 .alpheios-popup__close-btn svg {
   position: relative !important;
@@ -2108,7 +2108,7 @@ h3.alpheios-inflections__credits-title {
   position: relative !important;
   -webkit-overflow-scrolling: touch !important;
   overflow-y: auto !important;
-  height: 85vh !important;
+  flex-direction: column !important;
 }
 .alpheios-grammar__frame {
   position: absolute !important;
@@ -2237,6 +2237,23 @@ h3.alpheios-inflections__credits-title {
 }
 .alpheios-lookup__resource-control .alpheios-setting__control {
   width: 100% !important;
+}
+.alpheios-lookup__search-control-icon {
+  display: none;
+}
+.alpheios-button-primary span.alpheios-lookup__search-control-label {
+  color: var(--alpheios-btn-primary-font-color) !important;
+}
+.alpheios-lookup__panel.alpheios-landscape .alpheios-lookup__search-control-label {
+  display: none;
+}
+.alpheios-lookup__panel.alpheios-landscape .alpheios-button-primary {
+  padding: 0 !important;
+}
+.alpheios-lookup__panel.alpheios-landscape .alpheios-lookup__search-control-icon {
+  display: inline-block;
+  width: 35px !important;
+  height: 25px !important;
 }
 /*
  Calculates a size of text elements relative to the base size.
@@ -2384,7 +2401,6 @@ h3.alpheios-inflections__credits-title {
   flex: 1 1 auto !important;
   position: relative !important;
   -webkit-overflow-scrolling: touch !important;
-  overflow-y: auto !important;
 }
 .alpheios-word-usage div.alpheios-word_usage_list__provider {
   flex: none !important;
@@ -2436,12 +2452,14 @@ h3.alpheios-inflections__credits-title {
   padding-top: 10px !important;
   padding-bottom: 5px !important;
 }
-.alpheios-word-usage a.alpheios-word-usage__examples-source-link-compact {
+.alpheios-word-usage__examples-source-link-compact-cont {
   grid-column: 1/4 !important;
-  color: var(--alpheios-link-color-on-light) !important;
   padding-top: 5px !important;
   padding-bottom: 10px !important;
   border-bottom: 1px solid var(--alpheios-border-color) !important;
+}
+.alpheios-word-usage a.alpheios-word-usage__examples-source-link-compact-text {
+  color: var(--alpheios-link-color-on-light) !important;
 }
 .alpheios-word-usage__examples-pre {
   grid-column: 1 !important;
@@ -2565,6 +2583,9 @@ h3.alpheios-inflections__credits-title {
 .alpheios-worditem__lemmasList-lemmaitem {
   cursor: pointer !important;
 }
+.alpheios-layout-compact .alpheios-worditem__targetWord {
+  width: 25% !important;
+}
 /*
  Calculates a size of text elements relative to the base size.
  Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
@@ -2591,7 +2612,7 @@ h3.alpheios-inflections__credits-title {
   vertical-align: middle !important;
 }
 .alpheios-wordlist-filters .alpheios-wordlist-header-input-filterBy-block {
-  margin-left: 2% !important;
+  margin-left: 1% !important;
 }
 .alpheios-wordlist-filters .alpheios-wordlist-header-select-filterBy {
   width: 80% !important;
@@ -2650,6 +2671,22 @@ h3.alpheios-inflections__credits-title {
 .alpheios-wordlist-filters .alpheios-select-list li .alpheios-select-input-filter-part {
   font-weight: bold !important;
   color: var(--alpheios-color-vivid) !important;
+}
+.alpheios-layout-compact .alpheios-wordlist-filters {
+  padding: 10px 2px !important;
+}
+.alpheios-layout-compact .alpheios-wordlist-header-select-filterBy-block {
+  width: 42% !important;
+}
+.alpheios-layout-compact .alpheios-wordlist-header-select-filterBy,
+.alpheios-layout-compact .alpheios-wordlist-header-input-filterBy {
+  font-size: 85% !important;
+}
+.alpheios-layout-compact .alpheios-wordlist-header-input-filterBy-block {
+  width: 52% !important;
+}
+.alpheios-layout-compact .alpheios-select-input-group {
+  width: 68% !important;
 }
 /*
  Calculates a size of text elements relative to the base size.
@@ -2840,8 +2877,7 @@ h3.alpheios-inflections__credits-title {
   fill: var(--alpheios-color-bright-hover) !important;
   stroke: var(--alpheios-color-bright-hover) !important;
 }
-.alpheios-panel__header-btn:active,
-.alpheios-panel__header-btn .alpheios-navbuttons__icon-active {
+.alpheios-panel__header-btn:active, .alpheios-panel__header-btn.alpheios-navbuttons__icon-active {
   fill: var(--alpheios-color-bright-pressed) !important;
   stroke: var(--alpheios-color-bright-pressed) !important;
 }
@@ -2851,7 +2887,7 @@ h3.alpheios-inflections__credits-title {
   cursor: pointer !important;
   fill: var(--alpheios-icon-color) !important;
   stroke: var(--alpheios-icon-color) !important;
-  stroke-width: 2.5 !important;
+  stroke-width: 0 !important;
 }
 .alpheios-panel__close-btn svg {
   position: relative !important;
@@ -2914,6 +2950,9 @@ h3.alpheios-inflections__credits-title {
 }
 .alpheios-panel__contentitem {
   margin-bottom: 1em !important;
+}
+.alpheios-panel__tab__word-usage {
+  width: 100% !important;
 }
 .alpheios-panel__tab-panel--options {
   display: block;
