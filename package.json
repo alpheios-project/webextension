@@ -1,7 +1,7 @@
 {
   "name": "webextension",
   "version": "3.0.0",
-  "build": "39",
+  "build": "40",
   "description": "A WebExtension implementation of Alpheios",
   "main": "index.js",
   "scripts": {
@@ -38,7 +38,7 @@
     "alpheios-wordlist": "github:alpheios-project/wordlist",
     "autoprefixer": "^9.6.0",
     "babel-core": "^6.26.3",
-    "babel-eslint": "^10.0.1",
+    "babel-eslint": "^10.0.2",
     "babel-jest": "^24.8.0",
     "babel-loader": "^8.0.6",
     "babel-plugin-dynamic-import-node": "^2.2.0",
@@ -101,7 +101,7 @@
     "webextension-polyfill": "^0.4.0",
     "webpack": "^4.34.0",
     "webpack-bundle-analyzer": "^3.3.2",
-    "webpack-dev-server": "^3.7.1",
+    "webpack-dev-server": "^3.7.2",
     "webpack-merge": "^4.2.1",
     "wrap-range-text": "^1.0.1",
     "zip-folder": "^1.0.0"
