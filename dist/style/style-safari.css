@@ -2357,12 +2357,6 @@ h3.alpheios-inflections__credits-title {
 .alpheios-word-usage-header .alpheios-word-usage-header-select-textwork {
   margin-top: 10px !important;
 }
-.alpheios-word-usage-header-actions {
-  margin-top: 10px !important;
-  padding-top: 10px !important;
-  padding-bottom: 10px !important;
-  border-top: 1px solid var(--alpheios-border-color) !important;
-}
 /*
  Calculates a size of text elements relative to the base size.
  Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
@@ -2376,6 +2370,8 @@ h3.alpheios-inflections__credits-title {
 }
 .alpheios-word-usage-header-sorting {
   padding-bottom: 10px !important;
+  margin-top: 10px !important;
+  border-bottom: 1px solid var(--alpheios-border-color) !important;
 }
 /*
  Calculates a size of text elements relative to the base size.
@@ -2407,9 +2403,6 @@ h3.alpheios-inflections__credits-title {
   font-weight: normal !important;
   padding: 10px 0 !important;
   font-size: 80% !important;
-}
-.alpheios-word-usage .alpheios-word-usage-header {
-  border-bottom: 1px solid var(--alpheios-border-color) !important;
 }
 .alpheios-word-usage .alpheios-word-usage-header-select-author,
 .alpheios-word-usage .alpheios-word-usage-header-select-textwork,
