@@ -2134,9 +2134,17 @@ h3.alpheios-inflections__credits-title {
 .alpheios-treebank {
   display: flex;
   flex-direction: column !important;
+  height: 100% !important;
 }
 .alpheios-treebank__frame {
+  /*
+  A minimal height of the treebank's iframe, shall be no less than 43em,
+  but no more than that because max width of panel's content is 800px and
+  treebank frame will not if in if too wide
+  */
+  width: 690px !important;
   flex: 1 1 100vh !important;
+  height: 100% !important;
 }
 /*
  Calculates a size of text elements relative to the base size.
@@ -2924,6 +2932,10 @@ h3.alpheios-inflections__credits-title {
 }
 .alpheios-panel__tab-panel--options {
   display: block;
+}
+.alpheios-panel__tab__treebank {
+  width: 100% !important;
+  height: 100% !important;
 }
 .alpheios-panel__tab-panel-options-cont {
   display: flex;

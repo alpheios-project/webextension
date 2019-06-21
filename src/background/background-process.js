@@ -486,7 +486,6 @@ export default class BackgroundProcess {
     let tmpUniqueTabId = Tab.createUniqueId(info.tabId, info.windowId)
     this.tab = tmpUniqueTabId
     let tab = this.tabs.has(tmpUniqueTabId) ? this.tabs.get(tmpUniqueTabId) : undefined
-
     this.setMenuForTab(tab)
   }
 
@@ -660,8 +659,11 @@ export default class BackgroundProcess {
     let tmpTabUniqueId = Tab.createUniqueId(tab.id, tab.windowId)
 
     if (this.tabs.has(tmpTabUniqueId) && this.tabs.get(tmpTabUniqueId).isActive()) {
+      browser.browserAction.setBadgeText({ text: '' })
       this.deactivateContent(new Tab(tab.id, tab.windowId))
     } else {
+      browser.browserAction.setBadgeText({ text: 'on' })
+      browser.browserAction.setBadgeBackgroundColor({ color: [24, 95, 109, 255] })
       this.activateContent(new Tab(tab.id, tab.windowId))
     }
   }
