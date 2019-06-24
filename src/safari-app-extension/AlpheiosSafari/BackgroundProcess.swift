@@ -21,7 +21,7 @@ class BackgroundProcess {
             
             if (active) {
                 icon = BackgroundProcess.browserIcons["active"]
-                toolbarItem?.setBadgeText("on") // Open book icon
+                toolbarItem?.setBadgeText("On") // Open book icon
                 toolbarItem?.setLabel("Deactivate Alpheios Reading Tools")
             } else {
                 toolbarItem?.setBadgeText("")
