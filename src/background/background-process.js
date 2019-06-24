@@ -486,6 +486,7 @@ export default class BackgroundProcess {
     let tmpUniqueTabId = Tab.createUniqueId(info.tabId, info.windowId)
     this.tab = tmpUniqueTabId
     let tab = this.tabs.has(tmpUniqueTabId) ? this.tabs.get(tmpUniqueTabId) : undefined
+
     this.setMenuForTab(tab)
   }
 
