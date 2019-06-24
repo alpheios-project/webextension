@@ -660,8 +660,12 @@ export default class BackgroundProcess {
     let tmpTabUniqueId = Tab.createUniqueId(tab.id, tab.windowId)
 
     if (this.tabs.has(tmpTabUniqueId) && this.tabs.get(tmpTabUniqueId).isActive()) {
+      browser.browserAction.setBadgeText({ text: '' })
       this.deactivateContent(new Tab(tab.id, tab.windowId))
     } else {
+      browser.browserAction.setBadgeText({ text: 'On' })
+      browser.browserAction.setBadgeBackgroundColor({ color: [252, 20, 20, 255] })
+      browser.browserAction.setBadgeTextColor({ color: '#fff' })
       this.activateContent(new Tab(tab.id, tab.windowId))
     }
   }
