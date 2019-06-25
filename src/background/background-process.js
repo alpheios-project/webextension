@@ -665,7 +665,9 @@ export default class BackgroundProcess {
     } else {
       browser.browserAction.setBadgeText({ text: 'On' })
       browser.browserAction.setBadgeBackgroundColor({ color: [252, 20, 20, 255] })
-      browser.browserAction.setBadgeTextColor({ color: '#fff' })
+      if (browser.browserAction.setBadgeTextColor) {
+        browser.browserAction.setBadgeTextColor({ color: '#fff' })
+      }
       this.activateContent(new Tab(tab.id, tab.windowId))
     }
   }
