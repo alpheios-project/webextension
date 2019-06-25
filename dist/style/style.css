@@ -1400,6 +1400,21 @@ select.alpheios-setting__control,
   border-style: solid;
   border-color: transparent transparent var(--alpheios-border-color) transparent;
 }
+.alph_tooltip-bottom-left {
+  top: 135%;
+  right: 0;
+  left: auto;
+}
+.alph_tooltip-bottom-left::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  right: 15%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent var(--alpheios-border-color) transparent;
+}
 .alpheios-panel--right .alph_tooltip-bottom-right {
   top: 135%;
   right: auto;
@@ -1515,13 +1530,38 @@ select.alpheios-setting__control,
   width: calc(var(--alpheios-base-ui-size) * 1.75);
   height: auto;
 }
-.alpheios-popup__close-btn {
+.alpheios-popup__toolbar-top__btn {
   width: calc(var(--alpheios-base-ui-size) * 3.5);
   height: 100%;
   cursor: pointer;
   fill: var(--alpheios-icon-color);
   stroke: var(--alpheios-icon-color);
   stroke-width: 0;
+}
+.alpheios-popup__toolbar-top__btn svg {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  left: calc(var(--alpheios-base-ui-size) * 1);
+  width: calc(var(--alpheios-base-ui-size) * 2);
+  height: auto;
+}
+.alpheios-popup__toolbar-top__btn:hover, .alpheios-popup__toolbar-top__btn:focus {
+  fill: var(--alpheios-icon-color-hover);
+  stroke: var(--alpheios-icon-color-hover);
+  background: var(--alpheios-icon-bg-color-hover);
+}
+.alpheios-popup__toolbar-top__btn:active {
+  fill: var(--alpheios-icon-color-active);
+  stroke: var(--alpheios-icon-color-active);
+  background: var(--alpheios-icon-bg-color-active);
+}
+.alpheios-popup__close-btn {
+  width: calc(var(--alpheios-base-ui-size) * 3.5);
+  height: 100%;
+  cursor: pointer;
+  fill: var(--alpheios-icon-color);
+  stroke: var(--alpheios-icon-color);
 }
 .alpheios-popup__close-btn svg {
   position: relative;
@@ -2126,6 +2166,23 @@ h3.alpheios-inflections__credits-title {
   margin: 0;
   padding: 0;
   overflow: scroll;
+}
+.alpheios-grammar__button--back-block {
+  position: absolute;
+  top: 5px;
+  right: 20px;
+  z-index: 1000;
+}
+.alpheios-svg-index {
+  display: block;
+  padding: 4px;
+  border-radius: 15px;
+  opacity: 0.5;
+}
+.alpheios-svg-index svg {
+  width: 22px;
+  height: auto;
+  fill: var(--alpheios-btn-primary-font-color);
 }
 /*
  Calculates a size of text elements relative to the base size.
