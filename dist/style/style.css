@@ -1545,6 +1545,7 @@ select.alpheios-setting__control,
   left: calc(var(--alpheios-base-ui-size) * 1);
   width: calc(var(--alpheios-base-ui-size) * 2);
   height: auto;
+  stroke-width: 1;
 }
 .alpheios-popup__toolbar-top__btn:hover, .alpheios-popup__toolbar-top__btn:focus {
   fill: var(--alpheios-icon-color-hover);
