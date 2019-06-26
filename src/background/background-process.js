@@ -147,20 +147,25 @@ export default class BackgroundProcess {
       This way it will be guaranteed that the content script will be fully ready
       to enter the state we would like it to be.
        */
-
       await this.createTab(tabObj)
+      let tab = this.tabs.get(tabObj.uniqueId)
+      this.setDefaultTabState(tab)
+      tab.activate()
+      this.updateUI(tab)
+      this.notifyPageActive(tab.tabObj.tabId)
+    } else {
+      /*
+      This is an activation on a page where content script is already loaded.
+      We can send a state request to it right away.
+       */
+      let tab = this.tabs.get(tabObj.uniqueId)
+      this.setDefaultTabState(tab)
+      tab.activate()
+      this.updateUI(tab)
+      // Require content script to update its state
+      this.setContentState(tab)
+      this.notifyPageActive(tab.tabObj.tabId)
     }
-    /*
-    else {}
-    This is an activation on a page where content script is already loaded.
-    We can send a state request to it right away.
-      */
-
-    let tab = this.tabs.get(tabObj.uniqueId)
-    this.setDefaultTabState(tab)
-    tab.activate()
-    this.updateUI(tab)
-    this.notifyPageActive(tab.tabObj.tabId)
   }
 
   async deactivateContent (tabObj) {
