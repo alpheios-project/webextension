@@ -61,6 +61,7 @@ export default class BackgroundProcess {
     browser.tabs.onDetached.addListener(this.tabDetachedListener.bind(this))
     browser.tabs.onAttached.addListener(this.tabAttachedListener.bind(this))
     browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
+    browser.tabs.onCreated.addListener(this.tabCreatedListener.bind(this))
     browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
     browser.runtime.onUpdateAvailable.addListener(this.updateAvailableListener.bind(this))
     browser.runtime.onInstalled.addListener(this.handleOnInstalled.bind(this))
@@ -92,6 +93,18 @@ export default class BackgroundProcess {
     this.updateIcon(iconState, tab.tabObj.tabId)
   }
 
+  setBadgeState (tab) {
+    const badgeState = tab ? tab.isActive() && !tab.isEmbedLibActive() : false
+    if (badgeState) {
+      browser.browserAction.setBadgeText({ text: 'On' })
+      browser.browserAction.setBadgeBackgroundColor({ color: [252, 20, 20, 255] })
+      if (browser.browserAction.setBadgeTextColor) {
+        browser.browserAction.setBadgeTextColor({ color: '#fff' })
+      }
+    } else {
+      browser.browserAction.setBadgeText({ text: '' })
+    }
+  }
   /**
    * handler for the runtime.onInstalled event
    */
@@ -134,25 +147,20 @@ export default class BackgroundProcess {
       This way it will be guaranteed that the content script will be fully ready
       to enter the state we would like it to be.
        */
+
       await this.createTab(tabObj)
-      let tab = this.tabs.get(tabObj.uniqueId)
-      this.setDefaultTabState(tab)
-      tab.activate()
-      this.updateUI(tab)
-      this.notifyPageActive(tab.tabObj.tabId)
-    } else {
-      /*
-      This is an activation on a page where content script is already loaded.
-      We can send a state request to it right away.
-       */
-      let tab = this.tabs.get(tabObj.uniqueId)
-      this.setDefaultTabState(tab)
-      tab.activate()
-      this.updateUI(tab)
-      // Require content script to update its state
-      this.setContentState(tab)
-      this.notifyPageActive(tab.tabObj.tabId)
     }
+    /*
+    else {}
+    This is an activation on a page where content script is already loaded.
+    We can send a state request to it right away.
+      */
+
+    let tab = this.tabs.get(tabObj.uniqueId)
+    this.setDefaultTabState(tab)
+    tab.activate()
+    this.updateUI(tab)
+    this.notifyPageActive(tab.tabObj.tabId)
   }
 
   async deactivateContent (tabObj) {
@@ -163,6 +171,7 @@ export default class BackgroundProcess {
        */
       let tab = this.tabs.get(tabObj.uniqueId)
       this.setDefaultTabState(tab)
+
       tab.deactivate()
       this.updateUI(tab)
       // Require content script to update its state
@@ -522,7 +531,12 @@ export default class BackgroundProcess {
 
       this.tabs.set(newKey, valueForChange.updateTabObject(tabId, attachInfo.newWindowId))
       this.setMenuForTab(valueForChange)
+      this.setBadgeState(valueForChange)
     }
+  }
+
+  async tabCreatedListener (tab) {
+    this.setBadgeState()
   }
   /**
    * Called when a page is loaded.
@@ -551,6 +565,7 @@ export default class BackgroundProcess {
           if (tab.isActive()) {
             this.notifyPageActive(details.tabId)
           }
+          this.setBadgeState(tab)
         } catch (error) {
           console.error(`Cannot load content script for a tab with an ID of tabId = ${details.tabId}, windowId = ${details.windowId}`)
         }
@@ -559,6 +574,7 @@ export default class BackgroundProcess {
       // even when the navigation is in a frame so we need to be sure it's updated
       } else if (tab.isActive()) {
         this.setIconState(tab)
+        this.setBadgeState(tab)
         this.updateBrowserActionForTab(this.tabs.get(tmpTabUniqueId))
       }
     }
@@ -660,14 +676,8 @@ export default class BackgroundProcess {
     let tmpTabUniqueId = Tab.createUniqueId(tab.id, tab.windowId)
 
     if (this.tabs.has(tmpTabUniqueId) && this.tabs.get(tmpTabUniqueId).isActive()) {
-      browser.browserAction.setBadgeText({ text: '' })
       this.deactivateContent(new Tab(tab.id, tab.windowId))
     } else {
-      browser.browserAction.setBadgeText({ text: 'On' })
-      browser.browserAction.setBadgeBackgroundColor({ color: [252, 20, 20, 255] })
-      if (browser.browserAction.setBadgeTextColor) {
-        browser.browserAction.setBadgeTextColor({ color: '#fff' })
-      }
       this.activateContent(new Tab(tab.id, tab.windowId))
     }
   }
@@ -683,6 +693,7 @@ export default class BackgroundProcess {
     this.updateBrowserActionForTab(tab)
     this.setMenuForTab(tab)
     this.setIconState(tab)
+    this.setBadgeState(tab)
   }
 
   updateBrowserActionForTab (tab) {
