@@ -16,7 +16,7 @@
     "auth0-env-dev-update": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=../protected-config/auth0/dev --t=dist --f=env-webext.js",
     "lint": "eslint --fix src/**/*.js",
     "test": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "zip": "node ./build/zip.js 3.0.0 alpheios.zip"
+    "zip": "node ./build/zip.js"
   },
   "repository": {
     "type": "git",
@@ -95,8 +95,8 @@
     "zip-a-folder": "0.0.8"
   },
   "engines": {
-    "node": ">= 10.5.0",
-    "npm": ">= 5.6.1"
+    "node": ">= 12.3.0",
+    "npm": ">= 6.9.0"
   },
   "jest": {
     "verbose": true,

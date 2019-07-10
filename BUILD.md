@@ -1,6 +1,6 @@
 ## Build Process
 
-Prerequisites: Node 10.5.0
+Prerequisites: Node 12.3.0 or higher, npm 6.9.0 or higher.
 
 **1. Set the version/build number**
 
