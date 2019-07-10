@@ -1,4 +1,4 @@
-/* global safari, Event */
+/* global safari */
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'

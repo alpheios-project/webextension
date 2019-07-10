@@ -24,7 +24,7 @@ SFSafariContentScript | It contains the name for the js script from safari-app-f
 SFSafariToolbarItem | It contains the data for toolbaritem.
 SFSafariWebsiteAccess | It is for defining the access from tabs (I am using simply full access - didn't dive into it here).
 
-### script.js, script.map.js, style.css
+### script.js, script.map.js, style-components.css
 
 It is compiled data from [safari-app-front repo](https://github.com/alpheios-project/safari-app-front)
 

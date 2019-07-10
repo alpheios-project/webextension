@@ -784,7 +784,7 @@ BackgroundProcess.defaults = {
   separatorOneId: 'separator-one',
   sendExperiencesMenuItemId: 'send-experiences',
   sendExperiencesMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_SENDEXP`),
-  contentCSSFileNames: ['style/style.css'],
+  contentCSSFileNames: ['style/style-components.css'],
   contentScriptFileName: 'content.js',
   browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
   experienceStorageCheckInterval: 10000,
