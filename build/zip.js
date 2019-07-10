@@ -1,5 +1,5 @@
 const fs = require('fs')
-const zip = require('zip-folder')
+const { zip } = require('zip-a-folder')
 
 let run = function (version, zipfile) {
   'use strict'
@@ -10,13 +10,13 @@ let run = function (version, zipfile) {
     manifest.version = version
     fs.writeFile(filename, JSON.stringify(manifest, null, 2), function (err) {
       if (err) return console.log(err)
-      zip('dist', zipfile, (e) => {
-        if (e) {
-          console.log(`Error creating ${zipfile}`)
-        } else {
+      zip('dist', zipfile)
+        .then(() => {
           console.log(`Successfully created ${zipfile}`)
-        }
-      })
+        })
+        .catch((e) => {
+          console.log(`Error creating ${zipfile}`, e)
+        })
     })
   })
 }

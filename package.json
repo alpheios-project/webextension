@@ -5,17 +5,17 @@
   "description": "A WebExtension implementation of Alpheios",
   "main": "index.js",
   "scripts": {
-    "build": "standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/alpheios-components/dist/style --t=dist/style",
-    "build-prod": "standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/alpheios-components/dist/style --t=dist/style",
-    "build-dev": "standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/alpheios-components/dist/style --t=dist/style",
-    "build-safari": "standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/alpheios-components/dist/style --t=dist/style",
-    "build-safari-dev": "standard --fix && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/alpheios-components/dist/style --t=dist/style",
+    "build": "npm run lint && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/alpheios-components/dist/style --t=dist/style",
+    "build-prod": "npm run lint && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all production vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/alpheios-components/dist/style --t=dist/style",
+    "build-dev": "npm run lint && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-background.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/alpheios-components/dist/style --t=dist/style",
+    "build-safari": "npm run lint && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all all vue-postcss config-content-safari.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/alpheios-components/dist/style --t=dist/style",
+    "build-safari-dev": "npm run lint && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs all development vue config-content-safari.mjs && node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/alpheios-components/dist/style --t=dist/style",
     "auth0-code-update": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/auth0-chrome/dist --t=dist/support/auth0",
     "auth0-env-update": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=../protected-config/auth0/prod --t=dist --f=env-webext.js",
     "auth0-env-dev-update": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=../protected-config/auth0/dev --t=dist --f=env-webext.js",
-    "standard": "standard",
+    "lint": "eslint --fix src/**/*.js",
     "test": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
-    "zip": "node ./build/zip.js"
+    "zip": "node ./build/zip.js 3.0.0 alpheios.zip"
   },
   "repository": {
     "type": "git",
@@ -29,14 +29,14 @@
   "homepage": "https://github.com/alpheios-project/webextension#readme",
   "devDependencies": {
     "alpheios-client-adapters": "github:alpheios-project/client-adapters",
-    "alpheios-components": "github:alpheios-project/components#code-optimization",
+    "alpheios-components": "github:alpheios-project/components",
     "alpheios-data-models": "github:alpheios-project/data-models",
     "alpheios-experience": "github:alpheios-project/experience",
     "alpheios-inflection-tables": "github:alpheios-project/inflection-tables",
     "alpheios-node-build": "github:alpheios-project/node-build",
     "alpheios-res-client": "github:alpheios-project/res-client",
     "alpheios-wordlist": "github:alpheios-project/wordlist",
-    "autoprefixer": "^9.6.0",
+    "autoprefixer": "^9.6.1",
     "babel-core": "^6.26.3",
     "babel-eslint": "^10.0.2",
     "babel-jest": "^24.8.0",
@@ -57,10 +57,11 @@
     "dom-anchor-text-quote": "^4.0.2",
     "element-closest": "^3.0.1",
     "eslint": "^6.0.1",
+    "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.18.0",
+    "eslint-plugin-vue": "^5.2.3",
     "extract-text-webpack-plugin": "^3.0.2",
     "file-loader": "^4.0.0",
-    "font-awesome-svg-png": "^1.2.2",
     "friendly-errors-webpack-plugin": "^1.7.0",
     "html-loader": "^0.5.5",
     "html-loader-jest": "^0.2.1",
@@ -69,41 +70,40 @@
     "imagemin-jpegtran": "^6.0.0",
     "imagemin-optipng": "^7.0.0",
     "imagemin-svgo": "^7.0.0",
-    "interactjs": "^1.4.11",
+    "interactjs": "^1.4.12",
     "intl-messageformat": "^2.2.0",
     "jest": "^24.8.0",
-    "jest-environment-jsdom-11.0.0": "^20.1.9",
     "jest-serializer-vue": "^2.0.2",
     "jest-vue-preprocessor": "^1.5.0",
     "mini-css-extract-plugin": "^0.7.0",
     "mkdirp": "^0.5.1",
-    "optimize-css-assets-webpack-plugin": "^5.0.1",
+    "optimize-css-assets-webpack-plugin": "^5.0.3",
     "parallel-webpack": "^2.4.0",
     "path": "^0.12.7",
     "postcss-import": "^12.0.1",
     "postcss-loader": "^3.0.0",
     "raw-loader": "^3.0.0",
     "sass-loader": "^7.1.0",
-    "semver": "^6.1.2",
+    "semver": "^6.2.0",
     "shelljs": "^0.8.3",
     "source-map-loader": "^0.2.4",
-    "standard": "^12.0.1",
     "style-loader": "^0.23.1",
     "url-loader": "^2.0.1",
     "uuid": "^3.3.2",
     "vue": "^2.6.10",
+    "vue-eslint-parser": "^6.0.4",
     "vue-jest": "^3.0.4",
     "vue-loader": "^15.7.0",
     "vue-style-loader": "^4.1.2",
     "vue-svg-loader": "^0.12.0",
     "vue-template-compiler": "^2.6.10",
     "webextension-polyfill": "^0.4.0",
-    "webpack": "^4.35.0",
+    "webpack": "^4.35.3",
     "webpack-bundle-analyzer": "^3.3.2",
     "webpack-dev-server": "^3.7.2",
     "webpack-merge": "^4.2.1",
     "wrap-range-text": "^1.0.1",
-    "zip-folder": "^1.0.0"
+    "zip-a-folder": "0.0.8"
   },
   "engines": {
     "node": ">= 10.5.0",
@@ -136,21 +136,17 @@
       "browser": true,
       "node": true
     },
+    "parser": "babel-eslint",
     "parserOptions": {
-      "ecmaVersion": 2018,
-      "sourceType": "module"
+      "sourceType": "module",
+      "ecmaVersion": 2019,
+      "allowImportExportEverywhere": true
     }
   },
   "eslintIgnore": [
     "**/dist",
     "**/support"
   ],
-  "standard": {
-    "ignore": [
-      "**/dist",
-      "**/support"
-    ]
-  },
   "dependencies": {
     "auth0-chrome": "github:alpheios-project/auth0-chrome"
   }

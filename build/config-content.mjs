@@ -1,3 +1,4 @@
+import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import VueLoaderPlugin from '../node_modules/vue-loader/lib/plugin.js'
 import path from 'path'
 const projectRoot = process.cwd()
@@ -25,12 +26,22 @@ const webpack = {
 
   production: {
     mode: 'production',
-    output: { filename: 'content.js' }
+    output: { filename: 'content.js' },
+    plugins: [
+      new MiniCssExtractPlugin({
+        filename: 'style/style.min.css'
+      })
+    ]
   },
 
   development: {
     mode: 'development',
-    output: { filename: 'content.js' }
+    output: { filename: 'content.js' },
+    plugins: [
+      new MiniCssExtractPlugin({
+        filename: 'style/style.css'
+      })
+    ]
   }
 }
 

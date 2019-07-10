@@ -28,7 +28,7 @@ const webpack = {
 
   production: {
     mode: 'production',
-    output: {filename: 'content-safari.js'},
+    output: { filename: 'content-safari.js' },
     plugins: [
       new MiniCssExtractPlugin({
         filename: 'style/style-safari.css'
@@ -39,7 +39,7 @@ const webpack = {
   development: {
     mode: 'development',
     devtool: false, // Disable source map as it will not be loaded into a containing app
-    output: {filename: 'content-safari.js'},
+    output: { filename: 'content-safari.js' },
     plugins: [
       new MiniCssExtractPlugin({
         filename: 'style/style-safari.css'
