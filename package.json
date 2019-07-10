@@ -1,6 +1,6 @@
 {
   "name": "webextension",
-  "version": "3.0.0",
+  "version": "3.0.0.42",
   "build": "42",
   "description": "A WebExtension implementation of Alpheios",
   "main": "index.js",
