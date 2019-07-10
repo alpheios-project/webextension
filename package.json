@@ -1,7 +1,7 @@
 {
   "name": "webextension",
-  "version": "3.0.0.42",
-  "build": "42",
+  "version": "3.0.0",
+  "build": "45",
   "description": "A WebExtension implementation of Alpheios",
   "main": "index.js",
   "scripts": {
@@ -40,7 +40,7 @@
     "alpheios-node-build": "github:alpheios-project/node-build",
     "alpheios-res-client": "github:alpheios-project/res-client",
     "alpheios-wordlist": "github:alpheios-project/wordlist",
-    "autoprefixer": "^9.6.1",
+    "autoprefixer": "^9.6.0",
     "babel-eslint": "^10.0.2",
     "babel-loader": "^8.0.6",
     "chalk": "^2.4.2",
