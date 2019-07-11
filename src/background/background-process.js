@@ -494,6 +494,7 @@ export default class BackgroundProcess {
     let tab = this.tabs.has(tmpUniqueTabId) ? this.tabs.get(tmpUniqueTabId) : undefined
 
     this.setMenuForTab(tab)
+    this.setBadgeState(tab)
   }
 
   tabDetachedListener (tabId, detachInfo) {
