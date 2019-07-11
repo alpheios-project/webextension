@@ -7,20 +7,6 @@ const webpack = {
   common: {
     context: path.join(projectRoot, 'src/content'),
     entry: './content-safari.js',
-    resolve: {
-      alias: {
-        'alpheios-data-models$': path.join(projectRoot, 'node_modules/alpheios-data-models/dist/alpheios-data-models.js'),
-        'alpheios-experience$': path.join(projectRoot, 'node_modules/alpheios-experience/dist/alpheios-experience.js'),
-        'alpheios-client-adapters$': path.join(projectRoot, 'node_modules/alpheios-client-adapters/dist/alpheios-client-adapters.js'),
-        'alpheios-res-client$': path.join(projectRoot, 'node_modules/alpheios-res-client/dist/alpheios-res-client.js'),
-        'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-components/dist/alpheios-components.js'),
-        'alpheios-inflection-tables$': path.join(projectRoot, 'node_modules/alpheios-inflection-tables/dist/alpheios-inflection-tables.js'),
-        'alpheios-component-styles$': path.join(projectRoot, 'node_modules/alpheios-components/dist/style/style.min.css'),
-        'alpheios-wordlist$': path.join(projectRoot, 'node_modules/alpheios-wordlist/dist/alpheios-wordlist.min.js'),
-        '@': path.join(projectRoot, 'src'),
-        '@safari': path.join(projectRoot, 'src/content-safari')
-      }
-    },
     plugins: [
       new VueLoaderPlugin()
     ]
@@ -29,6 +15,13 @@ const webpack = {
   production: {
     mode: 'production',
     output: { filename: 'content-safari.js' },
+    resolve: {
+      alias: {
+        'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-components/dist/alpheios-components.min.js'),
+        '@': path.join(projectRoot, 'src'),
+        '@safari': path.join(projectRoot, 'src/content-safari')
+      }
+    },
     plugins: [
       new MiniCssExtractPlugin({
         filename: 'style/style-safari.css'
@@ -40,6 +33,13 @@ const webpack = {
     mode: 'development',
     devtool: false, // Disable source map as it will not be loaded into a containing app
     output: { filename: 'content-safari.js' },
+    resolve: {
+      alias: {
+        'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-components/dist/alpheios-components.js'),
+        '@': path.join(projectRoot, 'src'),
+        '@safari': path.join(projectRoot, 'src/content-safari')
+      }
+    },
     plugins: [
       new MiniCssExtractPlugin({
         filename: 'style/style-safari.css'

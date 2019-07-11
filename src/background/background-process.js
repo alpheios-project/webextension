@@ -13,11 +13,6 @@ import AuthError from '../lib/auth/errors/auth-error.js'
 import ContextMenuItem from './context-menu-item.js'
 import ContentMenuSeparator from './context-menu-separator.js'
 
-import {
-  Transporter,
-  StorageAdapter as LocalExperienceStorage,
-  TestAdapter as RemoteExperienceServer
-} from 'alpheios-experience'
 // Use a logger that outputs timestamps (but loses line numbers)
 // import Logger from '../lib/logger'
 // console.log = Logger.log
@@ -77,9 +72,6 @@ export default class BackgroundProcess {
 
     browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
     browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
-
-    this.transporter = new Transporter(LocalExperienceStorage, RemoteExperienceServer,
-      BackgroundProcess.defaults.experienceStorageThreshold, BackgroundProcess.defaults.experienceStorageCheckInterval)
   }
 
   updateIcon (active, tabId) {

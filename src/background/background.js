@@ -1,6 +1,5 @@
 import Browser from '../lib/browser'
 import Process from './background-process'
-import { Monitor as ExperienceMonitor } from 'alpheios-experience'
 
 // Detect browser features
 const browserFeatures = new Browser().inspect().getFeatures()
@@ -10,22 +9,5 @@ if (!browserFeatures.browserNamespace) {
   window.browser = require('../../dist/support/webextension-polyfill/browser-polyfill')
 }
 
-let monitoredBackgroundProcess = ExperienceMonitor.track(
-  new Process(browserFeatures),
-  [
-    {
-      monitoredFunction: 'getHomonymStatefully',
-      experience: 'Get homonym from a morphological analyzer',
-      asyncWrapper: ExperienceMonitor.recordExperienceDetails
-    },
-    {
-      monitoredFunction: 'handleWordDataRequestStatefully',
-      asyncWrapper: ExperienceMonitor.detachFromMessage
-    },
-    {
-      monitoredFunction: 'sendResponseToTabStatefully',
-      asyncWrapper: ExperienceMonitor.attachToMessage
-    }
-  ]
-)
-monitoredBackgroundProcess.initialize()
+let backgroundProcess = new Process(browserFeatures)
+backgroundProcess.initialize()
