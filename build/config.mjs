@@ -1,3 +1,4 @@
+import cwp from 'clean-webpack-plugin'
 import path from 'path'
 const projectRoot = process.cwd()
 
@@ -6,7 +7,12 @@ const webpack = {
     entry: {
       background: './background/background.js',
       content: './content/content.js'
-    }
+    },
+    plugins: [
+      new cwp.CleanWebpackPlugin({
+        cleanOnceBeforeBuildPatterns: ['background*.js*', 'content*.js*']
+      })
+    ]
   },
 
   production: {
