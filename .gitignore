@@ -1,7 +1,6 @@
 .DS_Store
 node_modules/
 /dist/*.map
-/dist/style/
 npm-debug.log*
 /test/unit/coverage/
 coverage
