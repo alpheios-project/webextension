@@ -2755,13 +2755,14 @@ p.alpheios-word-usage-filter-title {
 .alpheios-word-usage__examples-show-sources-cbx {
   margin: 40px 0 20px !important;
 }
-.alpheios-word-usage a.alpheios-word-usage__examples-source-link-large {
+.alpheios-word-usage__examples-source-link-large {
   grid-column: 1/4 !important;
   color: var(--alpheios-usage-link-color) !important;
   padding-top: 10px !important;
   padding-bottom: 5px !important;
+  cursor: pointer !important;
 }
-.alpheios-word-usage a.alpheios-word-usage__examples-source-link-large:hover {
+.alpheios-word-usage__examples-source-link-large:hover {
   color: var(--alpheios-usage-link-color-hover) !important;
 }
 .alpheios-word-usage__examples-source-link-compact-cont {
@@ -2908,7 +2909,7 @@ p.alpheios-word-usage-filter-title {
 .alpheios-visibility__hidden {
   visibility: hidden !important;
 }
-.alpheios-worditem__lemmasList-lemmaitem {
+.alpheios-lemma-clickable .alpheios-worditem__lemmasList-lemmaitem {
   cursor: pointer !important;
 }
 .alpheios-layout-compact .alpheios-worditem__targetWord {
@@ -3086,7 +3087,8 @@ p.alpheios-word-usage-filter-title {
   fill: var(--alpheios-word-list-important-item-color) !important;
   stroke: var(--alpheios-word-list-important-item-color) !important;
 }
-.alpheios-wordlist-commands__item.alpheios-wordlist-commands__item-remove-all {
+.alpheios-wordlist-commands__item.alpheios-wordlist-commands__item-remove-all,
+.alpheios-wordlist-commands__item.alpheios-wordlist-commands__item-download {
   fill: var(--alpheios-word-list-delete-item-color) !important;
   stroke: var(--alpheios-word-list-delete-item-color) !important;
 }
@@ -3599,6 +3601,14 @@ p.alpheios-word-usage-filter-title {
   background: var(--alpheios-text-bg-color) !important;
 }
 .alpheios-toolbar__lookup-control .alpheios-navbuttons__btn {
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+.alpheios-toolbar__help-control {
+  background: var(--alpheios-text-bg-color) !important;
+}
+.alpheios-toolbar__help-control .alpheios-navbuttons__btn {
   margin: 0 !important;
   border-radius: 0 !important;
   border: none !important;
