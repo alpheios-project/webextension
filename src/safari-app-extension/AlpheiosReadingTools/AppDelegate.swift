@@ -15,6 +15,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var headerLabel: NSTextField!
     @IBOutlet weak var mainIcon: NSImageView!
     @IBOutlet weak var helloText: NSTextField!
+    @IBOutlet weak var authText: NSTextField!
     
     let headerText: String = "Alpheios Reading Tools"
     let headerIcon: NSImage! = NSImage.init(named: "AppIcon")
@@ -120,6 +121,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
         return true
     }
-
+    
+    @IBAction func LogInClicked(_ sender: Any) {
+        authText.stringValue = "Log In was clicked"
+    }
 }
 

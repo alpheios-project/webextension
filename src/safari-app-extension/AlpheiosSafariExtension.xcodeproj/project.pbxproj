@@ -10,7 +10,6 @@
 		7832F8892147A4CC00CD96CB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7832F8882147A4CC00CD96CB /* AppDelegate.swift */; };
 		7832F88B2147A4CC00CD96CB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7832F88A2147A4CC00CD96CB /* Assets.xcassets */; };
 		7832F88E2147A4CC00CD96CB /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7832F88C2147A4CC00CD96CB /* MainMenu.xib */; };
-		7832F89D2147A4E400CD96CB /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7832F89C2147A4E400CD96CB /* Cocoa.framework */; };
 		7832F8A02147A4E400CD96CB /* SafariExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7832F89F2147A4E400CD96CB /* SafariExtensionHandler.swift */; };
 		7832F8A22147A4E400CD96CB /* SafariExtensionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7832F8A12147A4E400CD96CB /* SafariExtensionViewController.swift */; };
 		7832F8A52147A4E400CD96CB /* SafariExtensionViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7832F8A32147A4E400CD96CB /* SafariExtensionViewController.xib */; };
@@ -22,8 +21,9 @@
 		7832F8BF2147DB7C00CD96CB /* RequestMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7832F8BE2147DB7C00CD96CB /* RequestMessage.swift */; };
 		7832F8C12147E10500CD96CB /* StateRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7832F8C02147E10500CD96CB /* StateRequest.swift */; };
 		7832F8C5214A5F9900CD96CB /* (null) in Sources */ = {isa = PBXBuildFile; };
-		BF0F528822F073170050AE62 /* SimpleKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528622F073170050AE62 /* SimpleKeychain.framework */; };
 		BF0F528922F073170050AE62 /* Auth0.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528722F073170050AE62 /* Auth0.framework */; };
+		BF0F528B22F076410050AE62 /* Auth0.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528722F073170050AE62 /* Auth0.framework */; };
+		BF0F528F22F077FF0050AE62 /* SimpleKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528622F073170050AE62 /* SimpleKeychain.framework */; };
 		BF3927F9216F565E00213E05 /* alpheios.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF3927F8216F565E00213E05 /* alpheios.pdf */; };
 		BF9D4CB1216E0D4E00E03D0C /* BackgroundProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */; };
 /* End PBXBuildFile section */
@@ -84,8 +84,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF0F528822F073170050AE62 /* SimpleKeychain.framework in Frameworks */,
 				BF0F528922F073170050AE62 /* Auth0.framework in Frameworks */,
+				BF0F528F22F077FF0050AE62 /* SimpleKeychain.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,7 +93,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7832F89D2147A4E400CD96CB /* Cocoa.framework in Frameworks */,
+				BF0F528B22F076410050AE62 /* Auth0.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,7 +189,7 @@
 				7832F8822147A4CC00CD96CB /* Frameworks */,
 				7832F8832147A4CC00CD96CB /* Resources */,
 				7832F8B22147A4E400CD96CB /* Embed App Extensions */,
-				BF0F528A22F0731E0050AE62 /* ShellScript */,
+				BF0F528E22F0775E0050AE62 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -289,7 +289,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		BF0F528A22F0731E0050AE62 /* ShellScript */ = {
+		BF0F528E22F0775E0050AE62 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -536,6 +536,10 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = W79WNX2NKZ;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = AlpheiosSafari/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -557,6 +561,10 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = W79WNX2NKZ;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = AlpheiosSafari/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
