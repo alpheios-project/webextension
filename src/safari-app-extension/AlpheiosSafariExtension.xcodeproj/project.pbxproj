@@ -24,6 +24,8 @@
 		BF0F528922F073170050AE62 /* Auth0.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528722F073170050AE62 /* Auth0.framework */; };
 		BF0F528B22F076410050AE62 /* Auth0.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528722F073170050AE62 /* Auth0.framework */; };
 		BF0F528F22F077FF0050AE62 /* SimpleKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528622F073170050AE62 /* SimpleKeychain.framework */; };
+		BF0F529422F085020050AE62 /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF0F529322F085020050AE62 /* Auth0.plist */; };
+		BF0F529522F085020050AE62 /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF0F529322F085020050AE62 /* Auth0.plist */; };
 		BF3927F9216F565E00213E05 /* alpheios.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF3927F8216F565E00213E05 /* alpheios.pdf */; };
 		BF9D4CB1216E0D4E00E03D0C /* BackgroundProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */; };
 /* End PBXBuildFile section */
@@ -72,8 +74,10 @@
 		7832F8BC2147D9B900CD96CB /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		7832F8BE2147DB7C00CD96CB /* RequestMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestMessage.swift; sourceTree = "<group>"; };
 		7832F8C02147E10500CD96CB /* StateRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateRequest.swift; sourceTree = "<group>"; };
+		BF017B7F22F0875F00E20B0D /* Alpheios Reading Tools.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Alpheios Reading Tools.entitlements"; sourceTree = "<group>"; };
 		BF0F528622F073170050AE62 /* SimpleKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SimpleKeychain.framework; path = Carthage/Build/Mac/SimpleKeychain.framework; sourceTree = "<group>"; };
 		BF0F528722F073170050AE62 /* Auth0.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Auth0.framework; path = Carthage/Build/Mac/Auth0.framework; sourceTree = "<group>"; };
+		BF0F529322F085020050AE62 /* Auth0.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Auth0.plist; sourceTree = "<group>"; };
 		BF3927F8216F565E00213E05 /* alpheios.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = alpheios.pdf; sourceTree = "<group>"; };
 		BF4FB089216E130B004E2592 /* TabScript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabScript.swift; sourceTree = "<group>"; };
 		BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundProcess.swift; sourceTree = "<group>"; };
@@ -103,6 +107,7 @@
 		7832F87C2147A4CC00CD96CB = {
 			isa = PBXGroup;
 			children = (
+				BF017B7F22F0875F00E20B0D /* Alpheios Reading Tools.entitlements */,
 				7832F8872147A4CC00CD96CB /* AlpheiosReadingTools */,
 				7832F89E2147A4E400CD96CB /* AlpheiosSafari */,
 				7832F89B2147A4E400CD96CB /* Frameworks */,
@@ -127,6 +132,7 @@
 				7832F88C2147A4CC00CD96CB /* MainMenu.xib */,
 				7832F88F2147A4CC00CD96CB /* Info.plist */,
 				7832F8902147A4CC00CD96CB /* AlpheiosReadingTools.entitlements */,
+				BF0F529322F085020050AE62 /* Auth0.plist */,
 			);
 			path = AlpheiosReadingTools;
 			sourceTree = "<group>";
@@ -236,7 +242,7 @@
 								enabled = 0;
 							};
 							com.apple.Sandbox = {
-								enabled = 0;
+								enabled = 1;
 							};
 						};
 					};
@@ -271,6 +277,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7832F88B2147A4CC00CD96CB /* Assets.xcassets in Resources */,
+				BF0F529422F085020050AE62 /* Auth0.plist in Resources */,
 				7832F88E2147A4CC00CD96CB /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -279,6 +286,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF0F529522F085020050AE62 /* Auth0.plist in Resources */,
 				7832F8B82147A70300CD96CB /* style-components-safari.css in Resources */,
 				BF3927F9216F565E00213E05 /* alpheios.pdf in Resources */,
 				7832F8A52147A4E400CD96CB /* SafariExtensionViewController.xib in Resources */,
@@ -482,7 +490,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = AlpheiosReadingTools/AlpheiosReadingTools.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "Alpheios Reading Tools.entitlements";
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -508,7 +516,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = AlpheiosReadingTools/AlpheiosReadingTools.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "Alpheios Reading Tools.entitlements";
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;

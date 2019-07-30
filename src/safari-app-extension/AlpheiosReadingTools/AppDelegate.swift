@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import Auth0
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -15,6 +16,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var headerLabel: NSTextField!
     @IBOutlet weak var mainIcon: NSImageView!
     @IBOutlet weak var helloText: NSTextField!
+    @IBOutlet weak var usernameTextInput: NSTextField!
+    @IBOutlet weak var passwordTextInput: NSSecureTextField!
     @IBOutlet weak var authText: NSTextField!
     
     let headerText: String = "Alpheios Reading Tools"
@@ -123,7 +126,51 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @IBAction func LogInClicked(_ sender: Any) {
-        authText.stringValue = "Log In was clicked"
+        let username = usernameTextInput.stringValue
+        let password = passwordTextInput.stringValue
+        var msg = ""
+        
+        Auth0.authentication().login(
+            usernameOrEmail: username,
+            password: password,
+            realm: "Username-Password-Authentication",
+            scope: "openid")
+            .start { result in
+                switch result {
+                case .success(let credentials):
+                    var accessToken = ""
+                    if (credentials.accessToken != nil) {
+                        accessToken = credentials.accessToken!
+                    } else {
+                        msg += "Authentication failed\n"
+                    }
+                    // let tokenType = credentials.tokenType
+                    // let expiresIn = credentials.expiresIn
+                    // let refreshToken = credentials.refreshToken
+                    // let idToken = credentials.idToken
+                    // let scope = credentials.scope
+                    Auth0
+                        .authentication()
+                        .userInfo(withAccessToken: accessToken)
+                        .start { result in
+                            switch result {
+                            case .success(let profile):
+                                
+                                let nickname = profile.nickname != nil ? profile.nickname! : ""
+                                let email = profile.email != nil ? profile.email! : ""
+                                msg += "User nickname is: \(nickname)\n"
+                                msg += "User email is: \(email)\n"
+                                DispatchQueue.main.async { [weak self] in
+                                    self?.authText.stringValue = msg
+                                }
+                            case .failure(let error):
+                                print("Failed with \(error)")
+                            }
+                    }
+                case .failure(let error):
+                    print("Failed with \(error)")
+                }
+        }
     }
 }
 
