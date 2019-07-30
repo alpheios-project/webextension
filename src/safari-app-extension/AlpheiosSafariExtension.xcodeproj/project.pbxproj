@@ -22,6 +22,8 @@
 		7832F8BF2147DB7C00CD96CB /* RequestMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7832F8BE2147DB7C00CD96CB /* RequestMessage.swift */; };
 		7832F8C12147E10500CD96CB /* StateRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7832F8C02147E10500CD96CB /* StateRequest.swift */; };
 		7832F8C5214A5F9900CD96CB /* (null) in Sources */ = {isa = PBXBuildFile; };
+		BF0F528822F073170050AE62 /* SimpleKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528622F073170050AE62 /* SimpleKeychain.framework */; };
+		BF0F528922F073170050AE62 /* Auth0.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528722F073170050AE62 /* Auth0.framework */; };
 		BF3927F9216F565E00213E05 /* alpheios.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF3927F8216F565E00213E05 /* alpheios.pdf */; };
 		BF9D4CB1216E0D4E00E03D0C /* BackgroundProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */; };
 /* End PBXBuildFile section */
@@ -51,7 +53,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		7832F8852147A4CC00CD96CB /* "Alpheios Reading Tools.app" */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Alpheios Reading Tools.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7832F8852147A4CC00CD96CB /* Alpheios Reading Tools.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Alpheios Reading Tools.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		7832F8882147A4CC00CD96CB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		7832F88A2147A4CC00CD96CB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7832F88D2147A4CC00CD96CB /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -70,6 +72,8 @@
 		7832F8BC2147D9B900CD96CB /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		7832F8BE2147DB7C00CD96CB /* RequestMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestMessage.swift; sourceTree = "<group>"; };
 		7832F8C02147E10500CD96CB /* StateRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateRequest.swift; sourceTree = "<group>"; };
+		BF0F528622F073170050AE62 /* SimpleKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SimpleKeychain.framework; path = Carthage/Build/Mac/SimpleKeychain.framework; sourceTree = "<group>"; };
+		BF0F528722F073170050AE62 /* Auth0.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Auth0.framework; path = Carthage/Build/Mac/Auth0.framework; sourceTree = "<group>"; };
 		BF3927F8216F565E00213E05 /* alpheios.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = alpheios.pdf; sourceTree = "<group>"; };
 		BF4FB089216E130B004E2592 /* TabScript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabScript.swift; sourceTree = "<group>"; };
 		BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundProcess.swift; sourceTree = "<group>"; };
@@ -80,6 +84,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF0F528822F073170050AE62 /* SimpleKeychain.framework in Frameworks */,
+				BF0F528922F073170050AE62 /* Auth0.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -107,7 +113,7 @@
 		7832F8862147A4CC00CD96CB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				7832F8852147A4CC00CD96CB /* "Alpheios Reading Tools.app" */,
+				7832F8852147A4CC00CD96CB /* Alpheios Reading Tools.app */,
 				7832F89A2147A4E400CD96CB /* AlpheiosSafari.appex */,
 			);
 			name = Products;
@@ -128,6 +134,8 @@
 		7832F89B2147A4E400CD96CB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				BF0F528722F073170050AE62 /* Auth0.framework */,
+				BF0F528622F073170050AE62 /* SimpleKeychain.framework */,
 				7832F89C2147A4E400CD96CB /* Cocoa.framework */,
 			);
 			name = Frameworks;
@@ -173,7 +181,7 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		7832F8842147A4CC00CD96CB /* "Alpheios Reading Tools" */ = {
+		7832F8842147A4CC00CD96CB /* Alpheios Reading Tools */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 7832F8932147A4CC00CD96CB /* Build configuration list for PBXNativeTarget "Alpheios Reading Tools" */;
 			buildPhases = (
@@ -181,6 +189,7 @@
 				7832F8822147A4CC00CD96CB /* Frameworks */,
 				7832F8832147A4CC00CD96CB /* Resources */,
 				7832F8B22147A4E400CD96CB /* Embed App Extensions */,
+				BF0F528A22F0731E0050AE62 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -250,7 +259,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				7832F8842147A4CC00CD96CB /* "Alpheios Reading Tools" */,
+				7832F8842147A4CC00CD96CB /* Alpheios Reading Tools */,
 				7832F8992147A4E400CD96CB /* AlpheiosSafari */,
 			);
 		};
@@ -278,6 +287,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BF0F528A22F0731E0050AE62 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Carthage/Build/Mac/Auth0.framework",
+				"$(SRCROOT)/Carthage/Build/Mac/SimpleKeychain.framework",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n/usr/local/bin/carthage copy-frameworks\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		7832F8812147A4CC00CD96CB /* Sources */ = {
@@ -456,6 +487,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = W79WNX2NKZ;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = "$(SRCROOT)/AlpheiosReadingTools/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -478,6 +513,10 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = W79WNX2NKZ;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/Mac",
+				);
 				INFOPLIST_FILE = "$(SRCROOT)/AlpheiosReadingTools/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -544,7 +583,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		7832F8932147A4CC00CD96CB /* Build configuration list for PBXNativeTarget "AlpheiosReadingTools" */ = {
+		7832F8932147A4CC00CD96CB /* Build configuration list for PBXNativeTarget "Alpheios Reading Tools" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				7832F8942147A4CC00CD96CB /* Debug */,
