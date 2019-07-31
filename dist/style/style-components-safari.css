@@ -2510,94 +2510,6 @@ h3.alpheios-inflections__credits-title {
  Calculates a size of UI elements relative to the base size.
  Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
  */
-.alpheios-resource-options__cont {
-  display: flex;
-  flex-direction: column !important;
-}
-.alpheios-resource-options__item {
-  margin-bottom: calc(var(--alpheios-base-text-size) * 0.625) !important;
-  display: flex;
-  align-items: flex-start !important;
-  flex: 1 1 auto !important;
-}
-/*
- Calculates a size of text elements relative to the base size.
- Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
- */
-/*
- Calculates a size of UI elements relative to the base size.
- Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
- */
-.alpheios-feature-options__cont {
-  display: flex;
-  flex-direction: column !important;
-}
-.alpheios-feature-options__item {
-  margin-bottom: calc(var(--alpheios-base-text-size) * 0.625) !important;
-  display: flex;
-  align-items: flex-start !important;
-  flex: 1 1 auto !important;
-}
-/*
- Calculates a size of text elements relative to the base size.
- Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
- */
-/*
- Calculates a size of UI elements relative to the base size.
- Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
- */
-.alpheios-setting__button-group {
-  color: var(--alpheios-settings-font-size-dark-color) !important;
-  border: 1px solid var(--alpheios-settings-font-size-dark-color) !important;
-  border-radius: calc(var(--alpheios-base-text-size) * 0.625) !important;
-  max-width: calc(var(--alpheios-base-text-size) * 12.5) !important;
-  display: flex;
-  overflow: hidden !important;
-}
-.alpheios-setting__button-group button {
-  border: none !important;
-  border-right: 1px solid var(--alpheios-settings-font-size-dark-color) !important;
-  background: transparent !important;
-  padding: calc(var(--alpheios-base-text-size) * 0.375) calc(var(--alpheios-base-text-size) * 0.75) !important;
-  font-size: calc(var(--alpheios-base-text-size) * 0.5) !important;
-  cursor: pointer !important;
-  flex: 1 !important;
-  margin: 0 !important;
-}
-.alpheios-setting__button-group button:last-child {
-  border-right: none !important;
-}
-.alpheios-setting__button-group button.active {
-  color: var(--alpheios-settings-font-size-light-color) !important;
-  background: var(--alpheios-settings-font-size-dark-color) !important;
-  box-shadow: inset 0 calc(var(--alpheios-base-text-size) * 0.25) calc(var(--alpheios-base-text-size) * 0.25) rgba(0, 0, 0, 0.1) !important;
-}
-/*
- Calculates a size of text elements relative to the base size.
- Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
- */
-/*
- Calculates a size of UI elements relative to the base size.
- Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
- */
-.alpheios-ui-options__cont {
-  display: flex;
-  flex-direction: column !important;
-}
-.alpheios-ui-options__item {
-  margin-bottom: calc(var(--alpheios-base-text-size) * 0.625) !important;
-  display: flex;
-  align-items: flex-start !important;
-  flex: 1 1 auto !important;
-}
-/*
- Calculates a size of text elements relative to the base size.
- Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
- */
-/*
- Calculates a size of UI elements relative to the base size.
- Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
- */
 .alpheios-user-auth {
   display: flex;
   flex-direction: column !important;
@@ -2900,11 +2812,11 @@ p.alpheios-word-usage-filter-title {
 }
 .alpheios-worditem__targetWord {
   font-weight: bold !important;
-  width: 28% !important;
+  width: calc((100% - 150px)/2) !important;
   cursor: pointer !important;
 }
 .alpheios-worditem__lemmasList {
-  width: 26% !important;
+  width: calc((100% - 150px)/2) !important;
 }
 .alpheios-visibility__hidden {
   visibility: hidden !important;
@@ -2912,8 +2824,10 @@ p.alpheios-word-usage-filter-title {
 .alpheios-lemma-clickable .alpheios-worditem__lemmasList-lemmaitem {
   cursor: pointer !important;
 }
-.alpheios-layout-compact .alpheios-worditem__targetWord {
-  width: 25% !important;
+.alpheios-rtl .alpheios-worditem__targetWord,
+.alpheios-rtl .alpheios-worditem__lemmasList {
+  direction: rtl !important;
+  text-align: right !important;
 }
 /*
  Calculates a size of text elements relative to the base size.
@@ -3016,6 +2930,11 @@ p.alpheios-word-usage-filter-title {
 }
 .alpheios-layout-compact .alpheios-select-input-group {
   width: 68% !important;
+}
+.alpheios-rtl .alpheios-wordlist-header-input-filterBy-block,
+.alpheios-rtl .alpheios-select-list {
+  direction: rtl !important;
+  text-align: right !important;
 }
 /*
  Calculates a size of text elements relative to the base size.
@@ -3138,13 +3057,146 @@ p.alpheios-word-usage-filter-title {
  */
 .alpheios-wordlist-language {
   padding-bottom: 5px !important;
-  margin-bottom: 10px !important;
+  margin-bottom: 25px !important;
 }
 .alpheios-wordlist-language__title {
   font-weight: bold !important;
   font-size: 120% !important;
   display: inline-block;
   vertical-align: middle !important;
+}
+/*
+ Calculates a size of text elements relative to the base size.
+ Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
+ */
+/*
+ Calculates a size of UI elements relative to the base size.
+ Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
+ */
+.alpheios-resource-options__cont {
+  display: flex;
+  flex-direction: column !important;
+}
+.alpheios-resource-options__item {
+  margin-bottom: calc(var(--alpheios-base-text-size) * 0.9375) !important;
+  display: flex;
+  align-items: flex-start !important;
+  flex: 1 1 auto !important;
+}
+/*
+ Calculates a size of text elements relative to the base size.
+ Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
+ */
+/*
+ Calculates a size of UI elements relative to the base size.
+ Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
+ */
+.alpheios-feature-options__cont {
+  display: flex;
+  flex-direction: column !important;
+}
+.alpheios-feature-options__item {
+  margin-bottom: calc(var(--alpheios-base-text-size) * 0.625) !important;
+  display: flex;
+  align-items: flex-start !important;
+  flex: 1 1 auto !important;
+}
+.alpheios-feature-options__cont-concord {
+  margin: calc(var(--alpheios-base-text-size) * 0.9375) 0 !important;
+}
+/*
+ Calculates a size of text elements relative to the base size.
+ Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
+ */
+/*
+ Calculates a size of UI elements relative to the base size.
+ Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
+ */
+.alpheios-setting__button-group {
+  color: var(--alpheios-settings-font-size-dark-color) !important;
+  border: 1px solid var(--alpheios-settings-font-size-dark-color) !important;
+  border-radius: calc(var(--alpheios-base-text-size) * 0.625) !important;
+  max-width: calc(var(--alpheios-base-text-size) * 12.5) !important;
+  display: flex;
+  overflow: hidden !important;
+}
+.alpheios-setting__button-group button {
+  border: none !important;
+  border-right: 1px solid var(--alpheios-settings-font-size-dark-color) !important;
+  background: transparent !important;
+  padding: calc(var(--alpheios-base-text-size) * 0.375) calc(var(--alpheios-base-text-size) * 0.75) !important;
+  font-size: calc(var(--alpheios-base-text-size) * 0.625) !important;
+  cursor: pointer !important;
+  flex: 1 !important;
+  margin: 0 !important;
+}
+.alpheios-setting__button-group button:last-child {
+  border-right: none !important;
+}
+.alpheios-setting__button-group button.active {
+  color: var(--alpheios-settings-font-size-light-color) !important;
+  background: var(--alpheios-settings-font-size-dark-color) !important;
+  box-shadow: inset 0 calc(var(--alpheios-base-text-size) * 0.25) calc(var(--alpheios-base-text-size) * 0.25) rgba(0, 0, 0, 0.1) !important;
+}
+/*
+ Calculates a size of text elements relative to the base size.
+ Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
+ */
+/*
+ Calculates a size of UI elements relative to the base size.
+ Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
+ */
+.alpheios-ui-options__cont {
+  display: flex;
+  flex-direction: column !important;
+}
+.alpheios-ui-options__item {
+  margin-bottom: calc(var(--alpheios-base-text-size) * 0.9375) !important;
+  display: flex;
+  align-items: flex-start !important;
+  flex: 1 1 auto !important;
+}
+/*
+ Calculates a size of text elements relative to the base size.
+ Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
+ */
+/*
+ Calculates a size of UI elements relative to the base size.
+ Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
+ */
+.alpheios-tab-options-switch {
+  margin-bottom: calc(var(--alpheios-base-text-size) * 0.9375) !important;
+  text-align: right !important;
+}
+.alpheios-tab-options-switch--item {
+  display: inline-block;
+  padding: 6.6666666667px 13px !important;
+  margin-left: 5px !important;
+  border-radius: 20px !important;
+  font-weight: bold !important;
+  background: var(--alpheios-desktop-panel-icon-bg) !important;
+  color: var(--alpheios-desktop-panel-icon-color) !important;
+  cursor: pointer !important;
+  font-size: 20px !important;
+}
+.alpheios-tab-options-switch--item:hover {
+  background: var(--alpheios-desktop-panel-icon-bg-hover) !important;
+  color: var(--alpheios-desktop-panel-icon-color-hover) !important;
+}
+.alpheios-tab-options-switch--item.alpheios-active {
+  background: var(--alpheios-desktop-panel-icon-bg-active) !important;
+  color: var(--alpheios-desktop-panel-icon-color-active) !important;
+}
+.alpheios-tab-options-reset-all-block {
+  border-top: 1px solid !important;
+  display: flex;
+  align-items: baseline !important;
+  flex: 1 1 auto !important;
+  padding-top: 10px !important;
+}
+.alpheios-tab-options-reset-all-block .alpheios-tab-options-reset-all-block--title {
+  font-weight: bold !important;
+  margin-left: 15px !important;
 }
 /*
  Calculates a size of text elements relative to the base size.
@@ -3320,7 +3372,7 @@ p.alpheios-word-usage-filter-title {
   flex-direction: column !important;
 }
 .alpheios-panel__options-item {
-  margin-bottom: calc(var(--alpheios-base-text-size) * 0.625) !important;
+  margin-bottom: calc(var(--alpheios-base-text-size) * 0.9375) !important;
   display: flex;
   align-items: flex-start !important;
   flex: 1 1 auto !important;
@@ -3401,6 +3453,9 @@ p.alpheios-word-usage-filter-title {
     display: none;
 }
 }
+.alpheios-panel__tab-panel--options {
+  padding-top: 10px !important;
+}
 /*
  Calculates a size of text elements relative to the base size.
  Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
@@ -3424,6 +3479,36 @@ p.alpheios-word-usage-filter-title {
 .alpheios-info__helptext {
   margin-top: 1em !important;
 }
+.alpheios-info__helpitem {
+  display: flex;
+  column-count: 2 !important;
+  align-items: center !important;
+  margin-bottom: 1em !important;
+}
+.alpheios-info__helpitem .alpheios-info__helpicon {
+  padding-right: 15px !important;
+  height: 44px !important;
+}
+.alpheios-info__helpitem .alpheios-info__helpicon svg {
+  width: calc(var(--alpheios-base-ui-size) * 1.25) !important;
+  height: calc(var(--alpheios-base-ui-size) * 1.25) !important;
+  position: relative !important;
+  fill: var(--alpheios-compact-toolbar-bg) !important;
+  stroke: var(--alpheios-compact-toolbar-bg) !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  display: inline-block;
+}
+.alpheios-info__helpitem .alpheios-info__helpicon svg .svg-logo-bg {
+  fill: var(--alpheios-color-light) !important;
+}
+.alpheios-info__helpitem .alpheios-info__helpicon svg .svg-logo-lines {
+  fill: var(--alpheios-compact-toolbar-bg) !important;
+}
+.alpheios-info__languagenotification {
+  color: var(--alpheios-notification-important-color) !important;
+}
 /*
  Calculates a size of text elements relative to the base size.
  Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.
@@ -3434,10 +3519,8 @@ p.alpheios-word-usage-filter-title {
  */
 .alpheios-panel--large {
   height: 100vh !important;
-  top: 0 !important;
-}
-.alpheios-panel--large .alpheios-panel__content {
   max-width: 80vw !important;
+  top: 0 !important;
 }
 .alpheios-panel--large .alpheios-navbuttons__btn svg {
   width: calc(var(--alpheios-base-ui-size) * 1.375) !important;
@@ -3615,7 +3698,6 @@ p.alpheios-word-usage-filter-title {
 }
 .alpheios-toolbar__header {
   width: calc(var(--alpheios-base-ui-size) * 2.75) !important;
-  height: calc(var(--alpheios-base-ui-size) * 3.375) !important;
   border-bottom: none !important;
   background: var(--alpheios-desktop-toolbar-bg) !important;
   box-sizing: border-box !important;
@@ -3624,6 +3706,10 @@ p.alpheios-word-usage-filter-title {
   border-bottom-right-radius: calc(var(--alpheios-base-ui-size) * 0.625) !important;
   position: relative !important;
   touch-action: none !important;
+}
+.alpheios-toolbar__header .alpheios-navbuttons__btn {
+  margin: 0 0 calc(var(--alpheios-base-ui-size) * 0.25) 0 !important;
+  border: none !important;
 }
 .alpheios-toolbar__header-icon {
   width: calc(var(--alpheios-base-ui-size) * 1.375) !important;
@@ -3705,38 +3791,50 @@ p.alpheios-word-usage-filter-title {
  Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
  */
 .alpheios-action-panel {
-  width: 300px !important;
+  width: auto !important;
   height: auto !important;
   position: fixed !important;
-  padding: 30px 20px 10px !important;
+  padding: 10px !important;
   border: 1px solid var(--alpheios-border-color) !important;
   border-radius: calc(var(--alpheios-base-ui-size) * 0.625) !important;
   background-color: var(--alpheios-text-bg-color) !important;
   transition: display 0.4s !important;
 }
+.alpheios-action-panel__cont {
+  margin-top: calc(var(--alpheios-base-ui-size) * 1.875) !important;
+  /* must allow for the close icon */
+}
 .alpheios-action-panel.alpheios-action-panel--lookup-visible {
   height: 130px !important;
+  width: 300px !important;
 }
 .alpheios-action-panel.alpheios-action-panel--nav-visible {
   height: 100px !important;
+  width: 280px !important;
 }
 .alpheios-action-panel.alpheios-action-panel--lookup-visible.alpheios-action-panel--nav-visible {
-  height: 190px !important;
+  height: 210px !important;
+  width: 300px !important;
 }
-.alpheios-action-panel__close-icon {
+.alpheios-action-panel__close-icon-span {
+  display: inline-block;
+  padding: calc(var(--alpheios-base-ui-size) * 0.5) !important;
   position: absolute !important;
-  top: 10px !important;
-  right: 10px !important;
   cursor: pointer !important;
-  width: 20px !important;
-  height: auto !important;
-  fill: var(--alpheios-compact-toolbar-icon-color) !important;
+  right: 10px !important;
 }
-.alpheios-action-panel__close-icon:hover, .alpheios-action-panel__close-icon:focus {
-  fill: var(--alpheios-compact-toolbar-icon-color-hover) !important;
+.alpheios-action-panel__close-icon-span .alpheios-action-panel__close-icon {
+  width: calc(var(--alpheios-base-ui-size) * 1.375) !important;
+  height: calc(var(--alpheios-base-ui-size) * 1.375) !important;
+  top: 50% !important;
+  position: relative !important;
+  fill: var(--alpheios-btn-primary-bg-color) !important;
 }
-.alpheios-action-panel__close-icon:active {
-  fill: var(--alpheios-compact-toolbar-icon-color-active) !important;
+.alpheios-action-panel__close-icon-span .alpheios-action-panel__close-icon:hover, .alpheios-action-panel__close-icon-span .alpheios-action-panel__close-icon:focus {
+  fill: var(--alpheios-btn-primary-bg-color-hover) !important;
+}
+.alpheios-action-panel__close-icon-span .alpheios-action-panel__close-icon:active {
+  fill: var(--alpheios-btn-primary-bg-color-pressed) !important;
 }
 .alpheios-action-panel__lookup-cont {
   height: 90px !important;
