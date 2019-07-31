@@ -94,34 +94,31 @@
         </menu>
         <window title="Alpheios Reading Tools" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-            <rect key="contentRect" x="335" y="390" width="480" height="526"/>
+            <rect key="contentRect" x="335" y="390" width="480" height="553"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="900"/>
-            <value key="maxSize" type="size" width="480" height="530"/>
+            <value key="maxSize" type="size" width="480" height="560"/>
             <value key="maxFullScreenContentSize" type="size" width="480" height="600"/>
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
-                <rect key="frame" x="0.0" y="0.0" width="480" height="526"/>
+                <rect key="frame" x="0.0" y="0.0" width="480" height="553"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Wny-Yo-hUs">
-                        <rect key="frame" x="20" y="454" width="53" height="52"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="53" id="fgr-ob-N5Z"/>
-                        </constraints>
+                    <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wny-Yo-hUs">
+                        <rect key="frame" x="20" y="454" width="53" height="79"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" image="NSApplicationIcon" id="C86-lv-VId"/>
                     </imageView>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="FZ1-eH-d5Q">
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="FZ1-eH-d5Q">
                         <rect key="frame" x="79" y="472" width="242" height="24"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" lineBreakMode="clipping" alignment="left" title="Alpheios Reading Tools" id="dAq-LV-Nzp">
                             <font key="font" size="21" name="Arial-BoldMT"/>
                             <color key="textColor" name="windowFrameColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" allowsExpansionToolTips="YES" mirrorLayoutDirectionWhenInternationalizing="never" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="J9X-3d-p64">
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsExpansionToolTips="YES" mirrorLayoutDirectionWhenInternationalizing="never" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="J9X-3d-p64">
                         <rect key="frame" x="25" y="206" width="430" height="240"/>
-                        <constraints>
-                            <constraint firstAttribute="height" constant="240" id="qmB-US-fgN"/>
-                        </constraints>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" allowsEditingTextAttributes="YES" id="1oF-zA-0E8">
                             <font key="font" size="13" name="ArialMT"/>
                             <string key="title">Provides clickable access to dictionary entries, morphological analyses, inflection tables and grammars for Latin and Ancient Greek and limited support for Classical Arabic and Persian.      1. Open Safari application     2. Open Safari Preferences Window in Menubar (⌘,)     3. Choose Extension Tab     4. Check "AlpheiosReadingTools"  Then activate on a page with Latin, Ancient Greek, Arabic or Persian text by clicking on the Alpheios icon          in the Safari toolbar.  Double-click on a word to retrieve morphology and short definitions.</string>
@@ -129,11 +126,9 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="PxG-vA-EQV">
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PxG-vA-EQV">
                         <rect key="frame" x="373" y="29" width="86" height="32"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="74" id="az4-31-gCQ"/>
-                        </constraints>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" title="Log out" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="evG-lG-98i">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
@@ -142,22 +137,18 @@
                             <action selector="LogOutClicked:" target="Voe-Tx-rLC" id="owL-aL-mKB"/>
                         </connections>
                     </button>
-                    <textField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="jgO-F2-Qk8">
+                    <textField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="jgO-F2-Qk8">
                         <rect key="frame" x="27" y="74" width="183" height="22"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="183" id="4PU-B9-zGb"/>
-                        </constraints>
+                        <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" id="CTb-PT-J4o">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <secureTextField verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="gzh-QW-5jj">
+                    <secureTextField verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="gzh-QW-5jj">
                         <rect key="frame" x="233" y="73" width="220" height="22"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="220" id="Vmk-Ln-4IJ"/>
-                        </constraints>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <secureTextFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" usesSingleLineMode="YES" id="vJ8-Nt-2I4">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
@@ -167,43 +158,45 @@
                             </allowedInputSourceLocales>
                         </secureTextFieldCell>
                     </secureTextField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="41h-dW-1gD">
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="41h-dW-1gD">
                         <rect key="frame" x="25" y="128" width="163" height="24"/>
+                        <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" lineBreakMode="clipping" title="Account Details" id="9Vx-w3-Epc">
                             <font key="font" size="21" name="Arial-BoldMT"/>
                             <color key="textColor" red="0.24268674850463867" green="0.55136513710021973" blue="0.61113333702087402" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="iMa-bm-OeU">
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="iMa-bm-OeU">
                         <rect key="frame" x="27" y="98" width="66" height="17"/>
+                        <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" lineBreakMode="clipping" title="Username" id="08N-Pk-11Q">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="tK1-xi-gMa">
+                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tK1-xi-gMa">
                         <rect key="frame" x="233" y="98" width="63" height="17"/>
+                        <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" lineBreakMode="clipping" title="Password" id="eLw-eO-RKQ">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" translatesAutoresizingMaskIntoConstraints="NO" id="QFh-xQ-UlR">
+                    <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="QFh-xQ-UlR">
                         <rect key="frame" x="25" y="22" width="278" height="36"/>
+                        <autoresizingMask key="autoresizingMask"/>
                         <textFieldCell key="cell" selectable="YES" title="Please log in to see your account details" id="MlW-VG-rJW">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <button verticalHuggingPriority="750" translatesAutoresizingMaskIntoConstraints="NO" id="Jyw-MM-Cni">
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Jyw-MM-Cni">
                         <rect key="frame" x="300" y="29" width="77" height="32"/>
-                        <constraints>
-                            <constraint firstAttribute="width" constant="65" id="YGa-Bj-CDB"/>
-                        </constraints>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <buttonCell key="cell" type="push" title="Log in" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="n3F-b2-LpR">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
@@ -213,36 +206,8 @@
                         </connections>
                     </button>
                 </subviews>
-                <constraints>
-                    <constraint firstItem="gzh-QW-5jj" firstAttribute="top" secondItem="tK1-xi-gMa" secondAttribute="bottom" constant="3" id="4LE-ZW-ofA"/>
-                    <constraint firstItem="J9X-3d-p64" firstAttribute="leading" secondItem="41h-dW-1gD" secondAttribute="leading" id="5Lx-eH-pzG"/>
-                    <constraint firstAttribute="bottom" secondItem="QFh-xQ-UlR" secondAttribute="bottom" constant="22" id="9cj-yR-Da5"/>
-                    <constraint firstItem="Jyw-MM-Cni" firstAttribute="top" secondItem="gzh-QW-5jj" secondAttribute="bottom" constant="16" id="AgO-kF-fPN"/>
-                    <constraint firstItem="Jyw-MM-Cni" firstAttribute="leading" secondItem="QFh-xQ-UlR" secondAttribute="trailing" constant="5" id="DcF-nZ-9rT"/>
-                    <constraint firstItem="41h-dW-1gD" firstAttribute="top" secondItem="J9X-3d-p64" secondAttribute="bottom" constant="54" id="G96-0R-n7X"/>
-                    <constraint firstItem="J9X-3d-p64" firstAttribute="top" secondItem="FZ1-eH-d5Q" secondAttribute="bottom" constant="26" id="IOe-ud-mur"/>
-                    <constraint firstItem="tK1-xi-gMa" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="235" id="LI1-jt-G9m"/>
-                    <constraint firstItem="PxG-vA-EQV" firstAttribute="leading" secondItem="Jyw-MM-Cni" secondAttribute="trailing" constant="8" id="LbV-gZ-UI1"/>
-                    <constraint firstItem="FZ1-eH-d5Q" firstAttribute="leading" secondItem="Wny-Yo-hUs" secondAttribute="trailing" constant="8" symbolic="YES" id="Ljb-m4-bbe"/>
-                    <constraint firstItem="iMa-bm-OeU" firstAttribute="baseline" secondItem="tK1-xi-gMa" secondAttribute="baseline" id="Oj5-Ma-3CU"/>
-                    <constraint firstItem="J9X-3d-p64" firstAttribute="trailing" secondItem="gzh-QW-5jj" secondAttribute="trailing" id="Qa2-M5-Gh4"/>
-                    <constraint firstItem="iMa-bm-OeU" firstAttribute="top" secondItem="41h-dW-1gD" secondAttribute="bottom" constant="13" id="SbX-LF-NlK"/>
-                    <constraint firstItem="gzh-QW-5jj" firstAttribute="leading" secondItem="jgO-F2-Qk8" secondAttribute="trailing" constant="23" id="UoL-SJ-LaA"/>
-                    <constraint firstItem="Wny-Yo-hUs" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="20" symbolic="YES" id="YWg-E1-RNC"/>
-                    <constraint firstItem="gzh-QW-5jj" firstAttribute="trailing" secondItem="PxG-vA-EQV" secondAttribute="trailing" id="bKU-0U-BEG"/>
-                    <constraint firstItem="41h-dW-1gD" firstAttribute="leading" secondItem="jgO-F2-Qk8" secondAttribute="leading" id="czn-JD-3ed"/>
-                    <constraint firstItem="J9X-3d-p64" firstAttribute="top" secondItem="Wny-Yo-hUs" secondAttribute="bottom" constant="8" symbolic="YES" id="hVb-CQ-ijN"/>
-                    <constraint firstItem="jgO-F2-Qk8" firstAttribute="leading" secondItem="QFh-xQ-UlR" secondAttribute="leading" id="if8-W2-LWf"/>
-                    <constraint firstItem="Jyw-MM-Cni" firstAttribute="baseline" secondItem="PxG-vA-EQV" secondAttribute="baseline" id="nkm-aB-lEc"/>
-                    <constraint firstItem="iMa-bm-OeU" firstAttribute="leading" secondItem="EiT-Mj-1SZ" secondAttribute="leading" constant="29" id="sYo-FC-IET"/>
-                    <constraint firstItem="Wny-Yo-hUs" firstAttribute="top" secondItem="EiT-Mj-1SZ" secondAttribute="top" constant="20" symbolic="YES" id="t0h-9i-Wxl"/>
-                    <constraint firstAttribute="bottom" secondItem="Jyw-MM-Cni" secondAttribute="bottom" constant="36" id="tMc-ID-Hfp"/>
-                    <constraint firstItem="jgO-F2-Qk8" firstAttribute="top" secondItem="iMa-bm-OeU" secondAttribute="bottom" constant="2" id="wLP-bL-wnN"/>
-                    <constraint firstItem="J9X-3d-p64" firstAttribute="centerX" secondItem="EiT-Mj-1SZ" secondAttribute="centerX" id="wyE-OQ-7wT"/>
-                    <constraint firstItem="QFh-xQ-UlR" firstAttribute="top" secondItem="gzh-QW-5jj" secondAttribute="bottom" constant="15" id="yMW-jp-MIm"/>
-                </constraints>
             </view>
-            <point key="canvasLocation" x="-838" y="19"/>
+            <point key="canvasLocation" x="-838" y="32.5"/>
         </window>
     </objects>
     <resources>
