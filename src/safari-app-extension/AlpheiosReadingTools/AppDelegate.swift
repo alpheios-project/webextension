@@ -37,12 +37,28 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     let textPartAfterIcon: String = "  in the Safari toolbar.  Double-click on a word to retrieve morphology and short definitions."
     
+    // An array to store a list of Auth0 users
+    var authUsers: [NSManagedObject] = []
+    
     // Initial event of Application Launch
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         self.updateHeaderLabel()
         self.updateMainIcon()
         self.updateHelloText()
+        
+        print("Application did finish launching")
+        let managedContext = self.persistentContainer.viewContext
+        
+        // Add Observer
+        print("Adding an observer")
+        // let notificationCenter = NotificationCenter.defaultCenter()
+        NotificationCenter.default.addObserver(self, selector: #selector(managedObjectContextObjectsDidChange), name: NSNotification.Name.NSManagedObjectContextObjectsDidChange, object: managedContext)
     }
+    
+    @objc func managedObjectContextObjectsDidChange(notification: NSNotification) {
+        print("managed object context did change")
+    }
+
 
     // Method to update header - text and font settings are defined inside class:
     // headerText, headerFontName, headerFontSize, headerColor
@@ -263,6 +279,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 DispatchQueue.main.async { [weak self] in
                                     self?.authText.stringValue = msg
                                 }
+                                print("Authenticated successfully")
+                                self.saveAuthUser(email: email, authenticated: true)
                             case .failure(let error):
                                 print("Failed with \(error)")
                             }
@@ -275,6 +293,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @IBAction func LogOutClicked(_ sender: Any) {
         print("Log out has been pressed")
+    }
+    
+    func saveAuthUser(email: String, authenticated: Bool) {
+        
+        // 1
+        let managedContext = self.persistentContainer.viewContext
+        
+        // 2
+        let entity =
+        NSEntityDescription.entity(forEntityName: "AuthUser", in: managedContext)!
+        
+        let user = NSManagedObject(entity: entity, insertInto: managedContext)
+        
+        // 3
+        user.setValue(email, forKeyPath: "email")
+        user.setValue(authenticated, forKeyPath: "authenticated")
+        
+        // 4
+        do {
+        try managedContext.save()
+            authUsers.append(user)
+            print("User data was saved successfully")
+        } catch let error as NSError {
+            print("Could not save. \(error), \(error.userInfo)")
+        }
     }
 }
 
