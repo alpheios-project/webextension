@@ -130,7 +130,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let password = passwordTextInput.stringValue
         var msg = ""
         
-        Auth0.authentication().login(
+        let authentication = Auth0.authentication()
+        
+        authentication.login(
             usernameOrEmail: username,
             password: password,
             realm: "Username-Password-Authentication",
@@ -171,6 +173,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     print("Failed with \(error)")
                 }
         }
+    }
+    
+    @IBAction func LogOutClicked(_ sender: Any) {
+        print("Log out has been pressed")
     }
 }
 

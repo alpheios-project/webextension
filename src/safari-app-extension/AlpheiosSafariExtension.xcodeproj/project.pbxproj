@@ -22,7 +22,6 @@
 		7832F8C12147E10500CD96CB /* StateRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7832F8C02147E10500CD96CB /* StateRequest.swift */; };
 		7832F8C5214A5F9900CD96CB /* (null) in Sources */ = {isa = PBXBuildFile; };
 		BF0F528922F073170050AE62 /* Auth0.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528722F073170050AE62 /* Auth0.framework */; };
-		BF0F528B22F076410050AE62 /* Auth0.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528722F073170050AE62 /* Auth0.framework */; };
 		BF0F528F22F077FF0050AE62 /* SimpleKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528622F073170050AE62 /* SimpleKeychain.framework */; };
 		BF0F529422F085020050AE62 /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF0F529322F085020050AE62 /* Auth0.plist */; };
 		BF0F529522F085020050AE62 /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF0F529322F085020050AE62 /* Auth0.plist */; };
@@ -97,7 +96,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF0F528B22F076410050AE62 /* Auth0.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
