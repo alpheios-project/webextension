@@ -547,6 +547,12 @@ export default class BackgroundProcess {
    * @return {Promise.<void>}
    */
   async navigationCompletedListener (details) {
+    // on Firefox, a click the download blob url for downloading
+    // the user wordlist causes Firefox to issue a webNavigationCompleted
+    // event. so we should ignore events whose urls are blob: urls
+    if (details.url && details.url.match(/^blob:/)) {
+      return
+    }
     let finalWindowId = this.defineCurrentWindowIdForActivation(details)
     let tmpTabUniqueId = Tab.createUniqueId(details.tabId, finalWindowId)
 
