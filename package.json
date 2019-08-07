@@ -1,7 +1,7 @@
 {
   "name": "webextension",
   "version": "3.0.0",
-  "build": "52",
+  "build": "53",
   "description": "A WebExtension implementation of Alpheios",
   "main": "index.js",
   "scripts": {
@@ -42,8 +42,8 @@
     "chalk": "^2.4.2",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.0.4",
-    "coveralls": "^3.0.5",
-    "css-loader": "^3.1.0",
+    "coveralls": "^3.0.6",
+    "css-loader": "^3.2.0",
     "eslint": "^6.1.0",
     "eslint-config-standard": "^12.0.0",
     "eslint-plugin-import": "^2.18.2",
