@@ -68,7 +68,7 @@ let deactivateUIController = function deactivateUIController (notify = true) {
       deactivatePing()
       notifyPageInactive()
     })
-    .catch((error) => console.error(`UI controller cannot be deactivated: ${error}`))
+    .catch((error) => console.error(`Unable to deactivate Alpheios: ${error}`))
 }
 
 /**
@@ -151,7 +151,7 @@ let handleStateRequest = async function handleStateRequest (message) {
         notifyPageActive()
         sendMessageToBackground('updateState')
       })
-      .catch((error) => console.error(`Cannot activate a UI controller: ${error}`))
+      .catch((error) => console.error(`Unable to activate Alpheios: ${error}`))
     return
   } else if (diff.has('status') && diff.status === TabScript.statuses.script.DEACTIVATED) {
     // This is a deactivation request

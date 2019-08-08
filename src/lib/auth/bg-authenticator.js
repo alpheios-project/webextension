@@ -96,7 +96,7 @@ export default class BgAuthenticator {
     return new Promise((resolve, reject) => {
       this.messagingService.sendRequestToBg(new LogoutRequest(), BgAuthenticator.DEFAULT_MSG_TIMEOUT)
         .then(message => resolve(message.body), error => {
-          console.log(`Logout error:`, error)
+          console.error(`Unexpected error logging out of Alpheios:`, error)
           resolve()
         })
     })

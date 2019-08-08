@@ -21,7 +21,6 @@ export default class TransferrableError extends Error {
    * @return {{name: string, message: string}}
    */
   toJSON () {
-    console.log(`Error toJSON`)
     let values = {}
     Object.getOwnPropertyNames(this).forEach(key => {
       values[key] = this[key]
