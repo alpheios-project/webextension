@@ -1,7 +1,7 @@
 {
   "name": "webextension",
   "version": "3.0.0",
-  "build": "53",
+  "build": "55",
   "description": "A WebExtension implementation of Alpheios",
   "main": "index.js",
   "scripts": {
@@ -51,7 +51,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^5.2.3",
-    "file-loader": "^4.1.0",
+    "file-loader": "^4.2.0",
     "friendly-errors-webpack-plugin": "^1.7.0",
     "html-loader": "^0.5.5",
     "html-loader-jest": "^0.2.1",
@@ -71,7 +71,7 @@
     "postcss-import": "^12.0.1",
     "postcss-loader": "^3.0.0",
     "raw-loader": "^3.1.0",
-    "sass-loader": "^7.1.0",
+    "sass-loader": "^7.2.0",
     "source-map-loader": "^0.2.4",
     "style-loader": "^0.23.1",
     "url-loader": "^2.1.0",
@@ -84,9 +84,9 @@
     "vue-svg-loader": "^0.12.0",
     "vue-template-compiler": "^2.6.10",
     "webextension-polyfill": "^0.4.0",
-    "webpack": "^4.39.1",
+    "webpack": "^4.39.2",
     "webpack-bundle-analyzer": "^3.4.1",
-    "webpack-dev-server": "^3.7.2",
+    "webpack-dev-server": "^3.8.0",
     "webpack-merge": "^4.2.1",
     "wrap-range-text": "^1.0.1",
     "zip-a-folder": "0.0.8"
