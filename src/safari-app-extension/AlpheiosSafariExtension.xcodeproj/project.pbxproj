@@ -84,7 +84,6 @@
 		BF0F528722F073170050AE62 /* Auth0.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Auth0.framework; path = Carthage/Build/Mac/Auth0.framework; sourceTree = "<group>"; };
 		BF0F529322F085020050AE62 /* Auth0.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Auth0.plist; sourceTree = "<group>"; };
 		BF3927F8216F565E00213E05 /* alpheios.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = alpheios.pdf; sourceTree = "<group>"; };
-		BF4FB089216E130B004E2592 /* TabScript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabScript.swift; sourceTree = "<group>"; };
 		BF568EE823070F6B00B5D073 /* StateMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMessage.swift; sourceTree = "<group>"; };
 		BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSCustomPersistantContainer.swift; sourceTree = "<group>"; };
 		BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundProcess.swift; sourceTree = "<group>"; };
@@ -162,8 +161,8 @@
 				BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */,
 				7832F89F2147A4E400CD96CB /* SafariExtensionHandler.swift */,
 				7832F8A12147A4E400CD96CB /* SafariExtensionViewController.swift */,
+				7832F8B42147A52300CD96CB /* TabScript.swift */,
 				7832F8A32147A4E400CD96CB /* SafariExtensionViewController.xib */,
-				BF4FB089216E130B004E2592 /* TabScript.swift */,
 				7832F8A62147A4E400CD96CB /* Info.plist */,
 				7832F8B72147A70300CD96CB /* style-components-safari.css */,
 				7832F8A72147A4E400CD96CB /* content-safari.js */,
@@ -177,7 +176,6 @@
 			isa = PBXGroup;
 			children = (
 				7832F8BB2147D8B300CD96CB /* messaging */,
-				7832F8B42147A52300CD96CB /* TabScript.swift */,
 			);
 			name = lib;
 			sourceTree = "<group>";

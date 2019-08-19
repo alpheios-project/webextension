@@ -10,7 +10,7 @@ import SafariServices
 
 class SafariExtensionHandler: SFSafariExtensionHandler {
     let backgroundProcess: BackgroundProcess = BackgroundProcess()
-    let managedContext = SFSafariApplication.persistentContainer.viewContext
+    // let managedContext = SFSafariApplication.persistentContainer.viewContext
 
     
     override func messageReceived(withName messageName: String, from page: SFSafariPage, userInfo: [String : Any]?) {
