@@ -54,6 +54,7 @@ class BackgroundProcess {
     
     // This version is used for activations made by a BackgroundProcess
     func activateContent(tab: TabScript, window: SFSafariWindow) {
+        print("Activate content by a background process")
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
                 if tab.status != TabScript.props["status_disabled"] {
@@ -62,10 +63,31 @@ class BackgroundProcess {
                 }
             })
         })
+        
+        window.getActiveTab(completionHandler: { (activeTab) in
+            activeTab?.getActivePage(completionHandler: { (activePage) in
+                self.sendInfoMsgToTab(message: "Activate content by a background process", tab: tab, page: activePage!)
+            })
+        })
+        
+        let managedContext = self.persistentContainer.viewContext
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(managedObjectContextObjectsDidChange), name: NSNotification.Name.NSManagedObjectContextObjectsDidChange, object: managedContext)
+        
+        window.getActiveTab(completionHandler: { (activeTab) in
+            activeTab?.getActivePage(completionHandler: { (activePage) in
+                self.sendInfoMsgToTab(message: "Observer has been added", tab: tab, page: activePage!)
+            })
+        })
+    }
+    
+    @objc func managedObjectContextObjectsDidChange(notification: NSNotification) {
+        print("managed object context did change")
     }
 
    // This function is used for menu initiated activations
    func activateContent(page: SFSafariPage) {
+        print("Activate content by the menu")
         let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
         curTab.activate()
         curTab.setTablDefault() // Reset tab value on deactivation
@@ -111,6 +133,7 @@ class BackgroundProcess {
     
     // This method is called every time users clicks on an extension icon
     func changeActiveTabStatus(page: SFSafariPage, window: SFSafariWindow) {
+        print("changeActiveTabStatus")
         let curTab = self.getTabFromTabsByHash(hashValue: (page.hashValue))
 
         // We cannot activate content script if it's disabled due to page incompatibility
@@ -203,5 +226,11 @@ class BackgroundProcess {
         }
             
         return false
+    }
+    
+    // Sends an informational message to the content script
+    func sendInfoMsgToTab(message: String, tab: TabScript, page: SFSafariPage) {
+        let infoMsg = StateMessage(body: ["messageText": message])
+        page.dispatchMessageToScript(withName: "fromBackground", userInfo: infoMsg.convertForMessage())
     }
 }

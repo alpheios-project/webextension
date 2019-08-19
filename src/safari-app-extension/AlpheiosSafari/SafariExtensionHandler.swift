@@ -10,11 +10,12 @@ import SafariServices
 
 class SafariExtensionHandler: SFSafariExtensionHandler {
     let backgroundProcess: BackgroundProcess = BackgroundProcess()
+    let managedContext = SFSafariApplication.persistentContainer.viewContext
 
     
     override func messageReceived(withName messageName: String, from page: SFSafariPage, userInfo: [String : Any]?) {
 
-        // print("recieved message \(messageName), userInfo \(userInfo)")
+        print("recieved message \(messageName), userInfo \(String(describing: userInfo))")
         
         if (messageName == "contentReady") {
             // A page in a tab has been reloaded

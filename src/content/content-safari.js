@@ -174,6 +174,10 @@ let handleStateRequest = async function handleStateRequest (message) {
   sendMessageToBackground('updateState')
 }
 
+const handleStateMessage = async function handleStateMessage (message) {
+  console.info(`Background: ${message.body.messageText}`)
+}
+
 let sendMessageToBackground = function sendStateToBackground (messageName) {
   safari.extension.dispatchMessage(messageName, new StateMessage(state))
 }
@@ -192,6 +196,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
   if (HTMLPage.isValidTarget) {
     let messagingService = new MessagingService()
     messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest)
+    messagingService.addHandler(Message.types.STATE_MESSAGE, handleStateMessage)
     safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
 
     /*

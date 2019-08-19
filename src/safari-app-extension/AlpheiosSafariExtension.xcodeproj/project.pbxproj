@@ -28,6 +28,9 @@
 		BF0F529422F085020050AE62 /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF0F529322F085020050AE62 /* Auth0.plist */; };
 		BF0F529522F085020050AE62 /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF0F529322F085020050AE62 /* Auth0.plist */; };
 		BF3927F9216F565E00213E05 /* alpheios.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF3927F8216F565E00213E05 /* alpheios.pdf */; };
+		BF568EEA23070F6B00B5D073 /* StateMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF568EE823070F6B00B5D073 /* StateMessage.swift */; };
+		BF568EEC230A794400B5D073 /* NSCustomPersistantContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */; };
+		BF568EED230A794400B5D073 /* NSCustomPersistantContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */; };
 		BF9D4CB1216E0D4E00E03D0C /* BackgroundProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */; };
 /* End PBXBuildFile section */
 
@@ -82,6 +85,8 @@
 		BF0F529322F085020050AE62 /* Auth0.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Auth0.plist; sourceTree = "<group>"; };
 		BF3927F8216F565E00213E05 /* alpheios.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = alpheios.pdf; sourceTree = "<group>"; };
 		BF4FB089216E130B004E2592 /* TabScript.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabScript.swift; sourceTree = "<group>"; };
+		BF568EE823070F6B00B5D073 /* StateMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMessage.swift; sourceTree = "<group>"; };
+		BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSCustomPersistantContainer.swift; sourceTree = "<group>"; };
 		BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundProcess.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -108,6 +113,7 @@
 		7832F87C2147A4CC00CD96CB = {
 			isa = PBXGroup;
 			children = (
+				BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */,
 				BF017BBB22F1C96F00E20B0D /* AlpheiosSafariExtension.xcdatamodeld */,
 				BF017B7F22F0875F00E20B0D /* Alpheios Reading Tools.entitlements */,
 				7832F8872147A4CC00CD96CB /* AlpheiosReadingTools */,
@@ -182,6 +188,7 @@
 				7832F8BC2147D9B900CD96CB /* Message.swift */,
 				7832F8BE2147DB7C00CD96CB /* RequestMessage.swift */,
 				7832F8C02147E10500CD96CB /* StateRequest.swift */,
+				BF568EE823070F6B00B5D073 /* StateMessage.swift */,
 			);
 			path = messaging;
 			sourceTree = "<group>";
@@ -333,6 +340,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF568EEC230A794400B5D073 /* NSCustomPersistantContainer.swift in Sources */,
 				BF017BBD22F1C96F00E20B0D /* AlpheiosSafariExtension.xcdatamodeld in Sources */,
 				7832F8892147A4CC00CD96CB /* AppDelegate.swift in Sources */,
 			);
@@ -349,8 +357,10 @@
 				7832F8BF2147DB7C00CD96CB /* RequestMessage.swift in Sources */,
 				BF017BBE22F1C96F00E20B0D /* AlpheiosSafariExtension.xcdatamodeld in Sources */,
 				7832F8BD2147D9B900CD96CB /* Message.swift in Sources */,
+				BF568EEA23070F6B00B5D073 /* StateMessage.swift in Sources */,
 				7832F8A02147A4E400CD96CB /* SafariExtensionHandler.swift in Sources */,
 				7832F8B52147A52300CD96CB /* TabScript.swift in Sources */,
+				BF568EED230A794400B5D073 /* NSCustomPersistantContainer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
