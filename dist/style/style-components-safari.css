@@ -3013,6 +3013,16 @@ p.alpheios-word-usage-filter-title {
   align-items: flex-start !important;
   flex: 1 1 auto !important;
 }
+.alpheios-resource-options__cont-fieldset {
+  margin-bottom: 20px !important;
+  padding: 10px !important;
+}
+.alpheios-resource-options__item .alpheios-setting__label {
+  width: 30% !important;
+}
+.alpheios-resource-options__item .alpheios-setting__control {
+  width: 70% !important;
+}
 /*
  Calculates a size of text elements relative to the base size.
  Such elements can be scaled proportionally by changing the `--alpheios-base-text-size` custom prop.

@@ -2,13 +2,14 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
-import { TabScript, UIController, AuthModule, ToolbarModule, ActionPanelModule, PanelModule, PopupModule, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
+import { TabScript, UIController, AuthModule, ToolbarModule, ActionPanelModule, PanelModule, PopupModule, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB, Logger } from 'alpheios-components'
 import Package from '../../package.json'
 
 const pingInterval = 15000 // How often to ping background with a state message, in ms
 let pingIntervalID = null
 let uiController = null
 let state = null
+let logger = Logger.getInstance()
 
 /**
  * Activates a ping that will send state to background periodically
@@ -68,7 +69,7 @@ let deactivateUIController = function deactivateUIController (notify = true) {
       deactivatePing()
       notifyPageInactive()
     })
-    .catch((error) => console.error(`Unable to deactivate Alpheios: ${error}`))
+    .catch((error) => logger.error(`Unable to deactivate Alpheios: ${error}`))
 }
 
 /**
@@ -151,7 +152,7 @@ let handleStateRequest = async function handleStateRequest (message) {
         notifyPageActive()
         sendMessageToBackground('updateState')
       })
-      .catch((error) => console.error(`Unable to activate Alpheios: ${error}`))
+      .catch((error) => logger.error(`Unable to activate Alpheios: ${error}`))
     return
   } else if (diff.has('status') && diff.status === TabScript.statuses.script.DEACTIVATED) {
     // This is a deactivation request

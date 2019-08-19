@@ -271,7 +271,7 @@ export default class BackgroundProcess {
     let polyfillScript = this.loadPolyfill(tabScript.tabObj.tabId)
     let contentScript = this.loadContentScript(tabScript.tabObj.tabId)
     let contentCSS = []
-    for (let fileName of this.settings.contentCSSFileNames) {
+    for (let fileName of this.settings.contentCSSFileNames) { // eslint-disable-line no-unused-vars
       contentCSS.push(this.loadContentCSS(tabScript.tabObj.tabId, fileName))
     }
     return Promise.all([polyfillScript, contentScript, ...contentCSS])
