@@ -6,9 +6,12 @@ import StoredOutgoingRequest from './stored-request'
 // Errors that are known to the Service
 import TransferrableError from '@/lib/messaging/error/transferrable-error.js'
 import AuthError from '@/lib/auth/errors/auth-error.js'
+import { Logger } from 'alpheios-components'
+
 const knownErrors = new Map([
   [AuthError.name, AuthError]
 ])
+let logger = Logger.getInstance()
 
 export default class Service extends BaseService {
   /**
@@ -16,7 +19,6 @@ export default class Service extends BaseService {
    */
   listener (message, sender) {
     if (!message.type) {
-      console.error(`Skipping a message of an unknown type`)
       return false
     }
 
@@ -29,9 +31,6 @@ export default class Service extends BaseService {
     } else if (this.listeners.has(Symbol.for(message.type))) {
       // Pass message to a registered handler if there are any
       this.listeners.get(Symbol.for(message.type))(message, sender)
-    } else {
-      console.warn(`Either no listeners has been registered for a message of type "${message.type}" or
-      this is a response message with a timeout expired. Ignoring`)
     }
     return false // Indicate that we are not sending any response back
   }
@@ -60,7 +59,7 @@ export default class Service extends BaseService {
     let promise = this.registerRequest(request, timeout)
 
     browser.tabs.sendMessage(tabID, request).catch(error => {
-      console.error(`tabs.sendMessage() failed:`, error)
+      logger.error(`Tabs.sendMessage() failed:`, error)
       this.rejectRequest(request.ID, error)
     })
     return promise
@@ -75,7 +74,7 @@ export default class Service extends BaseService {
   sendRequestToBg (request, timeout) {
     let promise = this.registerRequest(request, timeout)
     browser.runtime.sendMessage(request).catch(error => {
-      console.error(`Sending request to a background failed:`, error)
+      logger.error(`Sending request to a background failed:`, error)
       this.rejectRequest(request.ID, error)
     })
     return promise
