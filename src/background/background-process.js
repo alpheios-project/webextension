@@ -479,6 +479,7 @@ export default class BackgroundProcess {
     new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
       .logout()
       .then(() => {
+        this.authResult = null
         this.messagingService.sendResponseToTab(LogoutResponse.Success(request), sender.tab.id)
           .catch(error => console.error(`Unable to send a response to a logout request: ${error.message}`))
       })
