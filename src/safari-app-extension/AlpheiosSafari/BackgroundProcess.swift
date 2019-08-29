@@ -6,6 +6,7 @@
 //  Copyright © 2018 The Alpheios Project Ltd
 //
 import SafariServices
+import os.log
 
 class BackgroundProcess {
     static let browserIcons: [String: NSImage] = [
@@ -15,21 +16,25 @@ class BackgroundProcess {
     
     static var tabs: [Int: TabScript] = [:]
     
-    var storedTab: TabScript?
-    var storedWindow: SFSafariWindow?
+    // An object for testing a retrieval of users
+    var users: [NSManagedObject] = []
     
     // MARK: - Core Data stack
     
-    lazy var persistentContainer: NSPersistentContainer = {
+    lazy var persistentContainer: NSCustomPersistentContainer = {
         /*
          The persistent container for the application. This implementation
          creates and returns a container, having loaded the store for the
          application to it. This property is optional since there are legitimate
          error conditions that could cause the creation of the store to fail.
          */
-        let container = NSPersistentContainer(name: "AlpheiosSafariExtension")
+    
+        let container = NSCustomPersistentContainer(name: "AlpheiosSafariExtension")
+        #if DEBUG
+        os_log("Created a persistent \"%@\" container", log: OSLog.sAuth, type: .info, container.name)
+        #endif
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-            if let error = error {
+            if let error = error as NSError? {
                 // Replace this implementation with code to handle the error appropriately.
                 // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
                 
@@ -41,7 +46,12 @@ class BackgroundProcess {
                  * The store could not be migrated to the current model version.
                  Check the error message to determine what the actual problem was.
                  */
-                fatalError("Unresolved error \(error) (app extension)")
+                os_log("Load persistent store error: %@, %@", log: OSLog.sAuth, type: .error, error, error.userInfo)
+                fatalError("Unresolved error \(error), \(error.userInfo)")
+            } else {
+                #if DEBUG
+                os_log("Persistent store has been loaded successfully", log: OSLog.sAuth, type: .info, container.name)
+                #endif
             }
         })
         return container
@@ -106,7 +116,25 @@ class BackgroundProcess {
     
     // This version is used for activations made by a BackgroundProcess
     func activateContent(tab: TabScript, window: SFSafariWindow) {
-        print("Activate content by a background process")
+        #if DEBUG
+        os_log("Activate content by a background process", log: OSLog.sAuth, type: .info)
+        #endif
+        
+        DistributedNotificationCenter.default().addObserver(self, selector: #selector(self.authEventDidHappen), name: .AlpheiosAuthEvent, object: nil)
+        
+        #if DEBUG
+        os_log("Auth notification observer has been added", log: OSLog.sAuth, type: .info)
+        #endif
+        
+        DistributedNotificationCenter.default().postNotificationName(.AlpheiosAuthEvent, object: nil, userInfo: nil, deliverImmediately: false)
+        
+        #if DEBUG
+        os_log("Auth notification has been dispatched", log: OSLog.sAuth, type: .info)
+        #endif
+        
+        // Check the persistent store
+//        self.fetchUsers()
+        
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
                 if tab.status != TabScript.props["status_disabled"] {
@@ -116,47 +144,21 @@ class BackgroundProcess {
             })
         })
         
-        window.getActiveTab(completionHandler: { (activeTab) in
-            activeTab?.getActivePage(completionHandler: { (activePage) in
-                self.sendInfoMsgToTab(message: "Activate content by a background process", tab: tab, page: activePage!)
-            })
-        })
-        
-        let managedContext = self.persistentContainer.viewContext
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(managedObjectContextObjectsDidChangeExt), name: NSNotification.Name.NSManagedObjectContextObjectsDidChange, object: managedContext)
-        
-        // TODO: probably there is a better solution of passing window and tab to the callback
-        self.storedWindow = window
-        self.storedTab = tab
-        
-        window.getActiveTab(completionHandler: { (activeTab) in
-            activeTab?.getActivePage(completionHandler: { (activePage) in
-                self.sendInfoMsgToTab(message: "Observer has been added (app extension)", tab: tab, page: activePage!)
-            })
-        })
+        // Storing user data to verify callbacks
+//        self.saveAuthUser(email: "test@test.com", authenticated: true)
     }
     
-    @objc func managedObjectContextObjectsDidChangeExt(notification: NSNotification) {
-        print("managed object context did change (app extension)")
-        
-        // if self.storedWindow != nil && self.storedTab != nil {
-            let window = self.storedWindow!
-            let tab = self.storedTab!
-            
-            window.getActiveTab(completionHandler: { (activeTab) in
-                activeTab?.getActivePage(completionHandler: { (activePage) in
-                    self.sendInfoMsgToTab(message: "Observer has been added (app extension)", tab: tab, page: activePage!)
-                })
-            })
-//        } else {
-//            print("storedWindow and/or storedTab do not have any valid value")
-//        }
+    @objc func authEventDidHappen(notification: NSNotification){
+        #if DEBUG
+        os_log("Auth event callback", log: OSLog.sAuth, type: .info)
+        #endif
     }
 
    // This function is used for menu initiated activations
    func activateContent(page: SFSafariPage) {
-        print("Activate content by the menu")
+        #if DEBUG
+        os_log("Activate content by the menu", log: OSLog.sAuth, type: .info)
+        #endif
         let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
         curTab.activate()
         curTab.setTablDefault() // Reset tab value on deactivation
@@ -202,7 +204,9 @@ class BackgroundProcess {
     
     // This method is called every time users clicks on an extension icon
     func changeActiveTabStatus(page: SFSafariPage, window: SFSafariWindow) {
-        print("changeActiveTabStatus")
+        #if DEBUG
+        os_log("changeActiveTabStatus", log: OSLog.sAuth, type: .info)
+        #endif
         let curTab = self.getTabFromTabsByHash(hashValue: (page.hashValue))
 
         // We cannot activate content script if it's disabled due to page incompatibility
@@ -297,9 +301,58 @@ class BackgroundProcess {
         return false
     }
     
-    // Sends an informational message to the content script
-    func sendInfoMsgToTab(message: String, tab: TabScript, page: SFSafariPage) {
-        let infoMsg = StateMessage(body: ["messageText": message])
-        page.dispatchMessageToScript(withName: "fromBackground", userInfo: infoMsg.convertForMessage())
+    func saveAuthUser(email: String, authenticated: Bool) {
+        
+        // 1
+        let managedContext = self.persistentContainer.viewContext
+        
+        // 2
+        let entity =
+            NSEntityDescription.entity(forEntityName: "AuthUser", in: managedContext)!
+        
+        let user = NSManagedObject(entity: entity, insertInto: managedContext)
+        
+        // 3
+        user.setValue(email, forKeyPath: "email")
+        user.setValue(authenticated, forKeyPath: "authenticated")
+        
+        // 4
+        do {
+            try managedContext.save()
+            // authUsers.append(user)
+            #if DEBUG
+            os_log("User data has been stored successfully", log: OSLog.sAuth, type: .info)
+            #endif
+        } catch let error as NSError {
+            os_log("Cannot save user data: %@, %@", log: OSLog.sAuth, type: .info, error, error.userInfo)
+        }
+    }
+    
+    func fetchUsers() {
+        /*Before you can do anything with Core Data, you need a managed object context. */
+        let managedContext = self.persistentContainer.viewContext
+        
+        /*As the name suggests, NSFetchRequest is the class responsible for fetching from Core Data.
+         
+         Initializing a fetch request with init(entityName:), fetches all objects of a particular entity. This is what you do here to fetch all Person entities.
+         */
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "AuthUser")
+        
+        /*You hand the fetch request over to the managed object context to do the heavy lifting. fetch(_:) returns an array of managed objects meeting the criteria specified by the fetch request.*/
+        do {
+            // Check how many records are in the store
+            let recordsInStore = try managedContext.count(for: fetchRequest)
+            #if DEBUG
+            os_log("Persistent store has %d user records", log: OSLog.sAuth, type: .info, recordsInStore)
+            #endif
+            
+            users = try managedContext.fetch(fetchRequest)
+            #if DEBUG
+            os_log("Retrieved %d user records from a persisten store", log: OSLog.sAuth, type: .info, users.count)
+            #endif
+        } catch let error as NSError {
+            os_log("Could not fetch. %@, %@", log: OSLog.sAuth, type: .error, error, error.userInfo)
+        }
+        
     }
 }

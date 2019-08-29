@@ -7,6 +7,8 @@
 //
 
 import Cocoa
+import SafariServices
+import os.log
 import CoreData
 import Auth0
 
@@ -40,18 +42,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // An array to store a list of Auth0 users
     var authUsers: [NSManagedObject] = []
     
+    // An object for testing a retrieval of users
+    var users: [NSManagedObject] = []
+    
     // MARK: - Core Data stack
     
-    lazy var persistentContainer: NSPersistentContainer = {
+    lazy var persistentContainer: NSCustomPersistentContainer = {
         /*
          The persistent container for the application. This implementation
          creates and returns a container, having loaded the store for the
          application to it. This property is optional since there are legitimate
          error conditions that could cause the creation of the store to fail.
          */
-        let container = NSPersistentContainer(name: "AlpheiosSafariExtension")
+        let container = NSCustomPersistentContainer(name: "AlpheiosSafariExtension")
+        #if DEBUG
+        os_log("Created a persistent \"%@\" container", log: OSLog.sAuth, type: .info, container.name)
+        #endif
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-            if let error = error {
+            if let error = error as NSError? {
                 // Replace this implementation with code to handle the error appropriately.
                 // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
                 
@@ -63,7 +71,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                  * The store could not be migrated to the current model version.
                  Check the error message to determine what the actual problem was.
                  */
-                fatalError("Unresolved error \(error)")
+                os_log("Load persistent store error: %@, %@", log: OSLog.sAuth, type: .error, error, error.userInfo)
+                fatalError("Unresolved error \(error), \(error.userInfo)")
+            } else {
+                #if DEBUG
+                os_log("Persistent store has been loaded successfully", log: OSLog.sAuth, type: .info, container.name)
+                #endif
             }
         })
         return container
@@ -72,6 +85,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // MARK: - Core Data Saving and Undo support
     
     @IBAction func saveAction(_ sender: AnyObject?) {
+        #if DEBUG
+        os_log("Save action callback is executiong", log: OSLog.sAuth, type: .info)
+        #endif
+        
         // Performs the save action for the application, which is to send the save: message to the application's managed object context. Any encountered errors are presented to the user.
         let context = persistentContainer.viewContext
         
@@ -79,33 +96,44 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             NSLog("\(NSStringFromClass(type(of: self))) unable to commit editing before saving")
         }
         if context.hasChanges {
+            #if DEBUG
+            os_log("Store context has changes", log: OSLog.sAuth, type: .info)
+            #endif
             do {
                 try context.save()
+                #if DEBUG
+                os_log("Store context has been changed", log: OSLog.sAuth, type: .info)
+                #endif
             } catch {
                 // Customize this code block to include application-specific recovery steps.
                 let nserror = error as NSError
+                os_log("Cannot save tore context: %@", log: OSLog.sAuth, type: .error, nserror)
                 NSApplication.shared.presentError(nserror)
             }
         }
     }
     
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        #if DEBUG
+        os_log("applicationWillFinishLaunching CB", log: OSLog.sAuth, type: .info)
+        #endif
+    }
+    
     // Initial event of Application Launch
-    func applicationDidFinishLaunching(_ aNotification: Notification) {
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        #if DEBUG
+        os_log("applicationDidFinishLaunching CB", log: OSLog.sAuth, type: .info)
+        #endif
+        
         self.updateHeaderLabel()
         self.updateMainIcon()
         self.updateHelloText()
         
-        print("Application did finish launching")
-        let managedContext = self.persistentContainer.viewContext
+        DistributedNotificationCenter.default().addObserver(self, selector: #selector(self.authEventDidHappen), name: .AlpheiosAuthEvent, object: nil)
         
-        // Add Observer
-        print("Adding an observer")
-        // let notificationCenter = NotificationCenter.defaultCenter()
-        NotificationCenter.default.addObserver(self, selector: #selector(managedObjectContextObjectsDidChange), name: NSNotification.Name.NSManagedObjectContextObjectsDidChange, object: managedContext)
-    }
-    
-    @objc func managedObjectContextObjectsDidChange(notification: NSNotification) {
-        print("managed object context did change")
+        #if DEBUG
+        os_log("Auth event observer has been added", log: OSLog.sAuth, type: .info)
+        #endif
     }
 
 
@@ -260,8 +288,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     } else {
                         msg += "Authentication failed\n"
                     }
-                    // let tokenType = credentials.tokenType
-                    // let expiresIn = credentials.expiresIn
+                    let tokenType = credentials.tokenType
+                    let expiresIn = credentials.expiresIn
+                    let dateFormatterPrint = DateFormatter()
+                    dateFormatterPrint.dateFormat = "MMM dd,yyyy"
+                    #if DEBUG
+                    os_log("Authenticated successfully, access token is %@, token type is %@, expires in %@", log: OSLog.sAuth, type: .info, accessToken, tokenType!, dateFormatterPrint.string(from: expiresIn!))
+                    #endif
                     // let refreshToken = credentials.refreshToken
                     // let idToken = credentials.idToken
                     // let scope = credentials.scope
@@ -279,20 +312,38 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 DispatchQueue.main.async { [weak self] in
                                     self?.authText.stringValue = msg
                                 }
-                                print("Authenticated successfully")
+                                #if DEBUG
+                                os_log("User info was obtained successfully for %@ (%@)", log: OSLog.sAuth, type: .info, nickname, email)
+                                #endif
                                 self.saveAuthUser(email: email, authenticated: true)
                             case .failure(let error):
-                                print("Failed with \(error)")
+                                os_log("User info retrieval failed: %@", log: OSLog.sAuth, type: .error, error as CVarArg)
                             }
                     }
                 case .failure(let error):
-                    print("Failed with \(error)")
+                    os_log("Authentication failed: %@", log: OSLog.sAuth, type: .error, error as CVarArg)
                 }
         }
     }
     
     @IBAction func LogOutClicked(_ sender: Any) {
-        print("Log out has been pressed")
+        #if DEBUG
+        os_log("User initiated logout", log: OSLog.sAuth, type: .info)
+        #endif
+        
+        let userInfo = ["email": "email@test.com",
+                        "accessToken": "ACCESS_TOKEN"]
+        SFSafariApplication.dispatchMessage(withName: "Test message", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
+        
+        #if DEBUG
+        os_log("Notification has been dispatched", log: OSLog.sAuth, type: .info)
+        #endif
+    }
+    
+    @objc func authEventDidHappen(notification: NSNotification){
+        #if DEBUG
+        os_log("Auth event callback", log: OSLog.sAuth, type: .info)
+        #endif
     }
     
     func saveAuthUser(email: String, authenticated: Bool) {
@@ -314,10 +365,52 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         do {
         try managedContext.save()
             authUsers.append(user)
-            print("User data was saved successfully")
+            #if DEBUG
+            os_log("User data has been stored successfully", log: OSLog.sAuth, type: .info)
+            #endif
         } catch let error as NSError {
-            print("Could not save. \(error), \(error.userInfo)")
+            os_log("Cannot save user data: %@, %@", log: OSLog.sAuth, type: .info, error, error.userInfo)
         }
+    }
+    
+    func fetchUsers() {
+        /*Before you can do anything with Core Data, you need a managed object context. */
+        let managedContext = self.persistentContainer.viewContext
+        
+        /*As the name suggests, NSFetchRequest is the class responsible for fetching from Core Data.
+         
+         Initializing a fetch request with init(entityName:), fetches all objects of a particular entity. This is what you do here to fetch all Person entities.
+         */
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "AuthUser")
+        
+        /*You hand the fetch request over to the managed object context to do the heavy lifting. fetch(_:) returns an array of managed objects meeting the criteria specified by the fetch request.*/
+        do {
+            // Check how many records are in the store
+            let recordsInStore = try managedContext.count(for: fetchRequest)
+            #if DEBUG
+            os_log("Persistent store has %d user records", log: OSLog.sAuth, type: .info, recordsInStore)
+            #endif
+            
+            users = try managedContext.fetch(fetchRequest)
+            #if DEBUG
+            os_log("Retrieved %d user records from a persisten store", log: OSLog.sAuth, type: .info, users.count)
+            #endif
+        } catch let error as NSError {
+            os_log("Could not fetch. %@, %@", log: OSLog.sAuth, type: .error, error, error.userInfo)
+        }
+        
+    }
+    
+    func applicationWillBecomeActive(_ notification: Notification) {
+    }
+    
+    func applicationDidBecomeActive(_ notification: Notification) {
+    }
+
+    func applicationWillResignActive(_ notification: Notification) {
+    }
+    
+    func applicationDidResignActive(_ notification: Notification) {
     }
 }
 

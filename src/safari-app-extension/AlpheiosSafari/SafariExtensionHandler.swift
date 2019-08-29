@@ -7,6 +7,7 @@
 //
 
 import SafariServices
+import os.log
 
 class SafariExtensionHandler: SFSafariExtensionHandler {
     let backgroundProcess: BackgroundProcess = BackgroundProcess()
@@ -14,8 +15,10 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
 
     
     override func messageReceived(withName messageName: String, from page: SFSafariPage, userInfo: [String : Any]?) {
-
-        print("recieved message \(messageName), userInfo \(String(describing: userInfo))")
+        
+        #if DEBUG
+        os_log("Recieved a message from a content script", log: OSLog.sAuth, type: .info)
+        #endif
         
         if (messageName == "contentReady") {
             // A page in a tab has been reloaded
@@ -43,6 +46,12 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
             })
         })
         
+    }
+    
+    override func messageReceivedFromContainingApp(withName messageName: String, userInfo: [String : Any]? = nil) {
+        let email = userInfo!["email"] as! String
+        let accessToken = userInfo!["accessToken"] as! String
+        os_log("Message from a containing app: \"%@\", %@, %@", log: OSLog.sAuth, type: .info,  messageName, email, accessToken)
     }
     
     override func contextMenuItemSelected(withCommand command: String, in page: SFSafariPage, userInfo: [String : Any]? = nil) {
@@ -84,6 +93,7 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
         validationHandler(!check, nil)
 
     }
+    
     override func popoverViewController() -> SFSafariExtensionViewController {
         return SafariExtensionViewController.shared
     }

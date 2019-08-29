@@ -14,7 +14,6 @@ class NSCustomPersistentContainer: NSPersistentContainer {
     override open class func defaultDirectoryURL() -> URL {
         var storeURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: "W79WNX2NKZ.AlpheiosExtensionSharedData")
         storeURL = storeURL?.appendingPathComponent("AlpheiosSharedStore.sqlite")
-        print("store URL is \(String(describing: storeURL))")
         return storeURL!
     }
     
