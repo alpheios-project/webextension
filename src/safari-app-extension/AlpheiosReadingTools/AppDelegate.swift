@@ -315,6 +315,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 #if DEBUG
                                 os_log("User info was obtained successfully for %@ (%@)", log: OSLog.sAuth, type: .info, nickname, email)
                                 #endif
+                                // Send user info to the extension
+                                let userInfo = ["email": email,
+                                                "accessToken": accessToken]
+                                SFSafariApplication.dispatchMessage(withName: "UserAuthInfo", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
+                                
                                 self.saveAuthUser(email: email, authenticated: true)
                             case .failure(let error):
                                 os_log("User info retrieval failed: %@", log: OSLog.sAuth, type: .error, error as CVarArg)

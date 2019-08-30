@@ -6,7 +6,7 @@
 //  Copyright © 2018 The Alpheios Project, Ltd.
 //
 
-import SafariServices
+import SafariServices.SFSafariApplication
 import os.log
 
 class SafariExtensionHandler: SFSafariExtensionHandler {
@@ -49,9 +49,13 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
     }
     
     override func messageReceivedFromContainingApp(withName messageName: String, userInfo: [String : Any]? = nil) {
+        let authData = userInfo!
         let email = userInfo!["email"] as! String
         let accessToken = userInfo!["accessToken"] as! String
+        #if DEBUG
         os_log("Message from a containing app: \"%@\", %@, %@", log: OSLog.sAuth, type: .info,  messageName, email, accessToken)
+        #endif
+        self.backgroundProcess.authHasBeenCompleted(authData: authData)
     }
     
     override func contextMenuItemSelected(withCommand command: String, in page: SFSafariPage, userInfo: [String : Any]? = nil) {

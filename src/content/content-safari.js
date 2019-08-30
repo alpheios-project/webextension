@@ -175,7 +175,9 @@ let handleStateRequest = async function handleStateRequest (message) {
 }
 
 const handleStateMessage = async function handleStateMessage (message) {
-  console.info(`Background: ${message.body.messageText}`)
+  // console.info(`Background: ${message.body.messageText}`)
+  console.info(`Background message has been received`)
+  console.info(message.body)
 }
 
 let sendMessageToBackground = function sendStateToBackground (messageName) {

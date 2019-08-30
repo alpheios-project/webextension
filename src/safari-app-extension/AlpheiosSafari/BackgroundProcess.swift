@@ -301,6 +301,21 @@ class BackgroundProcess {
         return false
     }
     
+    func authHasBeenCompleted(authData: [String: Any]) {
+        #if DEBUG
+        os_log("Authentication has been completed", log: OSLog.sAuth, type: .info)
+        #endif
+        
+        SFSafariApplication.getActiveWindow { (activeWindow) in
+            activeWindow!.getActiveTab(completionHandler: { (activeTab) in
+                activeTab?.getActivePage(completionHandler: { (activePage) in
+                    let stateRequestMess = StateMessage(body: ["email": authData["email"] as! String])
+                    activePage?.dispatchMessageToScript(withName: "authEvent", userInfo: stateRequestMess.convertForMessage())
+                })
+            })
+        }
+    }
+    
     func saveAuthUser(email: String, authenticated: Bool) {
         
         // 1
