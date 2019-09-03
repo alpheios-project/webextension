@@ -16,7 +16,9 @@ class Message {
     static let types: [String: String] = [
         "generic_message": "Alpheios_GenericMessage",
         "state_request": "Alpheios_StateRequest",
-        "state_message": "Alpheios_StateMessage"
+        "state_message": "Alpheios_StateMessage",
+        "login_ntfy_message": "Alpheios_LoginNotificationMessage",
+        "logout_ntfy_message": "Alpheios_LogoutNotificationMessage"
     ]
     
     static let roles: [String: String] = [

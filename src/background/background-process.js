@@ -218,7 +218,7 @@ export default class BackgroundProcess {
 
   /**
    * Creates a TabScript object and loads content script(s) into a corresponding browser tab
-   * @param {Number} tabID - An ID of a tab
+   * @param {object} tabObj - An object that represents a tab
    * @return {Promise.<TabScript>} A Promise that is resolved into a newly created TabScript object
    */
   async createTab (tabObj) {

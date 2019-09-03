@@ -3,12 +3,14 @@ import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
 import { TabScript, UIController, AuthModule, ToolbarModule, ActionPanelModule, PanelModule, PopupModule, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
+import SafariAuthenticator from '@/lib/auth/safari-authenticator.js'
 import Package from '../../package.json'
 
 const pingInterval = 15000 // How often to ping background with a state message, in ms
 let pingIntervalID = null
 let uiController = null
 let state = null
+let messagingService = null
 
 /**
  * Activates a ping that will send state to background periodically
@@ -119,7 +121,7 @@ let handleStateRequest = async function handleStateRequest (message) {
         storageAdapter: LocalStorageArea,
         app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` }
       })
-      uiController.registerModule(AuthModule, { auth: null })
+      uiController.registerModule(AuthModule, { auth: new SafariAuthenticator(messagingService) })
       uiController.registerModule(PanelModule, {
         mountPoint: '#alpheios-panel' // To what element a panel will be mounted
       })
@@ -174,12 +176,6 @@ let handleStateRequest = async function handleStateRequest (message) {
   sendMessageToBackground('updateState')
 }
 
-const handleStateMessage = async function handleStateMessage (message) {
-  // console.info(`Background: ${message.body.messageText}`)
-  console.info(`Background message has been received`)
-  console.info(message.body)
-}
-
 let sendMessageToBackground = function sendStateToBackground (messageName) {
   safari.extension.dispatchMessage(messageName, new StateMessage(state))
 }
@@ -196,9 +192,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
    */
 
   if (HTMLPage.isValidTarget) {
-    let messagingService = new MessagingService()
+    messagingService = new MessagingService()
     messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest)
-    messagingService.addHandler(Message.types.STATE_MESSAGE, handleStateMessage)
     safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
 
     /*

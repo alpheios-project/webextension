@@ -32,6 +32,8 @@
 		BF568EEC230A794400B5D073 /* NSCustomPersistantContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */; };
 		BF568EED230A794400B5D073 /* NSCustomPersistantContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */; };
 		BF9D4CB1216E0D4E00E03D0C /* BackgroundProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */; };
+		BFE3A1B0231ADEAF008261CA /* LoginNtfyMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3A1AF231ADEAF008261CA /* LoginNtfyMessage.swift */; };
+		BFE3A1B2231ADF0D008261CA /* LogoutNtfyMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3A1B1231ADF0D008261CA /* LogoutNtfyMessage.swift */; };
 		BFEDB3FB231123F9005FDA7B /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEDB3FA231123F9005FDA7B /* Shared.swift */; };
 		BFEDB3FC231123F9005FDA7B /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEDB3FA231123F9005FDA7B /* Shared.swift */; };
 /* End PBXBuildFile section */
@@ -89,6 +91,8 @@
 		BF568EE823070F6B00B5D073 /* StateMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMessage.swift; sourceTree = "<group>"; };
 		BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSCustomPersistantContainer.swift; sourceTree = "<group>"; };
 		BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundProcess.swift; sourceTree = "<group>"; };
+		BFE3A1AF231ADEAF008261CA /* LoginNtfyMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginNtfyMessage.swift; sourceTree = "<group>"; };
+		BFE3A1B1231ADF0D008261CA /* LogoutNtfyMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoutNtfyMessage.swift; sourceTree = "<group>"; };
 		BFEDB3FA231123F9005FDA7B /* Shared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -191,6 +195,8 @@
 				7832F8BE2147DB7C00CD96CB /* RequestMessage.swift */,
 				7832F8C02147E10500CD96CB /* StateRequest.swift */,
 				BF568EE823070F6B00B5D073 /* StateMessage.swift */,
+				BFE3A1AF231ADEAF008261CA /* LoginNtfyMessage.swift */,
+				BFE3A1B1231ADF0D008261CA /* LogoutNtfyMessage.swift */,
 			);
 			path = messaging;
 			sourceTree = "<group>";
@@ -355,6 +361,7 @@
 			files = (
 				7832F8A22147A4E400CD96CB /* SafariExtensionViewController.swift in Sources */,
 				BF9D4CB1216E0D4E00E03D0C /* BackgroundProcess.swift in Sources */,
+				BFE3A1B0231ADEAF008261CA /* LoginNtfyMessage.swift in Sources */,
 				7832F8C12147E10500CD96CB /* StateRequest.swift in Sources */,
 				7832F8C5214A5F9900CD96CB /* (null) in Sources */,
 				7832F8BF2147DB7C00CD96CB /* RequestMessage.swift in Sources */,
@@ -362,6 +369,7 @@
 				BFEDB3FC231123F9005FDA7B /* Shared.swift in Sources */,
 				7832F8BD2147D9B900CD96CB /* Message.swift in Sources */,
 				BF568EEA23070F6B00B5D073 /* StateMessage.swift in Sources */,
+				BFE3A1B2231ADF0D008261CA /* LogoutNtfyMessage.swift in Sources */,
 				7832F8A02147A4E400CD96CB /* SafariExtensionHandler.swift in Sources */,
 				7832F8B52147A52300CD96CB /* TabScript.swift in Sources */,
 				BF568EED230A794400B5D073 /* NSCustomPersistantContainer.swift in Sources */,

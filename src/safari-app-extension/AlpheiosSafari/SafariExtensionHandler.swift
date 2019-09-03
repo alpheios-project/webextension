@@ -12,25 +12,37 @@ import os.log
 class SafariExtensionHandler: SFSafariExtensionHandler {
     let backgroundProcess: BackgroundProcess = BackgroundProcess()
     // let managedContext = SFSafariApplication.persistentContainer.viewContext
+    
+    override init() {
+        #if DEBUG
+        os_log("SafariExtensionHandler has been created", log: OSLog.sAuth, type: .info)
+        #endif
+    }
 
     
     override func messageReceived(withName messageName: String, from page: SFSafariPage, userInfo: [String : Any]?) {
-        
-        #if DEBUG
-        os_log("Recieved a message from a content script", log: OSLog.sAuth, type: .info)
-        #endif
+        let hashValue = page.hashValue
         
         if (messageName == "contentReady") {
             // A page in a tab has been reloaded
-            _ = self.backgroundProcess.contentReadyHandler(hashValue: page.hashValue, tabdata: userInfo, page: page)
+            _ = self.backgroundProcess.contentReadyHandler(tabdata: userInfo, page: page)
             SFSafariApplication.setToolbarItemsNeedUpdate()
+            #if DEBUG
+            os_log("Recieved a contentReady message from a content script, hash value is %d", log: OSLog.sAuth, type: .info, hashValue)
+            #endif
         } else if (messageName == "embedLibActive") {
             // A notification about an active embedded lib
-            _ = self.backgroundProcess.embedLibActiveHandler(hashValue: page.hashValue, tabdata: userInfo, page: page)
+            _ = self.backgroundProcess.embedLibActiveHandler(tabdata: userInfo, page: page)
             SFSafariApplication.setToolbarItemsNeedUpdate()
+            #if DEBUG
+            os_log("Recieved an embedLibActive message from a content script, hash value is %d", log: OSLog.sAuth, type: .info, hashValue)
+            #endif
         } else if (messageName == "updateState") {
             // This is a state update message
-            _ = self.backgroundProcess.updateTabData(hashValue: page.hashValue, tabdata: userInfo, page: page)
+            _ = self.backgroundProcess.updateTabData(tabdata: userInfo, page: page)
+            #if DEBUG
+            os_log("Recieved an updateState message from a content script, hash value is %d", log: OSLog.sAuth, type: .info, hashValue)
+            #endif
         } else if (messageName == "ping") {
             // This is a ping message to keep extension alive
         }
@@ -49,13 +61,18 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
     }
     
     override func messageReceivedFromContainingApp(withName messageName: String, userInfo: [String : Any]? = nil) {
-        let authData = userInfo!
-        let email = userInfo!["email"] as! String
-        let accessToken = userInfo!["accessToken"] as! String
         #if DEBUG
-        os_log("Message from a containing app: \"%@\", %@, %@", log: OSLog.sAuth, type: .info,  messageName, email, accessToken)
+        os_log("Message from a containing app: \"%@\"", log: OSLog.sAuth, type: .info,  messageName)
         #endif
-        self.backgroundProcess.authHasBeenCompleted(authData: authData)
+        
+        if (messageName == "UserLogin") {
+            let authData = userInfo!
+            self.backgroundProcess.login(authData: authData)
+        } else if (messageName == "UserLogout") {
+            self.backgroundProcess.logout()
+        }
+        
+        
     }
     
     override func contextMenuItemSelected(withCommand command: String, in page: SFSafariPage, userInfo: [String : Any]? = nil) {
@@ -92,7 +109,7 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
         // print("validateContextMenuItem start", page.hashValue)
  
         // print("validateContextMenuItem inside")
-        let check = self.backgroundProcess.checkContextMenuIconVisibility(command: command, hashValue: page.hashValue)
+        let check = self.backgroundProcess.checkContextMenuIconVisibility(command: command, page: page)
         // print("validateContextMenuItem", check)
         validationHandler(!check, nil)
 

@@ -57,6 +57,12 @@ class BackgroundProcess {
         return container
     }()
     
+    init () {
+        #if DEBUG
+        os_log("Background process has been created", log: OSLog.sAuth, type: .info)
+        #endif
+    }
+    
     // MARK: - Core Data Saving and Undo support
     
     @IBAction func saveAction(_ sender: AnyObject?) {
@@ -99,10 +105,17 @@ class BackgroundProcess {
     }
     
     // Returns a stored value of a TabScript or creates a new TabScript instance
-    // if stored value is not found
-    func getTabFromTabsByHash(hashValue: Int) -> TabScript {
+    // if a stored value is not found
+    func getTabScriptForPage(for page: SFSafariPage) -> TabScript {
+        let hashValue = page.hashValue
+        #if DEBUG
+        os_log("getTabScriptForPage(), page hash value is %d, tabs size: %d", log: OSLog.sAuth, type: .info, hashValue, BackgroundProcess.tabs.count)
+        #endif
         if (BackgroundProcess.tabs[hashValue] == nil) {
-            let curPage = TabScript(hashValue: hashValue)
+            #if DEBUG
+            os_log("Tab script is not found in a list, creating a new one, hash value is %d", log: OSLog.sAuth, type: .info, hashValue)
+            #endif
+            let curPage = TabScript(for: page)
             BackgroundProcess.tabs[hashValue] = curPage
         }
         return BackgroundProcess.tabs[hashValue]!
@@ -112,6 +125,55 @@ class BackgroundProcess {
     func setContentState(tab: TabScript, page: SFSafariPage) {
         let stateRequestMess = StateRequest(body: tab.convertForMessage())
         page.dispatchMessageToScript(withName: "fromBackground", userInfo: stateRequestMess.convertForMessage())
+    }
+    
+    func msgToAllScripts(message: Message) {
+        #if DEBUG
+        os_log("msgToAllScripts has been called", log: OSLog.sAuth, type: .info)
+        #endif
+        let qty = BackgroundProcess.tabs.count
+        #if DEBUG
+        os_log("msgToAllScripts, tabs quantity is: %d", log: OSLog.sAuth, type: .info, qty)
+        #endif
+        for (hashValue, tab) in BackgroundProcess.tabs {
+            #if DEBUG
+            os_log("Checking a tab with a hash value of %@, tab ID is %d", log: OSLog.sAuth, type: .info, hashValue, tab.ID)
+            #endif
+            if (tab.safariPage != nil) {
+                #if DEBUG
+                os_log("Sending a message to a content script with hash value %d: %@", log: OSLog.sAuth, type: .info, hashValue, message as! CVarArg)
+                #endif
+                // Send message to the script on that page
+                tab.safariPage?.dispatchMessageToScript(withName: "fromBackground", userInfo: message.convertForMessage())
+            } else {
+                // The page for this script does not exist any more
+                // We should remove a tab script object too
+                self.removeTabScript(hashValue: hashValue)
+            }
+        }
+    }
+    
+    func msgToActiveTabScript(message: Message) {
+        #if DEBUG
+        os_log("msgToActiveTabScript() has been called", log: OSLog.sAuth, type: .info)
+        #endif
+        SFSafariApplication.getActiveWindow { (activeWindow) in
+            activeWindow!.getActiveTab(completionHandler: { (activeTab) in
+                activeTab?.getActivePage(completionHandler: { (activePage) in
+                    #if DEBUG
+                    os_log("Sending a %s message to an active page, hash value is %d", log: OSLog.sAuth, type: .info, message.type, activePage.hashValue)
+                    #endif
+                    activePage?.dispatchMessageToScript(withName: "fromBackground", userInfo: message.convertForMessage())
+                })
+            })
+        }
+    }
+    
+    func removeTabScript(hashValue: Int) {
+        #if DEBUG
+        os_log("Removing an outdated tab script for the following hash value: %d", log: OSLog.sAuth, type: .info, hashValue)
+        #endif
+        BackgroundProcess.tabs.removeValue(forKey: hashValue)
     }
     
     // This version is used for activations made by a BackgroundProcess
@@ -126,15 +188,6 @@ class BackgroundProcess {
         os_log("Auth notification observer has been added", log: OSLog.sAuth, type: .info)
         #endif
         
-        DistributedNotificationCenter.default().postNotificationName(.AlpheiosAuthEvent, object: nil, userInfo: nil, deliverImmediately: false)
-        
-        #if DEBUG
-        os_log("Auth notification has been dispatched", log: OSLog.sAuth, type: .info)
-        #endif
-        
-        // Check the persistent store
-//        self.fetchUsers()
-        
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
                 if tab.status != TabScript.props["status_disabled"] {
@@ -143,9 +196,6 @@ class BackgroundProcess {
                 }
             })
         })
-        
-        // Storing user data to verify callbacks
-//        self.saveAuthUser(email: "test@test.com", authenticated: true)
     }
     
     @objc func authEventDidHappen(notification: NSNotification){
@@ -159,7 +209,7 @@ class BackgroundProcess {
         #if DEBUG
         os_log("Activate content by the menu", log: OSLog.sAuth, type: .info)
         #endif
-        let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
+        let curTab = self.getTabScriptForPage(for: page)
         curTab.activate()
         curTab.setTablDefault() // Reset tab value on deactivation
         self.setContentState(tab: curTab, page: page)
@@ -179,7 +229,7 @@ class BackgroundProcess {
     
     // This function is used for menu initiated deactivations
     func deactivateContent(page: SFSafariPage) {
-        let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
+        let curTab = self.getTabScriptForPage(for: page)
         curTab.deactivate()
         curTab.setPanelDefault() // Reset panel state to a default
         curTab.setTablDefault() // Reset tab value on deactivation
@@ -187,7 +237,7 @@ class BackgroundProcess {
     }
     
     func openPanel(page: SFSafariPage) {
-        let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
+        let curTab = self.getTabScriptForPage(for: page)
         if curTab.isActive {
             curTab.setPanelOpen()
             self.setContentState(tab: curTab, page: page)
@@ -195,7 +245,7 @@ class BackgroundProcess {
     }
     
     func showInfo(page: SFSafariPage) {
-        let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
+        let curTab = self.getTabScriptForPage(for: page)
         if curTab.isActive {
             curTab.setShowInfo()
             self.setContentState(tab: curTab, page: page)
@@ -205,9 +255,9 @@ class BackgroundProcess {
     // This method is called every time users clicks on an extension icon
     func changeActiveTabStatus(page: SFSafariPage, window: SFSafariWindow) {
         #if DEBUG
-        os_log("changeActiveTabStatus", log: OSLog.sAuth, type: .info)
+        os_log("changeActiveTabStatus() has been called", log: OSLog.sAuth, type: .info)
         #endif
-        let curTab = self.getTabFromTabsByHash(hashValue: (page.hashValue))
+        let curTab = self.getTabScriptForPage(for: page)
 
         // We cannot activate content script if it's disabled due to page incompatibility
         if ((curTab.embedLibStatus != TabScript.props["status_embed_lib_active"]) && (curTab.status != TabScript.props["status_disabled"])) {
@@ -227,12 +277,16 @@ class BackgroundProcess {
     
     // This method is called when we receive a "contentReady" message
     // It means that a new instance of content script is loaded and is ready to receive background commands
-    func contentReadyHandler(hashValue: Int, tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
+    func contentReadyHandler(tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
+        #if DEBUG
+        os_log("contentReadyHandler() has been called", log: OSLog.sAuth, type: .info)
+        #endif
         var isNew:Bool = false
+        let hashValue = page.hashValue
         if (BackgroundProcess.tabs[hashValue] == nil) {
             isNew = true
         }
-        let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
+        let curTab = self.getTabScriptForPage(for: page)
         if let messageBody = tabdata?["body"] as? Dictionary<String, Any> {
             let embedLibStatus = messageBody["embedLibStatus"] as? String
             if (embedLibStatus == TabScript.props["status_embed_lib_active"]) {
@@ -244,7 +298,7 @@ class BackgroundProcess {
 
             if (!isNew) {
                 // This is a page reload of an existing tab. Send tab informtion to the content script
-                let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
+                let curTab = self.getTabScriptForPage(for: page)
                 self.setContentState(tab: curTab, page: page)
                 return curTab
             }
@@ -253,16 +307,16 @@ class BackgroundProcess {
     }
     
     // A notification that an active embedded library is found on a page
-    func embedLibActiveHandler(hashValue: Int, tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
-        let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
+    func embedLibActiveHandler(tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
+        let curTab = self.getTabScriptForPage(for: page)
         curTab.setEmbedLibActive()
         return curTab
     }
     
     // This method is called when we receive a state message from background
     // We need to use it to update a state of our tabdata object
-    func updateTabData(hashValue: Int, tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
-        let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
+    func updateTabData(tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
+        let curTab = self.getTabScriptForPage(for: page)
         if let messageBody = tabdata?["body"] as? Dictionary<String, Any> {
             curTab.updateWithData(data: messageBody)
         }
@@ -270,7 +324,7 @@ class BackgroundProcess {
     }
     
     func checkToolbarIcon(page: SFSafariPage, window: SFSafariWindow) {
-        let curTab = self.getTabFromTabsByHash(hashValue: page.hashValue)
+        let curTab = self.getTabScriptForPage(for: page)
 
         if (curTab.isActive && curTab.isEmbedLibInactive) {
             self.updateIcon(active: true, window: window, embedLibActive: curTab.isEmbedLibActive)
@@ -279,8 +333,8 @@ class BackgroundProcess {
         }
     }
     
-    func checkContextMenuIconVisibility(command: String, hashValue: Int) -> Bool {
-        let curTab = self.getTabFromTabsByHash(hashValue: hashValue)
+    func checkContextMenuIconVisibility(command: String, page: SFSafariPage) -> Bool {
+        let curTab = self.getTabScriptForPage(for: page)
         // Hide this menu item if content script is disabled
         if (command == "Activate" && !curTab.isActive && curTab.isEmbedLibInactive) {
             return true
@@ -301,19 +355,35 @@ class BackgroundProcess {
         return false
     }
     
-    func authHasBeenCompleted(authData: [String: Any]) {
+    func login(authData: [String: Any]) {
         #if DEBUG
         os_log("Authentication has been completed", log: OSLog.sAuth, type: .info)
         #endif
         
-        SFSafariApplication.getActiveWindow { (activeWindow) in
-            activeWindow!.getActiveTab(completionHandler: { (activeTab) in
-                activeTab?.getActivePage(completionHandler: { (activePage) in
-                    let stateRequestMess = StateMessage(body: ["email": authData["email"] as! String])
-                    activePage?.dispatchMessageToScript(withName: "authEvent", userInfo: stateRequestMess.convertForMessage())
-                })
-            })
-        }
+        // Convert [String: Any] to [String: String]
+        let msgBody = [
+            "email": authData["email"] as! String,
+            "id": authData["id"] as! String,
+            "name": authData["name"] as! String,
+            "nickname": authData["nickname"] as! String,
+            "accessToken": authData["accessToken"] as! String
+        ]
+        
+        let loginMsg = LoginNtfyMessage(body: msgBody)
+        #if DEBUG
+        os_log("Login message has been built, email is %s", log: OSLog.sAuth, type: .info, msgBody["email"]!)
+        #endif
+        // self.msgToAllScripts(message: loginMsg)
+        // Sending message to all tabs probably won't work so lets try an active one instead
+        self.msgToActiveTabScript(message: loginMsg)
+    }
+    
+    func logout() {
+        #if DEBUG
+        os_log("User has been logged out", log: OSLog.sAuth, type: .info)
+        #endif
+        let logoutMsg = LogoutNtfyMessage(body: [String: String]())
+        self.msgToActiveTabScript(message: logoutMsg)
     }
     
     func saveAuthUser(email: String, authenticated: Bool) {

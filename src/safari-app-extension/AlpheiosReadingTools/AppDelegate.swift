@@ -282,6 +282,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             .start { result in
                 switch result {
                 case .success(let credentials):
+                    // Available credentials fields are:
+                    // accessToken (String?)
+                    // tokernType (String?) - Example: "Bearer"
+                    // expiresIn (Date?)
+                    // refreshToken (String?)
+                    // idToken (String?)
+                    // scope (String?) - Example: "openid profile email address phone"
+                    
                     var accessToken = ""
                     if (credentials.accessToken != nil) {
                         accessToken = credentials.accessToken!
@@ -295,6 +303,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     #if DEBUG
                     os_log("Authenticated successfully, access token is %@, token type is %@, expires in %@", log: OSLog.sAuth, type: .info, accessToken, tokenType!, dateFormatterPrint.string(from: expiresIn!))
                     #endif
+                    
+                    // Other available fields are:
                     // let refreshToken = credentials.refreshToken
                     // let idToken = credentials.idToken
                     // let scope = credentials.scope
@@ -304,23 +314,43 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         .start { result in
                             switch result {
                             case .success(let profile):
-                                
-                                let nickname = profile.nickname != nil ? profile.nickname! : ""
-                                let email = profile.email != nil ? profile.email! : ""
-                                msg += "User nickname is: \(nickname)\n"
-                                msg += "User email is: \(email)\n"
-                                DispatchQueue.main.async { [weak self] in
-                                    self?.authText.stringValue = msg
-                                }
+                                // Available profile fields are:
+                                // sub (String) - This is the user ID. It's always presnet
+                                // name (String?) - usually this is user's email
+                                // givenName (String?)
+                                // familyName (String?)
+                                // middleName (String?)
+                                // nickname (String?)
+                                // preferredUsername (String?)
+                                // profile (URL?)
+                                // picture (URL?)
+                                // website (URL?)
+                                // email (String?)
+                                // emailVerified (Bool?)
+                                // gender (String?)
+                                // birthdate (String?)
+                                // zoneinfo (TimeZone?)
+                                // locale (Locale?)
+                                // phoneNumber (String?)
+                                // phoneNumberVerified (Bool?)
+                                // address ([String:String]?)
+                                // updatedAt (Date?)
+                                // customClaims ([String:Any]?)
                                 #if DEBUG
-                                os_log("User info was obtained successfully for %@ (%@)", log: OSLog.sAuth, type: .info, nickname, email)
+                                os_log("User info was obtained successfully for %@ (%@)", log: OSLog.sAuth, type: .info, profile.nickname ?? "", profile.email ?? "")
                                 #endif
-                                // Send user info to the extension
-                                let userInfo = ["email": email,
-                                                "accessToken": accessToken]
-                                SFSafariApplication.dispatchMessage(withName: "UserAuthInfo", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
                                 
-                                self.saveAuthUser(email: email, authenticated: true)
+                                // Send user info to the extension
+                                let userInfo = [
+                                    "email": profile.email ?? "",
+                                    "id": profile.sub,
+                                    "name": profile.name ?? "",
+                                    "nickname": profile.nickname ?? "",
+                                    "accessToken": accessToken
+                                ]
+                                SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
+                                
+                                self.saveAuthUser(email: profile.email ?? "", authenticated: true)
                             case .failure(let error):
                                 os_log("User info retrieval failed: %@", log: OSLog.sAuth, type: .error, error as CVarArg)
                             }
@@ -331,18 +361,31 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
+    @IBAction func TestLoginClicked(_ sender: Any) {
+        #if DEBUG
+        os_log("Test login has been initiated", log: OSLog.sAuth, type: .info)
+        #endif
+        
+        let userInfo = [
+            "email": "email@test.com",
+            "id": "userID",
+            "name": "Test user name",
+            "nickname": "Test nickname",
+            "accessToken": "TEST_ACCESS_TOKEN"
+        ]
+        SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
+        
+        #if DEBUG
+        os_log("UserLogin test notification has been dispatched", log: OSLog.sAuth, type: .info)
+        #endif
+    }
+    
+    
     @IBAction func LogOutClicked(_ sender: Any) {
         #if DEBUG
-        os_log("User initiated logout", log: OSLog.sAuth, type: .info)
+        os_log("Logout has been initiated", log: OSLog.sAuth, type: .info)
         #endif
-        
-        let userInfo = ["email": "email@test.com",
-                        "accessToken": "ACCESS_TOKEN"]
-        SFSafariApplication.dispatchMessage(withName: "Test message", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
-        
-        #if DEBUG
-        os_log("Notification has been dispatched", log: OSLog.sAuth, type: .info)
-        #endif
+        SFSafariApplication.dispatchMessage(withName: "UserLogout", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: nil, completionHandler: nil)
     }
     
     @objc func authEventDidHappen(notification: NSNotification){

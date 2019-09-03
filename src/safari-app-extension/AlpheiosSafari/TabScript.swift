@@ -6,6 +6,7 @@
 //  Copyright © 2018 The Alpheios Project, Ltd.
 //
 import SafariServices
+import os.log
 
 class TabScript {
     var ID: Int
@@ -15,6 +16,8 @@ class TabScript {
     var savedStatus: String = ""
     var uiActive: String = ""
     var tab: String = "info"
+    // A reference to a page object where a tab script exist
+    weak var safariPage: SFSafariPage?
     
     static let props: [String: String] = [
         "status_panel_open": "Alpheios_Status_PanelOpen",
@@ -77,8 +80,12 @@ class TabScript {
         }
     }
     
-    init(hashValue: Int) {
-        self.ID = hashValue
+    init(for page: SFSafariPage) {
+        self.safariPage = page
+        self.ID = page.hashValue
+        #if DEBUG
+        os_log("Creating a tab script with a hash value of %d: %@", log: OSLog.sAuth, type: .info, self.ID, self.safariPage ?? "page is not defined")
+        #endif
         // Set defualts
         self.status = TabScript.props["status_deactivated"]!
         self.embedLibStatus = TabScript.props["status_embed_lib_inactive"]!

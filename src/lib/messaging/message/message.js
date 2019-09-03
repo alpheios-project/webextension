@@ -17,6 +17,16 @@ Message.types = {
   // Messages: a one way communication vehicles
   GENERIC_MESSAGE: Symbol.for('Alpheios_GenericMessage'),
   STATE_MESSAGE: Symbol.for('Alpheios_StateMessage'),
+  /*
+  A message that notifies abut the user login. It is used in a one-way
+  communication as within a Safari App Extension
+   */
+  LOGIN_NTFY_MESSAGE: Symbol.for('Alpheios_LoginNotificationMessage'),
+  /*
+  A message that notifies abut the user logout. It is used in a one-way
+  communication as within a Safari App Extension
+   */
+  LOGOUT_NTFY_MESSAGE: Symbol.for('Alpheios_LogoutNotificationMessage'),
 
   // Requests; a two way communication vehicles
   // State: updates state of a UIStateAPI object
