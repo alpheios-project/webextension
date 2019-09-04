@@ -127,6 +127,9 @@ class BackgroundProcess {
         page.dispatchMessageToScript(withName: "fromBackground", userInfo: stateRequestMess.convertForMessage())
     }
     
+    // Sends a message to all content scripts by iterating over the list of known TabScript objects.
+    // Looks like it does not work because BackgroundProcess is destryed and recreated several times
+    // during the Safari App Extension lifecycle. msgToAllWindows() is a viable alternative.
     func msgToAllScripts(message: Message) {
         #if DEBUG
         os_log("msgToAllScripts has been called", log: OSLog.sAuth, type: .info)
@@ -153,6 +156,28 @@ class BackgroundProcess {
         }
     }
     
+    // Sends a message to all windows. Only activated content scripts will process it.
+    func msgToAllWindows(message: Message) {
+        #if DEBUG
+        os_log("msgToAllWindows() has been called", log: OSLog.sAuth, type: .info)
+        #endif
+        SFSafariApplication.getAllWindows { (allWindows) in
+            for window in allWindows {
+                window.getAllTabs(completionHandler: { (allTabs) in
+                    for tab in allTabs {
+                        tab.getActivePage(completionHandler: { (activePage) in
+                            #if DEBUG
+                            os_log("Sending a %s message to a page with a hash value of %d", log: OSLog.sAuth, type: .info, message.type, activePage.hashValue)
+                            #endif
+                            activePage?.dispatchMessageToScript(withName: "fromBackground", userInfo: message.convertForMessage())
+                        })
+                    }
+                })
+            }
+        }
+    }
+    
+    // Sends a message to a tab script within an active tab
     func msgToActiveTabScript(message: Message) {
         #if DEBUG
         os_log("msgToActiveTabScript() has been called", log: OSLog.sAuth, type: .info)
@@ -373,9 +398,7 @@ class BackgroundProcess {
         #if DEBUG
         os_log("Login message has been built, email is %s", log: OSLog.sAuth, type: .info, msgBody["email"]!)
         #endif
-        // self.msgToAllScripts(message: loginMsg)
-        // Sending message to all tabs probably won't work so lets try an active one instead
-        self.msgToActiveTabScript(message: loginMsg)
+        self.msgToAllWindows(message: loginMsg)
     }
     
     func logout() {
@@ -383,7 +406,7 @@ class BackgroundProcess {
         os_log("User has been logged out", log: OSLog.sAuth, type: .info)
         #endif
         let logoutMsg = LogoutNtfyMessage(body: [String: String]())
-        self.msgToActiveTabScript(message: logoutMsg)
+        self.msgToAllWindows(message: logoutMsg)
     }
     
     func saveAuthUser(email: String, authenticated: Bool) {
