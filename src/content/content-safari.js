@@ -2,7 +2,8 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
-import { TabScript, UIController, AuthModule, ToolbarModule, ActionPanelModule, PanelModule, PopupModule, LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
+import { TabScript, UIController, AuthModule, ToolbarModule, ActionPanelModule, PanelModule, PopupModule, Platform,
+  LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB } from 'alpheios-components'
 import SafariAuthenticator from '@/lib/auth/safari-authenticator.js'
 import Package from '../../package.json'
 
@@ -119,7 +120,8 @@ let handleStateRequest = async function handleStateRequest (message) {
     if (diff.has('status') && diff.status === TabScript.statuses.script.ACTIVE) {
       uiController = UIController.create(state, {
         storageAdapter: LocalStorageArea,
-        app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` }
+        app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` },
+        appType: Platform.appTypes.SAFARI_APP_EXTENSION
       })
       uiController.registerModule(AuthModule, { auth: new SafariAuthenticator(messagingService) })
       uiController.registerModule(PanelModule, {

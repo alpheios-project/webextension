@@ -84,7 +84,7 @@ class TabScript {
         self.safariPage = page
         self.ID = page.hashValue
         #if DEBUG
-        os_log("Creating a tab script with a hash value of %d: %@", log: OSLog.sAuth, type: .info, self.ID, self.safariPage ?? "page is not defined")
+        os_log("Creating a tab script with a hash value of %d: %@", log: OSLog.sAlpheios, type: .info, self.ID, self.safariPage ?? "page is not defined")
         #endif
         // Set defualts
         self.status = TabScript.props["status_deactivated"]!

@@ -56,7 +56,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
          */
         let container = NSCustomPersistentContainer(name: "AlpheiosSafariExtension")
         #if DEBUG
-        os_log("Created a persistent \"%@\" container", log: OSLog.sAuth, type: .info, container.name)
+        os_log("Created a persistent \"%@\" container", log: OSLog.sAlpheios, type: .info, container.name)
         #endif
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
@@ -71,11 +71,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                  * The store could not be migrated to the current model version.
                  Check the error message to determine what the actual problem was.
                  */
-                os_log("Load persistent store error: %@, %@", log: OSLog.sAuth, type: .error, error, error.userInfo)
+                os_log("Load persistent store error: %@, %@", log: OSLog.sAlpheios, type: .error, error, error.userInfo)
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             } else {
                 #if DEBUG
-                os_log("Persistent store has been loaded successfully", log: OSLog.sAuth, type: .info, container.name)
+                os_log("Persistent store has been loaded successfully", log: OSLog.sAlpheios, type: .info, container.name)
                 #endif
             }
         })
@@ -86,7 +86,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @IBAction func saveAction(_ sender: AnyObject?) {
         #if DEBUG
-        os_log("Save action callback is executiong", log: OSLog.sAuth, type: .info)
+        os_log("Save action callback is executiong", log: OSLog.sAlpheios, type: .info)
         #endif
         
         // Performs the save action for the application, which is to send the save: message to the application's managed object context. Any encountered errors are presented to the user.
@@ -97,17 +97,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         if context.hasChanges {
             #if DEBUG
-            os_log("Store context has changes", log: OSLog.sAuth, type: .info)
+            os_log("Store context has changes", log: OSLog.sAlpheios, type: .info)
             #endif
             do {
                 try context.save()
                 #if DEBUG
-                os_log("Store context has been changed", log: OSLog.sAuth, type: .info)
+                os_log("Store context has been changed", log: OSLog.sAlpheios, type: .info)
                 #endif
             } catch {
                 // Customize this code block to include application-specific recovery steps.
                 let nserror = error as NSError
-                os_log("Cannot save tore context: %@", log: OSLog.sAuth, type: .error, nserror)
+                os_log("Cannot save tore context: %@", log: OSLog.sAlpheios, type: .error, nserror)
                 NSApplication.shared.presentError(nserror)
             }
         }
@@ -115,14 +115,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func applicationWillFinishLaunching(_ notification: Notification) {
         #if DEBUG
-        os_log("applicationWillFinishLaunching CB", log: OSLog.sAuth, type: .info)
+        os_log("applicationWillFinishLaunching CB", log: OSLog.sAlpheios, type: .info)
         #endif
     }
     
     // Initial event of Application Launch
     func applicationDidFinishLaunching(_ notification: Notification) {
         #if DEBUG
-        os_log("applicationDidFinishLaunching CB", log: OSLog.sAuth, type: .info)
+        os_log("applicationDidFinishLaunching CB", log: OSLog.sAlpheios, type: .info)
         #endif
         
         self.updateHeaderLabel()
@@ -132,7 +132,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         DistributedNotificationCenter.default().addObserver(self, selector: #selector(self.authEventDidHappen), name: .AlpheiosAuthEvent, object: nil)
         
         #if DEBUG
-        os_log("Auth event observer has been added", log: OSLog.sAuth, type: .info)
+        os_log("Auth event observer has been added", log: OSLog.sAlpheios, type: .info)
         #endif
     }
 
@@ -301,7 +301,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     let dateFormatterPrint = DateFormatter()
                     dateFormatterPrint.dateFormat = "MMM dd,yyyy"
                     #if DEBUG
-                    os_log("Authenticated successfully, access token is %@, token type is %@, expires in %@", log: OSLog.sAuth, type: .info, accessToken, tokenType!, dateFormatterPrint.string(from: expiresIn!))
+                    os_log("Authenticated successfully, access token is %@, token type is %@, expires in %@", log: OSLog.sAlpheios, type: .info, accessToken, tokenType!, dateFormatterPrint.string(from: expiresIn!))
                     #endif
                     
                     // Other available fields are:
@@ -337,7 +337,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 // updatedAt (Date?)
                                 // customClaims ([String:Any]?)
                                 #if DEBUG
-                                os_log("User info was obtained successfully for %@ (%@)", log: OSLog.sAuth, type: .info, profile.nickname ?? "", profile.email ?? "")
+                                os_log("User info was obtained successfully for %@ (%@)", log: OSLog.sAlpheios, type: .info, profile.nickname ?? "", profile.email ?? "")
                                 #endif
                                 
                                 // Send user info to the extension
@@ -352,18 +352,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 
                                 self.saveAuthUser(email: profile.email ?? "", authenticated: true)
                             case .failure(let error):
-                                os_log("User info retrieval failed: %@", log: OSLog.sAuth, type: .error, error as CVarArg)
+                                os_log("User info retrieval failed: %@", log: OSLog.sAlpheios, type: .error, error as CVarArg)
                             }
                     }
                 case .failure(let error):
-                    os_log("Authentication failed: %@", log: OSLog.sAuth, type: .error, error as CVarArg)
+                    os_log("Authentication failed: %@", log: OSLog.sAlpheios, type: .error, error as CVarArg)
                 }
         }
     }
     
     @IBAction func TestLoginClicked(_ sender: Any) {
         #if DEBUG
-        os_log("Test login has been initiated", log: OSLog.sAuth, type: .info)
+        os_log("Test login has been initiated", log: OSLog.sAlpheios, type: .info)
         #endif
         
         let userInfo = [
@@ -376,21 +376,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
         
         #if DEBUG
-        os_log("UserLogin test notification has been dispatched", log: OSLog.sAuth, type: .info)
+        os_log("UserLogin test notification has been dispatched", log: OSLog.sAlpheios, type: .info)
         #endif
     }
     
     
     @IBAction func LogOutClicked(_ sender: Any) {
         #if DEBUG
-        os_log("Logout has been initiated", log: OSLog.sAuth, type: .info)
+        os_log("Logout has been initiated", log: OSLog.sAlpheios, type: .info)
         #endif
         SFSafariApplication.dispatchMessage(withName: "UserLogout", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: nil, completionHandler: nil)
     }
     
     @objc func authEventDidHappen(notification: NSNotification){
         #if DEBUG
-        os_log("Auth event callback", log: OSLog.sAuth, type: .info)
+        os_log("Auth event callback", log: OSLog.sAlpheios, type: .info)
         #endif
     }
     
@@ -414,10 +414,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         try managedContext.save()
             authUsers.append(user)
             #if DEBUG
-            os_log("User data has been stored successfully", log: OSLog.sAuth, type: .info)
+            os_log("User data has been stored successfully", log: OSLog.sAlpheios, type: .info)
             #endif
         } catch let error as NSError {
-            os_log("Cannot save user data: %@, %@", log: OSLog.sAuth, type: .info, error, error.userInfo)
+            os_log("Cannot save user data: %@, %@", log: OSLog.sAlpheios, type: .info, error, error.userInfo)
         }
     }
     
@@ -436,15 +436,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // Check how many records are in the store
             let recordsInStore = try managedContext.count(for: fetchRequest)
             #if DEBUG
-            os_log("Persistent store has %d user records", log: OSLog.sAuth, type: .info, recordsInStore)
+            os_log("Persistent store has %d user records", log: OSLog.sAlpheios, type: .info, recordsInStore)
             #endif
             
             users = try managedContext.fetch(fetchRequest)
             #if DEBUG
-            os_log("Retrieved %d user records from a persisten store", log: OSLog.sAuth, type: .info, users.count)
+            os_log("Retrieved %d user records from a persisten store", log: OSLog.sAlpheios, type: .info, users.count)
             #endif
         } catch let error as NSError {
-            os_log("Could not fetch. %@, %@", log: OSLog.sAuth, type: .error, error, error.userInfo)
+            os_log("Could not fetch. %@, %@", log: OSLog.sAlpheios, type: .error, error, error.userInfo)
         }
         
     }

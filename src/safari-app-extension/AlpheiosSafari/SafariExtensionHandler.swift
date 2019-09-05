@@ -15,7 +15,7 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
     
     override init() {
         #if DEBUG
-        os_log("SafariExtensionHandler has been created", log: OSLog.sAuth, type: .info)
+        os_log("SafariExtensionHandler has been created", log: OSLog.sAlpheios, type: .info)
         #endif
     }
 
@@ -28,20 +28,20 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
             _ = self.backgroundProcess.contentReadyHandler(tabdata: userInfo, page: page)
             SFSafariApplication.setToolbarItemsNeedUpdate()
             #if DEBUG
-            os_log("Recieved a contentReady message from a content script, hash value is %d", log: OSLog.sAuth, type: .info, hashValue)
+            os_log("Recieved a contentReady message from a content script, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
             #endif
         } else if (messageName == "embedLibActive") {
             // A notification about an active embedded lib
             _ = self.backgroundProcess.embedLibActiveHandler(tabdata: userInfo, page: page)
             SFSafariApplication.setToolbarItemsNeedUpdate()
             #if DEBUG
-            os_log("Recieved an embedLibActive message from a content script, hash value is %d", log: OSLog.sAuth, type: .info, hashValue)
+            os_log("Recieved an embedLibActive message from a content script, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
             #endif
         } else if (messageName == "updateState") {
             // This is a state update message
             _ = self.backgroundProcess.updateTabData(tabdata: userInfo, page: page)
             #if DEBUG
-            os_log("Recieved an updateState message from a content script, hash value is %d", log: OSLog.sAuth, type: .info, hashValue)
+            os_log("Recieved an updateState message from a content script, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
             #endif
         } else if (messageName == "ping") {
             // This is a ping message to keep extension alive
@@ -62,7 +62,7 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
     
     override func messageReceivedFromContainingApp(withName messageName: String, userInfo: [String : Any]? = nil) {
         #if DEBUG
-        os_log("Message from a containing app: \"%@\"", log: OSLog.sAuth, type: .info,  messageName)
+        os_log("Message from a containing app: \"%@\"", log: OSLog.sAlpheios, type: .info,  messageName)
         #endif
         
         if (messageName == "UserLogin") {

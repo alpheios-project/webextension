@@ -31,7 +31,7 @@ class BackgroundProcess {
     
         let container = NSCustomPersistentContainer(name: "AlpheiosSafariExtension")
         #if DEBUG
-        os_log("Created a persistent \"%@\" container", log: OSLog.sAuth, type: .info, container.name)
+        os_log("Created a persistent \"%@\" container", log: OSLog.sAlpheios, type: .info, container.name)
         #endif
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
@@ -46,11 +46,11 @@ class BackgroundProcess {
                  * The store could not be migrated to the current model version.
                  Check the error message to determine what the actual problem was.
                  */
-                os_log("Load persistent store error: %@, %@", log: OSLog.sAuth, type: .error, error, error.userInfo)
+                os_log("Load persistent store error: %@, %@", log: OSLog.sAlpheios, type: .error, error, error.userInfo)
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             } else {
                 #if DEBUG
-                os_log("Persistent store has been loaded successfully", log: OSLog.sAuth, type: .info, container.name)
+                os_log("Persistent store has been loaded successfully", log: OSLog.sAlpheios, type: .info, container.name)
                 #endif
             }
         })
@@ -59,7 +59,7 @@ class BackgroundProcess {
     
     init () {
         #if DEBUG
-        os_log("Background process has been created", log: OSLog.sAuth, type: .info)
+        os_log("Background process has been created", log: OSLog.sAlpheios, type: .info)
         #endif
     }
     
@@ -109,11 +109,11 @@ class BackgroundProcess {
     func getTabScriptForPage(for page: SFSafariPage) -> TabScript {
         let hashValue = page.hashValue
         #if DEBUG
-        os_log("getTabScriptForPage(), page hash value is %d, tabs size: %d", log: OSLog.sAuth, type: .info, hashValue, BackgroundProcess.tabs.count)
+        os_log("getTabScriptForPage(), page hash value is %d, tabs size: %d", log: OSLog.sAlpheios, type: .info, hashValue, BackgroundProcess.tabs.count)
         #endif
         if (BackgroundProcess.tabs[hashValue] == nil) {
             #if DEBUG
-            os_log("Tab script is not found in a list, creating a new one, hash value is %d", log: OSLog.sAuth, type: .info, hashValue)
+            os_log("Tab script is not found in a list, creating a new one, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
             #endif
             let curPage = TabScript(for: page)
             BackgroundProcess.tabs[hashValue] = curPage
@@ -132,19 +132,19 @@ class BackgroundProcess {
     // during the Safari App Extension lifecycle. msgToAllWindows() is a viable alternative.
     func msgToAllScripts(message: Message) {
         #if DEBUG
-        os_log("msgToAllScripts has been called", log: OSLog.sAuth, type: .info)
+        os_log("msgToAllScripts has been called", log: OSLog.sAlpheios, type: .info)
         #endif
         let qty = BackgroundProcess.tabs.count
         #if DEBUG
-        os_log("msgToAllScripts, tabs quantity is: %d", log: OSLog.sAuth, type: .info, qty)
+        os_log("msgToAllScripts, tabs quantity is: %d", log: OSLog.sAlpheios, type: .info, qty)
         #endif
         for (hashValue, tab) in BackgroundProcess.tabs {
             #if DEBUG
-            os_log("Checking a tab with a hash value of %@, tab ID is %d", log: OSLog.sAuth, type: .info, hashValue, tab.ID)
+            os_log("Checking a tab with a hash value of %@, tab ID is %d", log: OSLog.sAlpheios, type: .info, hashValue, tab.ID)
             #endif
             if (tab.safariPage != nil) {
                 #if DEBUG
-                os_log("Sending a message to a content script with hash value %d: %@", log: OSLog.sAuth, type: .info, hashValue, message as! CVarArg)
+                os_log("Sending a message to a content script with hash value %d: %@", log: OSLog.sAlpheios, type: .info, hashValue, message as! CVarArg)
                 #endif
                 // Send message to the script on that page
                 tab.safariPage?.dispatchMessageToScript(withName: "fromBackground", userInfo: message.convertForMessage())
@@ -159,7 +159,7 @@ class BackgroundProcess {
     // Sends a message to all windows. Only activated content scripts will process it.
     func msgToAllWindows(message: Message) {
         #if DEBUG
-        os_log("msgToAllWindows() has been called", log: OSLog.sAuth, type: .info)
+        os_log("msgToAllWindows() has been called", log: OSLog.sAlpheios, type: .info)
         #endif
         SFSafariApplication.getAllWindows { (allWindows) in
             for window in allWindows {
@@ -167,7 +167,7 @@ class BackgroundProcess {
                     for tab in allTabs {
                         tab.getActivePage(completionHandler: { (activePage) in
                             #if DEBUG
-                            os_log("Sending a %s message to a page with a hash value of %d", log: OSLog.sAuth, type: .info, message.type, activePage.hashValue)
+                            os_log("Sending a %s message to a page with a hash value of %d", log: OSLog.sAlpheios, type: .info, message.type, activePage.hashValue)
                             #endif
                             activePage?.dispatchMessageToScript(withName: "fromBackground", userInfo: message.convertForMessage())
                         })
@@ -180,13 +180,13 @@ class BackgroundProcess {
     // Sends a message to a tab script within an active tab
     func msgToActiveTabScript(message: Message) {
         #if DEBUG
-        os_log("msgToActiveTabScript() has been called", log: OSLog.sAuth, type: .info)
+        os_log("msgToActiveTabScript() has been called", log: OSLog.sAlpheios, type: .info)
         #endif
         SFSafariApplication.getActiveWindow { (activeWindow) in
             activeWindow!.getActiveTab(completionHandler: { (activeTab) in
                 activeTab?.getActivePage(completionHandler: { (activePage) in
                     #if DEBUG
-                    os_log("Sending a %s message to an active page, hash value is %d", log: OSLog.sAuth, type: .info, message.type, activePage.hashValue)
+                    os_log("Sending a %s message to an active page, hash value is %d", log: OSLog.sAlpheios, type: .info, message.type, activePage.hashValue)
                     #endif
                     activePage?.dispatchMessageToScript(withName: "fromBackground", userInfo: message.convertForMessage())
                 })
@@ -196,7 +196,7 @@ class BackgroundProcess {
     
     func removeTabScript(hashValue: Int) {
         #if DEBUG
-        os_log("Removing an outdated tab script for the following hash value: %d", log: OSLog.sAuth, type: .info, hashValue)
+        os_log("Removing an outdated tab script for the following hash value: %d", log: OSLog.sAlpheios, type: .info, hashValue)
         #endif
         BackgroundProcess.tabs.removeValue(forKey: hashValue)
     }
@@ -204,13 +204,13 @@ class BackgroundProcess {
     // This version is used for activations made by a BackgroundProcess
     func activateContent(tab: TabScript, window: SFSafariWindow) {
         #if DEBUG
-        os_log("Activate content by a background process", log: OSLog.sAuth, type: .info)
+        os_log("Activate content by a background process", log: OSLog.sAlpheios, type: .info)
         #endif
         
         DistributedNotificationCenter.default().addObserver(self, selector: #selector(self.authEventDidHappen), name: .AlpheiosAuthEvent, object: nil)
         
         #if DEBUG
-        os_log("Auth notification observer has been added", log: OSLog.sAuth, type: .info)
+        os_log("Auth notification observer has been added", log: OSLog.sAlpheios, type: .info)
         #endif
         
         window.getActiveTab(completionHandler: { (activeTab) in
@@ -225,14 +225,14 @@ class BackgroundProcess {
     
     @objc func authEventDidHappen(notification: NSNotification){
         #if DEBUG
-        os_log("Auth event callback", log: OSLog.sAuth, type: .info)
+        os_log("Auth event callback", log: OSLog.sAlpheios, type: .info)
         #endif
     }
 
    // This function is used for menu initiated activations
    func activateContent(page: SFSafariPage) {
         #if DEBUG
-        os_log("Activate content by the menu", log: OSLog.sAuth, type: .info)
+        os_log("Activate content by the menu", log: OSLog.sAlpheios, type: .info)
         #endif
         let curTab = self.getTabScriptForPage(for: page)
         curTab.activate()
@@ -280,7 +280,7 @@ class BackgroundProcess {
     // This method is called every time users clicks on an extension icon
     func changeActiveTabStatus(page: SFSafariPage, window: SFSafariWindow) {
         #if DEBUG
-        os_log("changeActiveTabStatus() has been called", log: OSLog.sAuth, type: .info)
+        os_log("changeActiveTabStatus() has been called", log: OSLog.sAlpheios, type: .info)
         #endif
         let curTab = self.getTabScriptForPage(for: page)
 
@@ -304,7 +304,7 @@ class BackgroundProcess {
     // It means that a new instance of content script is loaded and is ready to receive background commands
     func contentReadyHandler(tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
         #if DEBUG
-        os_log("contentReadyHandler() has been called", log: OSLog.sAuth, type: .info)
+        os_log("contentReadyHandler() has been called", log: OSLog.sAlpheios, type: .info)
         #endif
         var isNew:Bool = false
         let hashValue = page.hashValue
@@ -382,7 +382,7 @@ class BackgroundProcess {
     
     func login(authData: [String: Any]) {
         #if DEBUG
-        os_log("Authentication has been completed", log: OSLog.sAuth, type: .info)
+        os_log("Authentication has been completed", log: OSLog.sAlpheios, type: .info)
         #endif
         
         // Convert [String: Any] to [String: String]
@@ -396,14 +396,14 @@ class BackgroundProcess {
         
         let loginMsg = LoginNtfyMessage(body: msgBody)
         #if DEBUG
-        os_log("Login message has been built, email is %s", log: OSLog.sAuth, type: .info, msgBody["email"]!)
+        os_log("Login message has been built, email is %s", log: OSLog.sAlpheios, type: .info, msgBody["email"]!)
         #endif
         self.msgToAllWindows(message: loginMsg)
     }
     
     func logout() {
         #if DEBUG
-        os_log("User has been logged out", log: OSLog.sAuth, type: .info)
+        os_log("User has been logged out", log: OSLog.sAlpheios, type: .info)
         #endif
         let logoutMsg = LogoutNtfyMessage(body: [String: String]())
         self.msgToAllWindows(message: logoutMsg)
@@ -429,10 +429,10 @@ class BackgroundProcess {
             try managedContext.save()
             // authUsers.append(user)
             #if DEBUG
-            os_log("User data has been stored successfully", log: OSLog.sAuth, type: .info)
+            os_log("User data has been stored successfully", log: OSLog.sAlpheios, type: .info)
             #endif
         } catch let error as NSError {
-            os_log("Cannot save user data: %@, %@", log: OSLog.sAuth, type: .info, error, error.userInfo)
+            os_log("Cannot save user data: %@, %@", log: OSLog.sAlpheios, type: .info, error, error.userInfo)
         }
     }
     
@@ -451,15 +451,15 @@ class BackgroundProcess {
             // Check how many records are in the store
             let recordsInStore = try managedContext.count(for: fetchRequest)
             #if DEBUG
-            os_log("Persistent store has %d user records", log: OSLog.sAuth, type: .info, recordsInStore)
+            os_log("Persistent store has %d user records", log: OSLog.sAlpheios, type: .info, recordsInStore)
             #endif
             
             users = try managedContext.fetch(fetchRequest)
             #if DEBUG
-            os_log("Retrieved %d user records from a persisten store", log: OSLog.sAuth, type: .info, users.count)
+            os_log("Retrieved %d user records from a persisten store", log: OSLog.sAlpheios, type: .info, users.count)
             #endif
         } catch let error as NSError {
-            os_log("Could not fetch. %@, %@", log: OSLog.sAuth, type: .error, error, error.userInfo)
+            os_log("Could not fetch. %@, %@", log: OSLog.sAlpheios, type: .error, error, error.userInfo)
         }
         
     }

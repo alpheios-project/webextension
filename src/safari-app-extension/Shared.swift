@@ -13,7 +13,7 @@ extension OSLog {
     private static var subsystem = Bundle.main.bundleIdentifier!
     
     /// Logs the view cycles like viewDidLoad.
-    static let sAuth = OSLog(subsystem: subsystem, category: "AlpheiosSafari")
+    static let sAlpheios = OSLog(subsystem: subsystem, category: "AlpheiosSafari")
 }
 
 extension NSNotification.Name {

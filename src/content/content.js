@@ -7,7 +7,7 @@ import StateResponse from '../lib/messaging/response/state-response'
 import MessagingService from '@/lib/messaging/service.js'
 import BgAuthenticator from '@/lib/auth/bg-authenticator.js'
 import { TabScript, UIController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB,
-  AuthModule, PanelModule, PopupModule, ToolbarModule, ActionPanelModule } from 'alpheios-components'
+  AuthModule, PanelModule, PopupModule, ToolbarModule, ActionPanelModule, Platform } from 'alpheios-components'
 
 let messagingService = null
 let uiController = null
@@ -119,6 +119,7 @@ console.info(`State tab before constructor is ${state.tab}`)
 uiController = UIController.create(state, {
   storageAdapter: ExtensionSyncStorage,
   app: { name: browserManifest.name, version: browserManifest.version },
+  appType: Platform.appTypes.WEBEXTENSION,
   mode: mode
 })
 // Do environment-specific initializations
