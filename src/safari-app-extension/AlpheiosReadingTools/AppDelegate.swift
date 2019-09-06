@@ -342,10 +342,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 
                                 // Send user info to the extension
                                 let userInfo = [
-                                    "email": profile.email ?? "",
-                                    "id": profile.sub,
-                                    "name": profile.name ?? "",
-                                    "nickname": profile.nickname ?? "",
+                                    "userEmail": profile.email ?? "",
+                                    "userId": profile.sub,
+                                    "userName": profile.name ?? "",
+                                    "userNickname": profile.nickname ?? "",
                                     "accessToken": accessToken
                                 ]
                                 SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
@@ -367,10 +367,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         #endif
         
         let userInfo = [
-            "email": "email@test.com",
-            "id": "userID",
-            "name": "Test user name",
-            "nickname": "Test nickname",
+            "userEmail": "email@test.com",
+            "userId": "userID",
+            "userName": "Test user name",
+            "userNickname": "Test nickname",
             "accessToken": "TEST_ACCESS_TOKEN"
         ]
         SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
@@ -379,7 +379,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         os_log("UserLogin test notification has been dispatched", log: OSLog.sAlpheios, type: .info)
         #endif
     }
-    
     
     @IBAction func LogOutClicked(_ sender: Any) {
         #if DEBUG

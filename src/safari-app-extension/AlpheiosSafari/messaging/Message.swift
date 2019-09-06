@@ -25,6 +25,11 @@ class Message {
         "request": "Alpheios_Request"
     ]
     
+    static let authStatuses: [String: String] = [
+        "logged_in": "LOGGED_IN",
+        "logged_out": "LOGGED_OUT"
+    ]
+    
     init(body: [String: String]) {
         self.role = Message.types["generic_message"]!
         self.ID = UUID().uuidString

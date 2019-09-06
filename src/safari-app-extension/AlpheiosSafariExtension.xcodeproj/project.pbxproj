@@ -172,10 +172,10 @@
 				7832F8B42147A52300CD96CB /* TabScript.swift */,
 				7832F8A32147A4E400CD96CB /* SafariExtensionViewController.xib */,
 				7832F8A62147A4E400CD96CB /* Info.plist */,
-				7832F8B72147A70300CD96CB /* style-components-safari.css */,
 				7832F8A72147A4E400CD96CB /* content-safari.js */,
 				BF3927F8216F565E00213E05 /* alpheios.pdf */,
 				7832F8AB2147A4E400CD96CB /* AlpheiosSafari.entitlements */,
+				7832F8B72147A70300CD96CB /* style-components-safari.css */,
 			);
 			path = AlpheiosSafari;
 			sourceTree = "<group>";

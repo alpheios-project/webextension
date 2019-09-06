@@ -1,6 +1,4 @@
 import Authenticator from '@/lib/auth/authenticator.js'
-import Message from '@/lib/messaging/message/message.js'
-import { PsEvent } from 'alpheios-data-models'
 
 /**
  * This is a base class for all other authenticator classes.
@@ -12,17 +10,13 @@ export default class SafariAuthenticator extends Authenticator {
   /**
    * @constructor
    */
-  constructor (messagingService) {
+  constructor () {
     super()
-    console.info(`SafariAuthenticator has been created`)
-    this._messagingService = messagingService
-    this._messagingService.addHandler(Message.types.LOGIN_NTFY_MESSAGE, this.loginCB.bind(this))
-    this._messagingService.addHandler(Message.types.LOGOUT_NTFY_MESSAGE, this.logoutCB.bind(this))
 
     // User data props
     this.isAuthenticated = false
     this.hasUserData = false
-    this.email = null
+    this.userEmail = null
     // A full name of the user
     this.userName = null
     // A user's nickname
@@ -32,10 +26,10 @@ export default class SafariAuthenticator extends Authenticator {
 
     this.accessToken = null
 
-    // TODO: Need to determine the best way to store endpoints configuration in Safari
+    // TODO: Hardcoded for now. Can we do it any better than that?
     this.endpoints = {
-      wordlist : 'https://userapis.alpheios.net/v1/words',
-      settings : 'https://settings.alpheios.net/v1/settings'
+      wordlist: 'https://userapis.alpheios.net/v1/words',
+      settings: 'https://settings.alpheios.net/v1/settings'
     }
   }
 
@@ -57,7 +51,13 @@ export default class SafariAuthenticator extends Authenticator {
 
   getEndPoints () {
     return new Promise((resolve, reject) => {
-      reject('Not implemented')
+      if (this.hasUserData) {
+        // User data has been retrieved
+        console.info(`SA: Returning endpoints`)
+        resolve(this.endpoints)
+      } else {
+        reject('No user data has been retrieved yet')
+      }
     })
   }
 
@@ -72,23 +72,43 @@ export default class SafariAuthenticator extends Authenticator {
   }
 
   /**
+   * @typedef SafariAuthData
+   * @property {string} userEmail - An email of the user.
+   * @property {string} userId - A user ID (`sub` in Auth0).
+   * @property {string} userName - A full name of the user.
+   * @property {string} userNickname - A user's nickname.
+   * @property {string} accessToken - An access token of the user..
+   */
+  /**
    * Authenticates user with an Auth0.
+   * @param {SafariAuthData} authData - A user auth data.
    * @returns {Promise}
    */
-  authenticate () {
+  authenticate (authData) {
     return new Promise((resolve, reject) => {
-      reject('Not implemented')
+      console.info(`Authenticate: User has been logged in via the containing app`, authData)
+
+      this.userEmail = authData.userEmail
+      this.userId = authData.userId
+      this.userName = authData.userName
+      this.userNickname = authData.userNickname
+      this.accessToken = authData.accessToken
+      this.hasUserData = true
+      this.isAuthenticated = true
+
+      console.info(`Authenticator object is`, this)
+      resolve()
     })
   }
 
   /**
-  * @typedef UserProfileData
-  * @property {string} name - A full name of the user.
-  * @property {string} nickname - A user's nickname.
-  * @property {string} sub - A user ID.
-  */
+   * @typedef UserProfileData
+   * @property {string} name - A full name of the user.
+   * @property {string} nickname - A user's nickname.
+   * @property {string} sub - A user ID.
+   */
   /**
-   * Retrieves user profile information from Auth0.
+   * Retrieves user profile information.
    * This function can be used by third-party libraries to retrieve user profile data.
    * One example of such use is a UserDataManager which is used by the word list controller.
    * @return {Promise<UserProfileData>|Promise<Error>} - Resolved with user profile data
@@ -96,35 +116,31 @@ export default class SafariAuthenticator extends Authenticator {
    */
   getProfileData () {
     return new Promise((resolve, reject) => {
-      this.messagingService.sendRequestToBg(new UserProfileRequest(), BgAuthenticator.DEFAULT_MSG_TIMEOUT)
-        .then(message => resolve(message.body), error => reject(error))
+      if (this.hasUserData) {
+        // User data has been retrieved
+        console.info(`Returning profile data`)
+        resolve({
+          name: this.userName,
+          nickname: this.userNickname,
+          sub: this.userId
+        })
+      } else {
+        reject('No user profile data is available yet')
+      }
     })
   }
 
   /**
-   * @typedef UserData
-   * @property {string} userId - A user ID.
-   * @property {string} accessToken - A user ID.
-   * @property {object} endpoints - An object containing endpoints in
-   * props such as `wordlist` and `settings`
-   */
-  /**
-   * Retrieves user profile information from Auth0.
-   * This function can be used by third-party libraries to retrieve user profile data.
-   * One example of such use is a UserDataManager which is used by the word list controller.
-   * @return {Promise<UserData>|Promise<Error>} - Resolved with user profile data
+   * Retrieves user information.
+   * @return {Promise<string>|Promise<Error>} - Resolved with an access token
    * in case of success or rejected with an error in case of failure.
    */
   getUserData () {
     return new Promise((resolve, reject) => {
       if (this.hasUserData) {
         // User data has been retrieved
-        console.info(`Returning user data`)
-        resolve({
-          id: this.userId,
-          accessToken: this.accessToken,
-          endpoints: this.endpoints
-        })
+        console.info(`SA: Returning user data`)
+        resolve(this.accessToken)
       } else {
         reject('No user data has been retrieved yet')
       }
@@ -136,58 +152,21 @@ export default class SafariAuthenticator extends Authenticator {
    */
   logout () {
     return new Promise((resolve, reject) => {
-      reject('Not implemented')
+      console.info(`Logout: User has been logged out via the containing app`)
+      // Erase user data
+      this.hasUserData = false
+      this.isAuthenticated = false
+      this.userEmail = null
+      this.userId = null
+      this.userName = null
+      this.userNickname = null
+      this.accessToken = null
+      resolve()
     })
-  }
-
-  loginCB (message) {
-    console.info(`User has been logged in via the containing app`, message.body)
-
-    this.email = message.body.email
-    this.userId = message.body.id
-    this.userName = message.body.name
-    this.userNickname = message.body.nickname
-    this.accessToken = message.body.accessToken
-    this.hasUserData = true
-    this.isAuthenticated = true
-
-    SafariAuthenticator.evt.LOGGED_IN.pub({
-      id: this.userId,
-      nickname: this.userNickname
-    })
-    console.info(`Log in event has been published`)
-  }
-
-  logoutCB (message) {
-    console.info(`User has been logged out via the containing app`, message.body)
-    // Erase user data
-    this.hasUserData = false
-    this.isAuthenticated = false
-    this.email = null
-    this.userId = null
-    this.userName = null
-    this.userNickname = null
-    this.accessToken = null
-    SafariAuthenticator.evt.LOGGED_OUT.pub()
   }
 }
 
-/**
- * This is a description of a SafariAuthenticator event interface.
- */
-SafariAuthenticator.evt = {
-  /**
-   * Published when a user has been logged in via a third-party app.
-   * Data: {
-   *  {string} userId - A user ID.
-      {string} userNickName - A user nick name
-   * }
-   */
-  LOGGED_IN: new PsEvent('User has been logged in', SafariAuthenticator),
-
-  /**
-   * Published when a user has been logged out via a third-party app.
-   * Data: an empty object.
-   */
-  LOGGED_OUT: new PsEvent(`User has been logged out`, SafariAuthenticator)
+SafariAuthenticator.authStatuses = {
+  LOGGED_IN: 'LOGGED_IN',
+  LOGGED_OUT: 'LOGGED_OUT'
 }

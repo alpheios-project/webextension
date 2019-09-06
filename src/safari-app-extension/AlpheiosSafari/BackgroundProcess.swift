@@ -15,6 +15,11 @@ class BackgroundProcess {
     ]
     
     static var tabs: [Int: TabScript] = [:]
+    // If user is authenticated, userAuthInfo will hold its information.
+    // Available keys are: email, id, name, nickname, and accessToken.
+    // If user is logged out, authInfo will be nil.
+    // Checkin if authInfo is nil allow to detect if user has been authenticated successfully or not
+    var authInfo: [String:String]?
     
     // An object for testing a retrieval of users
     var users: [NSManagedObject] = []
@@ -60,6 +65,12 @@ class BackgroundProcess {
     init () {
         #if DEBUG
         os_log("Background process has been created", log: OSLog.sAlpheios, type: .info)
+        #endif
+    }
+    
+    deinit {
+        #if DEBUG
+        os_log("Background process has been deinitialized", log: OSLog.sAlpheios, type: .info)
         #endif
     }
     
@@ -123,8 +134,16 @@ class BackgroundProcess {
     
     // Sends message to content script to update its state
     func setContentState(tab: TabScript, page: SFSafariPage) {
-        let stateRequestMess = StateRequest(body: tab.convertForMessage())
-        page.dispatchMessageToScript(withName: "fromBackground", userInfo: stateRequestMess.convertForMessage())
+        let stateRequestMsg = StateRequest(body: tab.convertForMessage())
+        
+        if (self.authInfo != nil) {
+            // Add authentication information to the message body if user has been logged in
+            stateRequestMsg.body["authStatus"] = Message.authStatuses["logged_in"]
+            stateRequestMsg.body.merge(self.authInfo!) { (current, _) in current }
+        } else {
+            stateRequestMsg.body["authStatus"] = Message.authStatuses["logged_out"]
+        }
+        page.dispatchMessageToScript(withName: "fromBackground", userInfo: stateRequestMsg.convertForMessage())
     }
     
     // Sends a message to all content scripts by iterating over the list of known TabScript objects.
@@ -254,6 +273,9 @@ class BackgroundProcess {
     
     // This function is used for menu initiated deactivations
     func deactivateContent(page: SFSafariPage) {
+        #if DEBUG
+        os_log("deactivateContent() has been called", log: OSLog.sAlpheios, type: .info)
+        #endif
         let curTab = self.getTabScriptForPage(for: page)
         curTab.deactivate()
         curTab.setPanelDefault() // Reset panel state to a default
@@ -262,6 +284,9 @@ class BackgroundProcess {
     }
     
     func openPanel(page: SFSafariPage) {
+        #if DEBUG
+        os_log("openPanel() has been called", log: OSLog.sAlpheios, type: .info)
+        #endif
         let curTab = self.getTabScriptForPage(for: page)
         if curTab.isActive {
             curTab.setPanelOpen()
@@ -270,6 +295,9 @@ class BackgroundProcess {
     }
     
     func showInfo(page: SFSafariPage) {
+        #if DEBUG
+        os_log("showInfo() has been called", log: OSLog.sAlpheios, type: .info)
+        #endif
         let curTab = self.getTabScriptForPage(for: page)
         if curTab.isActive {
             curTab.setShowInfo()
@@ -333,6 +361,9 @@ class BackgroundProcess {
     
     // A notification that an active embedded library is found on a page
     func embedLibActiveHandler(tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
+        #if DEBUG
+        os_log("embedLibActiveHandler() has been called", log: OSLog.sAlpheios, type: .info)
+        #endif
         let curTab = self.getTabScriptForPage(for: page)
         curTab.setEmbedLibActive()
         return curTab
@@ -341,6 +372,9 @@ class BackgroundProcess {
     // This method is called when we receive a state message from background
     // We need to use it to update a state of our tabdata object
     func updateTabData(tabdata: [String: Any]?, page: SFSafariPage) -> TabScript {
+        #if DEBUG
+        os_log("updateTabData() has been called", log: OSLog.sAlpheios, type: .info)
+        #endif
         let curTab = self.getTabScriptForPage(for: page)
         if let messageBody = tabdata?["body"] as? Dictionary<String, Any> {
             curTab.updateWithData(data: messageBody)
@@ -349,6 +383,9 @@ class BackgroundProcess {
     }
     
     func checkToolbarIcon(page: SFSafariPage, window: SFSafariWindow) {
+        #if DEBUG
+        os_log("checkToolbarIcon() has been called", log: OSLog.sAlpheios, type: .info)
+        #endif
         let curTab = self.getTabScriptForPage(for: page)
 
         if (curTab.isActive && curTab.isEmbedLibInactive) {
@@ -359,6 +396,9 @@ class BackgroundProcess {
     }
     
     func checkContextMenuIconVisibility(command: String, page: SFSafariPage) -> Bool {
+        #if DEBUG
+        os_log("checkContextMenuIconVisibility() has been called", log: OSLog.sAlpheios, type: .info)
+        #endif
         let curTab = self.getTabScriptForPage(for: page)
         // Hide this menu item if content script is disabled
         if (command == "Activate" && !curTab.isActive && curTab.isEmbedLibInactive) {
@@ -380,23 +420,20 @@ class BackgroundProcess {
         return false
     }
     
-    func login(authData: [String: Any]) {
+    func login(authInfo: [String: Any]) {
         #if DEBUG
-        os_log("Authentication has been completed", log: OSLog.sAlpheios, type: .info)
+        os_log("login(): authentication has been completed", log: OSLog.sAlpheios, type: .info)
         #endif
         
-        // Convert [String: Any] to [String: String]
-        let msgBody = [
-            "email": authData["email"] as! String,
-            "id": authData["id"] as! String,
-            "name": authData["name"] as! String,
-            "nickname": authData["nickname"] as! String,
-            "accessToken": authData["accessToken"] as! String
-        ]
+        // Store user information in the BackgorundProcess object
+        self.authInfo = [:]
+        for (key, value) in authInfo {
+            self.authInfo?[key] = value as? String ?? ""
+        }
         
-        let loginMsg = LoginNtfyMessage(body: msgBody)
+        let loginMsg = LoginNtfyMessage(body: self.authInfo!)
         #if DEBUG
-        os_log("Login message has been built, email is %s", log: OSLog.sAlpheios, type: .info, msgBody["email"]!)
+        os_log("Login message has been built, email is %s", log: OSLog.sAlpheios, type: .info, self.authInfo!["userEmail"] ?? "Unknown")
         #endif
         self.msgToAllWindows(message: loginMsg)
     }
@@ -405,6 +442,9 @@ class BackgroundProcess {
         #if DEBUG
         os_log("User has been logged out", log: OSLog.sAlpheios, type: .info)
         #endif
+        // Clear user auth info
+        self.authInfo = nil
+        
         let logoutMsg = LogoutNtfyMessage(body: [String: String]())
         self.msgToAllWindows(message: logoutMsg)
     }

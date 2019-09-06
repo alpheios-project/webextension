@@ -10,14 +10,24 @@ import SafariServices.SFSafariApplication
 import os.log
 
 class SafariExtensionHandler: SFSafariExtensionHandler {
-    let backgroundProcess: BackgroundProcess = BackgroundProcess()
+    // There can be multiple instances of SafariExtensionHandler created for the same extension
+    // In order to have BackgroundProcess shared across them, it must be a singleton
+    // backgroundProcess will be instantiated lazily as thi si a default
+    static let backgroundProcess: BackgroundProcess = BackgroundProcess()
     // let managedContext = SFSafariApplication.persistentContainer.viewContext
     
     override init() {
         #if DEBUG
-        os_log("SafariExtensionHandler has been created", log: OSLog.sAlpheios, type: .info)
+        os_log("SafariExtensionHandler has been initialized", log: OSLog.sAlpheios, type: .info)
         #endif
     }
+    
+    deinit {
+        #if DEBUG
+        os_log("SafariExtensionHandler has been deinitialized", log: OSLog.sAlpheios, type: .info)
+        #endif
+    }
+
 
     
     override func messageReceived(withName messageName: String, from page: SFSafariPage, userInfo: [String : Any]?) {
@@ -25,21 +35,21 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
         
         if (messageName == "contentReady") {
             // A page in a tab has been reloaded
-            _ = self.backgroundProcess.contentReadyHandler(tabdata: userInfo, page: page)
+            _ = SafariExtensionHandler.backgroundProcess.contentReadyHandler(tabdata: userInfo, page: page)
             SFSafariApplication.setToolbarItemsNeedUpdate()
             #if DEBUG
             os_log("Recieved a contentReady message from a content script, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
             #endif
         } else if (messageName == "embedLibActive") {
             // A notification about an active embedded lib
-            _ = self.backgroundProcess.embedLibActiveHandler(tabdata: userInfo, page: page)
+            _ = SafariExtensionHandler.backgroundProcess.embedLibActiveHandler(tabdata: userInfo, page: page)
             SFSafariApplication.setToolbarItemsNeedUpdate()
             #if DEBUG
             os_log("Recieved an embedLibActive message from a content script, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
             #endif
         } else if (messageName == "updateState") {
             // This is a state update message
-            _ = self.backgroundProcess.updateTabData(tabdata: userInfo, page: page)
+            _ = SafariExtensionHandler.backgroundProcess.updateTabData(tabdata: userInfo, page: page)
             #if DEBUG
             os_log("Recieved an updateState message from a content script, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
             #endif
@@ -48,12 +58,15 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
         }
     }
     
+    // This method will be called when your toolbar item is clicked.
     override func toolbarItemClicked(in window: SFSafariWindow) {
-        // This method will be called when your toolbar item is clicked.
+        #if DEBUG
+        os_log("toolbarItemClicked() has been called", log: OSLog.sAlpheios, type: .info)
+        #endif
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
                 activePage?.getPropertiesWithCompletionHandler { properties in
-                    self.backgroundProcess.changeActiveTabStatus(page: activePage!, window: window)
+                    SafariExtensionHandler.backgroundProcess.changeActiveTabStatus(page: activePage!, window: window)
                 }
             })
         })
@@ -67,9 +80,9 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
         
         if (messageName == "UserLogin") {
             let authData = userInfo!
-            self.backgroundProcess.login(authData: authData)
+            SafariExtensionHandler.backgroundProcess.login(authInfo: authData)
         } else if (messageName == "UserLogout") {
-            self.backgroundProcess.logout()
+            SafariExtensionHandler.backgroundProcess.logout()
         }
         
         
@@ -77,40 +90,38 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
     
     override func contextMenuItemSelected(withCommand command: String, in page: SFSafariPage, userInfo: [String : Any]? = nil) {
         if command == "OpenPanel" {
-            self.backgroundProcess.openPanel(page: page)
+            SafariExtensionHandler.backgroundProcess.openPanel(page: page)
         }
         if command == "ShowInfo" {
-            self.backgroundProcess.showInfo(page: page)
+            SafariExtensionHandler.backgroundProcess.showInfo(page: page)
         }
         if command == "Activate" {
-            self.backgroundProcess.activateContent(page: page)
+            SafariExtensionHandler.backgroundProcess.activateContent(page: page)
             SFSafariApplication.setToolbarItemsNeedUpdate()
         }
         if command == "Deactivate" {
-            self.backgroundProcess.deactivateContent(page: page)
+            SafariExtensionHandler.backgroundProcess.deactivateContent(page: page)
             SFSafariApplication.setToolbarItemsNeedUpdate()
         }
-        
     }
     
+    
+    // This method is called when Safari's state is changed in some way that would require the extension's toolbar button state to be revalidated
+    // Validation handler
     override func validateToolbarItem(in window: SFSafariWindow, validationHandler: @escaping ((Bool, String) -> Void)) {
-        // This is called when Safari's state changed in some way that would require the extension's toolbar item to be validated again.
-        // print("*********validate toolbar icon**************")
-        
+        #if DEBUG
+        os_log("validateToolbarItem() has been called", log: OSLog.sAlpheios, type: .info)
+        #endif
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
-                self.backgroundProcess.checkToolbarIcon(page: activePage!, window: window)
+                SafariExtensionHandler.backgroundProcess.checkToolbarIcon(page: activePage!, window: window)
                 validationHandler(true, "")
             })
         })
     }
     
     override func validateContextMenuItem(withCommand command: String, in page: SFSafariPage, userInfo: [String : Any]? = nil, validationHandler: @escaping (Bool, String?) -> Void) {
-        // print("validateContextMenuItem start", page.hashValue)
- 
-        // print("validateContextMenuItem inside")
-        let check = self.backgroundProcess.checkContextMenuIconVisibility(command: command, page: page)
-        // print("validateContextMenuItem", check)
+        let check = SafariExtensionHandler.backgroundProcess.checkContextMenuIconVisibility(command: command, page: page)
         validationHandler(!check, nil)
 
     }

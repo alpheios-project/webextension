@@ -11,6 +11,7 @@ const pingInterval = 15000 // How often to ping background with a state message,
 let pingIntervalID = null
 let uiController = null
 let state = null
+let authenticator = null
 let messagingService = null
 
 /**
@@ -102,6 +103,8 @@ let handleStateRequest = async function handleStateRequest (message) {
     return
   }
 
+  console.info(`Received a stateMessage with the body as`, message.body)
+
   let requestState = TabScript.readObject(message.body)
   let diff = state.diff(requestState)
 
@@ -123,7 +126,8 @@ let handleStateRequest = async function handleStateRequest (message) {
         app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` },
         appType: Platform.appTypes.SAFARI_APP_EXTENSION
       })
-      uiController.registerModule(AuthModule, { auth: new SafariAuthenticator(messagingService) })
+      authenticator = new SafariAuthenticator(messagingService)
+      uiController.registerModule(AuthModule, { auth: authenticator })
       uiController.registerModule(PanelModule, {
         mountPoint: '#alpheios-panel' // To what element a panel will be mounted
       })
@@ -148,6 +152,16 @@ let handleStateRequest = async function handleStateRequest (message) {
     if (diff.has('tab')) { state.tab = diff.tab }
     uiController.activate()
       .then(() => {
+        if (message.body.authStatus && uiController.hasModule('auth')) {
+          // Update authentication status if message body contains that information
+          // and there is a registered auth module available.
+          if (message.body.authStatus === SafariAuthenticator.authStatuses.LOGGED_IN) {
+            uiController.api.auth.authenticate(message.body)
+          } else if (message.body.authStatus === SafariAuthenticator.authStatuses.LOGGED_OUT) {
+            uiController.api.auth.logout()
+          }
+        }
+
         // Set watchers after UI Controller activation so they will not notify background of activation-related events
         uiController.state.setWatcher('panelStatus', sendMessageToBackground.bind(this, 'updateState'))
         uiController.state.setWatcher('tab', sendMessageToBackground.bind(this, 'updateState'))
@@ -178,6 +192,16 @@ let handleStateRequest = async function handleStateRequest (message) {
   sendMessageToBackground('updateState')
 }
 
+let handleLoginRequest = async function handleLoginRequest (message) {
+  console.info(`handleLoginRequest()`)
+  uiController.api.auth.authenticate(message.body)
+}
+
+let handleLogoutRequest = async function handleLogoutRequest (message) {
+  console.info(`handleLogoutRequest()`)
+  uiController.api.auth.logout()
+}
+
 let sendMessageToBackground = function sendStateToBackground (messageName) {
   safari.extension.dispatchMessage(messageName, new StateMessage(state))
 }
@@ -196,6 +220,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
   if (HTMLPage.isValidTarget) {
     messagingService = new MessagingService()
     messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest)
+    messagingService.addHandler(Message.types.LOGIN_NTFY_MESSAGE, handleLoginRequest)
+    messagingService.addHandler(Message.types.LOGOUT_NTFY_MESSAGE, handleLogoutRequest)
     safari.self.addEventListener('message', messagingService.listener.bind(messagingService))
 
     /*
@@ -215,6 +241,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
       document.body.addEventListener('Alpheios_Embedded_Response', embeddedLibListener)
       document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))
     }
+    console.info(`Sending a contentReady message to the background`)
     sendMessageToBackground('contentReady')
   }
 })

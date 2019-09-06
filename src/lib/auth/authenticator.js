@@ -10,6 +10,8 @@ export default class Authenticator {
    * @constructor
    */
   constructor () {
+    // Whether authenticator has user data obtained
+    this.hasUserData = false
   }
 
   /**
@@ -30,7 +32,7 @@ export default class Authenticator {
 
   getEndPoints () {
     return new Promise((resolve, reject) => {
-      reject('Not implemented')
+      reject('getEndPoints is not implemented')
     })
   }
 
@@ -40,46 +42,63 @@ export default class Authenticator {
    */
   session () {
     return new Promise((resolve, reject) => {
-      reject('Not implemented')
+      reject('Session method is not implemented')
     })
   }
 
   /**
-   * Authenticates user with an Auth0.
-   * @returns {Promise}
+   * This method is called in order for Authenticator
+   * to perform actions specific to logging a user in
+   * (i.e. to send an authentication request to the remote server)
+   * @returns {Promise} - Promise that is resolved if a user authenticated successfully and
+   *                      rejected if a user authentication failed.
    */
   authenticate () {
     return new Promise((resolve, reject) => {
-      reject('Not implemented')
+      reject('Authenticate method is not implemented')
     })
   }
 
   /**
-   * Retrieves user profile information from Auth0.
-   * @returns {Promise}
+   * @typedef UserProfileData
+   * @property {string} name - A full name of the user.
+   * @property {string} nickname - A user's nickname.
+   * @property {string} sub - A user ID.
+   */
+  /**
+   * Retrieves user profile information.
+   * This function can be used by third-party libraries to retrieve user profile data.
+   * One example of such use is a UserDataManager which is used by the word list controller.
+   * @return {Promise<UserProfileData>|Promise<Error>} - Resolved with user profile data
+   * in case of success or rejected with an error in case of failure.
    */
   getProfileData () {
     return new Promise((resolve, reject) => {
-      reject('Not implemented')
+      reject('getProfileData is not implemented')
     })
   }
 
   /**
-   * Retrieves user data from a remote provider (e.g. Alpheios servers).
-   * @returns {Promise}
+   * Retrieves user information.
+   * @return {Promise<string>|Promise<Error>} - Resolved with an access token
+   * in case of success or rejected with an error in case of failure.
    */
   getUserData () {
     return new Promise((resolve, reject) => {
-      reject('Not implemented')
+      reject('getUserData is not implemented')
     })
   }
 
   /**
-   * Logs the user out
+   * This method is called in order for Authenticator
+   * to perform actions specific to logging a user out
+   * (i.e. to send a request to end user session to the remote server)
+   * @returns {Promise} - Promise that is resolved if a user has been logged out successfully and
+   *                      rejected if there was an error during a logout.
    */
   logout () {
     return new Promise((resolve, reject) => {
-      reject('Not implemented')
+      reject('Logout is not implemented')
     })
   }
 }
