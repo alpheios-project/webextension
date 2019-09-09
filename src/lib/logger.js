@@ -1,4 +1,4 @@
-let log = console.log
+let log = console.log // eslint-disable-line prefer-const
 
 export default class Logger {
   static log (...data) {
@@ -6,7 +6,7 @@ export default class Logger {
   }
 
   static get timestamp () {
-    let now = new Date()
+    const now = new Date()
     return `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}:${now.getMilliseconds()}`
   }
 }

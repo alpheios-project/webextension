@@ -2,8 +2,10 @@
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message'
 import MessagingService from '@/lib/messaging/service-safari.js'
-import { TabScript, UIController, AuthModule, ToolbarModule, ActionPanelModule, PanelModule, PopupModule, Platform,
-  LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB, Logger } from 'alpheios-components'
+import {
+  TabScript, UIController, AuthModule, ToolbarModule, ActionPanelModule, PanelModule, PopupModule, Platform,
+  LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB, Logger
+} from 'alpheios-components'
 import SafariAuthenticator from '@/lib/auth/safari-authenticator.js'
 import Package from '../../package.json'
 
@@ -11,14 +13,14 @@ const pingInterval = 15000 // How often to ping background with a state message,
 let pingIntervalID = null
 let uiController = null
 let state = null
-let logger = Logger.getInstance()
+const logger = Logger.getInstance()
 let authenticator = null
 let messagingService = null
 
 /**
  * Activates a ping that will send state to background periodically
  */
-let activatePing = function activatePing () {
+const activatePing = function activatePing () {
   /*
 If Safari with an activated Alpheios Safari App Extension is moved out of focus,
 as when user is temporarily switched to some other application,  Safari App
@@ -39,7 +41,7 @@ Safari App Extension API, but for now it seems to be the only way.
 /**
  * Deactivates a ping that was set by `activatePing`
  */
-let deactivatePing = function deactivatePing () {
+const deactivatePing = function deactivatePing () {
   if (pingIntervalID) {
     window.clearInterval(pingIntervalID)
   }
@@ -48,14 +50,14 @@ let deactivatePing = function deactivatePing () {
 /**
  * Dispatch an Alpheios_Active event to the page
  */
-let notifyPageActive = function () {
+const notifyPageActive = function () {
   document.body.dispatchEvent(new Event('Alpheios_Active'))
 }
 
 /**
  * Dispatch an Alpheios_Inactive event to the page
  */
-let notifyPageInactive = function () {
+const notifyPageInactive = function () {
   document.body.dispatchEvent(new Event('Alpheios_Inactive'))
 }
 
@@ -64,7 +66,7 @@ let notifyPageInactive = function () {
  * depending on the `notify` parameter value.
  * @param {Boolean} notify - Will notify app extension only if this parameter is true.
  */
-let deactivateUIController = function deactivateUIController (notify = true) {
+const deactivateUIController = function deactivateUIController (notify = true) {
   uiController.deactivate()
     .then(() => {
       if (notify) {
@@ -79,15 +81,15 @@ let deactivateUIController = function deactivateUIController (notify = true) {
 /**
  * A listener for an Alpheios embedded library event message.
  */
-let embeddedLibListener = function embeddedLibListener () {
+const embeddedLibListener = function embeddedLibListener () {
   // We discovered that an Alpheios embedded lib is active
   state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
   // Notify background that an embed lib is active
   sendMessageToBackground('embedLibActive')
   if (state.isActive()) {
     // Display a panel with a warning about extension being deactivated
-    let l10n = new L10n().addMessages(enUS, Locales.en_US).addMessages(enGB, Locales.en_GB).setLocale(Locales.en_US)
-    let embedLibWarning = UIController.getEmbedLibWarning(l10n.getMsg('EMBED_LIB_WARNING_TEXT'))
+    const l10n = new L10n().addMessages(enUS, Locales.en_US).addMessages(enGB, Locales.en_GB).setLocale(Locales.en_US)
+    const embedLibWarning = UIController.getEmbedLibWarning(l10n.getMsg('EMBED_LIB_WARNING_TEXT'))
     document.body.appendChild(embedLibWarning.$el)
     deactivateUIController(false)
   }
@@ -96,7 +98,7 @@ let embeddedLibListener = function embeddedLibListener () {
 /**
  * State request processing function.
  */
-let handleStateRequest = async function handleStateRequest (message) {
+const handleStateRequest = async function handleStateRequest (message) {
   state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
   if (state.isEmbedLibActive()) {
     // Inform a background that an Alpheios embedded library is active
@@ -104,8 +106,8 @@ let handleStateRequest = async function handleStateRequest (message) {
     return
   }
 
-  let requestState = TabScript.readObject(message.body)
-  let diff = state.diff(requestState)
+  const requestState = TabScript.readObject(message.body)
+  const diff = state.diff(requestState)
 
   /*
   As opposed to webextension, where content script is injected into a document (i.e. `window.document`)
@@ -191,15 +193,15 @@ let handleStateRequest = async function handleStateRequest (message) {
   sendMessageToBackground('updateState')
 }
 
-let handleLoginRequest = async function handleLoginRequest (message) {
+const handleLoginRequest = async function handleLoginRequest (message) {
   uiController.api.auth.authenticate(message.body)
 }
 
-let handleLogoutRequest = async function handleLogoutRequest (message) {
+const handleLogoutRequest = async function handleLogoutRequest (message) {
   uiController.api.auth.logout()
 }
 
-let sendMessageToBackground = function sendStateToBackground (messageName) {
+const sendMessageToBackground = function sendStateToBackground (messageName) {
   safari.extension.dispatchMessage(messageName, new StateMessage(state))
 }
 

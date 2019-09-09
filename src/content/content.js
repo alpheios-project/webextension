@@ -6,24 +6,26 @@ import StateMessage from '@/lib/messaging/message/state-message'
 import StateResponse from '../lib/messaging/response/state-response'
 import MessagingService from '@/lib/messaging/service.js'
 import BgAuthenticator from '@/lib/auth/bg-authenticator.js'
-import { TabScript, UIController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB,
-  AuthModule, PanelModule, PopupModule, ToolbarModule, ActionPanelModule, Platform, Logger } from 'alpheios-components'
+import {
+  TabScript, UIController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB,
+  AuthModule, PanelModule, PopupModule, ToolbarModule, ActionPanelModule, Platform, Logger
+} from 'alpheios-components'
 
 let messagingService = null
 let uiController = null
-let logger = Logger.getInstance()
+const logger = Logger.getInstance()
 
-let sendContentReadyToBackground = function sendContentReadToBackground () {
+const sendContentReadyToBackground = function sendContentReadToBackground () {
   messagingService.sendMessageToBg(new ContentReadyMessage(uiController.state))
     .catch((error) => logger.error('Unable to send content ready message to background', error))
 }
 
-let sendStateToBackground = function sendStateToBackground () {
+const sendStateToBackground = function sendStateToBackground () {
   messagingService.sendMessageToBg(new StateMessage(uiController.state))
     .catch((error) => logger.error('Unable to send state to background', error))
 }
 
-let sendResponseToBackground = function sendResponseToBackground (request, state = uiController.state) {
+const sendResponseToBackground = function sendResponseToBackground (request, state = uiController.state) {
   messagingService.sendResponseToBg(new StateResponse(request, state)).catch(
     (error) => {
       logger.error('Unable to send a response to a state request', error)
@@ -34,10 +36,10 @@ let sendResponseToBackground = function sendResponseToBackground (request, state
 /**
  * State request processing function.
  */
-let handleStateRequest = function handleStateRequest (request) {
-  console.info(`handleStateRequest`)
-  let requestState = TabScript.readObject(request.body)
-  let diff = uiController.state.diff(requestState)
+const handleStateRequest = function handleStateRequest (request) {
+  console.info('handleStateRequest')
+  const requestState = TabScript.readObject(request.body)
+  const diff = uiController.state.diff(requestState)
 
   // If there is an Alpheios embedded library present, ignore all requests from background
   // and send a response back informing that an embedded lib is enabled
@@ -103,8 +105,8 @@ let handleStateRequest = function handleStateRequest (request) {
 }
 
 messagingService = new MessagingService()
-let browserManifest = browser.runtime.getManifest()
-let state = new TabScript()
+const browserManifest = browser.runtime.getManifest()
+let state = new TabScript() // eslint-disable-line prefer-const
 // A message with PENDING status do not cause background object state updates
 state.status = TabScript.statuses.script.PENDING
 state.setPanelDefault()
@@ -112,7 +114,7 @@ state.setTabDefault()
 
 // Set an application's mode from URL params
 // If it is `dev` or `development`, an app will show additional options
-let url = new URL(window.location.href)
+const url = new URL(window.location.href)
 let mode = url.searchParams.get('mode')
 mode = (['dev', 'development'].includes(mode)) ? 'development' : 'production'
 
@@ -140,8 +142,8 @@ document.body.addEventListener('Alpheios_Embedded_Response', () => {
   messagingService.sendMessageToBg(new EmbedLibMessage(uiController.state))
     .catch((error) => logger.error('Unable to send embed lib message to background', error))
   if (uiController.state.isActive()) {
-    let l10n = new L10n().addMessages(enUS, Locales.en_US).addMessages(enGB, Locales.en_GB).setLocale(Locales.en_US)
-    let embedLibWarning = UIController.getEmbedLibWarning(l10n.getMsg('EMBED_LIB_WARNING_TEXT'))
+    const l10n = new L10n().addMessages(enUS, Locales.en_US).addMessages(enGB, Locales.en_GB).setLocale(Locales.en_US)
+    const embedLibWarning = UIController.getEmbedLibWarning(l10n.getMsg('EMBED_LIB_WARNING_TEXT'))
     document.body.appendChild(embedLibWarning.$el)
     uiController.deactivate().catch((error) => logger.error(`Unable to deactivate Alpheios: ${error}`))
   }
@@ -161,4 +163,4 @@ uiController.init()
     browser.runtime.onMessage.addListener(messagingService.listener.bind(messagingService))
     sendContentReadyToBackground()
   })
-  .catch((error) => logger.error(`Unable to activate Alpheios`, error))
+  .catch((error) => logger.error('Unable to activate Alpheios', error))

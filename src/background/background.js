@@ -9,5 +9,5 @@ if (!browserFeatures.browserNamespace) {
   window.browser = require('../../dist/support/webextension-polyfill/browser-polyfill')
 }
 
-let backgroundProcess = new Process(browserFeatures)
+let backgroundProcess = new Process(browserFeatures) // eslint-disable-line prefer-const
 backgroundProcess.initialize()

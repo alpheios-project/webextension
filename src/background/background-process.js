@@ -75,7 +75,7 @@ export default class BackgroundProcess {
   }
 
   updateIcon (active, tabId) {
-    let params = { path: active ? this.browserIcons.active : this.browserIcons.nonactive }
+    const params = { path: active ? this.browserIcons.active : this.browserIcons.nonactive }
     if (tabId) { params.tabId = tabId }
     browser.browserAction.setIcon(params)
   }
@@ -97,6 +97,7 @@ export default class BackgroundProcess {
       browser.browserAction.setBadgeText({ text: '' })
     }
   }
+
   /**
    * handler for the runtime.onInstalled event
    */
@@ -140,7 +141,7 @@ export default class BackgroundProcess {
       to enter the state we would like it to be.
        */
       await this.createTab(tabObj)
-      let tab = this.tabs.get(tabObj.uniqueId)
+      const tab = this.tabs.get(tabObj.uniqueId)
       this.setDefaultTabState(tab)
       tab.activate()
       this.updateUI(tab)
@@ -150,7 +151,7 @@ export default class BackgroundProcess {
       This is an activation on a page where content script is already loaded.
       We can send a state request to it right away.
        */
-      let tab = this.tabs.get(tabObj.uniqueId)
+      const tab = this.tabs.get(tabObj.uniqueId)
       this.setDefaultTabState(tab)
       tab.activate()
       this.updateUI(tab)
@@ -166,7 +167,7 @@ export default class BackgroundProcess {
       This is a deactivation on a page where content script is already loaded.
       We can send a state request to it right away.
        */
-      let tab = this.tabs.get(tabObj.uniqueId)
+      const tab = this.tabs.get(tabObj.uniqueId)
       this.setDefaultTabState(tab)
 
       tab.deactivate()
@@ -180,14 +181,14 @@ export default class BackgroundProcess {
   async openPanel (tabObj) {
     if (!this.tabs.has(tabObj.uniqueId)) { await this.createTab(tabObj) }
 
-    let tab = TabScript.create(this.tabs.get(tabObj.uniqueId)).activate().setPanelOpen()
+    const tab = TabScript.create(this.tabs.get(tabObj.uniqueId)).activate().setPanelOpen()
     this.setContentState(tab)
   }
 
   async openInfoTab (tabObj) {
     if (!this.tabs.has(tabObj.uniqueId)) { await this.createTab(tabObj) }
 
-    let tab = TabScript.create(this.tabs.get(tabObj.uniqueId)).activate().setPanelOpen().changeTab('info')
+    const tab = TabScript.create(this.tabs.get(tabObj.uniqueId)).activate().setPanelOpen().changeTab('info')
     this.setContentState(tab)
   }
 
@@ -222,7 +223,7 @@ export default class BackgroundProcess {
    * @return {Promise.<TabScript>} A Promise that is resolved into a newly created TabScript object
    */
   async createTab (tabObj) {
-    let newTab = new TabScript(tabObj)
+    const newTab = new TabScript(tabObj)
     newTab.tab = TabScript.props.tab.values.INFO // Set active tab to `info` by default
     this.tabs.set(tabObj.uniqueId, newTab)
 
@@ -243,7 +244,7 @@ export default class BackgroundProcess {
   setContentState (tab) {
     this.messagingService.sendRequestToTab(new StateRequest(tab), 10000, tab.tabObj.tabId).then(
       message => {
-        let contentState = TabScript.readObject(message.body)
+        const contentState = TabScript.readObject(message.body)
         if (contentState.isDeactivated() && !contentState.isEmbedLibActive()) {
           /*
           If this is a user initiated deactivation (not the one caused by the presence
@@ -268,10 +269,10 @@ export default class BackgroundProcess {
    * @return {Promise} Will be resolved when all scripts are loaded successfully.
    */
   loadContentData (tabScript) {
-    let polyfillScript = this.loadPolyfill(tabScript.tabObj.tabId)
-    let contentScript = this.loadContentScript(tabScript.tabObj.tabId)
-    let contentCSS = []
-    for (let fileName of this.settings.contentCSSFileNames) { // eslint-disable-line no-unused-vars
+    const polyfillScript = this.loadPolyfill(tabScript.tabObj.tabId)
+    const contentScript = this.loadContentScript(tabScript.tabObj.tabId)
+    const contentCSS = []
+    for (const fileName of this.settings.contentCSSFileNames) { // eslint-disable-line no-unused-vars
       contentCSS.push(this.loadContentCSS(tabScript.tabObj.tabId, fileName))
     }
     return Promise.all([polyfillScript, contentScript, ...contentCSS])
@@ -283,9 +284,9 @@ export default class BackgroundProcess {
    * @param sender
    */
   contentReadyMessageHandler (message, sender) {
-    let contentState = TabScript.readObject(message.body)
+    const contentState = TabScript.readObject(message.body)
     contentState.updateTabObject(sender.tab.id, sender.tab.windowId)
-    let tab = this.tabs.get(contentState.tabID)
+    const tab = this.tabs.get(contentState.tabID)
     // Update an embedded lib status
     tab.embedLibStatus = contentState.embedLibStatus
 
@@ -297,9 +298,9 @@ export default class BackgroundProcess {
   }
 
   embedLibMessageHandler (message, sender) {
-    let contentState = TabScript.readObject(message.body)
+    const contentState = TabScript.readObject(message.body)
     contentState.updateTabObject(sender.tab.id, sender.tab.windowId)
-    let tab = this.tabs.get(contentState.tabID)
+    const tab = this.tabs.get(contentState.tabID)
     // Update an embedded lib status
     tab.embedLibStatus = contentState.embedLibStatus
     this.updateUI(tab)
@@ -312,7 +313,7 @@ export default class BackgroundProcess {
    * @param sender
    */
   stateMessageHandler (message, sender) {
-    let contentState = TabScript.readObject(message.body)
+    const contentState = TabScript.readObject(message.body)
     contentState.updateTabObject(sender.tab.id, sender.tab.windowId)
 
     if (!contentState.isPending()) {
@@ -325,12 +326,12 @@ export default class BackgroundProcess {
       in order to update our UI.
        */
       if (!contentState.isEmbedLibActive()) {
-        let tab = this.tabs.get(contentState.tabID)
+        const tab = this.tabs.get(contentState.tabID)
         tab.update(contentState)
         this.updateUI(tab)
       }
     } else {
-      let tab = this.tabs.get(contentState.tabID)
+      const tab = this.tabs.get(contentState.tabID)
       tab.embedLibStatus = contentState.embedLibStatus
       this.updateUI(tab)
     }
@@ -351,7 +352,7 @@ export default class BackgroundProcess {
     // device
     //  - required if requesting the offline_access scope.
 
-    let options = {
+    const options = {
       audience: auth0Env.AUDIENCE,
       scope: 'openid profile offline_access',
       device: 'chrome-extension',
@@ -370,7 +371,7 @@ export default class BackgroundProcess {
       new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
         .authenticate(options)
         .then(authResult => {
-          console.log(`Background: Auth result is `, authResult)
+          console.log('Background: Auth result is ', authResult)
           this.authResult = authResult
           this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
             .catch(error => console.error(`Unable to send a response to a login request: ${error.message}`))
@@ -386,7 +387,7 @@ export default class BackgroundProcess {
     if (this.authResult && !this.authResult.is_test_user) {
       window.fetch(`https://${auth0Env.AUTH0_DOMAIN}/userinfo`, {
         headers: {
-          'Authorization': `Bearer ${this.authResult.access_token}`
+          Authorization: `Bearer ${this.authResult.access_token}`
         }
       }).then(resp => resp.json()).then((profile) => {
         this.messagingService.sendResponseToTab(UserSessionResponse.Success(request, profile), sender.tab.id)
@@ -409,10 +410,10 @@ export default class BackgroundProcess {
    */
   userProfileRequestHandler (request, sender) {
     if (!this.authResult) {
-      console.error(`Get user info: not authenticated`)
+      console.error('Get user info: not authenticated')
     }
     if (this.authResult.is_test_user) {
-      let testProfile = {
+      const testProfile = {
         name: 'Alpheios Test User',
         nickname: 'testuser',
         sub: 'alpheiosMockUserId'
@@ -422,7 +423,7 @@ export default class BackgroundProcess {
     } else {
       window.fetch(`https://${auth0Env.AUTH0_DOMAIN}/userinfo`, {
         headers: {
-          'Authorization': `Bearer ${this.authResult.access_token}`
+          Authorization: `Bearer ${this.authResult.access_token}`
         }
       })
         .then(resp => resp.json()).then((profile) => {
@@ -458,7 +459,7 @@ export default class BackgroundProcess {
    */
   userDataRequestHandler (request, sender) {
     if (!this.authResult) {
-      console.error(`Get user info: not authenticated`)
+      console.error('Get user info: not authenticated')
       this.messagingService.sendResponseToTab(UserDataResponse.Error(request, new AuthError('Not Authenticated')), sender.tab.id).catch(
         error => console.error(`Unable to send a response to a user data request: ${error.message}`)
       )
@@ -491,16 +492,16 @@ export default class BackgroundProcess {
   }
 
   tabActivationListener (info) {
-    let tmpUniqueTabId = Tab.createUniqueId(info.tabId, info.windowId)
+    const tmpUniqueTabId = Tab.createUniqueId(info.tabId, info.windowId)
     this.tab = tmpUniqueTabId
-    let tab = this.tabs.has(tmpUniqueTabId) ? this.tabs.get(tmpUniqueTabId) : undefined
+    const tab = this.tabs.has(tmpUniqueTabId) ? this.tabs.get(tmpUniqueTabId) : undefined
 
     this.setMenuForTab(tab)
     this.setBadgeState(tab)
   }
 
   tabDetachedListener (tabId, detachInfo) {
-    let tmpUniqueTabObj = Tab.createUniqueId(tabId, detachInfo.oldWindowId)
+    const tmpUniqueTabObj = Tab.createUniqueId(tabId, detachInfo.oldWindowId)
     if (this.tabs.has(tmpUniqueTabObj)) {
       this.tabs.get(tmpUniqueTabObj).deattach()
     }
@@ -527,7 +528,7 @@ export default class BackgroundProcess {
 
     if (keyForChange) {
       this.tabs.delete(keyForChange)
-      let newKey = Tab.createUniqueId(tabId, attachInfo.newWindowId)
+      const newKey = Tab.createUniqueId(tabId, attachInfo.newWindowId)
 
       this.tabs.set(newKey, valueForChange.updateTabObject(tabId, attachInfo.newWindowId))
       this.setMenuForTab(valueForChange)
@@ -538,6 +539,7 @@ export default class BackgroundProcess {
   async tabCreatedListener (tab) {
     this.setBadgeState()
   }
+
   /**
    * Called when a page is loaded.
    * Use this to listen on webNavigation.onCompleted rather than tabs.onUpdated
@@ -555,11 +557,11 @@ export default class BackgroundProcess {
     if (details.url && details.url.match(/^blob:/)) {
       return
     }
-    let finalWindowId = this.defineCurrentWindowIdForActivation(details)
-    let tmpTabUniqueId = Tab.createUniqueId(details.tabId, finalWindowId)
+    const finalWindowId = this.defineCurrentWindowIdForActivation(details)
+    const tmpTabUniqueId = Tab.createUniqueId(details.tabId, finalWindowId)
 
     if (this.tabs.has(tmpTabUniqueId)) {
-      let tab = this.tabs.get(tmpTabUniqueId)
+      const tab = this.tabs.get(tmpTabUniqueId)
       // make sure this is a tab we know about
       if (details.frameId === 0) {
         // AND that it's not an iframe event
@@ -662,7 +664,7 @@ export default class BackgroundProcess {
   }
 
   tabRemovalListener (tabID, removeInfo) {
-    let tmpTabUniqueId = Tab.createUniqueId(tabID, removeInfo.windowId)
+    const tmpTabUniqueId = Tab.createUniqueId(tabID, removeInfo.windowId)
     if (this.tabs.has(tmpTabUniqueId)) {
       this.tabs.delete(tmpTabUniqueId)
     }
@@ -679,7 +681,7 @@ export default class BackgroundProcess {
   }
 
   async browserActionListener (tab) {
-    let tmpTabUniqueId = Tab.createUniqueId(tab.id, tab.windowId)
+    const tmpTabUniqueId = Tab.createUniqueId(tab.id, tab.windowId)
 
     if (this.tabs.has(tmpTabUniqueId) && this.tabs.get(tmpTabUniqueId).isActive()) {
       this.deactivateContent(new Tab(tab.id, tab.windowId))
@@ -703,7 +705,7 @@ export default class BackgroundProcess {
   }
 
   updateBrowserActionForTab (tab) {
-    if (tab && tab.hasOwnProperty('status')) {
+    if (tab && tab.hasOwnProperty('status')) { // eslint-disable-line no-prototype-builtins
       if (tab.isEmbedLibActive() || tab.isDisabled()) {
         browser.browserAction.setTitle({ title: BackgroundProcess.defaults.disabledBrowserActionTitle, tabId: tab.tabObj.tabId })
       } else if (tab.isActive()) {
@@ -724,9 +726,9 @@ export default class BackgroundProcess {
     this.menuItems.disabled.disable()
 
     if (tab) {
-      let tabId = tab.tabObj.tabId
+      const tabId = tab.tabObj.tabId
       // Menu state should reflect a status of a content script
-      if (tab.hasOwnProperty('status')) {
+      if (tab.hasOwnProperty('status')) { // eslint-disable-line no-prototype-builtins
         if (tab.isEmbedLibActive() || tab.isDisabled()) {
           this.menuItems.activate.disable()
           this.menuItems.deactivate.disable()
@@ -769,22 +771,22 @@ BackgroundProcess.l10n = new L10n()
   .setLocale(Locales.en_US)
 
 BackgroundProcess.defaults = {
-  activateBrowserActionTitle: BackgroundProcess.l10n.getMsg(`LABEL_BROWSERACTION_ACTIVATE`),
-  deactivateBrowserActionTitle: BackgroundProcess.l10n.getMsg(`LABEL_BROWSERACTION_DEACTIVATE`),
-  disabledBrowserActionTitle: BackgroundProcess.l10n.getMsg(`LABEL_BROWSERACTION_DISABLED`),
+  activateBrowserActionTitle: BackgroundProcess.l10n.getMsg('LABEL_BROWSERACTION_ACTIVATE'),
+  deactivateBrowserActionTitle: BackgroundProcess.l10n.getMsg('LABEL_BROWSERACTION_DEACTIVATE'),
+  disabledBrowserActionTitle: BackgroundProcess.l10n.getMsg('LABEL_BROWSERACTION_DISABLED'),
   activateMenuItemId: 'activate-alpheios-content',
-  activateMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_ACTIVATE`),
+  activateMenuItemText: BackgroundProcess.l10n.getMsg('LABEL_CTXTMENU_ACTIVATE'),
   deactivateMenuItemId: 'deactivate-alpheios-content',
-  deactivateMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_DEACTIVATE`),
+  deactivateMenuItemText: BackgroundProcess.l10n.getMsg('LABEL_CTXTMENU_DEACTIVATE'),
   disabledMenuItemId: 'disabled-alpheios-content',
-  disabledMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_DISABLED`),
+  disabledMenuItemText: BackgroundProcess.l10n.getMsg('LABEL_CTXTMENU_DISABLED'),
   openPanelMenuItemId: 'open-alpheios-panel',
-  openPanelMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_OPENPANEL`),
+  openPanelMenuItemText: BackgroundProcess.l10n.getMsg('LABEL_CTXTMENU_OPENPANEL'),
   infoMenuItemId: 'show-alpheios-panel-info',
-  infoMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_INFO`),
+  infoMenuItemText: BackgroundProcess.l10n.getMsg('LABEL_CTXTMENU_INFO'),
   separatorOneId: 'separator-one',
   sendExperiencesMenuItemId: 'send-experiences',
-  sendExperiencesMenuItemText: BackgroundProcess.l10n.getMsg(`LABEL_CTXTMENU_SENDEXP`),
+  sendExperiencesMenuItemText: BackgroundProcess.l10n.getMsg('LABEL_CTXTMENU_SENDEXP'),
   contentCSSFileNames: ['style/style-components.css'],
   contentScriptFileName: 'content.js',
   browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',

@@ -3,6 +3,7 @@ export default class State {
     this.state = state
     this.value = value
   }
+
   static value (state, value = undefined) {
     return new State(state, value)
   }
@@ -16,12 +17,12 @@ export default class State {
       // The object passed is of a different type, will return this object as a value
       return state
     }
-    if (!state.hasOwnProperty('value')) { return undefined }
+    if (!state.hasOwnProperty('value')) { return undefined } // eslint-disable-line no-prototype-builtins
     return state.value
   }
 
   static getState (state) {
-    if (!state.hasOwnProperty('state')) { return undefined }
+    if (!state.hasOwnProperty('state')) { return undefined } // eslint-disable-line no-prototype-builtins
     return state.state
   }
 }
