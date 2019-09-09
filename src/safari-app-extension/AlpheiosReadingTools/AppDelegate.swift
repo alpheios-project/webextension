@@ -434,19 +434,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         } catch let error as NSError {
             os_log("Could not fetch. %@, %@", log: OSLog.sAlpheios, type: .error, error, error.userInfo)
         }
-        
-    }
-    
-    func applicationWillBecomeActive(_ notification: Notification) {
-    }
-    
-    func applicationDidBecomeActive(_ notification: Notification) {
-    }
-
-    func applicationWillResignActive(_ notification: Notification) {
-    }
-    
-    func applicationDidResignActive(_ notification: Notification) {
     }
 }
 
