@@ -103,8 +103,6 @@ let handleStateRequest = async function handleStateRequest (message) {
     return
   }
 
-  console.info(`Received a stateMessage with the body as`, message.body)
-
   let requestState = TabScript.readObject(message.body)
   let diff = state.diff(requestState)
 
@@ -193,12 +191,10 @@ let handleStateRequest = async function handleStateRequest (message) {
 }
 
 let handleLoginRequest = async function handleLoginRequest (message) {
-  console.info(`handleLoginRequest()`)
   uiController.api.auth.authenticate(message.body)
 }
 
 let handleLogoutRequest = async function handleLogoutRequest (message) {
-  console.info(`handleLogoutRequest()`)
   uiController.api.auth.logout()
 }
 
@@ -241,7 +237,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
       document.body.addEventListener('Alpheios_Embedded_Response', embeddedLibListener)
       document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))
     }
-    console.info(`Sending a contentReady message to the background`)
     sendMessageToBackground('contentReady')
   }
 })

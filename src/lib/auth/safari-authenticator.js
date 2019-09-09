@@ -52,7 +52,6 @@ export default class SafariAuthenticator extends Authenticator {
     return new Promise((resolve, reject) => {
       if (this.hasUserData) {
         // User data has been retrieved
-        console.info(`SA: Returning endpoints`)
         resolve(this.endpoints)
       } else {
         reject('No user data has been retrieved yet')
@@ -84,16 +83,12 @@ export default class SafariAuthenticator extends Authenticator {
    */
   authenticate (authData) {
     return new Promise((resolve, reject) => {
-      console.info(`Authenticate: User has been logged in via the containing app`, authData)
-
       this.userId = authData.userId
       this.userName = authData.userName
       this.userNickname = authData.userNickname
       this.accessToken = authData.accessToken
       this.hasUserData = true
       this.isAuthenticated = true
-
-      console.info(`Authenticator object is`, this)
       resolve()
     })
   }
@@ -115,11 +110,6 @@ export default class SafariAuthenticator extends Authenticator {
     return new Promise((resolve, reject) => {
       if (this.hasUserData) {
         // User data has been retrieved
-        console.info(`Safari Authenticator: returning profile data`, {
-          name: this.userName,
-          nickname: this.userNickname,
-          sub: this.userId
-        })
         resolve({
           name: this.userName,
           nickname: this.userNickname,
@@ -140,7 +130,6 @@ export default class SafariAuthenticator extends Authenticator {
     return new Promise((resolve, reject) => {
       if (this.hasUserData) {
         // User data has been retrieved
-        console.info(`SA: Returning user data`)
         resolve(this.accessToken)
       } else {
         reject('No user data has been retrieved yet')
@@ -153,7 +142,6 @@ export default class SafariAuthenticator extends Authenticator {
    */
   logout () {
     return new Promise((resolve, reject) => {
-      console.info(`Logout: User has been logged out via the containing app`)
       // Erase user data
       this.hasUserData = false
       this.isAuthenticated = false
