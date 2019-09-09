@@ -1,7 +1,7 @@
 {
   "name": "webextension",
   "version": "3.0.0",
-  "build": "63",
+  "build": "64",
   "description": "A WebExtension implementation of Alpheios",
   "main": "index.js",
   "scripts": {
@@ -31,9 +31,9 @@
   },
   "homepage": "https://github.com/alpheios-project/webextension#readme",
   "devDependencies": {
-    "@babel/core": "^7.5.5",
-    "@babel/plugin-transform-runtime": "^7.5.5",
-    "@babel/runtime": "^7.5.5",
+    "@babel/core": "^7.6.0",
+    "@babel/plugin-transform-runtime": "^7.6.0",
+    "@babel/runtime": "^7.6.0",
     "alpheios-components": "github:alpheios-project/components#alpheios-release-3.0",
     "alpheios-node-build": "github:alpheios-project/node-build#v0.6.2",
     "autoprefixer": "^9.6.0",
@@ -78,7 +78,7 @@
     "uuid": "^3.3.3",
     "vue": "^2.6.10",
     "vue-eslint-parser": "^6.0.4",
-    "vue-jest": "^3.0.4",
+    "vue-jest": "^3.0.5",
     "vue-loader": "^15.7.1",
     "vue-style-loader": "^4.1.2",
     "vue-svg-loader": "^0.12.0",
