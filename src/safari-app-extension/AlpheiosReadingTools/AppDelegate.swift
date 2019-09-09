@@ -279,7 +279,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             password: password,
             realm: "Username-Password-Authentication",
             audience: "alpheios.net:apis",
-            scope: "openid profile offline_access")
+            scope: "openid profile offline_access") // "profile" scope will not return an email claim, use "email" to get access to it
             .start { result in
                 switch result {
                 case .success(let credentials):
@@ -337,9 +337,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 // address ([String:String]?)
                                 // updatedAt (Date?)
                                 // customClaims ([String:Any]?)
+                                
+                                let nickname = profile.nickname ?? ""
                                 #if DEBUG
-                                os_log("User info was obtained successfully for %s (%s)", log: OSLog.sAlpheios, type: .info, profile.nickname ?? "", profile.sub)
+                                os_log("User info was obtained successfully for %s (%s)", log: OSLog.sAlpheios, type: .info, nickname, profile.sub)
                                 #endif
+                                
+                                self.authText.stringValue = "You are logged in as \(nickname)"
                                 
                                 // Send user info to the extension
                                 let userInfo = [
@@ -351,38 +355,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
                                 
                             case .failure(let error):
+                                self.authText.stringValue = "User info retrieval failed"
                                 os_log("User info retrieval failed: %@", log: OSLog.sAlpheios, type: .error, error as CVarArg)
                             }
                     }
                 case .failure(let error):
+                    self.authText.stringValue = "Authentication failed"
                     os_log("Authentication failed: %@", log: OSLog.sAlpheios, type: .error, error as CVarArg)
                 }
         }
-    }
-    
-    @IBAction func TestLoginClicked(_ sender: Any) {
-        #if DEBUG
-        os_log("Test login has been initiated", log: OSLog.sAlpheios, type: .info)
-        #endif
-        
-        let userInfo = [
-            "userEmail": "email@test.com",
-            "userId": "userID",
-            "userName": "Test user name",
-            "userNickname": "Test nickname",
-            "accessToken": "TEST_ACCESS_TOKEN"
-        ]
-        SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
-        
-        #if DEBUG
-        os_log("UserLogin test notification has been dispatched", log: OSLog.sAlpheios, type: .info)
-        #endif
     }
     
     @IBAction func LogOutClicked(_ sender: Any) {
         #if DEBUG
         os_log("Logout has been initiated", log: OSLog.sAlpheios, type: .info)
         #endif
+        
+        self.authText.stringValue = "You are logged out"
+        
         SFSafariApplication.dispatchMessage(withName: "UserLogout", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: nil, completionHandler: nil)
     }
     

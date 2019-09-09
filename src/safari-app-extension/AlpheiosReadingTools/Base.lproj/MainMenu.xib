@@ -15,7 +15,7 @@
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <customObject id="Voe-Tx-rLC" customClass="AppDelegate" customModule="Alpheios_Reading_Tools" customModuleProvider="target">
             <connections>
-                <outlet property="authText" destination="QFh-xQ-UlR" id="aac-no-1b8"/>
+                <outlet property="authText" destination="QFh-xQ-UlR" id="B7L-4v-If0"/>
                 <outlet property="headerLabel" destination="FZ1-eH-d5Q" id="USL-iM-wtg"/>
                 <outlet property="helloText" destination="J9X-3d-p64" id="NqV-zm-X2m"/>
                 <outlet property="mainIcon" destination="Wny-Yo-hUs" id="RJp-aB-rhJ"/>
@@ -188,7 +188,7 @@
                     <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="QFh-xQ-UlR">
                         <rect key="frame" x="25" y="22" width="278" height="36"/>
                         <autoresizingMask key="autoresizingMask"/>
-                        <textFieldCell key="cell" selectable="YES" title="Please log in to see your account details" id="MlW-VG-rJW">
+                        <textFieldCell key="cell" selectable="YES" identifier="authText" title="You are logged out" id="MlW-VG-rJW">
                             <font key="font" metaFont="system"/>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -203,17 +203,6 @@
                         </buttonCell>
                         <connections>
                             <action selector="LogInClicked:" target="Voe-Tx-rLC" id="QOK-rP-gAg"/>
-                        </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="XEL-KF-Yd2">
-                        <rect key="frame" x="296" y="5" width="163" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="push" title="Test Login" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="mps-Et-4AF">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="TestLoginClicked:" target="Voe-Tx-rLC" id="RgH-Tf-qlw"/>
                         </connections>
                     </button>
                 </subviews>
