@@ -271,7 +271,7 @@ export default class BackgroundProcess {
     let polyfillScript = this.loadPolyfill(tabScript.tabObj.tabId)
     let contentScript = this.loadContentScript(tabScript.tabObj.tabId)
     let contentCSS = []
-    for (let fileName of this.settings.contentCSSFileNames) {
+    for (let fileName of this.settings.contentCSSFileNames) { // eslint-disable-line no-unused-vars
       contentCSS.push(this.loadContentCSS(tabScript.tabObj.tabId, fileName))
     }
     return Promise.all([polyfillScript, contentScript, ...contentCSS])
@@ -480,6 +480,7 @@ export default class BackgroundProcess {
     new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
       .logout()
       .then(() => {
+        this.authResult = null
         this.messagingService.sendResponseToTab(LogoutResponse.Success(request), sender.tab.id)
           .catch(error => console.error(`Unable to send a response to a logout request: ${error.message}`))
       })
@@ -548,6 +549,12 @@ export default class BackgroundProcess {
    * @return {Promise.<void>}
    */
   async navigationCompletedListener (details) {
+    // on Firefox, a click the download blob url for downloading
+    // the user wordlist causes Firefox to issue a webNavigationCompleted
+    // event. so we should ignore events whose urls are blob: urls
+    if (details.url && details.url.match(/^blob:/)) {
+      return
+    }
     let finalWindowId = this.defineCurrentWindowIdForActivation(details)
     let tmpTabUniqueId = Tab.createUniqueId(details.tabId, finalWindowId)
 
