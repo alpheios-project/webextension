@@ -278,11 +278,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             usernameOrEmail: username,
             password: password,
             realm: "Username-Password-Authentication",
-            scope: "openid")
+            audience: "alpheios.net:apis",
+            scope: "openid profile offline_access")
             .start { result in
                 switch result {
                 case .success(let credentials):
-                    // Available credentials fields are:
+                    // Credentials fields are (some fileds may be not available with some request configurations):
                     // accessToken (String?)
                     // tokernType (String?) - Example: "Bearer"
                     // expiresIn (Date?)
@@ -301,7 +302,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     let dateFormatterPrint = DateFormatter()
                     dateFormatterPrint.dateFormat = "MMM dd,yyyy"
                     #if DEBUG
-                    os_log("Authenticated successfully, access token is %@, token type is %@, expires in %@", log: OSLog.sAlpheios, type: .info, accessToken, tokenType!, dateFormatterPrint.string(from: expiresIn!))
+                    os_log("Authenticated successfully, access token is %s, token type is %s, expires in %s", log: OSLog.sAlpheios, type: .info, accessToken, tokenType!, dateFormatterPrint.string(from: expiresIn!))
                     #endif
                     
                     // Other available fields are:
@@ -314,7 +315,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                         .start { result in
                             switch result {
                             case .success(let profile):
-                                // Available profile fields are:
+                                // Profile fields are (some fileds may be not available with some request configurations):
                                 // sub (String) - This is the user ID. It's always presnet
                                 // name (String?) - usually this is user's email
                                 // givenName (String?)
@@ -337,12 +338,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 // updatedAt (Date?)
                                 // customClaims ([String:Any]?)
                                 #if DEBUG
-                                os_log("User info was obtained successfully for %@ (%@)", log: OSLog.sAlpheios, type: .info, profile.nickname ?? "", profile.email ?? "")
+                                os_log("User info was obtained successfully for %s (%s)", log: OSLog.sAlpheios, type: .info, profile.nickname ?? "", profile.sub)
                                 #endif
                                 
                                 // Send user info to the extension
                                 let userInfo = [
-                                    "userEmail": profile.email ?? "",
                                     "userId": profile.sub,
                                     "userName": profile.name ?? "",
                                     "userNickname": profile.nickname ?? "",
@@ -350,7 +350,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 ]
                                 SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
                                 
-                                self.saveAuthUser(email: profile.email ?? "", authenticated: true)
                             case .failure(let error):
                                 os_log("User info retrieval failed: %@", log: OSLog.sAlpheios, type: .error, error as CVarArg)
                             }

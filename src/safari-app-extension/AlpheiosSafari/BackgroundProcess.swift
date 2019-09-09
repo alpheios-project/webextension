@@ -16,7 +16,7 @@ class BackgroundProcess {
     
     static var tabs: [Int: TabScript] = [:]
     // If user is authenticated, userAuthInfo will hold its information.
-    // Available keys are: email, id, name, nickname, and accessToken.
+    // Available keys are: id, name, nickname, and accessToken.
     // If user is logged out, authInfo will be nil.
     // Checkin if authInfo is nil allow to detect if user has been authenticated successfully or not
     var authInfo: [String:String]?
@@ -433,7 +433,7 @@ class BackgroundProcess {
         
         let loginMsg = LoginNtfyMessage(body: self.authInfo!)
         #if DEBUG
-        os_log("Login message has been built, email is %s", log: OSLog.sAlpheios, type: .info, self.authInfo!["userEmail"] ?? "Unknown")
+        os_log("Login message has been built, ID is %s", log: OSLog.sAlpheios, type: .info, self.authInfo!["userId"] ?? "Unknown")
         #endif
         self.msgToAllWindows(message: loginMsg)
     }

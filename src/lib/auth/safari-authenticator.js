@@ -16,7 +16,6 @@ export default class SafariAuthenticator extends Authenticator {
     // User data props
     this.isAuthenticated = false
     this.hasUserData = false
-    this.userEmail = null
     // A full name of the user
     this.userName = null
     // A user's nickname
@@ -73,7 +72,6 @@ export default class SafariAuthenticator extends Authenticator {
 
   /**
    * @typedef SafariAuthData
-   * @property {string} userEmail - An email of the user.
    * @property {string} userId - A user ID (`sub` in Auth0).
    * @property {string} userName - A full name of the user.
    * @property {string} userNickname - A user's nickname.
@@ -88,7 +86,6 @@ export default class SafariAuthenticator extends Authenticator {
     return new Promise((resolve, reject) => {
       console.info(`Authenticate: User has been logged in via the containing app`, authData)
 
-      this.userEmail = authData.userEmail
       this.userId = authData.userId
       this.userName = authData.userName
       this.userNickname = authData.userNickname
@@ -118,7 +115,11 @@ export default class SafariAuthenticator extends Authenticator {
     return new Promise((resolve, reject) => {
       if (this.hasUserData) {
         // User data has been retrieved
-        console.info(`Returning profile data`)
+        console.info(`Safari Authenticator: returning profile data`, {
+          name: this.userName,
+          nickname: this.userNickname,
+          sub: this.userId
+        })
         resolve({
           name: this.userName,
           nickname: this.userNickname,
@@ -156,7 +157,6 @@ export default class SafariAuthenticator extends Authenticator {
       // Erase user data
       this.hasUserData = false
       this.isAuthenticated = false
-      this.userEmail = null
       this.userId = null
       this.userName = null
       this.userNickname = null

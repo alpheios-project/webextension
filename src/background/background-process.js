@@ -350,6 +350,8 @@ export default class BackgroundProcess {
     //  - profile if you want an additional claims like name, nickname, picture and updated_at.
     // device
     //  - required if requesting the offline_access scope.
+
+    console.info(`loginRequestHandler() called`)
     let options = {
       audience: auth0Env.AUDIENCE,
       scope: 'openid profile offline_access',
@@ -366,6 +368,7 @@ export default class BackgroundProcess {
       this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
         .catch(error => console.error(`Unable to send a response to a login request: ${error.message}`))
     } else {
+      console.info(`Before creating Auth0Chrome, domain: ${auth0Env.AUTH0_DOMAIN}, clientId: ${auth0Env.AUTH0_CLIENT_ID}`, options)
       new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
         .authenticate(options)
         .then(authResult => {
