@@ -43,3 +43,6 @@ alpheios.xpi
 /src/*.gcno
 xcuserdata
 .DS_Store
+
+## Carthage installed libs
+/src/safari-app-extension/Carthage
