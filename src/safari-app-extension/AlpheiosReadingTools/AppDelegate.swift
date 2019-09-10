@@ -221,7 +221,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        // Save changes in the application's managed object context before the application terminates.
+        // The code below is required to store all unsaved Core Data changes that are in memory but might not be saved to the hard drive yet. We do that before an application termination to make sure no in-memory changes will be lost.
         let context = persistentContainer.viewContext
         
         if !context.commitEditing() {

@@ -14,6 +14,7 @@
     "auth0-code-update": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=./node_modules/auth0-chrome/dist --t=dist/support/auth0",
     "auth0-env-update": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=../protected-config/auth0/prod --t=dist --f=env-webext.js",
     "auth0-env-dev-update": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=../protected-config/auth0/dev --t=dist --f=env-webext.js",
+    "auth0-safari-env-update": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs replace --s=../protected-config/auth0/prod --t=src/lib/auth --f=env-safari-app-ext.js",
     "lint": "eslint --fix src/**/*.js",
     "prod": "node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs webpack production app config.mjs",
     "dev": "node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs webpack development app config.mjs",

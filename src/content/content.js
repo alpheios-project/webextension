@@ -37,7 +37,6 @@ const sendResponseToBackground = function sendResponseToBackground (request, sta
  * State request processing function.
  */
 const handleStateRequest = function handleStateRequest (request) {
-  console.info('handleStateRequest')
   const requestState = TabScript.readObject(request.body)
   const diff = uiController.state.diff(requestState)
 
@@ -118,7 +117,6 @@ const url = new URL(window.location.href)
 let mode = url.searchParams.get('mode')
 mode = (['dev', 'development'].includes(mode)) ? 'development' : 'production'
 
-console.info(`State tab before constructor is ${state.tab}`)
 uiController = UIController.create(state, {
   storageAdapter: ExtensionSyncStorage,
   app: { name: browserManifest.name, version: browserManifest.version },

@@ -1,3 +1,4 @@
+import auth0Env from '@/lib/auth/env-safari-app-ext.js'
 import Authenticator from '@/lib/auth/authenticator.js'
 
 /**
@@ -26,10 +27,7 @@ export default class SafariAuthenticator extends Authenticator {
     this.accessToken = null
 
     // TODO: Hardcoded for now. Can we do it any better than that?
-    this.endpoints = {
-      wordlist: 'https://userapis.alpheios.net/v1/words',
-      settings: 'https://settings.alpheios.net/v1/settings'
-    }
+    this.endpoints = auth0Env.ENDPOINTS
   }
 
   /**
@@ -79,10 +77,15 @@ export default class SafariAuthenticator extends Authenticator {
   /**
    * Authenticates user with an Auth0.
    * @param {SafariAuthData} authData - A user auth data.
-   * @returns {Promise}
+   * @returns {Promise | Promise<Error>} Is resolved with an empty promise in case of success and
+   *          is rejected with an error in case of failure.
    */
   authenticate (authData) {
     return new Promise((resolve, reject) => {
+      // Check the validity of user data. All required fields must be available
+      if (!authData.userId || !authData.userName || !authData.userNickname || !authData.accessToken) {
+        reject(new Error('Some of the required parameters (userId, userNae, userNickname, accessToken) are missing'))
+      }
       this.userId = authData.userId
       this.userName = authData.userName
       this.userNickname = authData.userNickname
