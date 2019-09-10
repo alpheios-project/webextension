@@ -36,7 +36,7 @@ class BackgroundProcess {
     
         let container = NSCustomPersistentContainer(name: "AlpheiosSafariExtension")
         #if DEBUG
-        os_log("Created a persistent \"%@\" container", log: OSLog.sAlpheios, type: .info, container.name)
+        os_log("Created a persistent \"%@\" container in the background process", log: OSLog.sAlpheios, type: .info, container.name)
         #endif
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
@@ -55,7 +55,7 @@ class BackgroundProcess {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             } else {
                 #if DEBUG
-                os_log("Persistent store has been loaded successfully", log: OSLog.sAlpheios, type: .info, container.name)
+                os_log("Persistent store has been loaded successfully in the background process", log: OSLog.sAlpheios, type: .info, container.name)
                 #endif
             }
         })
@@ -66,6 +66,9 @@ class BackgroundProcess {
         #if DEBUG
         os_log("Background process has been created", log: OSLog.sAlpheios, type: .info)
         #endif
+        
+        self.fetchUsers()
+        self.saveAuthUser(email: "test@mail.com", authenticated: true)
     }
     
     deinit {
@@ -469,7 +472,7 @@ class BackgroundProcess {
             try managedContext.save()
             // authUsers.append(user)
             #if DEBUG
-            os_log("User data has been stored successfully", log: OSLog.sAlpheios, type: .info)
+            os_log("User data has been stored successfully from a background process", log: OSLog.sAlpheios, type: .info)
             #endif
         } catch let error as NSError {
             os_log("Cannot save user data: %@, %@", log: OSLog.sAlpheios, type: .info, error, error.userInfo)
