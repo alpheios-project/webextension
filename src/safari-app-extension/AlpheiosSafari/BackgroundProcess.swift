@@ -16,7 +16,7 @@ class BackgroundProcess {
     
     static var tabs: [Int: TabScript] = [:]
     // If user is authenticated, userAuthInfo will hold its information.
-    // Available keys are: id, name, nickname, and accessToken.
+    // Available keys are: userId, userName, userNickname, and accessToken.
     // If user is logged out, authInfo will be nil.
     // Checkin if authInfo is nil allow to detect if user has been authenticated successfully or not
     var authInfo: [String:String]?
@@ -67,8 +67,8 @@ class BackgroundProcess {
         os_log("Background process has been created", log: OSLog.sAlpheios, type: .info)
         #endif
         
-        self.fetchUsers()
-        self.saveAuthUser(email: "test@mail.com", authenticated: true)
+        // If there is an info about authenticated users in the store, fetch it into an authInfo object
+        self.fetchAuthInfo()
     }
     
     deinit {
@@ -434,6 +434,20 @@ class BackgroundProcess {
             self.authInfo?[key] = value as? String ?? ""
         }
         
+        // Removing all previous user data
+        #if DEBUG
+        os_log("Before clearing usier data", log: OSLog.sAlpheios, type: .info)
+        #endif
+        // This, or maybe in combination with saveAuthInfo() causes background script to be recreated
+        // self.deleteAllUserData()
+        
+        // Save user data to the persistent storage
+        #if DEBUG
+        os_log("Before calling saveAuthInfo()", log: OSLog.sAlpheios, type: .info)
+        #endif
+        // Does it make Background process to be re-created?
+        self.updateAuthInfo()
+        
         let loginMsg = LoginNtfyMessage(body: self.authInfo!)
         #if DEBUG
         os_log("Login message has been built, ID is %s", log: OSLog.sAlpheios, type: .info, self.authInfo!["userId"] ?? "Unknown")
@@ -447,30 +461,82 @@ class BackgroundProcess {
         #endif
         // Clear user auth info
         self.authInfo = nil
+        // Delete auth info from a persistent storage
+        self.deleteAuthInfo()
         
         let logoutMsg = LogoutNtfyMessage(body: [String: String]())
         self.msgToAllWindows(message: logoutMsg)
     }
     
-    func saveAuthUser(email: String, authenticated: Bool) {
-        
-        // 1
+    // It will update user auth info in a permanent storage with the latest one
+    func updateAuthInfo() {
+        #if DEBUG
+        os_log("saveAuthInfo() has been called", log: OSLog.sAlpheios, type: .info)
+        #endif
+        guard let authInfo = self.authInfo else {
+            os_log("Unable to save authInfo data becase an authInfo object does not exist", log: OSLog.sAlpheios, type: .error)
+            return
+        }
+
+        // Obtain a managed context
         let managedContext = self.persistentContainer.viewContext
+        // Create a fetch request to obtain existing information (if any exists)
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "AuthUser")
+        do {
+            // Retrieve existing AuthUser records
+            let items = try managedContext.fetch(fetchRequest)
+
+            for item in items {
+                // Mark record for deletion
+                managedContext.delete(item)
+                #if DEBUG
+                os_log("Marking a stored AuthUser record for deletion", log: OSLog.sAlpheios, type: .info)
+                #endif
+            }
+        } catch let error as NSError {
+            os_log("Error while fetching existing AuthUser records for deletion: %@", log: OSLog.sAlpheios, type: .error, error)
+        }
         
-        // 2
-        let entity =
-            NSEntityDescription.entity(forEntityName: "AuthUser", in: managedContext)!
-        
+        // Obtain an entity description for an "AuthUser"
+        let entity = NSEntityDescription.entity(forEntityName: "AuthUser", in: managedContext)!
+        // Create a user object for insertion
         let user = NSManagedObject(entity: entity, insertInto: managedContext)
-        
-        // 3
-        user.setValue(email, forKeyPath: "email")
-        user.setValue(authenticated, forKeyPath: "authenticated")
-        
-        // 4
+        // Assign user data
+        if let id = authInfo["userId"] {
+            os_log("Storing the id value of %s", log: OSLog.sAlpheios, type: .info, id)
+            user.setValue(id, forKeyPath: "id")
+        } else {
+            #if DEBUG
+            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .info, "id")
+            #endif
+        }
+        if let name = authInfo["userName"] {
+            os_log("Storing the name value of %s", log: OSLog.sAlpheios, type: .info, name)
+            user.setValue(name, forKeyPath: "name")
+        } else {
+            #if DEBUG
+            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .info, "name")
+            #endif
+        }
+        if let nickname = authInfo["userNickname"] {
+            os_log("Storing the nickname value of %s", log: OSLog.sAlpheios, type: .info, nickname)
+            user.setValue(nickname, forKeyPath: "nickname")
+        } else {
+            #if DEBUG
+            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .info, "nickname")
+            #endif
+        }
+        if let accessToken = authInfo["accessToken"] {
+            os_log("Storing the access token value of %s", log: OSLog.sAlpheios, type: .info, accessToken)
+            user.setValue(accessToken, forKeyPath: "accessToken")
+        } else {
+            #if DEBUG
+            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .info, "accessToken")
+            #endif
+        }
+        // Save the data
         do {
             try managedContext.save()
-            // authUsers.append(user)
             #if DEBUG
             os_log("User data has been stored successfully from a background process", log: OSLog.sAlpheios, type: .info)
             #endif
@@ -479,17 +545,12 @@ class BackgroundProcess {
         }
     }
     
-    func fetchUsers() {
-        /*Before you can do anything with Core Data, you need a managed object context. */
+    func fetchAuthInfo() {
+        // Obtain a managed context
         let managedContext = self.persistentContainer.viewContext
-        
-        /*As the name suggests, NSFetchRequest is the class responsible for fetching from Core Data.
-         
-         Initializing a fetch request with init(entityName:), fetches all objects of a particular entity. This is what you do here to fetch all Person entities.
-         */
+        // Create a fetch request
         let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "AuthUser")
         
-        /*You hand the fetch request over to the managed object context to do the heavy lifting. fetch(_:) returns an array of managed objects meeting the criteria specified by the fetch request.*/
         do {
             // Check how many records are in the store
             let recordsInStore = try managedContext.count(for: fetchRequest)
@@ -497,13 +558,74 @@ class BackgroundProcess {
             os_log("Persistent store has %d user records", log: OSLog.sAlpheios, type: .info, recordsInStore)
             #endif
             
+            // Returns an array of managed objects meeting the criteria specified by the fetch request
             users = try managedContext.fetch(fetchRequest)
-            #if DEBUG
-            os_log("Retrieved %d user records from a persisten store", log: OSLog.sAlpheios, type: .info, users.count)
-            #endif
+            for user in users {
+                guard let userId = user.value(forKeyPath: "id") else {
+                    os_log("Obligatory AuthUser field, %s, is missing. Stored user authentication data will be ignored", log: OSLog.sAlpheios, type: .error, "id")
+                    return
+                }
+                guard let userName = user.value(forKeyPath: "name") else {
+                    os_log("Obligatory AuthUser field, %s, is missing. Stored user authentication data will be ignored", log: OSLog.sAlpheios, type: .error, "name")
+                    return
+                }
+                guard let userNickname = user.value(forKeyPath: "nickname") else {
+                    os_log("Obligatory AuthUser field, %s, is missing. Stored user authentication data will be ignored", log: OSLog.sAlpheios, type: .error, "nickname")
+                    return
+                }
+                guard let accessToken = user.value(forKeyPath: "accessToken") else {
+                    os_log("Obligatory AuthUser field, %s, is missing. Stored user authentication data will be ignored", log: OSLog.sAlpheios, type: .error, "accessToken")
+                    return
+                }
+                
+                self.authInfo = [:]
+                self.authInfo?["userId"] = userId as? String ?? ""
+                self.authInfo?["userName"] = userName as? String ?? ""
+                self.authInfo?["userNickname"] = userNickname as? String ?? ""
+                self.authInfo?["accessToken"] = accessToken as? String ?? ""
+
+                #if DEBUG
+                os_log("Iterating over a user data from a persistent store: id is %s, name is %s, nickname is %s, access token is %s", log: OSLog.sAlpheios, type: .info, self.authInfo?["userId"] ?? "missing", self.authInfo?["userName"] ?? "missing", self.authInfo?["userNickname"] ?? "missing", self.authInfo?["accessToken"] ?? "missing")
+                #endif
+            }
+            
+            
         } catch let error as NSError {
-            os_log("Could not fetch. %@, %@", log: OSLog.sAlpheios, type: .error, error, error.userInfo)
+            os_log("Could not fetch user authentication data. %@, %@", log: OSLog.sAlpheios, type: .error, error, error.userInfo)
         }
         
+    }
+    
+    func deleteAuthInfo() {
+        let managedContext = self.persistentContainer.viewContext
+        
+        let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "AuthUser")
+        
+        do {
+            let items = try managedContext.fetch(fetchRequest)
+            
+            for item in items {
+                managedContext.delete(item)
+                #if DEBUG
+                os_log("Marking a stored AuthUser record for deletion", log: OSLog.sAlpheios, type: .info)
+                #endif
+            }
+            
+            // Save the data changes
+            do {
+                try managedContext.save()
+                #if DEBUG
+                os_log("User data deletion has been stored successfully", log: OSLog.sAlpheios, type: .info)
+                #endif
+            } catch let error as NSError {
+                os_log("Cannot store user data deletion: %@, %@", log: OSLog.sAlpheios, type: .info, error, error.userInfo)
+            }
+            #if DEBUG
+            os_log("Saving changes to disk", log: OSLog.sAlpheios, type: .info)
+            #endif
+            
+        } catch let error as NSError {
+            os_log("Error during user info deletion: %@", log: OSLog.sAlpheios, type: .error, error)
+        }
     }
 }
