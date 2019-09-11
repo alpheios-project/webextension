@@ -19,9 +19,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var headerLabel: NSTextField!
     @IBOutlet weak var mainIcon: NSImageView!
     @IBOutlet weak var helloText: NSTextField!
+    
+    @IBOutlet weak var loggedOutBox: NSBox!
+    @IBOutlet weak var loggedInBox: NSBox!
+    @IBOutlet weak var loggedInText: NSTextField!
+    @IBOutlet weak var loggedOutText: NSTextField!
     @IBOutlet weak var usernameTextInput: NSTextField!
     @IBOutlet weak var passwordTextInput: NSSecureTextField!
-    @IBOutlet weak var authText: NSTextField!
     
     let headerText: String = "Alpheios Reading Tools"
     let headerIcon: NSImage! = NSImage.init(named: "AppIcon")
@@ -38,6 +42,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let textPartBeforeIcon = "Provides clickable access to dictionary entries, morphological analyses, inflection tables and grammars for Latin and Ancient Greek and limited support for Classical Arabic and Persian.      1. Open Safari application     2. Open Safari Preferences Window in Menubar (⌘,)     3. Choose Extension Tab     4. Check \"AlpheiosReadingTools\"  Then activate on a page with Latin, Ancient Greek, Arabic or Persian text by clicking on the Alpheios icon  "
     
     let textPartAfterIcon: String = "  in the Safari toolbar.  Double-click on a word to retrieve morphology and short definitions."
+    
+    // Whether the current user has been authenticated or not
+    var isAuthenticated: Bool = false
+    // Some user data that is required for the containing app
+    var userNickname: String?
     
     // An array to store a list of Auth0 users
     var authUsers: [NSManagedObject] = []
@@ -128,8 +137,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.updateHeaderLabel()
         self.updateMainIcon()
         self.updateHelloText()
-        
-        DistributedNotificationCenter.default().addObserver(self, selector: #selector(self.authEventDidHappen), name: .AlpheiosAuthEvent, object: nil)
+        self.updateAuthUI()
         
         #if DEBUG
         os_log("Auth event observer has been added", log: OSLog.sAlpheios, type: .info)
@@ -268,12 +276,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     @IBAction func LogInClicked(_ sender: Any) {
-        let username = usernameTextInput.stringValue
-        let password = passwordTextInput.stringValue
-        var msg = ""
+        let username = self.usernameTextInput.stringValue
+        #if DEBUG
+        os_log("User name input is %s", log: OSLog.sAlpheios, type: .info, username)
+        #endif
+        let password = self.passwordTextInput.stringValue
         
         let authentication = Auth0.authentication()
-        
+        self.loggedOutText.stringValue = "Please wait while we log you in..."
         authentication.login(
             usernameOrEmail: username,
             password: password,
@@ -295,14 +305,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     if (credentials.accessToken != nil) {
                         accessToken = credentials.accessToken!
                     } else {
-                        msg += "Authentication failed\n"
+                        self.loggedOutText.stringValue = "Access token is missing from server response"
                     }
-                    let tokenType = credentials.tokenType
                     let expiresIn = credentials.expiresIn
                     let dateFormatterPrint = DateFormatter()
                     dateFormatterPrint.dateFormat = "MMM dd,yyyy"
                     #if DEBUG
-                    os_log("Authenticated successfully, access token is %s, token type is %s, expires in %s", log: OSLog.sAlpheios, type: .info, accessToken, tokenType!, dateFormatterPrint.string(from: expiresIn!))
+                    os_log("Authenticated successfully, expiration date is %s", log: OSLog.sAlpheios, type: .info, dateFormatterPrint.string(from: expiresIn!))
                     #endif
                     
                     // Other available fields are:
@@ -339,11 +348,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 // customClaims ([String:Any]?)
                                 
                                 let nickname = profile.nickname ?? ""
+                                self.userNickname = nickname
                                 #if DEBUG
                                 os_log("User info was obtained successfully for %s (%s)", log: OSLog.sAlpheios, type: .info, nickname, profile.sub)
                                 #endif
                                 
-                                self.authText.stringValue = "You are logged in as \(nickname)"
+                                self.isAuthenticated = true
+                                self.updateAuthUI()
+                                // Clear text fields
+                                self.usernameTextInput.stringValue = ""
+                                self.passwordTextInput.stringValue = ""
                                 
                                 // Send user info to the extension
                                 let userInfo = [
@@ -355,13 +369,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
                                 
                             case .failure(let error):
-                                self.authText.stringValue = "User info retrieval failed"
                                 os_log("User info retrieval failed: %@", log: OSLog.sAlpheios, type: .error, error as CVarArg)
+                                self.loggedOutText.stringValue = error.localizedDescription
+                                // Clear text fields
+                                self.usernameTextInput.stringValue = ""
+                                self.passwordTextInput.stringValue = ""
                             }
                     }
                 case .failure(let error):
-                    self.authText.stringValue = "Authentication failed"
                     os_log("Authentication failed: %@", log: OSLog.sAlpheios, type: .error, error as CVarArg)
+                    self.loggedOutText.stringValue = error.localizedDescription
+                    // Clear text fields
+                    self.usernameTextInput.stringValue = ""
+                    self.passwordTextInput.stringValue = ""
                 }
         }
     }
@@ -371,7 +391,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         os_log("Logout has been initiated", log: OSLog.sAlpheios, type: .info)
         #endif
         
-        self.authText.stringValue = "You are logged out"
+        self.isAuthenticated = false
+        self.updateAuthUI()
         
         SFSafariApplication.dispatchMessage(withName: "UserLogout", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: nil, completionHandler: nil)
     }
@@ -380,6 +401,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         #if DEBUG
         os_log("Auth event callback", log: OSLog.sAlpheios, type: .info)
         #endif
+    }
+    
+    func updateAuthUI() {
+        if (self.isAuthenticated) {
+            if (self.userNickname != nil) {
+                self.loggedInText.stringValue = "You are logged in as \(self.userNickname!)"
+            } else {
+                self.loggedInText.stringValue = "You are logged in"
+            }
+            self.loggedOutBox.isHidden = true
+            self.loggedInBox.isHidden = false
+        } else {
+            // self.authText.stringValue = "You are logged out"
+            self.loggedOutText.stringValue = "Please use the form above to log in"
+            self.loggedOutBox.isHidden = false
+            self.loggedInBox.isHidden = true
+        }
     }
     
     func saveAuthUser(email: String, authenticated: Bool) {

@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		7832F8892147A4CC00CD96CB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7832F8882147A4CC00CD96CB /* AppDelegate.swift */; };
 		7832F88B2147A4CC00CD96CB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7832F88A2147A4CC00CD96CB /* Assets.xcassets */; };
-		7832F88E2147A4CC00CD96CB /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7832F88C2147A4CC00CD96CB /* MainMenu.xib */; };
 		7832F8A02147A4E400CD96CB /* SafariExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7832F89F2147A4E400CD96CB /* SafariExtensionHandler.swift */; };
 		7832F8A22147A4E400CD96CB /* SafariExtensionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7832F8A12147A4E400CD96CB /* SafariExtensionViewController.swift */; };
 		7832F8A52147A4E400CD96CB /* SafariExtensionViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7832F8A32147A4E400CD96CB /* SafariExtensionViewController.xib */; };
@@ -32,6 +31,7 @@
 		BF568EEC230A794400B5D073 /* NSCustomPersistantContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */; };
 		BF568EED230A794400B5D073 /* NSCustomPersistantContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */; };
 		BF9D4CB1216E0D4E00E03D0C /* BackgroundProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */; };
+		BFC1180023295BC4008D28A3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7832F88C2147A4CC00CD96CB /* MainMenu.xib */; };
 		BFE3A1B0231ADEAF008261CA /* LoginNtfyMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3A1AF231ADEAF008261CA /* LoginNtfyMessage.swift */; };
 		BFE3A1B2231ADF0D008261CA /* LogoutNtfyMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3A1B1231ADF0D008261CA /* LogoutNtfyMessage.swift */; };
 		BFEDB3FB231123F9005FDA7B /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEDB3FA231123F9005FDA7B /* Shared.swift */; };
@@ -303,7 +303,7 @@
 			files = (
 				7832F88B2147A4CC00CD96CB /* Assets.xcassets in Resources */,
 				BF0F529422F085020050AE62 /* Auth0.plist in Resources */,
-				7832F88E2147A4CC00CD96CB /* MainMenu.xib in Resources */,
+				BFC1180023295BC4008D28A3 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
