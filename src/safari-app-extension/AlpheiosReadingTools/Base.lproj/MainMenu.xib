@@ -17,8 +17,9 @@
             <connections>
                 <outlet property="headerLabel" destination="FZ1-eH-d5Q" id="USL-iM-wtg"/>
                 <outlet property="helloText" destination="J9X-3d-p64" id="NqV-zm-X2m"/>
-                <outlet property="loggedInBox" destination="tap-7U-9U2" id="iiu-gb-hcr"/>
-                <outlet property="loggedInText" destination="0UJ-3G-6fK" id="EYW-y8-AMq"/>
+                <outlet property="logInButton" destination="8xf-Kj-MIG" id="nm9-60-GnW"/>
+                <outlet property="loggedInBox" destination="1jS-QJ-6cX" id="Eom-Ly-mci"/>
+                <outlet property="loggedInText" destination="i2s-oH-47b" id="f9s-or-qfT"/>
                 <outlet property="loggedOutBox" destination="kCT-Sv-Sns" id="5dQ-RA-TUa"/>
                 <outlet property="loggedOutText" destination="QFh-xQ-UlR" id="Fn0-hL-Gj3"/>
                 <outlet property="mainIcon" destination="Wny-Yo-hUs" id="RJp-aB-rhJ"/>
@@ -139,7 +140,7 @@
                         </textFieldCell>
                     </textField>
                     <box fixedFrame="YES" boxType="custom" cornerRadius="4" title="Box" transparent="YES" translatesAutoresizingMaskIntoConstraints="NO" id="kCT-Sv-Sns">
-                        <rect key="frame" x="0.0" y="24" width="480" height="96"/>
+                        <rect key="frame" x="0.0" y="29" width="480" height="96"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <view key="contentView" ambiguous="YES" id="h3w-Ak-Agw">
                             <rect key="frame" x="1" y="1" width="478" height="94"/>
@@ -148,7 +149,7 @@
                                 <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="QFh-xQ-UlR">
                                     <rect key="frame" x="26" y="4" width="278" height="20"/>
                                     <autoresizingMask key="autoresizingMask"/>
-                                    <textFieldCell key="cell" selectable="YES" identifier="authText" title="Please use the form above to log in" id="MlW-VG-rJW">
+                                    <textFieldCell key="cell" selectable="YES" identifier="authText" title="Please enter your credentials to log in" id="MlW-VG-rJW">
                                         <font key="font" metaFont="system"/>
                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -207,28 +208,28 @@
                             </subviews>
                         </view>
                     </box>
-                    <box fixedFrame="YES" boxType="custom" cornerRadius="4" title="Box" transparent="YES" translatesAutoresizingMaskIntoConstraints="NO" id="tap-7U-9U2">
-                        <rect key="frame" x="0.0" y="24" width="480" height="100"/>
+                    <box hidden="YES" fixedFrame="YES" boxType="custom" cornerRadius="4" title="Box" transparent="YES" translatesAutoresizingMaskIntoConstraints="NO" id="1jS-QJ-6cX">
+                        <rect key="frame" x="0.0" y="23" width="480" height="100"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <view key="contentView" ambiguous="YES" id="PYq-Mm-jJ5">
+                        <view key="contentView" ambiguous="YES" id="Ia2-CK-IMW">
                             <rect key="frame" x="1" y="1" width="478" height="98"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <subviews>
-                                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="PxG-vA-EQV">
-                                    <rect key="frame" x="372" y="12" width="86" height="32"/>
+                                <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="8xf-Kj-MIG">
+                                    <rect key="frame" x="374" y="12" width="86" height="32"/>
                                     <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                    <buttonCell key="cell" type="push" title="Log out" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="evG-lG-98i">
+                                    <buttonCell key="cell" type="push" title="Log out" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="7e6-OW-WXb">
                                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                         <font key="font" metaFont="system"/>
                                     </buttonCell>
                                     <connections>
-                                        <action selector="LogOutClicked:" target="Voe-Tx-rLC" id="owL-aL-mKB"/>
+                                        <action selector="LogOutClicked:" target="Voe-Tx-rLC" id="vXl-B6-Kqs"/>
                                     </connections>
                                 </button>
-                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="0UJ-3G-6fK">
-                                    <rect key="frame" x="18" y="48" width="436" height="43"/>
+                                <textField verticalHuggingPriority="750" horizontalCompressionResistancePriority="250" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="i2s-oH-47b">
+                                    <rect key="frame" x="24" y="48" width="430" height="43"/>
                                     <autoresizingMask key="autoresizingMask"/>
-                                    <textFieldCell key="cell" selectable="YES" title="You are logged in" id="ch8-E7-Oei">
+                                    <textFieldCell key="cell" selectable="YES" title="You are logged in" id="HOv-Om-agw">
                                         <font key="font" metaFont="system"/>
                                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
