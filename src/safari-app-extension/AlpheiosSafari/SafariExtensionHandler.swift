@@ -83,6 +83,8 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
             SafariExtensionHandler.backgroundProcess.login(authInfo: authData)
         } else if (messageName == "UserLogout") {
             SafariExtensionHandler.backgroundProcess.logout()
+        } else if (messageName == "CreateAccount") {
+            SafariExtensionHandler.backgroundProcess.createAccount()
         }
         
         

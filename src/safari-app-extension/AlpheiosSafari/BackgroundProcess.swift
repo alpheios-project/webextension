@@ -20,9 +20,13 @@ class BackgroundProcess {
     // If user is logged out, authInfo will be nil.
     // Checkin if authInfo is nil allow to detect if user has been authenticated successfully or not
     var authInfo: [String:String]?
-    
-    // An object for testing a retrieval of users
-    var users: [NSManagedObject] = []
+    #if DEBUG
+    // A signup URL for testing
+    let signUpUrl: String = "https://texts-test.alpheios.net/signup_safari"
+    #else
+    // A production signup URL
+    let signUpUrl: String = "https://texts.alpheios.net/signup_safari"
+    #endif
     
     // MARK: - Core Data stack
     
@@ -468,6 +472,19 @@ class BackgroundProcess {
         self.msgToAllWindows(message: logoutMsg)
     }
     
+    // Opens a sign up page in a new window of Safari
+    func createAccount() {
+        #if DEBUG
+        os_log("createAccount() in background script", log: OSLog.sAlpheios, type: .info)
+        #endif
+        
+        guard let signUpUrlObj = URL(string: self.signUpUrl) else {
+            os_log("Cannot create a URL object for the Auth0 sign up page", log: OSLog.sAlpheios, type: .error)
+            return
+        }
+        SFSafariApplication.openWindow(with: signUpUrlObj, completionHandler: nil)
+    }
+    
     // It will update user auth info in a permanent storage with the latest one
     func updateAuthInfo() {
         #if DEBUG
@@ -559,7 +576,7 @@ class BackgroundProcess {
             #endif
             
             // Returns an array of managed objects meeting the criteria specified by the fetch request
-            users = try managedContext.fetch(fetchRequest)
+            let users = try managedContext.fetch(fetchRequest)
             for user in users {
                 guard let userId = user.value(forKeyPath: "id") else {
                     os_log("Obligatory AuthUser field, %s, is missing. Stored user authentication data will be ignored", log: OSLog.sAlpheios, type: .error, "id")

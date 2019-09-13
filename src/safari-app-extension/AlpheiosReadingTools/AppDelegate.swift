@@ -364,6 +364,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         SFSafariApplication.dispatchMessage(withName: "UserLogout", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: nil, completionHandler: nil)
     }
     
+    @IBAction func CreateAccountClicked(_ sender: Any) {
+        #if DEBUG
+        os_log("Create account has been clicked", log: OSLog.sAlpheios, type: .info)
+        #endif
+        
+        SFSafariApplication.dispatchMessage(withName: "CreateAccount", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: nil, completionHandler: nil)
+    }
+    
     func updateAuthUI() {
         #if DEBUG
         os_log("updateAuthUI() has been called, auth status is %s", log: OSLog.sAlpheios, type: .info, self.isAuthenticated.description)
