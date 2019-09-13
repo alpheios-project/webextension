@@ -154,12 +154,10 @@ const handleStateRequest = async function handleStateRequest (message) {
     uiController.activate()
       .then(() => {
         if (message.body.authStatus && uiController.hasModule('auth')) {
-          // Update authentication status if message body contains that information
-          // and there is a registered auth module available.
+          // Restore the logged in state if it was established during the previous sessions
           if (message.body.authStatus === SafariAuthenticator.authStatuses.LOGGED_IN) {
+            // We need to update an authentication status only if the user has been logged in
             uiController.api.auth.authenticate(message.body)
-          } else if (message.body.authStatus === SafariAuthenticator.authStatuses.LOGGED_OUT) {
-            uiController.api.auth.logout()
           }
         }
 
