@@ -246,10 +246,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @IBAction func LogInClicked(_ sender: Any) {
         let username = self.usernameTextInput.stringValue
-        #if DEBUG
-        os_log("User name input is %s", log: OSLog.sAlpheios, type: .info, username)
-        #endif
         let password = self.passwordTextInput.stringValue
+        // Clear text fields
+        self.usernameTextInput.stringValue = ""
+        self.passwordTextInput.stringValue = ""
+        // Try to take focus away from input fields
+        self.window?.makeFirstResponder(self.logInButton)
         
         let authentication = Auth0.authentication()
         self.loggedOutText.stringValue = "Please wait while we are logging you in..."
@@ -282,6 +284,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     #if DEBUG
                     os_log("Authenticated successfully, expiration date is %s", log: OSLog.sAlpheios, type: .info, dateFormatterPrint.string(from: expiresIn!))
                     #endif
+                    
+                    self.loggedOutText.stringValue = "Please wait while we are retrieving your profile..."
                     
                     // Other available fields are:
                     // let refreshToken = credentials.refreshToken
@@ -316,6 +320,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 // updatedAt (Date?)
                                 // customClaims ([String:Any]?)
                                 
+                                self.loggedOutText.stringValue = "Data retrieval is complete"
+                                
                                 let nickname = profile.nickname ?? ""
                                 self.userNickname = nickname
                                 #if DEBUG
@@ -333,25 +339,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 ]
                                 SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
                                 
-                                // Clear text fields
-                                self.usernameTextInput.stringValue = ""
-                                self.passwordTextInput.stringValue = ""
                                 self.updateAuthUI()
                                 
                             case .failure(let error):
                                 os_log("User info retrieval failed: %@", log: OSLog.sAlpheios, type: .error, error as CVarArg)
                                 self.loggedOutText.stringValue = error.localizedDescription
-                                // Clear text fields
-                                self.usernameTextInput.stringValue = ""
-                                self.passwordTextInput.stringValue = ""
                             }
                     }
                 case .failure(let error):
                     os_log("Authentication failed: %@", log: OSLog.sAlpheios, type: .error, error as CVarArg)
                     self.loggedOutText.stringValue = error.localizedDescription
-                    // Clear text fields
-                    self.usernameTextInput.stringValue = ""
-                    self.passwordTextInput.stringValue = ""
                 }
         }
     }
@@ -383,8 +380,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             // self.loggedInBox.display()
             
             // self.passwordTextInput.isEnabled = false
-            // Try to take focus away from input fields
-            self.window?.makeFirstResponder(self.logInButton)
         } else {
             self.loggedOutText.stringValue = "Please enter your credentials to log in"
             self.loggedOutBox.isHidden = false
