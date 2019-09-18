@@ -1,7 +1,7 @@
 {
   "name": "webextension",
   "version": "3.0.0",
-  "build": "67",
+  "build": "68",
   "description": "A WebExtension implementation of Alpheios",
   "main": "index.js",
   "scripts": {
@@ -35,7 +35,7 @@
     "@babel/core": "^7.6.0",
     "@babel/plugin-transform-runtime": "^7.6.0",
     "@babel/runtime": "^7.6.0",
-    "alpheios-components": "github:alpheios-project/components#v1.2.44",
+    "alpheios-components": "github:alpheios-project/components#v1.2.45",
     "alpheios-node-build": "github:alpheios-project/node-build#v0.6.3",
     "autoprefixer": "^9.6.0",
     "babel-eslint": "^10.0.3",
