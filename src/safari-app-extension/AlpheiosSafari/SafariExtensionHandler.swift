@@ -27,8 +27,6 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
         os_log("SafariExtensionHandler has been deinitialized", log: OSLog.sAlpheios, type: .info)
         #endif
     }
-
-
     
     override func messageReceived(withName messageName: String, from page: SFSafariPage, userInfo: [String : Any]?) {
         let hashValue = page.hashValue
@@ -54,7 +52,7 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
             os_log("Recieved an updateState message from a content script, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
             #endif
         } else if (messageName == "ping") {
-            // This is a ping message to keep extension alive
+            // This is a ping message to keep an extension alive
         }
     }
     
@@ -125,7 +123,6 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
     override func validateContextMenuItem(withCommand command: String, in page: SFSafariPage, userInfo: [String : Any]? = nil, validationHandler: @escaping (Bool, String?) -> Void) {
         let check = SafariExtensionHandler.backgroundProcess.checkContextMenuIconVisibility(command: command, page: page)
         validationHandler(!check, nil)
-
     }
     
     override func popoverViewController() -> SFSafariExtensionViewController {

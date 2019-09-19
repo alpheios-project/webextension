@@ -28,8 +28,7 @@ class BackgroundProcess {
     let signUpUrl: String = "https://texts.alpheios.net/signup_safari"
     #endif
     
-    // MARK: - Core Data stack
-    
+    // Core Data conteiner initialization
     lazy var persistentContainer: NSCustomPersistentContainer = {
         /*
          The persistent container for the application. This implementation
@@ -44,9 +43,6 @@ class BackgroundProcess {
         #endif
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                
                 /*
                  Typical reasons for an error here include:
                  * The parent directory does not exist, cannot be created, or disallows writing.
@@ -55,8 +51,7 @@ class BackgroundProcess {
                  * The store could not be migrated to the current model version.
                  Check the error message to determine what the actual problem was.
                  */
-                os_log("Load persistent store error: %@, %@", log: OSLog.sAlpheios, type: .error, error, error.userInfo)
-                fatalError("Unresolved error \(error), \(error.userInfo)")
+                os_log("Cannot load persistent store: %@, %@. Any stored authentication data will be ignored", log: OSLog.sAlpheios, type: .error, error, error.userInfo)
             } else {
                 #if DEBUG
                 os_log("Persistent store has been loaded successfully in the background process", log: OSLog.sAlpheios, type: .info, container.name)
@@ -160,16 +155,10 @@ class BackgroundProcess {
         let stateRequestMsg = StateRequest(body: tab.convertForMessage())
         
         let authInfo = self.stringifiedAuthInfo()
-        #if DEBUG
-        os_log("setContentState() after strigifying an authInfo", log: OSLog.sAlpheios, type: .info)
-        #endif
         if (authInfo != nil) {
             // Add authentication information to the message body if user has been logged in
             stateRequestMsg.body["authStatus"] = Message.authStatuses["logged_in"]
             stateRequestMsg.body.merge(authInfo!) { (current, _) in current }
-            #if DEBUG
-            os_log("setContentState() after authInfo is merged", log: OSLog.sAlpheios, type: .info)
-            #endif
         } else {
             stateRequestMsg.body["authStatus"] = Message.authStatuses["logged_out"]
         }
@@ -180,9 +169,6 @@ class BackgroundProcess {
     // Looks like it does not work because BackgroundProcess is destryed and recreated several times
     // during the Safari App Extension lifecycle. msgToAllWindows() is a viable alternative.
     func msgToAllScripts(message: Message) {
-        #if DEBUG
-        os_log("msgToAllScripts has been called", log: OSLog.sAlpheios, type: .info)
-        #endif
         let qty = BackgroundProcess.tabs.count
         #if DEBUG
         os_log("msgToAllScripts, tabs quantity is: %d", log: OSLog.sAlpheios, type: .info, qty)
@@ -256,12 +242,6 @@ class BackgroundProcess {
         os_log("Activate content by a background process", log: OSLog.sAlpheios, type: .info)
         #endif
         
-        DistributedNotificationCenter.default().addObserver(self, selector: #selector(self.authEventDidHappen), name: .AlpheiosAuthEvent, object: nil)
-        
-        #if DEBUG
-        os_log("Auth notification observer has been added", log: OSLog.sAlpheios, type: .info)
-        #endif
-        
         window.getActiveTab(completionHandler: { (activeTab) in
             activeTab?.getActivePage(completionHandler: { (activePage) in
                 if tab.status != TabScript.props["status_disabled"] {
@@ -270,12 +250,6 @@ class BackgroundProcess {
                 }
             })
         })
-    }
-    
-    @objc func authEventDidHappen(notification: NSNotification){
-        #if DEBUG
-        os_log("Auth event callback", log: OSLog.sAlpheios, type: .info)
-        #endif
     }
 
    // This function is used for menu initiated activations
@@ -303,9 +277,6 @@ class BackgroundProcess {
     
     // This function is used for menu initiated deactivations
     func deactivateContent(page: SFSafariPage) {
-        #if DEBUG
-        os_log("deactivateContent() has been called", log: OSLog.sAlpheios, type: .info)
-        #endif
         let curTab = self.getTabScriptForPage(for: page)
         curTab.deactivate()
         curTab.setPanelDefault() // Reset panel state to a default
@@ -314,9 +285,6 @@ class BackgroundProcess {
     }
     
     func openPanel(page: SFSafariPage) {
-        #if DEBUG
-        os_log("openPanel() has been called", log: OSLog.sAlpheios, type: .info)
-        #endif
         let curTab = self.getTabScriptForPage(for: page)
         if curTab.isActive {
             curTab.setPanelOpen()
@@ -325,9 +293,6 @@ class BackgroundProcess {
     }
     
     func showInfo(page: SFSafariPage) {
-        #if DEBUG
-        os_log("showInfo() has been called", log: OSLog.sAlpheios, type: .info)
-        #endif
         let curTab = self.getTabScriptForPage(for: page)
         if curTab.isActive {
             curTab.setShowInfo()
@@ -457,17 +422,6 @@ class BackgroundProcess {
         
         // Store user information in the BackgorundProcess object
         self.authInfo = authInfo
-        
-        // Removing all previous user data
-        #if DEBUG
-        os_log("Before clearing usier data", log: OSLog.sAlpheios, type: .info)
-        #endif
-        
-        // Save user data to the persistent storage
-        #if DEBUG
-        os_log("Before calling saveAuthInfo()", log: OSLog.sAlpheios, type: .info)
-        #endif
-        // Does it make Background process to be re-created?
         self.updateAuthInfo()
         
         // self.authInfo is guaranteed be not nil at this moment
@@ -487,7 +441,7 @@ class BackgroundProcess {
         self.authInfo = nil
         // Delete auth info from a persistent storage
         self.deleteAuthInfo()
-        
+        // Send a logout message to all windows
         let logoutMsg = LogoutNtfyMessage(body: [String: String]())
         self.msgToAllWindows(message: logoutMsg)
     }
@@ -524,7 +478,7 @@ class BackgroundProcess {
             let items = try managedContext.fetch(fetchRequest)
 
             for item in items {
-                // Mark record for deletion
+                // Mark a record for deletion
                 managedContext.delete(item)
                 #if DEBUG
                 os_log("Marking a stored AuthUser record for deletion", log: OSLog.sAlpheios, type: .info)
@@ -642,20 +596,11 @@ class BackgroundProcess {
                 self.authInfo?["userNickname"] = userNickname as? String ?? ""
                 self.authInfo?["accessToken"] = accessToken as? String ?? ""
                 self.authInfo?["expiresIn"] = expiresIn as? Date ?? nil
-
-                #if DEBUG
-                let dateFormatterPrint = DateFormatter()
-                dateFormatterPrint.dateFormat = "yyyy-MMM-dd HH:mm:ss"
-                os_log("Iterating over a user data from a persistent store: id is %s, name is %s, nickname is %s, access token %s expires in %s", log: OSLog.sAlpheios, type: .info, self.authInfo?["userId"] as? String ?? "missing", self.authInfo?["userName"] as? String ?? "missing", self.authInfo?["userNickname"] as? String ?? "missing", self.authInfo?["accessToken"] as? String ?? "missing",
-                    dateFormatterPrint.string(from: self.authInfo?["expiresIn"] as! Date))
-                #endif
             }
-            
             
         } catch let error as NSError {
             os_log("Could not fetch user authentication data. %@, %@", log: OSLog.sAlpheios, type: .error, error, error.userInfo)
         }
-        
     }
     
     func deleteAuthInfo() {
@@ -677,10 +622,10 @@ class BackgroundProcess {
             do {
                 try managedContext.save()
                 #if DEBUG
-                os_log("User data deletion has been stored successfully", log: OSLog.sAlpheios, type: .info)
+                os_log("A user data deletion has been stored successfully", log: OSLog.sAlpheios, type: .info)
                 #endif
             } catch let error as NSError {
-                os_log("Cannot store user data deletion: %@, %@", log: OSLog.sAlpheios, type: .info, error, error.userInfo)
+                os_log("Cannot store a user data deletion: %@, %@", log: OSLog.sAlpheios, type: .info, error, error.userInfo)
             }
             #if DEBUG
             os_log("Saving changes to disk", log: OSLog.sAlpheios, type: .info)

@@ -50,12 +50,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var userId: String?
     var userNickname: String?
     
-    // An array to store a list of Auth0 users
-    var authUsers: [NSManagedObject] = []
-    
-    // An object for testing a retrieval of users
-    var users: [NSManagedObject] = []
-    
     // Core Data container initialization
     lazy var persistentContainer: NSCustomPersistentContainer = {
         /*
@@ -70,9 +64,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         #endif
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
-                
                 /*
                  Typical reasons for an error here include:
                  * The parent directory does not exist, cannot be created, or disallows writing.
@@ -81,8 +72,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                  * The store could not be migrated to the current model version.
                  Check the error message to determine what the actual problem was.
                  */
-                os_log("Load persistent store error: %@, %@", log: OSLog.sAlpheios, type: .error, error, error.userInfo)
-                fatalError("Unresolved error \(error), \(error.userInfo)")
+                os_log("Cannot load persistent store: %@, %@. Any stored authentication data will be ignored", log: OSLog.sAlpheios, type: .error, error, error.userInfo)
             } else {
                 #if DEBUG
                 os_log("Persistent store has been loaded successfully", log: OSLog.sAlpheios, type: .info, container.name)
@@ -106,7 +96,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             #endif
             
             // Returns an array of managed objects meeting the criteria specified by the fetch request
-            users = try managedContext.fetch(fetchRequest)
+            let users = try managedContext.fetch(fetchRequest)
             for user in users {
                 guard let userId = user.value(forKeyPath: "id") else {
                     os_log("Obligatory AuthUser field, %s, is missing. Stored user authentication data will be ignored", log: OSLog.sAlpheios, type: .error, "id")
@@ -144,10 +134,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.updateMainIcon()
         self.updateHelloText()
         self.updateAuthUI()
-        
-        #if DEBUG
-        os_log("Auth event observer has been added", log: OSLog.sAlpheios, type: .info)
-        #endif
     }
 
 
@@ -224,11 +210,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         fullAS.setAttributes([.font: currentFont], range: fullASRange2)
     }
     
-    
-    func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
-    }
-    
     func windowWillReturnUndoManager(window: NSWindow) -> UndoManager? {
         // Returns the NSUndoManager for the application. In this case, the manager returned is that of the managed object context for the application.
         return persistentContainer.viewContext.undoManager
@@ -275,14 +256,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     if (credentials.accessToken != nil) {
                         accessToken = credentials.accessToken!
                     } else {
-                        self.loggedOutText.stringValue = "Access token is missing from server response"
+                        // Output the error message
+                        self.loggedOutText.stringValue = "Authentication aborted: access token is missing from server response"
+                        os_log("Authentication aborted: access token is missing from server response", log: OSLog.sAlpheios, type: .error)
+                        // If an obligatory piece of data is missing, we cannot continue
+                        return
                     }
                     
                     var expiresIn: Date? = nil
                     if (credentials.accessToken != nil) {
                         expiresIn = credentials.expiresIn!
                     } else {
-                        self.loggedOutText.stringValue = "Expiration date is missing from server response"
+                        // Output the error message
+                        self.loggedOutText.stringValue = "Authentication aborted: expiration date is missing from server response"
+                        os_log("Authentication aborted: expiration date is missing from server response", log: OSLog.sAlpheios, type: .error)
+                        // If an obligatory piece of data is missing, we cannot continue
+                        return
                     }
 
                     #if DEBUG
@@ -293,10 +282,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     
                     self.loggedOutText.stringValue = "Please wait while we are retrieving your profile..."
                     
-                    // Other available fields are:
-                    // let refreshToken = credentials.refreshToken
-                    // let idToken = credentials.idToken
-                    // let scope = credentials.scope
                     Auth0
                         .authentication()
                         .userInfo(withAccessToken: accessToken)
@@ -327,22 +312,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 // customClaims ([String:Any]?)
                                 
                                 self.loggedOutText.stringValue = "Data retrieval is complete"
-                                
-                                let nickname = profile.nickname ?? ""
-                                self.userNickname = nickname
+                                self.userNickname = profile.nickname ?? ""
                                 #if DEBUG
-                                os_log("User info was obtained successfully for %s (%s)", log: OSLog.sAlpheios, type: .info, nickname, profile.sub)
+                                os_log("User info was obtained successfully for %s (%s)", log: OSLog.sAlpheios, type: .info, self.userNickname ?? "Nickname is missing", profile.sub)
                                 #endif
                                 
                                 self.isAuthenticated = true
-                                
-                                // TODO: check for data here and throw an error if anything is missing
-                                
                                 // Send user info to the extension
                                 let userInfo = [
                                     "userId": profile.sub,
                                     "userName": profile.name ?? "",
-                                    "userNickname": profile.nickname ?? "",
+                                    "userNickname": self.userNickname!,
                                     "accessToken": accessToken,
                                     "expiresIn": expiresIn!
                                     ] as [String : Any]
@@ -351,12 +331,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 self.updateAuthUI()
                                 
                             case .failure(let error):
-                                os_log("User info retrieval failed: %@", log: OSLog.sAlpheios, type: .error, error as CVarArg)
+                                os_log("User info retrieval failed: %s", log: OSLog.sAlpheios, type: .error, error.localizedDescription)
                                 self.loggedOutText.stringValue = error.localizedDescription
                             }
                     }
                 case .failure(let error):
-                    os_log("Authentication failed: %@", log: OSLog.sAlpheios, type: .error, error as CVarArg)
+                    os_log("Authentication failed: %s", log: OSLog.sAlpheios, type: .error, error.localizedDescription)
                     self.loggedOutText.stringValue = error.localizedDescription
                 }
         }
@@ -368,6 +348,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         #endif
         
         self.isAuthenticated = false
+        self.userNickname = nil
         self.updateAuthUI()
         
         SFSafariApplication.dispatchMessage(withName: "UserLogout", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: nil, completionHandler: nil)
@@ -375,7 +356,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @IBAction func CreateAccountClicked(_ sender: Any) {
         #if DEBUG
-        os_log("Create account has been clicked", log: OSLog.sAlpheios, type: .info)
+        os_log("Create account action has been initiated", log: OSLog.sAlpheios, type: .info)
         #endif
         
         SFSafariApplication.dispatchMessage(withName: "CreateAccount", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: nil, completionHandler: nil)
@@ -393,19 +374,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             }
             self.loggedOutBox.isHidden = true
             self.loggedInBox.isHidden = false
-            // self.loggedOutBox.display()
-            // self.loggedInBox.display()
-            
-            // self.passwordTextInput.isEnabled = false
         } else {
             self.loggedOutText.stringValue = "Please enter your credentials to log in"
             self.loggedOutBox.isHidden = false
-            // self.usernameTextInput.isEnabled = true
-            // self.passwordTextInput.isEnabled = true
             self.loggedInBox.isHidden = true
-            
-            // self.loggedOutBox.display()
-            // self.loggedInBox.display()
         }
     }
 }
