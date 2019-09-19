@@ -19,7 +19,7 @@ class BackgroundProcess {
     // Available keys are: userId, userName, userNickname, and accessToken.
     // If user is logged out, authInfo will be nil.
     // Checkin if authInfo is nil allow to detect if user has been authenticated successfully or not
-    var authInfo: [String:String]?
+    var authInfo: [String:Any]?
     #if DEBUG
     // A signup URL for testing
     let signUpUrl: String = "https://texts-test.alpheios.net/signup_safari"
@@ -81,8 +81,7 @@ class BackgroundProcess {
         #endif
     }
     
-    // MARK: - Core Data Saving and Undo support
-    
+    // Core Data Saving and Undo support
     @IBAction func saveAction(_ sender: AnyObject?) {
         // Performs the save action for the application, which is to send the save: message to the application's managed object context. Any encountered errors are presented to the user.
         let context = persistentContainer.viewContext
@@ -139,14 +138,38 @@ class BackgroundProcess {
         return BackgroundProcess.tabs[hashValue]!
     }
     
+    func stringifiedAuthInfo () -> [String:String]? {
+        guard let authInfoData = self.authInfo else {
+            return nil
+        }
+        // Cast expiresIn to Date
+        let expiresIn = authInfoData["expiresIn"] as! Date
+        // Convert to a Unix time string (in whole seconds)
+        let unixTime = expiresIn.timeIntervalSince1970
+        return [
+            "userId": authInfoData["userId"] as! String,
+            "userName": authInfoData["userName"] as! String,
+            "userNickname": authInfoData["userNickname"] as! String,
+            "accessToken": authInfoData["accessToken"] as! String,
+            "accessTokenExpiresIn": String(format: "%.0f", unixTime)
+        ]
+    }
+    
     // Sends message to content script to update its state
     func setContentState(tab: TabScript, page: SFSafariPage) {
         let stateRequestMsg = StateRequest(body: tab.convertForMessage())
         
-        if (self.authInfo != nil) {
+        let authInfo = self.stringifiedAuthInfo()
+        #if DEBUG
+        os_log("setContentState() after strigifying an authInfo", log: OSLog.sAlpheios, type: .info)
+        #endif
+        if (authInfo != nil) {
             // Add authentication information to the message body if user has been logged in
             stateRequestMsg.body["authStatus"] = Message.authStatuses["logged_in"]
-            stateRequestMsg.body.merge(self.authInfo!) { (current, _) in current }
+            stateRequestMsg.body.merge(authInfo!) { (current, _) in current }
+            #if DEBUG
+            os_log("setContentState() after authInfo is merged", log: OSLog.sAlpheios, type: .info)
+            #endif
         } else {
             stateRequestMsg.body["authStatus"] = Message.authStatuses["logged_out"]
         }
@@ -433,17 +456,12 @@ class BackgroundProcess {
         #endif
         
         // Store user information in the BackgorundProcess object
-        self.authInfo = [:]
-        for (key, value) in authInfo {
-            self.authInfo?[key] = value as? String ?? ""
-        }
+        self.authInfo = authInfo
         
         // Removing all previous user data
         #if DEBUG
         os_log("Before clearing usier data", log: OSLog.sAlpheios, type: .info)
         #endif
-        // This, or maybe in combination with saveAuthInfo() causes background script to be recreated
-        // self.deleteAllUserData()
         
         // Save user data to the persistent storage
         #if DEBUG
@@ -452,9 +470,11 @@ class BackgroundProcess {
         // Does it make Background process to be re-created?
         self.updateAuthInfo()
         
-        let loginMsg = LoginNtfyMessage(body: self.authInfo!)
+        // self.authInfo is guaranteed be not nil at this moment
+        let authInfo = self.stringifiedAuthInfo()!
+        let loginMsg = LoginNtfyMessage(body: authInfo)
         #if DEBUG
-        os_log("Login message has been built, ID is %s", log: OSLog.sAlpheios, type: .info, self.authInfo!["userId"] ?? "Unknown")
+        os_log("Login message has been built, ID is %s", log: OSLog.sAlpheios, type: .info, authInfo["userId"] ?? "Unknown")
         #endif
         self.msgToAllWindows(message: loginMsg)
     }
@@ -520,36 +540,46 @@ class BackgroundProcess {
         let user = NSManagedObject(entity: entity, insertInto: managedContext)
         // Assign user data
         if let id = authInfo["userId"] {
-            os_log("Storing the id value of %s", log: OSLog.sAlpheios, type: .info, id)
-            user.setValue(id, forKeyPath: "id")
-        } else {
             #if DEBUG
-            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .info, "id")
+            os_log("Storing the id value of %s", log: OSLog.sAlpheios, type: .info, id as! String)
             #endif
+            user.setValue(id as! String, forKeyPath: "id")
+        } else {
+            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .error, "id")
         }
         if let name = authInfo["userName"] {
-            os_log("Storing the name value of %s", log: OSLog.sAlpheios, type: .info, name)
-            user.setValue(name, forKeyPath: "name")
-        } else {
             #if DEBUG
-            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .info, "name")
+            os_log("Storing the name value of %s", log: OSLog.sAlpheios, type: .info, name as! String)
             #endif
+            user.setValue(name as! String, forKeyPath: "name")
+        } else {
+            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .error, "name")
         }
         if let nickname = authInfo["userNickname"] {
-            os_log("Storing the nickname value of %s", log: OSLog.sAlpheios, type: .info, nickname)
-            user.setValue(nickname, forKeyPath: "nickname")
-        } else {
             #if DEBUG
-            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .info, "nickname")
+            os_log("Storing the nickname value of %s", log: OSLog.sAlpheios, type: .info, nickname as! String)
             #endif
+            user.setValue(nickname as! String, forKeyPath: "nickname")
+        } else {
+            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .error, "nickname")
         }
         if let accessToken = authInfo["accessToken"] {
-            os_log("Storing the access token value of %s", log: OSLog.sAlpheios, type: .info, accessToken)
-            user.setValue(accessToken, forKeyPath: "accessToken")
-        } else {
             #if DEBUG
-            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .info, "accessToken")
+            os_log("Storing the access token value of %s", log: OSLog.sAlpheios, type: .info, accessToken as! String)
             #endif
+            user.setValue(accessToken as! String, forKeyPath: "accessToken")
+        } else {
+            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .error, "accessToken")
+        }
+        if let expiresIn = authInfo["expiresIn"] {
+            #if DEBUG
+            let dateFormatterPrint = DateFormatter()
+            dateFormatterPrint.dateFormat = "yyyy-MMM-dd HH:mm:ss"
+            os_log("Storing the date %s", log: OSLog.sAlpheios, type: .info, dateFormatterPrint.string(from: expiresIn as! Date))
+            #endif
+            user.setValue(expiresIn as! Date, forKeyPath: "expiresIn")
+        } else {
+            os_log("%s is empty on save", log: OSLog.sAlpheios, type: .error, "expiresIn")
         }
         // Save the data
         do {
@@ -594,15 +624,30 @@ class BackgroundProcess {
                     os_log("Obligatory AuthUser field, %s, is missing. Stored user authentication data will be ignored", log: OSLog.sAlpheios, type: .error, "accessToken")
                     return
                 }
+                guard let expiresIn = user.value(forKeyPath: "expiresIn") else {
+                    os_log("Obligatory AuthUser field, %s, is missing. Stored user authentication data will be ignored", log: OSLog.sAlpheios, type: .error, "expiresIn")
+                    return
+                }
+                
+                let now = Date()
+                if ((expiresIn as! Date) < now) {
+                    os_log("An access token has been expired and will be purged from the store", log: OSLog.sAlpheios, type: .info)
+                    self.deleteAuthInfo()
+                    return
+                }
                 
                 self.authInfo = [:]
                 self.authInfo?["userId"] = userId as? String ?? ""
                 self.authInfo?["userName"] = userName as? String ?? ""
                 self.authInfo?["userNickname"] = userNickname as? String ?? ""
                 self.authInfo?["accessToken"] = accessToken as? String ?? ""
+                self.authInfo?["expiresIn"] = expiresIn as? Date ?? nil
 
                 #if DEBUG
-                os_log("Iterating over a user data from a persistent store: id is %s, name is %s, nickname is %s, access token is %s", log: OSLog.sAlpheios, type: .info, self.authInfo?["userId"] ?? "missing", self.authInfo?["userName"] ?? "missing", self.authInfo?["userNickname"] ?? "missing", self.authInfo?["accessToken"] ?? "missing")
+                let dateFormatterPrint = DateFormatter()
+                dateFormatterPrint.dateFormat = "yyyy-MMM-dd HH:mm:ss"
+                os_log("Iterating over a user data from a persistent store: id is %s, name is %s, nickname is %s, access token %s expires in %s", log: OSLog.sAlpheios, type: .info, self.authInfo?["userId"] as? String ?? "missing", self.authInfo?["userName"] as? String ?? "missing", self.authInfo?["userNickname"] as? String ?? "missing", self.authInfo?["accessToken"] as? String ?? "missing",
+                    dateFormatterPrint.string(from: self.authInfo?["expiresIn"] as! Date))
                 #endif
             }
             

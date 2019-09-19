@@ -56,8 +56,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // An object for testing a retrieval of users
     var users: [NSManagedObject] = []
     
-    // MARK: - Core Data stack
-    
+    // Core Data container initialization
     lazy var persistentContainer: NSCustomPersistentContainer = {
         /*
          The persistent container for the application. This implementation
@@ -67,7 +66,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
          */
         let container = NSCustomPersistentContainer(name: "AlpheiosSafariExtension")
         #if DEBUG
-        os_log("Created a persistent \"%@\" container", log: OSLog.sAlpheios, type: .info, container.name)
+        os_log("Initiated a persistent \"%@\" container object", log: OSLog.sAlpheios, type: .info, container.name)
         #endif
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {
@@ -278,10 +277,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                     } else {
                         self.loggedOutText.stringValue = "Access token is missing from server response"
                     }
-                    let expiresIn = credentials.expiresIn
-                    let dateFormatterPrint = DateFormatter()
-                    dateFormatterPrint.dateFormat = "MMM dd,yyyy"
+                    
+                    var expiresIn: Date? = nil
+                    if (credentials.accessToken != nil) {
+                        expiresIn = credentials.expiresIn!
+                    } else {
+                        self.loggedOutText.stringValue = "Expiration date is missing from server response"
+                    }
+
                     #if DEBUG
+                    let dateFormatterPrint = DateFormatter()
+                    dateFormatterPrint.dateFormat = "yyyy-MMM-dd HH:mm:ss"
                     os_log("Authenticated successfully, expiration date is %s", log: OSLog.sAlpheios, type: .info, dateFormatterPrint.string(from: expiresIn!))
                     #endif
                     
@@ -330,13 +336,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                 
                                 self.isAuthenticated = true
                                 
+                                // TODO: check for data here and throw an error if anything is missing
+                                
                                 // Send user info to the extension
                                 let userInfo = [
                                     "userId": profile.sub,
                                     "userName": profile.name ?? "",
                                     "userNickname": profile.nickname ?? "",
-                                    "accessToken": accessToken
-                                ]
+                                    "accessToken": accessToken,
+                                    "expiresIn": expiresIn!
+                                    ] as [String : Any]
                                 SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
                                 
                                 self.updateAuthUI()

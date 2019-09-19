@@ -106,6 +106,12 @@ const handleStateRequest = async function handleStateRequest (message) {
     return
   }
 
+  if (message.body.hasOwnProperty('accessTokenExpiresIn')) { // eslint-disable-line no-prototype-builtins
+    // Expiration datetime in the state request is in the Unix time (whole seconds)
+    // It will be converted to a Date format below
+    message.body.accessTokenExpiresIn = new Date(Number.parseInt(message.body.accessTokenExpiresIn, 10) * 1000)
+  }
+
   const requestState = TabScript.readObject(message.body)
   const diff = state.diff(requestState)
 
