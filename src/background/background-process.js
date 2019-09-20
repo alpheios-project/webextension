@@ -75,7 +75,7 @@ export default class BackgroundProcess {
   }
 
   updateIcon (active, tabId) {
-    const params = { path: active ? this.browserIcons.active : this.browserIcons.nonactive }
+    let params = { path: active ? this.browserIcons.active : this.browserIcons.nonactive } // eslint-disable-line prefer-const
     if (tabId) { params.tabId = tabId }
     browser.browserAction.setIcon(params)
   }
@@ -223,7 +223,7 @@ export default class BackgroundProcess {
    * @return {Promise.<TabScript>} A Promise that is resolved into a newly created TabScript object
    */
   async createTab (tabObj) {
-    const newTab = new TabScript(tabObj)
+    let newTab = new TabScript(tabObj) // eslint-disable-line prefer-const
     newTab.tab = TabScript.props.tab.values.INFO // Set active tab to `info` by default
     this.tabs.set(tabObj.uniqueId, newTab)
 
@@ -271,7 +271,7 @@ export default class BackgroundProcess {
   loadContentData (tabScript) {
     const polyfillScript = this.loadPolyfill(tabScript.tabObj.tabId)
     const contentScript = this.loadContentScript(tabScript.tabObj.tabId)
-    const contentCSS = []
+    let contentCSS = [] // eslint-disable-line prefer-const
     for (const fileName of this.settings.contentCSSFileNames) { // eslint-disable-line no-unused-vars
       contentCSS.push(this.loadContentCSS(tabScript.tabObj.tabId, fileName))
     }
