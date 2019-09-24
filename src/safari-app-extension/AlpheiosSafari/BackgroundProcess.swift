@@ -20,13 +20,8 @@ class BackgroundProcess {
     // If user is logged out, authInfo will be nil.
     // Checkin if authInfo is nil allow to detect if user has been authenticated successfully or not
     var authInfo: [String:Any]?
-    #if DEBUG
-    // A signup URL for testing
-    let signUpUrl: String = "https://texts-test.alpheios.net/signup_safari"
-    #else
-    // A production signup URL
-    let signUpUrl: String = "https://texts.alpheios.net/signup_safari"
-    #endif
+    
+    lazy var props:[String:AnyObject] = readAlpheiosData()
     
     // Core Data conteiner initialization
     lazy var persistentContainer: NSCustomPersistentContainer = {
@@ -65,6 +60,7 @@ class BackgroundProcess {
         #if DEBUG
         os_log("Background process has been created", log: OSLog.sAlpheios, type: .info)
         #endif
+        
         
         // If there is an info about authenticated users in the store, fetch it into an authInfo object
         self.fetchAuthInfo()
@@ -449,11 +445,27 @@ class BackgroundProcess {
     // Opens a sign up page in a new window of Safari
     func createAccount() {
         #if DEBUG
-        os_log("createAccount() in background script", log: OSLog.sAlpheios, type: .info)
+        // A signup URL for testing
+        if (self.props["Sign up URL (testing)"] == nil) {
+            os_log("Signup URL is not available, signup will be aborted", log: OSLog.sAlpheios, type: .error)
+            return
+        }
+        let signUpUrl = self.props["Sign up URL (production)"] as! String
+        #else
+        // A production signup URL
+        if (self.props["Sign up URL (production)"] == nil) {
+            os_log("Signup URL is not available, signup will be aborted", log: OSLog.sAlpheios, type: .error)
+            return
+        }
+        let signUpUrl = self.props["Sign up URL (testing)"] as! String
         #endif
         
-        guard let signUpUrlObj = URL(string: self.signUpUrl) else {
-            os_log("Cannot create a URL object for the Auth0 sign up page", log: OSLog.sAlpheios, type: .error)
+        #if DEBUG
+        os_log("createAccount() in background script, url is %s", log: OSLog.sAlpheios, type: .info, signUpUrl)
+        #endif
+        
+        guard let signUpUrlObj = URL(string: signUpUrl) else {
+            os_log("Cannot create a URL object for the Auth0 sign up page: %s", log: OSLog.sAlpheios, type: .error, signUpUrl)
             return
         }
         SFSafariApplication.openWindow(with: signUpUrlObj, completionHandler: nil)

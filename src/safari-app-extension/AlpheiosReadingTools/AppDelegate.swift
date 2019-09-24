@@ -326,7 +326,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                                     "accessToken": accessToken,
                                     "expiresIn": expiresIn!
                                     ] as [String : Any]
-                                SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: nil)
+                                SFSafariApplication.dispatchMessage(withName: "UserLogin", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: userInfo, completionHandler: { (error) -> Void in
+                                    if (error == nil) {
+                                        os_log("Login message to the Safari App Extension has been dispatched successfully", log: OSLog.sAlpheios, type: .info)
+                                    } else {
+                                        os_log("Login message to the Safari App Extension has failed: %s", log: OSLog.sAlpheios, type: .error, error!.localizedDescription)
+                                    }
+                                })
                                 
                                 self.updateAuthUI()
                                 
@@ -351,7 +357,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.userNickname = nil
         self.updateAuthUI()
         
-        SFSafariApplication.dispatchMessage(withName: "UserLogout", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: nil, completionHandler: nil)
+        SFSafariApplication.dispatchMessage(withName: "UserLogout", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: nil, completionHandler: { (error) -> Void in
+            if (error == nil) {
+                os_log("Logout message to the Safari App Extension has been dispatched successfully", log: OSLog.sAlpheios, type: .info)
+            } else {
+                os_log("Logout message to the Safari App Extension has failed: %s", log: OSLog.sAlpheios, type: .error, error!.localizedDescription)
+            }
+        })
     }
     
     @IBAction func CreateAccountClicked(_ sender: Any) {

@@ -68,7 +68,6 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
                 }
             })
         })
-        
     }
     
     override func messageReceivedFromContainingApp(withName messageName: String, userInfo: [String : Any]? = nil) {

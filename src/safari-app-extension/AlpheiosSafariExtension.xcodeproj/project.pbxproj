@@ -32,6 +32,8 @@
 		BF568EED230A794400B5D073 /* NSCustomPersistantContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */; };
 		BF9D4CB1216E0D4E00E03D0C /* BackgroundProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */; };
 		BFC1180023295BC4008D28A3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7832F88C2147A4CC00CD96CB /* MainMenu.xib */; };
+		BFC1180223391CD5008D28A3 /* AlpheiosData.plist in Resources */ = {isa = PBXBuildFile; fileRef = BFC1180123391CD5008D28A3 /* AlpheiosData.plist */; };
+		BFC1180323391CD5008D28A3 /* AlpheiosData.plist in Resources */ = {isa = PBXBuildFile; fileRef = BFC1180123391CD5008D28A3 /* AlpheiosData.plist */; };
 		BFE3A1B0231ADEAF008261CA /* LoginNtfyMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3A1AF231ADEAF008261CA /* LoginNtfyMessage.swift */; };
 		BFE3A1B2231ADF0D008261CA /* LogoutNtfyMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3A1B1231ADF0D008261CA /* LogoutNtfyMessage.swift */; };
 		BFEDB3FB231123F9005FDA7B /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEDB3FA231123F9005FDA7B /* Shared.swift */; };
@@ -91,6 +93,7 @@
 		BF568EE823070F6B00B5D073 /* StateMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMessage.swift; sourceTree = "<group>"; };
 		BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSCustomPersistantContainer.swift; sourceTree = "<group>"; };
 		BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundProcess.swift; sourceTree = "<group>"; };
+		BFC1180123391CD5008D28A3 /* AlpheiosData.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = AlpheiosData.plist; sourceTree = "<group>"; };
 		BFE3A1AF231ADEAF008261CA /* LoginNtfyMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginNtfyMessage.swift; sourceTree = "<group>"; };
 		BFE3A1B1231ADF0D008261CA /* LogoutNtfyMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoutNtfyMessage.swift; sourceTree = "<group>"; };
 		BFEDB3FA231123F9005FDA7B /* Shared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared.swift; sourceTree = "<group>"; };
@@ -119,6 +122,7 @@
 		7832F87C2147A4CC00CD96CB = {
 			isa = PBXGroup;
 			children = (
+				BFC1180123391CD5008D28A3 /* AlpheiosData.plist */,
 				BFEDB3FA231123F9005FDA7B /* Shared.swift */,
 				BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */,
 				BF017BBB22F1C96F00E20B0D /* AlpheiosSafariExtension.xcdatamodeld */,
@@ -304,6 +308,7 @@
 				7832F88B2147A4CC00CD96CB /* Assets.xcassets in Resources */,
 				BF0F529422F085020050AE62 /* Auth0.plist in Resources */,
 				BFC1180023295BC4008D28A3 /* MainMenu.xib in Resources */,
+				BFC1180223391CD5008D28A3 /* AlpheiosData.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -314,6 +319,7 @@
 				BF0F529522F085020050AE62 /* Auth0.plist in Resources */,
 				7832F8B82147A70300CD96CB /* style-components-safari.css in Resources */,
 				BF3927F9216F565E00213E05 /* alpheios.pdf in Resources */,
+				BFC1180323391CD5008D28A3 /* AlpheiosData.plist in Resources */,
 				7832F8A52147A4E400CD96CB /* SafariExtensionViewController.xib in Resources */,
 				7832F8A82147A4E400CD96CB /* content-safari.js in Resources */,
 			);
