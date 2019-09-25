@@ -82,6 +82,8 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
             SafariExtensionHandler.backgroundProcess.logout()
         } else if (messageName == "CreateAccount") {
             SafariExtensionHandler.backgroundProcess.createAccount()
+        } else if (messageName == "ShowUserAcctTutorial") {
+            SafariExtensionHandler.backgroundProcess.showUserAcctTutorial()
         }
         
         

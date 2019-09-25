@@ -6,5 +6,7 @@
 	<string>https://texts-test.alpheios.net/signup_safari</string>
 	<key>Sign up URL (production)</key>
 	<string>https://texts.alpheios.net/signup_safari</string>
+	<key>User account tutorial URL</key>
+	<string>https://alpheios.net/pages/tutorials#safari-user-account</string>
 </dict>
 </plist>

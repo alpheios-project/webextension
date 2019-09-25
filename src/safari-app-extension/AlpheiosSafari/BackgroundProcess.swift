@@ -445,23 +445,21 @@ class BackgroundProcess {
     // Opens a sign up page in a new window of Safari
     func createAccount() {
         #if DEBUG
+        let propName = "Sign up URL (testing)"
         // A signup URL for testing
-        if (self.props["Sign up URL (testing)"] == nil) {
+        if (self.props[propName] == nil) {
             os_log("Signup URL is not available, signup will be aborted", log: OSLog.sAlpheios, type: .error)
             return
         }
-        let signUpUrl = self.props["Sign up URL (production)"] as! String
+        let signUpUrl = self.props[propName] as! String
         #else
+        let propName = "Sign up URL (production)"
         // A production signup URL
-        if (self.props["Sign up URL (production)"] == nil) {
+        if (self.props[propName] == nil) {
             os_log("Signup URL is not available, signup will be aborted", log: OSLog.sAlpheios, type: .error)
             return
         }
-        let signUpUrl = self.props["Sign up URL (testing)"] as! String
-        #endif
-        
-        #if DEBUG
-        os_log("createAccount() in background script, url is %s", log: OSLog.sAlpheios, type: .info, signUpUrl)
+        let signUpUrl = self.props[propName] as! String
         #endif
         
         guard let signUpUrlObj = URL(string: signUpUrl) else {
@@ -469,6 +467,22 @@ class BackgroundProcess {
             return
         }
         SFSafariApplication.openWindow(with: signUpUrlObj, completionHandler: nil)
+    }
+    
+    func showUserAcctTutorial() {
+        let propName = "User account tutorial URL"
+        // A signup URL for testing
+        if (self.props[propName] == nil) {
+            os_log("User account tutorial URL is not available, tutorial will not be opened", log: OSLog.sAlpheios, type: .error)
+            return
+        }
+        let tutorialUrl = self.props[propName] as! String
+        
+        guard let tutorialObj = URL(string: tutorialUrl) else {
+            os_log("Cannot create a URL object for the user account tutorial: %s", log: OSLog.sAlpheios, type: .error, tutorialUrl)
+            return
+        }
+        SFSafariApplication.openWindow(with: tutorialObj, completionHandler: nil)
     }
     
     // It will update user auth info in a permanent storage with the latest one

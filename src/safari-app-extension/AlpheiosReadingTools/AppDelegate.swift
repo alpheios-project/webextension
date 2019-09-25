@@ -374,6 +374,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         SFSafariApplication.dispatchMessage(withName: "CreateAccount", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: nil, completionHandler: nil)
     }
     
+    @IBAction func UserAcctTutorialClicked(_ sender: Any) {
+        #if DEBUG
+        os_log("A user account tutorial has been clicked", log: OSLog.sAlpheios, type: .info)
+        #endif
+        
+        SFSafariApplication.dispatchMessage(withName: "ShowUserAcctTutorial", toExtensionWithIdentifier: "net.alpheios.safari.ext", userInfo: nil, completionHandler: nil)
+    }
+    
     func updateAuthUI() {
         #if DEBUG
         os_log("updateAuthUI() has been called, auth status is %s", log: OSLog.sAlpheios, type: .info, self.isAuthenticated.description)
@@ -387,7 +395,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self.loggedOutBox.isHidden = true
             self.loggedInBox.isHidden = false
         } else {
-            self.loggedOutText.stringValue = "Please enter your credentials to log in"
+            self.loggedOutText.stringValue = "Login to save your wordlist."
             self.loggedOutBox.isHidden = false
             self.loggedInBox.isHidden = true
         }
