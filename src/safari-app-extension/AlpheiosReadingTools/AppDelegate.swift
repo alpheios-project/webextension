@@ -361,6 +361,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             if (error == nil) {
                 os_log("Logout message to the Safari App Extension has been dispatched successfully", log: OSLog.sAlpheios, type: .info)
             } else {
+                self.loggedInText.stringValue = "Cannot send a logout message to the Safari App Extnesion"
                 os_log("Logout message to the Safari App Extension has failed: %s", log: OSLog.sAlpheios, type: .error, error!.localizedDescription)
             }
         })
