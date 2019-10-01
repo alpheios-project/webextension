@@ -21,7 +21,7 @@ export default class TransferrableError extends Error {
    * @return {{name: string, message: string}}
    */
   toJSON () {
-    let values = {}
+    let values = {} // eslint-disable-line prefer-const
     Object.getOwnPropertyNames(this).forEach(key => {
       values[key] = this[key]
     })
@@ -35,7 +35,7 @@ export default class TransferrableError extends Error {
    * @constructor
    */
   static fromJSON (jsonObj) {
-    let error = new this()
+    const error = new this() // eslint-disable-line prefer-const
     for (const key of Object.keys(jsonObj)) {
       error[key] = jsonObj[key]
     }

@@ -1,3 +1,4 @@
+import { AuthData } from 'alpheios-components'
 import LoginRequest from '@/lib/messaging/request/login-request.js'
 import LogoutRequest from '@/lib/messaging/request/logout-request.js'
 import UserProfileRequest from '@/lib/messaging/request/user-profile-request.js'
@@ -44,37 +45,38 @@ export default class BgAuthenticator {
 
   /**
    * check access token expiration
+   * @return {Promise<AuthData> | Promise<Error>}
    */
   session () {
     return new Promise((resolve, reject) => {
       this.messagingService.sendRequestToBg(new UserSessionRequest(), BgAuthenticator.AUTH_TIMEOUT)
         .then(message => {
-          resolve(message.body)
+          resolve(AuthData.fromSerializable(message.body))
         }, error => reject(error))
     })
   }
 
   /**
    * Authenticates user with an Auth0.
-   * @return {Promise}
+   * @return {Promise<AuthData> | Promise<Error>}
    */
   authenticate () {
     return new Promise((resolve, reject) => {
       this.messagingService.sendRequestToBg(new LoginRequest(), BgAuthenticator.AUTH_TIMEOUT)
         .then(message => {
-          resolve(message.body)
+          resolve(AuthData.fromSerializable(message.body))
         }, error => reject(error))
     })
   }
 
   /**
    * Retrieves user profile information from Auth0.
-   * @return {Promise}
+   * @return {Promise<AuthData> | Promise<Error>}
    */
   getProfileData () {
     return new Promise((resolve, reject) => {
       this.messagingService.sendRequestToBg(new UserProfileRequest(), BgAuthenticator.DEFAULT_MSG_TIMEOUT)
-        .then(message => resolve(message.body), error => reject(error))
+        .then(message => resolve(AuthData.fromSerializable(message.body)), error => reject(error))
     })
   }
 
@@ -96,7 +98,7 @@ export default class BgAuthenticator {
     return new Promise((resolve, reject) => {
       this.messagingService.sendRequestToBg(new LogoutRequest(), BgAuthenticator.DEFAULT_MSG_TIMEOUT)
         .then(message => resolve(message.body), error => {
-          console.error(`Unexpected error logging out of Alpheios:`, error)
+          console.error('Unexpected error logging out of Alpheios:', error)
           resolve()
         })
     })

@@ -32,7 +32,7 @@ export default class Authenticator {
 
   getEndPoints () {
     return new Promise((resolve, reject) => {
-      reject('getEndPoints is not implemented')
+      reject(new Error('getEndPoints is not implemented'))
     })
   }
 
@@ -42,7 +42,7 @@ export default class Authenticator {
    */
   session () {
     return new Promise((resolve, reject) => {
-      reject('Session method is not implemented')
+      reject(new Error('Session method is not implemented'))
     })
   }
 
@@ -55,7 +55,7 @@ export default class Authenticator {
    */
   authenticate () {
     return new Promise((resolve, reject) => {
-      reject('Authenticate method is not implemented')
+      reject(new Error('Authenticate method is not implemented'))
     })
   }
 
@@ -74,7 +74,7 @@ export default class Authenticator {
    */
   getProfileData () {
     return new Promise((resolve, reject) => {
-      reject('getProfileData is not implemented')
+      reject(new Error('getProfileData is not implemented'))
     })
   }
 
@@ -85,7 +85,7 @@ export default class Authenticator {
    */
   getUserData () {
     return new Promise((resolve, reject) => {
-      reject('getUserData is not implemented')
+      reject(new Error('getUserData is not implemented'))
     })
   }
 
@@ -98,7 +98,7 @@ export default class Authenticator {
    */
   logout () {
     return new Promise((resolve, reject) => {
-      reject('Logout is not implemented')
+      reject(new Error('Logout is not implemented'))
     })
   }
 }

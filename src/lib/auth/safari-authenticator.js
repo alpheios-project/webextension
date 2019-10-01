@@ -1,3 +1,4 @@
+import { AuthData } from 'alpheios-components'
 import auth0Env from '@/lib/auth/env-safari-app-ext.js'
 import Authenticator from '@/lib/auth/authenticator.js'
 
@@ -13,18 +14,8 @@ export default class SafariAuthenticator extends Authenticator {
    */
   constructor () {
     super()
-
-    // User data props
-    this.isAuthenticated = false
+    this._authData = new AuthData()
     this.hasUserData = false
-    // A full name of the user
-    this.userName = null
-    // A user's nickname
-    this.userNickname = null
-    // A user ID
-    this.userId = null
-
-    this.accessToken = null
 
     // TODO: Hardcoded for now. Can we do it any better than that?
     this.endpoints = auth0Env.ENDPOINTS
@@ -52,7 +43,7 @@ export default class SafariAuthenticator extends Authenticator {
         // User data has been retrieved
         resolve(this.endpoints)
       } else {
-        reject('No user data has been retrieved yet')
+        reject('No user data has been retrieved yet') // eslint-disable-line prefer-promise-reject-errors
       }
     })
   }
@@ -63,7 +54,7 @@ export default class SafariAuthenticator extends Authenticator {
    */
   session () {
     return new Promise((resolve, reject) => {
-      reject('Not implemented')
+      reject('Not implemented') // eslint-disable-line prefer-promise-reject-errors
     })
   }
 
@@ -86,12 +77,12 @@ export default class SafariAuthenticator extends Authenticator {
       if (!authData.userId || !authData.userName || !authData.userNickname || !authData.accessToken) {
         reject(new Error('Some of the required parameters (userId, userNae, userNickname, accessToken) are missing'))
       }
-      this.userId = authData.userId
-      this.userName = authData.userName
-      this.userNickname = authData.userNickname
-      this.accessToken = authData.accessToken
+      this._authData.userId = authData.userId
+      this._authData.userName = authData.userName
+      this._authData.userNickname = authData.userNickname
+      this._authData.accessToken = authData.accessToken
       this.hasUserData = true
-      this.isAuthenticated = true
+      this._authData.isAuthenticated = true
       resolve()
     })
   }
@@ -113,19 +104,15 @@ export default class SafariAuthenticator extends Authenticator {
     return new Promise((resolve, reject) => {
       if (this.hasUserData) {
         // User data has been retrieved
-        resolve({
-          name: this.userName,
-          nickname: this.userNickname,
-          sub: this.userId
-        })
+        resolve(this._authData)
       } else {
-        reject('No user profile data is available yet')
+        reject('No user profile data is available yet') // eslint-disable-line prefer-promise-reject-errors
       }
     })
   }
 
   /**
-   * Retrieves user information.
+   * Retrieves user information (an access token currently).
    * @return {Promise<string>|Promise<Error>} - Resolved with an access token
    * in case of success or rejected with an error in case of failure.
    */
@@ -135,7 +122,7 @@ export default class SafariAuthenticator extends Authenticator {
         // User data has been retrieved
         resolve(this.accessToken)
       } else {
-        reject('No user data has been retrieved yet')
+        reject('No user data has been retrieved yet') // eslint-disable-line prefer-promise-reject-errors
       }
     })
   }
@@ -147,11 +134,11 @@ export default class SafariAuthenticator extends Authenticator {
     return new Promise((resolve, reject) => {
       // Erase user data
       this.hasUserData = false
-      this.isAuthenticated = false
-      this.userId = null
-      this.userName = null
-      this.userNickname = null
-      this.accessToken = null
+      this._authData.isAuthenticated = false
+      this._authData.userId = null
+      this._authData.userName = null
+      this._authData.userNickname = null
+      this._authData.accessToken = null
       resolve()
     })
   }
