@@ -372,7 +372,7 @@ export default class BackgroundProcess {
         access_token: auth0Env.TEST_ID,
         is_test_user: true
       }
-      this.authData.setAuthStatus(true).setSessionDuration(2538000000 /* Thirty days */)
+      this.authData.setAuthStatus(true).setSessionDuration(3600000 /* One hour */)
       this.messagingService.sendResponseToTab(LoginResponse.Success(request, this.authData.serializable()), sender.tab.id)
         .catch(error => console.error(`Unable to send a response to a login request: ${error.message}`))
     } else {
