@@ -198,6 +198,9 @@ const handleStateRequest = async function handleStateRequest (message) {
 }
 
 const handleLoginRequest = async function handleLoginRequest (message) {
+  // Expiration datetime in the state request is in the Unix time (whole seconds)
+  // It will be converted to a Date format below
+  message.body.accessTokenExpiresIn = new Date(Number.parseInt(message.body.accessTokenExpiresIn, 10) * 1000)
   uiController.api.auth.authenticate(message.body)
 }
 
