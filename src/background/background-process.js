@@ -1,5 +1,5 @@
 /* global browser, Auth0Chrome, auth0Env */
-import { enUS, enGB, Locales, L10n, Tab, TabScript } from 'alpheios-components'
+import { enUS, enGB, Locales, L10n, Tab, TabScript, AuthData } from 'alpheios-components'
 import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
@@ -37,6 +37,13 @@ export default class BackgroundProcess {
         32: 'icons/alpheios_black_32.png'
       }
     }
+
+    /**
+     * An authentication data object.
+     *
+     * @type {AuthData}
+     */
+    this.authData = new AuthData()
 
     this.authResult = null // A result of Auth0 authentication
   }
@@ -365,15 +372,24 @@ export default class BackgroundProcess {
         access_token: auth0Env.TEST_ID,
         is_test_user: true
       }
-      this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
+      this.authData.setAuthStatus(true).setSessionDuration(3600000 /* One hour */)
+      this.messagingService.sendResponseToTab(LoginResponse.Success(request, this.authData.serializable()), sender.tab.id)
         .catch(error => console.error(`Unable to send a response to a login request: ${error.message}`))
     } else {
       new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
         .authenticate(options)
         .then(authResult => {
-          console.log('Background: Auth result is ', authResult)
+          /*
+          authResult contains the following fields:
+          access_token - An access token string;
+          expires_in - An expiration time of a token, in seconds;
+          id_token - An id token string;
+          scope - A scope string containing scope names separated by spaces (e.g. "openid profile")
+          token_type - A token type string (e.g. "Bearer")
+           */
           this.authResult = authResult
-          this.messagingService.sendResponseToTab(LoginResponse.Success(request, {}), sender.tab.id)
+          this.authData.setAuthStatus(true).setSessionDuration(this.authResult.expires_in * 1000)
+          this.messagingService.sendResponseToTab(LoginResponse.Success(request, this.authData.serializable()), sender.tab.id)
             .catch(error => console.error(`Unable to send a response to a login request: ${error.message}`))
         }).catch(err => {
           console.error(`Authentication error: ${err}`)
@@ -390,7 +406,11 @@ export default class BackgroundProcess {
           Authorization: `Bearer ${this.authResult.access_token}`
         }
       }).then(resp => resp.json()).then((profile) => {
-        this.messagingService.sendResponseToTab(UserSessionResponse.Success(request, profile), sender.tab.id)
+        // TODO: Eliminate duplicated code pieces in mulitple places
+        this.authData.userId = profile.sub
+        this.authData.userName = profile.name
+        this.authData.userNickname = profile.nickname
+        this.messagingService.sendResponseToTab(UserSessionResponse.Success(request, this.authData.serializable()), sender.tab.id)
           .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
       }).catch(err => {
         // TODO this is where we could use a refresh_token
@@ -413,12 +433,10 @@ export default class BackgroundProcess {
       console.error('Get user info: not authenticated')
     }
     if (this.authResult.is_test_user) {
-      const testProfile = {
-        name: 'Alpheios Test User',
-        nickname: 'testuser',
-        sub: 'alpheiosMockUserId'
-      }
-      this.messagingService.sendResponseToTab(UserProfileResponse.Success(request, testProfile), sender.tab.id)
+      this.authData.userId = 'alpheiosMockUserId'
+      this.authData.userName = 'Alpheios Test User'
+      this.authData.userNickname = 'testuser'
+      this.messagingService.sendResponseToTab(UserProfileResponse.Success(request, this.authData.serializable()), sender.tab.id)
         .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
     } else {
       window.fetch(`https://${auth0Env.AUTH0_DOMAIN}/userinfo`, {
@@ -427,7 +445,18 @@ export default class BackgroundProcess {
         }
       })
         .then(resp => resp.json()).then((profile) => {
-          this.messagingService.sendResponseToTab(UserProfileResponse.Success(request, profile), sender.tab.id)
+          /*
+          Auth0 usually returns the folloiwng profile data:
+          name - A user name
+          nickname - A user nickname (to be displayed when referencing the user)
+          picture - A URL to the user's avatar image
+          sub - An Auth0 user ID as a string
+          updated_at - last date of a profile update (e.g. "2019-09-30T16:34:11.051Z")
+           */
+          this.authData.userId = profile.sub
+          this.authData.userName = profile.name
+          this.authData.userNickname = profile.nickname
+          this.messagingService.sendResponseToTab(UserProfileResponse.Success(request, this.authData.serializable()), sender.tab.id)
             .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
         })
         .catch(err => {

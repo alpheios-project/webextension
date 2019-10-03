@@ -5,7 +5,7 @@ import BaseService from '@/lib/messaging/base-service'
 
 export default class ServiceSafari extends BaseService {
   listener (sender) {
-    let message = sender.message
+    const message = sender.message
     if (!message.type) {
       return false
     }

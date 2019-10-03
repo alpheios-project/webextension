@@ -11,7 +11,7 @@ import { Logger } from 'alpheios-components'
 const knownErrors = new Map([
   [AuthError.name, AuthError]
 ])
-let logger = Logger.getInstance()
+const logger = Logger.getInstance()
 
 export default class Service extends BaseService {
   /**
@@ -43,12 +43,12 @@ export default class Service extends BaseService {
    * @return {Promise} - An asynchronous result of an operation.
    */
   registerRequest (request, timeout = undefined) {
-    let requestInfo = new StoredOutgoingRequest(request)
+    let requestInfo = new StoredOutgoingRequest(request) // eslint-disable-line prefer-const
     this.messages.set(request.ID, requestInfo)
     if (timeout) {
       requestInfo.timeoutID = window.setTimeout((requestID) => {
-        let requestInfo = this.messages.get(requestID)
-        requestInfo.reject(new Error(`Timeout has been expired`))
+        let requestInfo = this.messages.get(requestID) // eslint-disable-line prefer-const
+        requestInfo.reject(new Error('Timeout has been expired'))
         this.messages.delete(requestID) // Remove from map
       }, timeout, request.ID)
     }
@@ -56,10 +56,10 @@ export default class Service extends BaseService {
   }
 
   sendRequestToTab (request, timeout, tabID) {
-    let promise = this.registerRequest(request, timeout)
+    const promise = this.registerRequest(request, timeout)
 
     browser.tabs.sendMessage(tabID, request).catch(error => {
-      logger.error(`Tabs.sendMessage() failed:`, error)
+      logger.error('Tabs.sendMessage() failed:', error)
       this.rejectRequest(request.ID, error)
     })
     return promise
@@ -72,9 +72,9 @@ export default class Service extends BaseService {
    * @return {Promise}
    */
   sendRequestToBg (request, timeout) {
-    let promise = this.registerRequest(request, timeout)
+    const promise = this.registerRequest(request, timeout)
     browser.runtime.sendMessage(request).catch(error => {
-      logger.error(`Sending request to a background failed:`, error)
+      logger.error('Sending request to a background failed:', error)
       this.rejectRequest(request.ID, error)
     })
     return promise
@@ -124,7 +124,7 @@ export default class Service extends BaseService {
 
   rejectRequest (requestID, error) {
     if (requestID && this.messages.has(requestID)) {
-      let requestInfo = this.messages.get(requestID)
+      let requestInfo = this.messages.get(requestID) // eslint-disable-line prefer-const
       window.clearTimeout(requestInfo.timeoutID) // Clear a timeout
       requestInfo.reject(error)
       this.messages.delete(requestID) // Remove request from a map
