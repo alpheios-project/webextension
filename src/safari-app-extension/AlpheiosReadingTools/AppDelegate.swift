@@ -121,6 +121,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         #if DEBUG
         os_log("applicationWillFinishLaunching CB", log: OSLog.sAlpheios, type: .info)
         #endif
+        let appleEventManager: NSAppleEventManager = NSAppleEventManager.shared()
+        appleEventManager.setEventHandler(self, andSelector: #selector(self.handleGetURLEvent(_:withReplyEvent:)), forEventClass: AEEventClass(kInternetEventClass), andEventID: AEEventID(kAEGetURL))
         self.fetchAuthInfo()
     }
     
@@ -135,7 +137,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         self.updateHelloText()
         self.updateAuthUI()
     }
-
+    
+    @objc func handleGetURLEvent(_ event: NSAppleEventDescriptor, withReplyEvent: NSAppleEventDescriptor) {
+        #if DEBUG
+        os_log("handleGetURLEvent gets called", log: OSLog.sAlpheios, type: .info)
+        #endif
+        if let urlString = event.forKeyword(AEKeyword(keyDirectObject))?.stringValue {
+            // let url = URL(string: urlString)
+            #if DEBUG
+            os_log("handleGetURLEvent, url is %s", log: OSLog.sAlpheios, type: .info, urlString)
+            #endif
+        }
+    }
 
     // Method to update header - text and font settings are defined inside class:
     // headerText, headerFontName, headerFontSize, headerColor
