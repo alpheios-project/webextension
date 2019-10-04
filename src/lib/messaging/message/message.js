@@ -22,11 +22,13 @@ Message.types = {
   communication as within a Safari App Extension
    */
   LOGIN_NTFY_MESSAGE: Symbol.for('Alpheios_LoginNotificationMessage'),
+  LOGIN_MESSAGE: Symbol.for('Alpheios_LoginMessage'),
   /*
   A message that notifies abut the user logout. It is used in a one-way
   communication as within a Safari App Extension
    */
   LOGOUT_NTFY_MESSAGE: Symbol.for('Alpheios_LogoutNotificationMessage'),
+  LOGOUT_MESSAGE: Symbol.for('Alpheios_LogoutMessage'),
 
   // Requests; a two way communication vehicles
   // State: updates state of a UIStateAPI object

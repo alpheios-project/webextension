@@ -8,6 +8,7 @@ import {
 } from 'alpheios-components'
 import SafariAuthenticator from '@/lib/auth/safari-authenticator.js'
 import Package from '../../package.json'
+import createAuth0Client from '@auth0/auth0-spa-js'
 
 const pingInterval = 15000 // How often to ping background with a state message, in ms
 let pingIntervalID = null
@@ -16,6 +17,7 @@ let state = null
 const logger = Logger.getInstance()
 let authenticator = null
 let messagingService = null
+let authClient
 
 /**
  * Activates a ping that will send state to background periodically
@@ -208,7 +210,7 @@ const handleLogoutRequest = async function handleLogoutRequest (message) {
   uiController.api.auth.logout()
 }
 
-const sendMessageToBackground = function sendStateToBackground (messageName) {
+const sendMessageToBackground = function sendMessageToBackground (messageName) {
   safari.extension.dispatchMessage(messageName, new StateMessage(state))
 }
 
@@ -222,6 +224,72 @@ document.addEventListener('DOMContentLoaded', (event) => {
   be shown from those where it can not. If we're lucky, a single document will be selected.
   If not, we should adjust filtering rules to accommodate such cases.
    */
+
+  if (window.document.URL === 'https://alpheios.net/0dc437ee-74c7-4444-aa6a-2387df3ab81e/') {
+    console.info('A special target is detected')
+    // create a new div element
+    let newDiv = document.createElement("div")
+    newDiv.id = 'alpheios-authentication'
+    // and give it some content
+    // const newContent = document.createTextNode("This is an Alpheios page")
+    newDiv.innerHTML += `<button id="alpheios-login">Sign in or sign up</button><br><button id="alpheios-logout">Sign out</button>`
+    // add the text node to the newly created div
+    // newDiv.appendChild(newContent)
+    document.body.appendChild(newDiv)
+
+    createAuth0Client({
+      domain: 'alpheios.auth0.com',
+      client_id: 'iT75HkBHThA4QdFwFoZRofLC41vVyvAt',
+      audience: 'alpheios.net:apis',
+      scope: 'openid profile offline_access',
+      redirect_uri: 'https://alpheios.net/0dc437ee-74c7-4444-aa6a-2387df3ab81e/'
+    }).then(auth0 => {
+      console.info(`Auth0 client has been created successfully:`, auth0)
+      authClient = auth0
+    }).catch(err => {
+      console.info(`Auth0 client creation failed:`, err)
+    })
+
+    const loginLink = document.body.querySelector('#alpheios-login')
+    if (loginLink) {
+      loginLink.addEventListener('click', () => {
+        console.info('Login link is clicked')
+        if (authClient) {
+          authClient.loginWithPopup().then(() => {
+            console.info(`User has been logged in successfully`)
+
+            authClient.getTokenSilently().then(accessToken => {
+              console.info(`Auth token has been obtained successfully:`, accessToken)
+            }).catch(err => {
+              console.info(`getTokenSilently() has failed:`, err)
+            })
+
+            authClient.getUser().then(user => {
+              console.info(`User info has been obtained:`, user);
+            }).catch(err => {
+              console.info(`Auth0 user info request failed:`, err)
+            })
+          }).catch(err => {
+            console.info(`Auth0 login request failed:`, err)
+          })
+        } else {
+          console.info('Auth0 client object does not exist')
+        }
+      })
+    }
+    const logoutLink = document.body.querySelector('#alpheios-logout')
+    if (logoutLink) {
+      logoutLink.addEventListener('click', () => {
+        console.info('Logout link is clicked')
+        if (authClient) {
+          authClient.logout()
+        } else {
+          console.info('Auth0 client object does not exist')
+        }
+      })
+    }
+    return
+  }
 
   if (HTMLPage.isValidTarget) {
     messagingService = new MessagingService()

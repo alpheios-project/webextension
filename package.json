@@ -32,6 +32,7 @@
   },
   "homepage": "https://github.com/alpheios-project/webextension#readme",
   "devDependencies": {
+    "@auth0/auth0-spa-js": "^1.2.4",
     "@babel/core": "^7.6.2",
     "@babel/plugin-transform-runtime": "^7.6.2",
     "@babel/runtime": "^7.6.2",
