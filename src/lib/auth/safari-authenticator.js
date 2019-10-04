@@ -121,7 +121,7 @@ export default class SafariAuthenticator extends Authenticator {
     return new Promise((resolve, reject) => {
       if (this.hasUserData) {
         // User data has been retrieved
-        resolve(this.accessToken)
+        resolve(this._authData.accessToken)
       } else {
         reject('No user data has been retrieved yet') // eslint-disable-line prefer-promise-reject-errors
       }
