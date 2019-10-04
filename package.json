@@ -1,7 +1,7 @@
 {
   "name": "webextension",
   "version": "3.0.1",
-  "build": "76",
+  "build": "77",
   "description": "A WebExtension implementation of Alpheios",
   "main": "index.js",
   "scripts": {
@@ -73,7 +73,7 @@
     "sass-loader": "^8.0.0",
     "source-map-loader": "^0.2.4",
     "style-loader": "^1.0.0",
-    "url-loader": "^2.1.0",
+    "url-loader": "^2.2.0",
     "uuid": "^3.3.3",
     "vue": "^2.6.10",
     "vue-eslint-parser": "^6.0.4",
