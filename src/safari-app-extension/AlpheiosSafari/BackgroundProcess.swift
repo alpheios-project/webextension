@@ -411,25 +411,66 @@ class BackgroundProcess {
         return false
     }
     
-    func login(authInfo: [String: Any]) {
+    func loginHandler(authMsg: [String: Any], page: SFSafariPage) {
         #if DEBUG
-        os_log("login(): authentication has been completed", log: OSLog.sAlpheios, type: .info)
+        os_log("loginHandler() has been called", log: OSLog.sAlpheios, type: .info)
         #endif
         
-        // Store user information in the BackgorundProcess object
-        self.authInfo = authInfo
-        self.updateAuthInfo()
-        
-        // self.authInfo is guaranteed be not nil at this moment
-        let authInfo = self.stringifiedAuthInfo()!
-        let loginMsg = LoginNtfyMessage(body: authInfo)
+        let msgType = authMsg["type"] as! String
         #if DEBUG
-        os_log("Login message has been built, ID is %s", log: OSLog.sAlpheios, type: .info, authInfo["userId"] ?? "Unknown")
+        os_log("Message type is %s", log: OSLog.sAlpheios, type: .info, msgType)
         #endif
-        self.msgToAllWindows(message: loginMsg)
+        
+        if let messageBody = authMsg["body"] as? Dictionary<String, Any> {
+            let msgBody = messageBody
+            #if DEBUG
+            os_log("Message body is available", log: OSLog.sAlpheios, type: .info)
+            #endif
+            let accessToken = messageBody["accessToken"] as! String
+            #if DEBUG
+            os_log("Acess token is %s", log: OSLog.sAlpheios, type: .info, accessToken)
+            #endif
+            
+            let unixExpirationDT = messageBody["expirationDateTime"] as! Int
+            #if DEBUG
+            os_log("unixExpirationDT is %d", log: OSLog.sAlpheios, type: .info, unixExpirationDT)
+            #endif
+            let expiresIn = Date(timeIntervalSince1970: TimeInterval(unixExpirationDT))
+            #if DEBUG
+            let dateFormatterPrint = DateFormatter()
+            dateFormatterPrint.dateFormat = "yyyy-MMM-dd HH:mm:ss"
+            os_log("Authenticated successfully, expiration date is %s", log: OSLog.sAlpheios, type: .info, dateFormatterPrint.string(from: expiresIn))
+            #endif
+
+            let authInfo = [
+                "userId": msgBody["userId"] as! String,
+                "userName": msgBody["userName"] as! String,
+                "userNickname": msgBody["userNickname"] as! String,
+                "accessToken": accessToken,
+                "expiresIn": expiresIn
+                ] as [String : Any]
+
+            self.authInfo = authInfo
+
+
+            self.updateAuthInfo()
+
+            // self.authInfo is guaranteed be not nil at this moment
+            let authInfoMsg = self.stringifiedAuthInfo()!
+            let loginMsg = LoginNtfyMessage(body: authInfoMsg)
+            #if DEBUG
+            os_log("Login message has been built, ID is %s", log: OSLog.sAlpheios, type: .info, authInfo["userId"] as? String ?? "undefined")
+            #endif
+            self.msgToAllWindows(message: loginMsg)
+            
+        } else {
+            #if DEBUG
+            os_log("Cannot obtain a message body", log: OSLog.sAlpheios, type: .info)
+            #endif
+        }
     }
     
-    func logout() {
+    func logoutHandler() {
         #if DEBUG
         os_log("User has been logged out", log: OSLog.sAlpheios, type: .info)
         #endif
@@ -440,49 +481,6 @@ class BackgroundProcess {
         // Send a logout message to all windows
         let logoutMsg = LogoutNtfyMessage(body: [String: String]())
         self.msgToAllWindows(message: logoutMsg)
-    }
-    
-    // Opens a sign up page in a new window of Safari
-    func createAccount() {
-        #if DEBUG
-        let propName = "Sign up URL (testing)"
-        // A signup URL for testing
-        if (self.props[propName] == nil) {
-            os_log("Signup URL is not available, signup will be aborted", log: OSLog.sAlpheios, type: .error)
-            return
-        }
-        let signUpUrl = self.props[propName] as! String
-        #else
-        let propName = "Sign up URL (production)"
-        // A production signup URL
-        if (self.props[propName] == nil) {
-            os_log("Signup URL is not available, signup will be aborted", log: OSLog.sAlpheios, type: .error)
-            return
-        }
-        let signUpUrl = self.props[propName] as! String
-        #endif
-        
-        guard let signUpUrlObj = URL(string: signUpUrl) else {
-            os_log("Cannot create a URL object for the Auth0 sign up page: %s", log: OSLog.sAlpheios, type: .error, signUpUrl)
-            return
-        }
-        SFSafariApplication.openWindow(with: signUpUrlObj, completionHandler: nil)
-    }
-    
-    func showUserAcctTutorial() {
-        let propName = "User account tutorial URL"
-        // A signup URL for testing
-        if (self.props[propName] == nil) {
-            os_log("User account tutorial URL is not available, tutorial will not be opened", log: OSLog.sAlpheios, type: .error)
-            return
-        }
-        let tutorialUrl = self.props[propName] as! String
-        
-        guard let tutorialObj = URL(string: tutorialUrl) else {
-            os_log("Cannot create a URL object for the user account tutorial: %s", log: OSLog.sAlpheios, type: .error, tutorialUrl)
-            return
-        }
-        SFSafariApplication.openWindow(with: tutorialObj, completionHandler: nil)
     }
     
     // It will update user auth info in a permanent storage with the latest one

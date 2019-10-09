@@ -51,6 +51,16 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
             #if DEBUG
             os_log("Recieved an updateState message from a content script, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
             #endif
+        } else if (messageName == "Alpheios_LoginMessage") {
+            #if DEBUG
+            os_log("Recieved a login message from a content script, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
+            #endif
+            SafariExtensionHandler.backgroundProcess.loginHandler(authMsg: userInfo!, page: page)
+        } else if (messageName == "Alpheios_LogoutMessage") {
+            #if DEBUG
+            os_log("Recieved a logout message from a content script, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
+            #endif
+            SafariExtensionHandler.backgroundProcess.logoutHandler()
         } else if (messageName == "ping") {
             // This is a ping message to keep an extension alive
         }
@@ -68,25 +78,6 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
                 }
             })
         })
-    }
-    
-    override func messageReceivedFromContainingApp(withName messageName: String, userInfo: [String : Any]? = nil) {
-        #if DEBUG
-        os_log("Message from a containing app: \"%@\"", log: OSLog.sAlpheios, type: .info,  messageName)
-        #endif
-        
-        if (messageName == "UserLogin") {
-            let authData = userInfo!
-            SafariExtensionHandler.backgroundProcess.login(authInfo: authData)
-        } else if (messageName == "UserLogout") {
-            SafariExtensionHandler.backgroundProcess.logout()
-        } else if (messageName == "CreateAccount") {
-            SafariExtensionHandler.backgroundProcess.createAccount()
-        } else if (messageName == "ShowUserAcctTutorial") {
-            SafariExtensionHandler.backgroundProcess.showUserAcctTutorial()
-        }
-        
-        
     }
     
     override func contextMenuItemSelected(withCommand command: String, in page: SFSafariPage, userInfo: [String : Any]? = nil) {

@@ -1,14 +1,18 @@
 /* global safari */
 import Message from '@/lib/messaging/message/message.js'
-import StateMessage from '@/lib/messaging/message/state-message'
+import StateMessage from '@/lib/messaging/message/state-message.js'
+import LoginMessage from '@/lib/messaging/message/login-message.js'
+import LogoutMessage from '@/lib/messaging/message/logout-message.js'
 import MessagingService from '@/lib/messaging/service-safari.js'
 import {
-  TabScript, UIController, AuthModule, ToolbarModule, ActionPanelModule, PanelModule, PopupModule, Platform,
+  TabScript, UIController, AuthModule, AuthData, ToolbarModule, ActionPanelModule, PanelModule, PopupModule, Platform,
   LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB, Logger
 } from 'alpheios-components'
 import SafariAuthenticator from '@/lib/auth/safari-authenticator.js'
 import Package from '../../package.json'
+import env from '../../../protected-config/auth0/prod/env-safari-app-ext.js'
 import createAuth0Client from '@auth0/auth0-spa-js'
+import jwt from 'jsonwebtoken'
 
 const pingInterval = 15000 // How often to ping background with a state message, in ms
 let pingIntervalID = null
@@ -202,11 +206,14 @@ const handleStateRequest = async function handleStateRequest (message) {
 const handleLoginRequest = async function handleLoginRequest (message) {
   // Expiration datetime in the state request is in the Unix time (whole seconds)
   // It will be converted to a Date format below
+  console.info(`Login request has been received @${window.document.URL}`, message.body)
   message.body.accessTokenExpiresIn = new Date(Number.parseInt(message.body.accessTokenExpiresIn, 10) * 1000)
+  console.info(`Expiration date is ${message.body.accessTokenExpiresIn.toLocaleString()}`)
   uiController.api.auth.authenticate(message.body)
 }
 
 const handleLogoutRequest = async function handleLogoutRequest (message) {
+  console.info(`Logout request has been received @${window.document.URL}`, message.body)
   uiController.api.auth.logout()
 }
 
@@ -215,6 +222,105 @@ const sendMessageToBackground = function sendMessageToBackground (messageName) {
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
+  console.info(`DOM content loaded, URL is ${window.document.URL}`)
+
+  // Handle the Auth0 logout page
+  if (window.document.URL.includes(env.AUTH0_LOGOUT_URL)) {
+    // Empty the logout page
+    window.document.body.innerHTML = ''
+    /*
+    This is an Auth0 logout page. We need to navigate away from it.
+    Logout is happening in a frame with a log in button.
+    Because of this we need to set auth to 1 so that the log out button
+    will be rendered in that frame.
+     */
+    window.document.location.replace(`${env.ALPHEIOS_DOMAIN}#auth=1`)
+    return
+  }
+
+  if (window.document.URL.includes(env.ALPHEIOS_DOMAIN)) {
+    const searchRes = window.document.URL.match(/auth=(\d+)/)
+    const authStatus = (searchRes && searchRes.length === 2 && searchRes[1] === '1')
+    console.info(`This is an alpheios domain, auth status is ${authStatus}`)
+    let authDiv = document.createElement('div') // eslint-disable-line prefer-const
+
+    authDiv.innerHTML += authStatus
+      ? '<button id="alpheios-logout" class="alpheios-button-primary">Log Out</button>'
+      : '<button id="alpheios-login" class="alpheios-button-primary">Log In</button>'
+    document.body.appendChild(authDiv)
+
+    createAuth0Client({
+      domain: env.AUTH0_DOMAIN,
+      client_id: env.AUTH0_CLIENT_ID,
+      audience: env.AUDIENCE,
+      scope: env.SCOPE
+    }).then(auth0 => {
+      console.info('Auth0 client has been created successfully:', auth0)
+      authClient = auth0
+    }).catch(err => {
+      console.info('Auth0 client creation failed:', err)
+    })
+
+    const loginBtn = window.document.body.querySelector('#alpheios-login')
+    const logoutBtn = document.body.querySelector('#alpheios-logout')
+
+    if (loginBtn) {
+      loginBtn.addEventListener('click', () => {
+        console.info('User initiated login')
+        if (authClient) {
+          authClient.loginWithPopup().then(() => {
+            console.info('User has been logged in successfully')
+            let authData = new AuthData() // eslint-disable-line prefer-const
+            authData.setAuthStatus(true)
+
+            authClient.getTokenSilently().then(accessToken => {
+              console.info('Auth token has been obtained successfully:', accessToken)
+              const decoded = jwt.decode(accessToken)
+              console.info('Decoded token is:', decoded)
+              authData.accessToken = accessToken
+              // `exp` contains an expiration datetime in unix epoch, in seconds
+              authData.expirationDateTime = decoded.exp
+            }).catch(err => {
+              console.info('getTokenSilently() has failed:', err)
+            })
+
+            authClient.getUser().then(user => {
+              console.info('User info has been obtained:', user)
+              authData.userId = user.sub
+              authData.userName = user.name
+              authData.userNickname = user.nickname
+
+              const msg = new LoginMessage(authData)
+              safari.extension.dispatchMessage(Message.types.LOGIN_MESSAGE.description, msg)
+              console.info('Message to the extension has been sent', msg)
+            }).catch(err => {
+              console.info('Auth0 user info request failed:', err)
+            })
+          }).catch(err => {
+            console.info('Auth0 login request failed:', err)
+          })
+        } else {
+          console.info('Auth0 client object does not exist')
+        }
+      })
+    }
+
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', () => {
+        console.info('User initiated logout')
+        if (authClient) {
+          authClient.logout()
+          const msg = new LogoutMessage()
+          safari.extension.dispatchMessage(Message.types.LOGOUT_MESSAGE.description, msg)
+          console.info('Message to the extension has been sent', msg)
+        } else {
+          console.info('Auth0 client object does not exist')
+        }
+      })
+    }
+    return
+  }
+
   /*
   In Safari, if page contains several documents (as in case with frames), a content script is
   loaded for the "main" document (the topmost document) AND for each of the child documents
@@ -224,73 +330,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
   be shown from those where it can not. If we're lucky, a single document will be selected.
   If not, we should adjust filtering rules to accommodate such cases.
    */
-
-  if (window.document.URL === 'https://alpheios.net/0dc437ee-74c7-4444-aa6a-2387df3ab81e/') {
-    console.info('A special target is detected')
-    // create a new div element
-    let newDiv = document.createElement("div")
-    newDiv.id = 'alpheios-authentication'
-    // and give it some content
-    // const newContent = document.createTextNode("This is an Alpheios page")
-    newDiv.innerHTML += `<button id="alpheios-login">Sign in or sign up</button><br><button id="alpheios-logout">Sign out</button>`
-    // add the text node to the newly created div
-    // newDiv.appendChild(newContent)
-    document.body.appendChild(newDiv)
-
-    createAuth0Client({
-      domain: 'alpheios.auth0.com',
-      client_id: 'iT75HkBHThA4QdFwFoZRofLC41vVyvAt',
-      audience: 'alpheios.net:apis',
-      scope: 'openid profile offline_access',
-      redirect_uri: 'https://alpheios.net/0dc437ee-74c7-4444-aa6a-2387df3ab81e/'
-    }).then(auth0 => {
-      console.info(`Auth0 client has been created successfully:`, auth0)
-      authClient = auth0
-    }).catch(err => {
-      console.info(`Auth0 client creation failed:`, err)
-    })
-
-    const loginLink = document.body.querySelector('#alpheios-login')
-    if (loginLink) {
-      loginLink.addEventListener('click', () => {
-        console.info('Login link is clicked')
-        if (authClient) {
-          authClient.loginWithPopup().then(() => {
-            console.info(`User has been logged in successfully`)
-
-            authClient.getTokenSilently().then(accessToken => {
-              console.info(`Auth token has been obtained successfully:`, accessToken)
-            }).catch(err => {
-              console.info(`getTokenSilently() has failed:`, err)
-            })
-
-            authClient.getUser().then(user => {
-              console.info(`User info has been obtained:`, user);
-            }).catch(err => {
-              console.info(`Auth0 user info request failed:`, err)
-            })
-          }).catch(err => {
-            console.info(`Auth0 login request failed:`, err)
-          })
-        } else {
-          console.info('Auth0 client object does not exist')
-        }
-      })
-    }
-    const logoutLink = document.body.querySelector('#alpheios-logout')
-    if (logoutLink) {
-      logoutLink.addEventListener('click', () => {
-        console.info('Logout link is clicked')
-        if (authClient) {
-          authClient.logout()
-        } else {
-          console.info('Auth0 client object does not exist')
-        }
-      })
-    }
-    return
-  }
-
   if (HTMLPage.isValidTarget) {
     messagingService = new MessagingService()
     messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest)

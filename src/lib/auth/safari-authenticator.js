@@ -1,5 +1,5 @@
 import { AuthData } from 'alpheios-components'
-import auth0Env from '@/lib/auth/env-safari-app-ext.js'
+import Auth0env from '../../../../protected-config/auth0/prod/env-safari-app-ext.js'
 import Authenticator from '@/lib/auth/authenticator.js'
 
 /**
@@ -18,7 +18,7 @@ export default class SafariAuthenticator extends Authenticator {
     this.hasUserData = false
 
     // TODO: Hardcoded for now. Can we do it any better than that?
-    this.endpoints = auth0Env.ENDPOINTS
+    this.endpoints = Auth0env.ENDPOINTS
   }
 
   /**
@@ -126,6 +126,10 @@ export default class SafariAuthenticator extends Authenticator {
         reject('No user data has been retrieved yet') // eslint-disable-line prefer-promise-reject-errors
       }
     })
+  }
+
+  get iFrameURL () {
+    return Auth0env.ALPHEIOS_DOMAIN || ''
   }
 
   /**

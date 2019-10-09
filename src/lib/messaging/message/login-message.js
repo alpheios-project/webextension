@@ -1,9 +1,8 @@
-import Message from './message'
-import { TabScript } from 'alpheios-components'
+import Message from './message.js'
 
 export default class LoginMessage extends Message {
-  constructor (state) {
-    super(TabScript.serializable(state))
+  constructor (authData) {
+    super(authData)
     this.type = Symbol.keyFor(Message.types.LOGIN_MESSAGE)
   }
 }
