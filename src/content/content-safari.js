@@ -206,14 +206,11 @@ const handleStateRequest = async function handleStateRequest (message) {
 const handleLoginRequest = async function handleLoginRequest (message) {
   // Expiration datetime in the state request is in the Unix time (whole seconds)
   // It will be converted to a Date format below
-  console.info(`Login request has been received @${window.document.URL}`, message.body)
   message.body.accessTokenExpiresIn = new Date(Number.parseInt(message.body.accessTokenExpiresIn, 10) * 1000)
-  console.info(`Expiration date is ${message.body.accessTokenExpiresIn.toLocaleString()}`)
   uiController.api.auth.authenticate(message.body)
 }
 
 const handleLogoutRequest = async function handleLogoutRequest (message) {
-  console.info(`Logout request has been received @${window.document.URL}`, message.body)
   uiController.api.auth.logout()
 }
 
@@ -222,8 +219,6 @@ const sendMessageToBackground = function sendMessageToBackground (messageName) {
 }
 
 document.addEventListener('DOMContentLoaded', (event) => {
-  console.info(`DOM content loaded, URL is ${window.document.URL}`)
-
   // Handle the Auth0 logout page
   if (window.document.URL.includes(env.AUTH0_LOGOUT_URL)) {
     // Empty the logout page
@@ -240,8 +235,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
   if (window.document.URL.includes(env.ALPHEIOS_DOMAIN)) {
     const searchRes = window.document.URL.match(/auth=(\d+)/)
+    if (!searchRes) {
+      // Do not inject anything if `auth` is not present
+      return
+    }
     const authStatus = (searchRes && searchRes.length === 2 && searchRes[1] === '1')
-    console.info(`This is an alpheios domain, auth status is ${authStatus}`)
     let authDiv = document.createElement('div') // eslint-disable-line prefer-const
 
     authDiv.innerHTML += authStatus
@@ -255,10 +253,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
       audience: env.AUDIENCE,
       scope: env.SCOPE
     }).then(auth0 => {
-      console.info('Auth0 client has been created successfully:', auth0)
       authClient = auth0
     }).catch(err => {
-      console.info('Auth0 client creation failed:', err)
+      console.error('Auth0 client creation failed:', err)
     })
 
     const loginBtn = window.document.body.querySelector('#alpheios-login')
@@ -266,55 +263,47 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     if (loginBtn) {
       loginBtn.addEventListener('click', () => {
-        console.info('User initiated login')
         if (authClient) {
           authClient.loginWithPopup().then(() => {
-            console.info('User has been logged in successfully')
             let authData = new AuthData() // eslint-disable-line prefer-const
             authData.setAuthStatus(true)
 
             authClient.getTokenSilently().then(accessToken => {
-              console.info('Auth token has been obtained successfully:', accessToken)
               const decoded = jwt.decode(accessToken)
-              console.info('Decoded token is:', decoded)
               authData.accessToken = accessToken
               // `exp` contains an expiration datetime in unix epoch, in seconds
               authData.expirationDateTime = decoded.exp
             }).catch(err => {
-              console.info('getTokenSilently() has failed:', err)
+              console.error('getTokenSilently() has failed:', err)
             })
 
             authClient.getUser().then(user => {
-              console.info('User info has been obtained:', user)
               authData.userId = user.sub
               authData.userName = user.name
               authData.userNickname = user.nickname
 
               const msg = new LoginMessage(authData)
               safari.extension.dispatchMessage(Message.types.LOGIN_MESSAGE.description, msg)
-              console.info('Message to the extension has been sent', msg)
             }).catch(err => {
-              console.info('Auth0 user info request failed:', err)
+              console.error('Auth0 user info request failed:', err)
             })
           }).catch(err => {
-            console.info('Auth0 login request failed:', err)
+            console.error('Auth0 login request failed:', err)
           })
         } else {
-          console.info('Auth0 client object does not exist')
+          console.error('Auth0 client object does not exist')
         }
       })
     }
 
     if (logoutBtn) {
       logoutBtn.addEventListener('click', () => {
-        console.info('User initiated logout')
         if (authClient) {
           authClient.logout()
           const msg = new LogoutMessage()
           safari.extension.dispatchMessage(Message.types.LOGOUT_MESSAGE.description, msg)
-          console.info('Message to the extension has been sent', msg)
         } else {
-          console.info('Auth0 client object does not exist')
+          console.error('Auth0 client object does not exist')
         }
       })
     }
