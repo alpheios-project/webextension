@@ -13,6 +13,7 @@ import Package from '../../package.json'
 import env from '../../../protected-config/auth0/prod/env-safari-app-ext.js'
 import createAuth0Client from '@auth0/auth0-spa-js'
 import jwt from 'jsonwebtoken'
+const LOGIN_TIMEOUT = 300
 
 const pingInterval = 15000 // How often to ping background with a state message, in ms
 let pingIntervalID = null
@@ -264,7 +265,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     if (loginBtn) {
       loginBtn.addEventListener('click', () => {
         if (authClient) {
-          authClient.loginWithPopup().then(() => {
+          authClient.loginWithPopup({}, { timeoutInSeconds: LOGIN_TIMEOUT }).then(() => {
             let authData = new AuthData() // eslint-disable-line prefer-const
             authData.setAuthStatus(true)
 
