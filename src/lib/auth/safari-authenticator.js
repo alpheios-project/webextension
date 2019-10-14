@@ -49,12 +49,18 @@ export default class SafariAuthenticator extends Authenticator {
   }
 
   /**
-   * Check access token expiration.
-   * @returns {Promise}
+   * Returns an authentication data along with an expiration data.
+   * Is used to obtain user information and set expiration timeout
+   * if user has already been authenticated previously.
+   * @return {Promise<AuthData> | Promise<Error>}
    */
   session () {
     return new Promise((resolve, reject) => {
-      reject('Not implemented') // eslint-disable-line prefer-promise-reject-errors
+      if (this._authData.isAuthenticated) {
+        resolve(this._authData)
+      } else {
+        reject(new Error('Not authenticated'))
+      }
     })
   }
 

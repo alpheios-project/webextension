@@ -37,8 +37,10 @@ export default class Authenticator {
   }
 
   /**
-   * Check access token expiration.
-   * @returns {Promise}
+   * Returns an authentication data along with an expiration data.
+   * Is used to obtain user information and set expiration timeout
+   * if user has already been authenticated previously.
+   * @return {Promise<AuthData> | Promise<Error>}
    */
   session () {
     return new Promise((resolve, reject) => {
