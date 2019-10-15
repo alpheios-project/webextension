@@ -91,19 +91,19 @@
         </menu>
         <window title="Alpheios Reading Tools" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-            <rect key="contentRect" x="335" y="390" width="480" height="367"/>
+            <rect key="contentRect" x="335" y="390" width="480" height="379"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <view key="contentView" identifier="LoggedInBox" wantsLayer="YES" id="EiT-Mj-1SZ">
-                <rect key="frame" x="0.0" y="0.0" width="480" height="367"/>
+                <rect key="frame" x="0.0" y="0.0" width="480" height="379"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <imageView horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wny-Yo-hUs">
-                        <rect key="frame" x="20" y="268" width="53" height="79"/>
+                        <rect key="frame" x="20" y="280" width="53" height="79"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <imageCell key="cell" refusesFirstResponder="YES" alignment="left" imageScaling="proportionallyUpOrDown" image="NSApplicationIcon" id="C86-lv-VId"/>
                     </imageView>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="FZ1-eH-d5Q">
-                        <rect key="frame" x="79" y="286" width="242" height="24"/>
+                        <rect key="frame" x="79" y="298" width="242" height="24"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" lineBreakMode="clipping" alignment="left" title="Alpheios Reading Tools" id="dAq-LV-Nzp">
                             <font key="font" size="21" name="Arial-BoldMT"/>
@@ -112,18 +112,29 @@
                         </textFieldCell>
                     </textField>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" fixedFrame="YES" allowsExpansionToolTips="YES" mirrorLayoutDirectionWhenInternationalizing="never" allowsCharacterPickerTouchBarItem="YES" translatesAutoresizingMaskIntoConstraints="NO" id="J9X-3d-p64">
-                        <rect key="frame" x="25" y="20" width="430" height="240"/>
+                        <rect key="frame" x="25" y="13" width="430" height="259"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" allowsEditingTextAttributes="YES" id="1oF-zA-0E8">
                             <font key="font" size="13" name="ArialMT"/>
-                            <string key="title">Provides clickable access to dictionary entries, morphological analyses, inflection tables and grammars for Latin and Ancient Greek and limited support for Classical Arabic and Persian.      1. Open Safari application     2. Open Safari Preferences Window in Menubar (⌘,)     3. Choose Extension Tab     4. Check "AlpheiosReadingTools"  Then activate on a page with Latin, Ancient Greek, Arabic or Persian text by clicking on the Alpheios icon          in the Safari toolbar.  Double-click on a word to retrieve morphology and short definitions.</string>
+                            <mutableString key="title">Provides clickable access to dictionary entries, morphological analyses, inflection tables and grammars for Latin and Ancient Greek and limited support for Classical Arabic and Persian.           2. Check "AlpheiosReadingTools"  Then activate on a page with Latin, Ancient Greek, Arabic or Persian text by clicking on the Alpheios icon          in the Safari toolbar.  Double-click on a word to retrieve morphology and short definitions.</mutableString>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
+                    <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wad-Rf-Izh">
+                        <rect key="frame" x="27" y="167" width="214" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                        <buttonCell key="cell" type="push" title="1. Open Safari Preferences" bezelStyle="rounded" alignment="left" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="aop-95-b9x">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="OpenPrefsBtnClicked:" target="Voe-Tx-rLC" id="c4C-h2-Grt"/>
+                        </connections>
+                    </button>
                 </subviews>
             </view>
-            <point key="canvasLocation" x="-838" y="-44.5"/>
+            <point key="canvasLocation" x="-838" y="-38.5"/>
         </window>
     </objects>
     <resources>
