@@ -116,15 +116,15 @@
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                         <textFieldCell key="cell" allowsEditingTextAttributes="YES" id="1oF-zA-0E8">
                             <font key="font" size="13" name="ArialMT"/>
-                            <mutableString key="title">Provides clickable access to dictionary entries, morphological analyses, inflection tables and grammars for Latin and Ancient Greek and limited support for Classical Arabic and Persian.           2. Check "AlpheiosReadingTools"  Then activate on a page with Latin, Ancient Greek, Arabic or Persian text by clicking on the Alpheios icon          in the Safari toolbar.  Double-click on a word to retrieve morphology and short definitions.</mutableString>
+                            <mutableString key="title">Provides clickable access to dictionary entries, morphological analyses, inflection tables and grammars for Latin and Ancient Greek and limited support for Classical Arabic and Persian.      1.     2.   Check "AlpheiosReadingTools"  Then activate on a page with Latin, Ancient Greek, Arabic or Persian text by clicking on the Alpheios icon          in the Safari toolbar.  Double-click on a word to retrieve morphology and short definitions.</mutableString>
                             <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
                     <button verticalHuggingPriority="750" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="Wad-Rf-Izh">
-                        <rect key="frame" x="27" y="167" width="214" height="32"/>
+                        <rect key="frame" x="49" y="167" width="224" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="push" title="1. Open Safari Preferences" bezelStyle="rounded" alignment="left" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="aop-95-b9x">
+                        <buttonCell key="cell" type="push" title="Click to Open Safari Preferences" bezelStyle="rounded" alignment="left" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="aop-95-b9x">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
