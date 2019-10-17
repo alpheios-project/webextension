@@ -69,7 +69,8 @@ export default class SafariAuthenticator extends Authenticator {
    * @property {string} userId - A user ID (`sub` in Auth0).
    * @property {string} userName - A full name of the user.
    * @property {string} userNickname - A user's nickname.
-   * @property {string} accessToken - An access token of the user..
+   * @property {string} accessToken - An access token of the user.
+   * @property {Date} accessTokenExpiresIn - A date and time when access token expires.
    */
   /**
    * Authenticates user with an Auth0.
@@ -88,6 +89,7 @@ export default class SafariAuthenticator extends Authenticator {
       this._authData.userNickname = authData.userNickname
       this._authData.accessToken = authData.accessToken
       this._authData.expirationDateTime = authData.accessTokenExpiresIn
+      console.info(`Setting auth data expiration date time to ${this._authData.expirationDateTime.toLocaleString()}`)
       this.hasUserData = true
       this._authData.isAuthenticated = true
       resolve()

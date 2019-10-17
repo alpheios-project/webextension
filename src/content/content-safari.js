@@ -106,6 +106,7 @@ const embeddedLibListener = function embeddedLibListener () {
  * State request processing function.
  */
 const handleStateRequest = async function handleStateRequest (message) {
+  console.info('State request is received', message.body)
   state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
   if (state.isEmbedLibActive()) {
     // Inform a background that an Alpheios embedded library is active
@@ -167,6 +168,7 @@ const handleStateRequest = async function handleStateRequest (message) {
     uiController.activate()
       .then(() => {
         if (message.body.authStatus && uiController.hasModule('auth')) {
+          console.info('There is an authentication module')
           // Restore the logged in state if it was established during the previous sessions
           if (message.body.authStatus === SafariAuthenticator.authStatuses.LOGGED_IN) {
             // We need to update an authentication status only if the user has been logged in
@@ -208,6 +210,7 @@ const handleLoginRequest = async function handleLoginRequest (message) {
   // Expiration datetime in the state request is in the Unix time (whole seconds)
   // It will be converted to a Date format below
   message.body.accessTokenExpiresIn = new Date(Number.parseInt(message.body.accessTokenExpiresIn, 10) * 1000)
+  console.info(`Login notification request has been received, expiration date is ${message.body.accessTokenExpiresIn.toLocaleString()}`)
   uiController.api.auth.authenticate(message.body)
 }
 
@@ -274,6 +277,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
               authData.accessToken = accessToken
               // `exp` contains an expiration datetime in unix epoch, in seconds
               authData.expirationDateTime = decoded.exp
+              console.info(`An authentication has been completed, expiration period is ${decoded.exp}`)
             }).catch(err => {
               console.error('getTokenSilently() has failed:', err)
             })
@@ -284,6 +288,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
               authData.userNickname = user.nickname
 
               const msg = new LoginMessage(authData)
+              console.info('Sending a login message to background', msg)
               safari.extension.dispatchMessage(Message.types.LOGIN_MESSAGE.description, msg)
             }).catch(err => {
               console.error('Auth0 user info request failed:', err)
