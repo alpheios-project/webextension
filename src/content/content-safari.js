@@ -10,7 +10,7 @@ import {
 } from 'alpheios-components'
 import SafariAuthenticator from '@/lib/auth/safari-authenticator.js'
 import Package from '../../package.json'
-import env from '../../../protected-config/auth0/prod/env-safari-app-ext.js'
+import env from '../../../protected-config/auth0/dev/env-safari-app-ext.js'
 import createAuth0Client from '@auth0/auth0-spa-js'
 import jwt from 'jsonwebtoken'
 const LOGIN_TIMEOUT = 300
@@ -106,7 +106,6 @@ const embeddedLibListener = function embeddedLibListener () {
  * State request processing function.
  */
 const handleStateRequest = async function handleStateRequest (message) {
-  console.info('State request is received', message.body)
   state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
   if (state.isEmbedLibActive()) {
     // Inform a background that an Alpheios embedded library is active
@@ -167,13 +166,22 @@ const handleStateRequest = async function handleStateRequest (message) {
     if (diff.has('tab')) { state.tab = diff.tab }
     uiController.activate()
       .then(() => {
-        if (message.body.authStatus && uiController.hasModule('auth')) {
-          console.info('There is an authentication module')
+        if (uiController.hasModule('auth')) {
           // Restore the logged in state if it was established during the previous sessions
-          if (message.body.authStatus === SafariAuthenticator.authStatuses.LOGGED_IN) {
+          if (message.body.isAuthenticated === 'true') {
             // We need to update an authentication status only if the user has been logged in
             uiController.api.auth.authenticate(message.body)
           }
+          if (message.body.hasSessionExpired === 'true') {
+            // We need to update an authentication status only if the user has been logged in
+            uiController.api.auth.expireSession()
+          }
+
+          // Subscribe to the SESSION_EXPIRED event
+          AuthModule.evt.SESSION_EXPIRED.sub(() => {
+            const msg = new LogoutMessage(new AuthData().expireSession().interopSerializable())
+            safari.extension.dispatchMessage(Message.types.LOGOUT_MESSAGE.description, msg)
+          })
         }
 
         // Set watchers after UI Controller activation so they will not notify background of activation-related events
@@ -210,12 +218,18 @@ const handleLoginRequest = async function handleLoginRequest (message) {
   // Expiration datetime in the state request is in the Unix time (whole seconds)
   // It will be converted to a Date format below
   message.body.accessTokenExpiresIn = new Date(Number.parseInt(message.body.accessTokenExpiresIn, 10) * 1000)
-  console.info(`Login notification request has been received, expiration date is ${message.body.accessTokenExpiresIn.toLocaleString()}`)
   uiController.api.auth.authenticate(message.body)
 }
 
 const handleLogoutRequest = async function handleLogoutRequest (message) {
-  uiController.api.auth.logout()
+  // Boolean values are sent being converted to strings
+  if (message.body.hasSessionExpired === 'true') {
+    // This is a logout due to expiration of a session
+    uiController.api.auth.expireSession()
+  } else {
+    // This is a user-initiated logout
+    uiController.api.auth.logout()
+  }
 }
 
 const sendMessageToBackground = function sendMessageToBackground (messageName) {
@@ -277,7 +291,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
               authData.accessToken = accessToken
               // `exp` contains an expiration datetime in unix epoch, in seconds
               authData.expirationDateTime = decoded.exp
-              console.info(`An authentication has been completed, expiration period is ${decoded.exp}`)
             }).catch(err => {
               console.error('getTokenSilently() has failed:', err)
             })
@@ -288,7 +301,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
               authData.userNickname = user.nickname
 
               const msg = new LoginMessage(authData)
-              console.info('Sending a login message to background', msg)
               safari.extension.dispatchMessage(Message.types.LOGIN_MESSAGE.description, msg)
             }).catch(err => {
               console.error('Auth0 user info request failed:', err)
@@ -306,7 +318,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
       logoutBtn.addEventListener('click', () => {
         if (authClient) {
           authClient.logout()
-          const msg = new LogoutMessage()
+          // Use an empty AuthData object to confirm to the protocol
+          //     and indicate that this logout is user-initiated, not due to a timeout.
+          const msg = new LogoutMessage(new AuthData().interopSerializable())
           safari.extension.dispatchMessage(Message.types.LOGOUT_MESSAGE.description, msg)
         } else {
           console.error('Auth0 client object does not exist')

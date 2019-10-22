@@ -89,7 +89,6 @@ export default class SafariAuthenticator extends Authenticator {
       this._authData.userNickname = authData.userNickname
       this._authData.accessToken = authData.accessToken
       this._authData.expirationDateTime = authData.accessTokenExpiresIn
-      console.info(`Setting auth data expiration date time to ${this._authData.expirationDateTime.toLocaleString()}`)
       this.hasUserData = true
       this._authData.isAuthenticated = true
       resolve()
@@ -147,17 +146,8 @@ export default class SafariAuthenticator extends Authenticator {
     return new Promise((resolve, reject) => {
       // Erase user data
       this.hasUserData = false
-      this._authData.setAuthStatus(false).setSessionDuration(0)
-      this._authData.userId = null
-      this._authData.userName = null
-      this._authData.userNickname = null
-      this._authData.accessToken = null
+      this._authData.erase()
       resolve()
     })
   }
-}
-
-SafariAuthenticator.authStatuses = {
-  LOGGED_IN: 'LOGGED_IN',
-  LOGGED_OUT: 'LOGGED_OUT'
 }

@@ -60,7 +60,7 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
             #if DEBUG
             os_log("Recieved a logout message from a content script, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
             #endif
-            SafariExtensionHandler.backgroundProcess.logoutHandler()
+            SafariExtensionHandler.backgroundProcess.logoutHandler(authMsg: userInfo!)
         } else if (messageName == "ping") {
             // This is a ping message to keep an extension alive
         }
