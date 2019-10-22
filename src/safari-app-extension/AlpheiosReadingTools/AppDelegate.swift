@@ -10,7 +10,6 @@ import Cocoa
 import SafariServices
 import os.log
 import CoreData
-import Auth0
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {

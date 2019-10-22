@@ -22,10 +22,6 @@
 		7832F8C5214A5F9900CD96CB /* (null) in Sources */ = {isa = PBXBuildFile; };
 		BF017BBD22F1C96F00E20B0D /* AlpheiosSafariExtension.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BF017BBB22F1C96F00E20B0D /* AlpheiosSafariExtension.xcdatamodeld */; };
 		BF017BBE22F1C96F00E20B0D /* AlpheiosSafariExtension.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BF017BBB22F1C96F00E20B0D /* AlpheiosSafariExtension.xcdatamodeld */; };
-		BF0F528922F073170050AE62 /* Auth0.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528722F073170050AE62 /* Auth0.framework */; };
-		BF0F528F22F077FF0050AE62 /* SimpleKeychain.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF0F528622F073170050AE62 /* SimpleKeychain.framework */; };
-		BF0F529422F085020050AE62 /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF0F529322F085020050AE62 /* Auth0.plist */; };
-		BF0F529522F085020050AE62 /* Auth0.plist in Resources */ = {isa = PBXBuildFile; fileRef = BF0F529322F085020050AE62 /* Auth0.plist */; };
 		BF3927F9216F565E00213E05 /* alpheios.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BF3927F8216F565E00213E05 /* alpheios.pdf */; };
 		BF568EEA23070F6B00B5D073 /* StateMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF568EE823070F6B00B5D073 /* StateMessage.swift */; };
 		BF568EEC230A794400B5D073 /* NSCustomPersistantContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */; };
@@ -88,7 +84,6 @@
 		BF017BBC22F1C96F00E20B0D /* AlpheiosSafariExtension.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = AlpheiosSafariExtension.xcdatamodel; sourceTree = "<group>"; };
 		BF0F528622F073170050AE62 /* SimpleKeychain.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SimpleKeychain.framework; path = Carthage/Build/Mac/SimpleKeychain.framework; sourceTree = "<group>"; };
 		BF0F528722F073170050AE62 /* Auth0.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Auth0.framework; path = Carthage/Build/Mac/Auth0.framework; sourceTree = "<group>"; };
-		BF0F529322F085020050AE62 /* Auth0.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Auth0.plist; sourceTree = "<group>"; };
 		BF3927F8216F565E00213E05 /* alpheios.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = alpheios.pdf; sourceTree = "<group>"; };
 		BF568EE823070F6B00B5D073 /* StateMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMessage.swift; sourceTree = "<group>"; };
 		BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSCustomPersistantContainer.swift; sourceTree = "<group>"; };
@@ -104,8 +99,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF0F528922F073170050AE62 /* Auth0.framework in Frameworks */,
-				BF0F528F22F077FF0050AE62 /* SimpleKeychain.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -151,7 +144,6 @@
 				7832F88C2147A4CC00CD96CB /* MainMenu.xib */,
 				7832F88F2147A4CC00CD96CB /* Info.plist */,
 				7832F8902147A4CC00CD96CB /* AlpheiosReadingTools.entitlements */,
-				BF0F529322F085020050AE62 /* Auth0.plist */,
 			);
 			path = AlpheiosReadingTools;
 			sourceTree = "<group>";
@@ -306,7 +298,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				7832F88B2147A4CC00CD96CB /* Assets.xcassets in Resources */,
-				BF0F529422F085020050AE62 /* Auth0.plist in Resources */,
 				BFC1180023295BC4008D28A3 /* MainMenu.xib in Resources */,
 				BFC1180223391CD5008D28A3 /* AlpheiosData.plist in Resources */,
 			);
@@ -316,7 +307,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF0F529522F085020050AE62 /* Auth0.plist in Resources */,
 				7832F8B82147A70300CD96CB /* style-components-safari.css in Resources */,
 				BF3927F9216F565E00213E05 /* alpheios.pdf in Resources */,
 				BFC1180323391CD5008D28A3 /* AlpheiosData.plist in Resources */,
@@ -336,8 +326,6 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/Carthage/Build/Mac/Auth0.framework",
-				"$(SRCROOT)/Carthage/Build/Mac/SimpleKeychain.framework",
 			);
 			outputFileListPaths = (
 			);
@@ -345,7 +333,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n/usr/local/bin/carthage copy-frameworks\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -536,10 +524,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = W79WNX2NKZ;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/Mac",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "$(SRCROOT)/AlpheiosReadingTools/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -562,10 +547,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = W79WNX2NKZ;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/Mac",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = "$(SRCROOT)/AlpheiosReadingTools/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -585,10 +567,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = W79WNX2NKZ;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/Mac",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = AlpheiosSafari/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -610,10 +589,7 @@
 				CODE_SIGN_IDENTITY = "Mac Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = W79WNX2NKZ;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/Carthage/Build/Mac",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = AlpheiosSafari/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
