@@ -10,7 +10,7 @@ import {
 } from 'alpheios-components'
 import SafariAuthenticator from '@/lib/auth/safari-authenticator.js'
 import Package from '../../package.json'
-import env from '../../../protected-config/auth0/dev/env-safari-app-ext.js'
+import env from '../../../protected-config/auth0/prod/env-safari-app-ext.js'
 import createAuth0Client from '@auth0/auth0-spa-js'
 import jwt from 'jsonwebtoken'
 const LOGIN_TIMEOUT = 300
