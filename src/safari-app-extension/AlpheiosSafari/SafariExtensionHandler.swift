@@ -14,20 +14,7 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
     // In order to have BackgroundProcess shared across them, it must be a singleton
     // backgroundProcess will be instantiated lazily as thi si a default
     static let backgroundProcess: BackgroundProcess = BackgroundProcess()
-    // let managedContext = SFSafariApplication.persistentContainer.viewContext
-    
-    override init() {
-        #if DEBUG
-        os_log("SafariExtensionHandler has been initialized", log: OSLog.sAlpheios, type: .info)
-        #endif
-    }
-    
-    deinit {
-        #if DEBUG
-        os_log("SafariExtensionHandler has been deinitialized", log: OSLog.sAlpheios, type: .info)
-        #endif
-    }
-    
+
     override func messageReceived(withName messageName: String, from page: SFSafariPage, userInfo: [String : Any]?) {
         let hashValue = page.hashValue
         

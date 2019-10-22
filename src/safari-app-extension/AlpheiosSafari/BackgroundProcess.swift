@@ -130,14 +130,10 @@ class BackgroundProcess {
     func setContentState(tab: TabScript, page: SFSafariPage) {
         let stateRequestMsg = StateRequest(body: tab.convertForMessage())
         
+        // Check if authorization has expired
+        authData.expireIfNotValid()
+        
         let authInfo = authData.toStringDict()
-//        if (authInfo != nil) {
-//            // Add authentication information to the message body if user has been logged in
-//            stateRequestMsg.body["authStatus"] = Message.authStatuses["logged_in"]
-//            stateRequestMsg.body.merge(authInfo!) { (current, _) in current }
-//        } else {
-//            stateRequestMsg.body["authStatus"] = Message.authStatuses["logged_out"]
-//        }
         stateRequestMsg.body.merge(authInfo) { (current, _) in current }
         page.dispatchMessageToScript(withName: "fromBackground", userInfo: stateRequestMsg.convertForMessage())
     }
@@ -404,36 +400,6 @@ class BackgroundProcess {
         
         if let messageBody = authMsg["body"] as? Dictionary<String, Any> {
             authData.updateFromLogin(msgBody: messageBody)
-//            let msgBody = messageBody
-//            #if DEBUG
-//            os_log("Message body is available", log: OSLog.sAlpheios, type: .info)
-//            #endif
-//            let accessToken = messageBody["accessToken"] as! String
-//            #if DEBUG
-//            os_log("Acess token is %s", log: OSLog.sAlpheios, type: .info, accessToken)
-//            #endif
-//
-//            let unixExpirationDT = messageBody["expirationDateTime"] as! Int
-//            #if DEBUG
-//            os_log("unixExpirationDT is %d", log: OSLog.sAlpheios, type: .info, unixExpirationDT)
-//            #endif
-//            let expiresIn = Date(timeIntervalSince1970: TimeInterval(unixExpirationDT))
-//            #if DEBUG
-//            let dateFormatterPrint = DateFormatter()
-//            dateFormatterPrint.dateFormat = "yyyy-MMM-dd HH:mm:ss"
-//            os_log("Authenticated successfully, expiration date is %s", log: OSLog.sAlpheios, type: .info, dateFormatterPrint.string(from: expiresIn))
-//            #endif
-//
-//            let authInfo = [
-//                "userId": msgBody["userId"] as! String,
-//                "userName": msgBody["userName"] as! String,
-//                "userNickname": msgBody["userNickname"] as! String,
-//                "accessToken": accessToken,
-//                "expiresIn": expiresIn
-//                ] as [String : Any]
-//
-//            self.authInfo = authInfo
-
 
             // Update auth data in a persistent storage
             self.updateAuthInfo()
@@ -611,17 +577,7 @@ class BackgroundProcess {
                 self.authData.userName = userName as! String
                 self.authData.userNickname = userNickname as! String
                 
-                
-                let now = Date()
-                if (self.authData.expirationDateTime < now) {
-                    os_log("An access token has expired", log: OSLog.sAlpheios, type: .info)
-                    if (self.authData.isAuthenticated) {
-                        // If user has been authenticated previously, mark session as expired
-                        self.authData.expireSession()
-                    }
-                    // self.deleteAuthInfo()
-                    return
-                }
+                self.authData.expireIfNotValid()
             }
             
         } catch let error as NSError {
