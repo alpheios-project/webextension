@@ -166,12 +166,22 @@ const handleStateRequest = async function handleStateRequest (message) {
     if (diff.has('tab')) { state.tab = diff.tab }
     uiController.activate()
       .then(() => {
-        if (message.body.authStatus && uiController.hasModule('auth')) {
+        if (uiController.hasModule('auth')) {
           // Restore the logged in state if it was established during the previous sessions
-          if (message.body.authStatus === SafariAuthenticator.authStatuses.LOGGED_IN) {
+          if (message.body.isAuthenticated === 'true') {
             // We need to update an authentication status only if the user has been logged in
             uiController.api.auth.authenticate(message.body)
           }
+          if (message.body.hasSessionExpired === 'true') {
+            // We need to update an authentication status only if the user has been logged in
+            uiController.api.auth.expireSession()
+          }
+
+          // Subscribe to the SESSION_EXPIRED event
+          AuthModule.evt.SESSION_EXPIRED.sub(() => {
+            const msg = new LogoutMessage(new AuthData().expireSession().interopSerializable())
+            safari.extension.dispatchMessage(Message.types.LOGOUT_MESSAGE.description, msg)
+          })
         }
 
         // Set watchers after UI Controller activation so they will not notify background of activation-related events
@@ -212,7 +222,14 @@ const handleLoginRequest = async function handleLoginRequest (message) {
 }
 
 const handleLogoutRequest = async function handleLogoutRequest (message) {
-  uiController.api.auth.logout()
+  // Boolean values are sent being converted to strings
+  if (message.body.hasSessionExpired === 'true') {
+    // This is a logout due to expiration of a session
+    uiController.api.auth.expireSession()
+  } else {
+    // This is a user-initiated logout
+    uiController.api.auth.logout()
+  }
 }
 
 const sendMessageToBackground = function sendMessageToBackground (messageName) {
@@ -301,7 +318,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
       logoutBtn.addEventListener('click', () => {
         if (authClient) {
           authClient.logout()
-          const msg = new LogoutMessage()
+          // Use an empty AuthData object to confirm to the protocol
+          //     and indicate that this logout is user-initiated, not due to a timeout.
+          const msg = new LogoutMessage(new AuthData().interopSerializable())
           safari.extension.dispatchMessage(Message.types.LOGOUT_MESSAGE.description, msg)
         } else {
           console.error('Auth0 client object does not exist')

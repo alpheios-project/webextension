@@ -69,7 +69,8 @@ export default class SafariAuthenticator extends Authenticator {
    * @property {string} userId - A user ID (`sub` in Auth0).
    * @property {string} userName - A full name of the user.
    * @property {string} userNickname - A user's nickname.
-   * @property {string} accessToken - An access token of the user..
+   * @property {string} accessToken - An access token of the user.
+   * @property {Date} accessTokenExpiresIn - A date and time when access token expires.
    */
   /**
    * Authenticates user with an Auth0.
@@ -145,17 +146,8 @@ export default class SafariAuthenticator extends Authenticator {
     return new Promise((resolve, reject) => {
       // Erase user data
       this.hasUserData = false
-      this._authData.setAuthStatus(false).setSessionDuration(0)
-      this._authData.userId = null
-      this._authData.userName = null
-      this._authData.userNickname = null
-      this._authData.accessToken = null
+      this._authData.erase()
       resolve()
     })
   }
-}
-
-SafariAuthenticator.authStatuses = {
-  LOGGED_IN: 'LOGGED_IN',
-  LOGGED_OUT: 'LOGGED_OUT'
 }

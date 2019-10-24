@@ -14,20 +14,7 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
     // In order to have BackgroundProcess shared across them, it must be a singleton
     // backgroundProcess will be instantiated lazily as thi si a default
     static let backgroundProcess: BackgroundProcess = BackgroundProcess()
-    // let managedContext = SFSafariApplication.persistentContainer.viewContext
-    
-    override init() {
-        #if DEBUG
-        os_log("SafariExtensionHandler has been initialized", log: OSLog.sAlpheios, type: .info)
-        #endif
-    }
-    
-    deinit {
-        #if DEBUG
-        os_log("SafariExtensionHandler has been deinitialized", log: OSLog.sAlpheios, type: .info)
-        #endif
-    }
-    
+
     override func messageReceived(withName messageName: String, from page: SFSafariPage, userInfo: [String : Any]?) {
         let hashValue = page.hashValue
         
@@ -60,7 +47,7 @@ class SafariExtensionHandler: SFSafariExtensionHandler {
             #if DEBUG
             os_log("Recieved a logout message from a content script, hash value is %d", log: OSLog.sAlpheios, type: .info, hashValue)
             #endif
-            SafariExtensionHandler.backgroundProcess.logoutHandler()
+            SafariExtensionHandler.backgroundProcess.logoutHandler(authMsg: userInfo!)
         } else if (messageName == "ping") {
             // This is a ping message to keep an extension alive
         }
