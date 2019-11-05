@@ -1,7 +1,7 @@
 {
   "name": "webextension",
   "version": "3.0.3",
-  "build": "87",
+  "build": "88",
   "description": "A WebExtension implementation of Alpheios",
   "main": "index.js",
   "scripts": {
@@ -33,9 +33,9 @@
   "homepage": "https://github.com/alpheios-project/webextension#readme",
   "devDependencies": {
     "@auth0/auth0-spa-js": "^1.5.0",
-    "@babel/core": "^7.6.2",
+    "@babel/core": "^7.7.0",
     "@babel/plugin-transform-runtime": "^7.6.2",
-    "@babel/runtime": "^7.6.2",
+    "@babel/runtime": "^7.7.1",
     "alpheios-components": "github:alpheios-project/components",
     "alpheios-node-build": "github:alpheios-project/node-build",
     "autoprefixer": "^9.7.1",
