@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     if (loginBtn) {
       loginBtn.addEventListener('click', () => {
         if (authClient) {
-          authClient.loginWithPopup({}, { timeoutInSeconds: LOGIN_TIMEOUT }).then(() => {
+          authClient.loginWithPopup({ max_age: env.AUTH0_MAX_AGE }, { timeoutInSeconds: LOGIN_TIMEOUT }).then(() => {
             let authData = new AuthData() // eslint-disable-line prefer-const
             authData.setAuthStatus(true)
 
