@@ -91,6 +91,7 @@ export default class SafariAuthenticator extends Authenticator {
       this._authData.expirationDateTime = authData.accessTokenExpiresIn
       this.hasUserData = true
       this._authData.isAuthenticated = true
+      this._authData.hasSessionExpired = false
       resolve()
     })
   }
