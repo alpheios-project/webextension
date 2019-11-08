@@ -1137,7 +1137,7 @@ body {
  Calculates a size of UI elements relative to the base size.
  Such elements can be scaled proportionally by changing the `--alpheios-base-ui-size` custom prop.
  */
-.alpheios-morph__attr {
+span.alpheios-morph__attr {
   font-weight: normal !important;
   padding-right: 0.25em !important;
 }
@@ -1197,6 +1197,14 @@ h4.alpheios-principal-parts__groupitem {
 }
 .alpheios-principal-parts__groupitem:last-child:after {
   content: ":" !important;
+}
+.alpheios-morph-data__chinese p {
+  margin-bottom: 0 !important;
+}
+.alpheios-morph__attr i {
+  font-style: italic !important;
+  font-family: sans-serif !important;
+  font-size: 90% !important;
 }
 /*
  Calculates a size of text elements relative to the base size.
@@ -1306,7 +1314,11 @@ h4.alpheios-principal-parts__groupitem {
   margin-top: 0.5em !important;
 }
 div.alpheios-inflections-list__inline {
-  display: inline;
+  display: flex;
+  flex-direction: row !important;
+}
+div.alpheios-inflections-list__inline span {
+  padding-right: 0.25em !important;
 }
 div.alpheios-inflections-list__block {
   display: block;
@@ -1316,6 +1328,13 @@ div.alpheios-inflections-list__block {
 }
 .alpheios-inflections-list__inflfeatures span:last-child:after {
   content: ")" !important;
+}
+.alpheios-inflections-list__inflfeatures, .alpheios-inflections-list__inflgroup {
+  display: flex;
+  flex-direction: row !important;
+}
+.alpheios-inflections-list__inflfeatures span, .alpheios-inflections-list__inflgroup span {
+  padding-right: 0.25em !important;
 }
 .alpheios-inflections-list__inflections .alpheios-inflections-list__inflset {
   margin-top: 0 !important;
@@ -1348,7 +1367,8 @@ div.alpheios-inflections-list__block {
 .alpheios-morph__dictentry p.feature_extras,
 .alpheios-morph__dictentry .alpheios-morph-definitions_list,
 .alpheios-morph__dictentry .alpheios-morph__translation_list,
-.alpheios-morph__dictentry .alpheios-inflections-list__inflections {
+.alpheios-morph__dictentry .alpheios-inflections-list__inflections,
+.alpheios-morph__dictentry .alpheios-morph-data__chinese {
   margin-left: 34px !important;
 }
 .alpheios-morph__dictentry .alpheios-morph-definitions_list,
