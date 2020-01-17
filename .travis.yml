@@ -4,7 +4,7 @@ node_js:
 cache: npm
 script:
   - npm test
-  - npm run build
+  - npm run qa-dist
 deploy:
   provider: releases
   skip_cleanup: true
