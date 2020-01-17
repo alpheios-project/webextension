@@ -2,6 +2,9 @@ language: node_js
 node_js:
 - 13.2
 cache: npm
+script:
+  - npm test
+  - npm run build
 deploy:
   provider: releases
   skip_cleanup: true
