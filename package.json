@@ -19,7 +19,7 @@
     "lint": "eslint --fix src/**/*.js",
     "prod": "node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs webpack production app config.mjs",
     "dev": "node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs webpack development app config.mjs",
-    "test": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
+    "test": "echo \"Tests do not exist for this package\" && exit 0",
     "zip": "node ./build/zip.js",
     "set-versions": "node ./scripts/set-versions.js",
     "qa-dist": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs copy --s=/dist --t=qa-temp --fe=env-webext.js --clean && node --experimental-modules ./node_modules/alpheios-node-build/dist/zip.mjs --s=/qa-temp --t=qa-dist --f=qa.zip && node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs clean --t=qa-temp"
