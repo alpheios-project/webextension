@@ -46,3 +46,4 @@ xcuserdata
 
 ## Carthage installed libs
 /src/safari-app-extension/Carthage
+/qa-dist/

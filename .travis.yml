@@ -1,0 +1,18 @@
+language: node_js
+node_js:
+- 13.2
+cache: npm
+script:
+  - npm test
+  - npm run qa-dist
+deploy:
+  provider: releases
+  skip_cleanup: true
+  api_key:
+    secure: pHbHo/6/1foLW4/HWiriiHOSgUSJIacFU8CXrJ8judqWrmkpNU6QDwFLWXX9cfwmGOSPAnpktj21Rx2uY0T1uUps4P31T50PjzTXakUaYOjG8Srb9a3WQNB4d5A8KmIifvrofDGi7yjX/dYKFbbcOqvhEQXRoF+0Bd22nr/kTcKoxdFK2wrOnTS/qeQ8a2hMnHWKDd5dkWBQF1WSB8JfuPaWZ3Lde5fr/t1AQveUefzw4I5FM8t1ntPTMwnQt0CNWSCAxrdix7Ccx+Dc40tO52EaKeTZZpYU8Qv/zMA0mBBXTHIZ+u5VMJg1Q4hj9C1WKOf9oiiEEfx+muq6T86hbNPQNA/mJSNSHSPy1vwbsdNeiYDE0UzlCLJaD/UW7nFJWaSjeLFxNhYT//i8w8+cDAYTrXMHea97FOECWxoj4bcrGDWdTnS23oZ5veBou9hhIcrV9Gy3Urtr8yQ4Va4/j+vVtdQemA8DNQZ7AYpGmvwxZ51OHCby/qTk4oGGqWzbzZ/uHeGAKrMFH8GUSIILAm/FSItWtUH8g7FSzFdh69h84ICpOnR3mqeNyvr02FYpIDDEVrVZRgNxisxPx1vOjNaXfr/8SMlmT6PHS4BC/+D1xQYTA7t11L0nrbNQtqDt4oizTaS/lUSZYIZ7kJuv/UzgJyV8GGV+aiBDI8neLQI=
+  file:
+  - qa-dist/qa.zip
+  on:
+    repo: alpheios-project/webextension
+    branch: qa
+    tags: true

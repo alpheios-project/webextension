@@ -1,0 +1,1 @@
+This directory contains JS script that are used for task automation within this package.
