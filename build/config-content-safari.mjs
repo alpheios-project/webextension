@@ -17,7 +17,7 @@ const webpack = {
     output: { filename: 'content-safari.js' },
     resolve: {
       alias: {
-        'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-components/dist/alpheios-components.min.js'),
+        'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-core/packages/components/dist/alpheios-components.min.js'),
         '@': path.join(projectRoot, 'src'),
         '@safari': path.join(projectRoot, 'src/content-safari')
       }
@@ -35,7 +35,7 @@ const webpack = {
     output: { filename: 'content-safari.js' },
     resolve: {
       alias: {
-        'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-components/dist/alpheios-components.js'),
+        'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-core/packages/components/dist/alpheios-components.js'),
         '@': path.join(projectRoot, 'src'),
         '@safari': path.join(projectRoot, 'src/content-safari')
       }

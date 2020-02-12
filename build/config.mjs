@@ -20,7 +20,7 @@ const webpack = {
     output: { filename: '[name].js' },
     resolve: {
       alias: {
-        'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-components/dist/alpheios-components.min.js'),
+        'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-core/packages/components/dist/alpheios-components.min.js'),
         '@': path.join(projectRoot, 'src')
       }
     }
@@ -31,7 +31,7 @@ const webpack = {
     output: { filename: '[name].js' },
     resolve: {
       alias: {
-        'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-components/dist/alpheios-components.js'),
+        'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-core/packages/components/dist/alpheios-components.js'),
         '@': path.join(projectRoot, 'src')
       }
     }
