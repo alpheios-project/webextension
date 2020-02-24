@@ -8,7 +8,8 @@ deploy:
   provider: releases
   api_key:
     secure: oHPMvPy0jSIrIlwkgLg/IzOWGPQS+ljGCV5wec2f4rZN27loTw4BzvHsUGQSvPjzrEyBm2K2NLkzUIlSH4UlyFCHXM3TD+30a8GU6rjLv9YAJpqr866cmayRnCGEfeFhD5Cm9l0F4NvbrZsrBlFgcxyHrCLwvTFpQlyRBjLonZVM821AX+h4Ie5NOF7UPXKRFwJr1k5Zxy4PqJdwlIn/EBn4cwiuaPqU0uRO/1x7Yy0PDHuwQnpp11u6FDXlxKjnt1oqa4LC7dD+HdlacRTEnYisStO4rgURYXdwgpU17AFQIAPvzLNs/Cqqvqij7UqImzvq1iioO6PCifRndacXzRIquILb9b/O54BO1CLXGbqWVTXtTBaMGSEpu/x9c7ONKcXYYDL19wzitih0zbWF41LFrDzWmhxSFOrpvM21Oonj3on0JkIEuKU2OhGallui2fDEsorsHOiK2Oq7KUiAZ9AIV8eIkfOPqsnuYYLhoFON1svkXZzupLjEEbAmu1V5nRzAD5SkgyVFjb9qFCrCpxTJFmffKLQOhvaPnpubaTxeIlQrx7pBF2THgWDci9W/2tLTT0v3ajf+iYdI8Jq1bdDN740HBic8JttoINep3Di3+uyBtsLBaepzF9c+xzkyXzCITf+1wxVx7Cxb1UJjK6htKHFNJfmW2YLlS7Yqvac=
-  file: ''
   on:
     repo: alpheios-project/webextension
-    branch: dev-cd
+    all_branches: true
+    tags: on
+    condition: $TRAVIS_TAG =~ ^v[0-9]+.[0-9]+.[0-9]+
