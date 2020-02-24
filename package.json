@@ -20,7 +20,14 @@
     "prod": "node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs webpack production app config.mjs",
     "dev": "node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs webpack development app config.mjs",
     "test": "jest",
-    "zip": "node ./build/zip.js"
+    "zip": "node ./build/zip.js",
+    "version-set-major-dev": "npm version premajor --preid dev",
+    "version-set-minor-dev": "npm version preminor --preid dev",
+    "version-set-patch-dev": "npm version prepatch --preid dev",
+    "version-increase-prerelease-dev": "npm version prerelease --preid dev",
+    "version-increase-prerelease-qa": "npm version prerelease --preid qa",
+    "version-increase-prerelease": "npm version prerelease --preid rel",
+    "version-graduate": "echo Not implemented yet. You have to manually remove a prerelease postfix from a version number in package.json"
   },
   "repository": {
     "type": "git",
