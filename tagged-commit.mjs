@@ -22,7 +22,7 @@ try {
   console.log('Cannot add files to git index:', error)
 }
 try {
-  output = execFileSync('git', ['commit', '-m', `"Build ${build}"`])
+  output = execFileSync('git', ['commit', '-m', `Build ${build}`])
 } catch (error) {
   console.log('Commit process failed:', error)
 }
