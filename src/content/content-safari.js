@@ -1,4 +1,4 @@
-/* global safari */
+/* global safari, BUILD_NUMBER */
 import Message from '@/lib/messaging/message/message.js'
 import StateMessage from '@/lib/messaging/message/state-message.js'
 import LoginMessage from '@/lib/messaging/message/login-message.js'
@@ -137,7 +137,7 @@ const handleStateRequest = async function handleStateRequest (message) {
     if (diff.has('status') && diff.status === TabScript.statuses.script.ACTIVE) {
       uiController = UIController.create(state, {
         storageAdapter: LocalStorageArea,
-        app: { name: 'Safari App Extension', version: `${Package.version}.${Package.build}` },
+        app: { name: 'Safari App Extension', version: `${Package.version}.BUILD_NUMBER` },
         appType: Platform.appTypes.SAFARI_APP_EXTENSION
       })
       authenticator = new SafariAuthenticator(messagingService)
