@@ -137,7 +137,7 @@ const handleStateRequest = async function handleStateRequest (message) {
     if (diff.has('status') && diff.status === TabScript.statuses.script.ACTIVE) {
       uiController = UIController.create(state, {
         storageAdapter: LocalStorageArea,
-        app: { name: 'Safari App Extension', version: `${Package.version}.BUILD_NUMBER` },
+        app: { name: 'Safari App Extension', version: Package.version, buildNumber: BUILD_NUMBER },
         appType: Platform.appTypes.SAFARI_APP_EXTENSION
       })
       authenticator = new SafariAuthenticator(messagingService)
