@@ -1,4 +1,4 @@
-/* global browser */
+/* global browser, BUILD_NUMBER */
 import Message from '@/lib/messaging/message/message.js'
 import ContentReadyMessage from '@/lib/messaging/message/content-ready-message.js'
 import EmbedLibMessage from '@/lib/messaging/message/embed-lib-message.js'
@@ -119,7 +119,7 @@ mode = (['dev', 'development'].includes(mode)) ? 'development' : 'production'
 
 uiController = UIController.create(state, {
   storageAdapter: ExtensionSyncStorage,
-  app: { name: browserManifest.name, version: browserManifest.version },
+  app: { name: browserManifest.name, version: browserManifest.version, buildNumber: BUILD_NUMBER },
   appType: Platform.appTypes.WEBEXTENSION,
   mode: mode
 })
