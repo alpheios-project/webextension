@@ -4,6 +4,7 @@ node_js:
 cache: npm
 script:
 - npm run test
+- npm run dist
 deploy:
   provider: releases
   api_key:
