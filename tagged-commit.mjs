@@ -3,7 +3,7 @@ import { execFileSync, execSync } from 'child_process'
 import branch from 'git-branch'
 
 const build = generateBuildNumber()
-let branchName = branch.sync()
+const branchName = branch.sync()
 
 // eslint-disable-next-line no-unused-vars
 let output
