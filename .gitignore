@@ -6,6 +6,7 @@ npm-debug.log*
 coverage
 alpheios.zip
 alpheios.xpi
+dist-zip/
 
 ## sensitive environment information
 /dist/env-webext.js
