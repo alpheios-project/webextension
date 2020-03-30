@@ -21,7 +21,7 @@ console.info(`Starting a ${build} commit`)
 
 console.info('Rebuilding a webextension. This may take a while')
 try {
-  output = execSync(`node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs -m webpack -M production -p app -c config.mjs -b ${build} && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs -m all -M all -p vue -c config-content-safari.mjs -b ${build}`)
+  output = execSync(`node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs -m webpack -M production -p app -c config.mjs -b ${build} && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs -m all -M all -p vue -c config-content-safari.mjs -b ${build} && npm run update-styles`)
 } catch (error) {
   console.error('Build process failed:', error)
   process.exit(1)
