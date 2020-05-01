@@ -433,7 +433,7 @@ export default class BackgroundProcess {
       console.error('Get user info: not authenticated')
     }
     if (this.authResult.is_test_user) {
-      this.authData.userId = 'alpheiosMockUserId'
+      this.authData.userId = 'dev|mockUserId'
       this.authData.userName = 'Alpheios Test User'
       this.authData.userNickname = 'testuser'
       this.messagingService.sendResponseToTab(UserProfileResponse.Success(request, this.authData.serializable()), sender.tab.id)
