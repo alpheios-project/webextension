@@ -35,8 +35,8 @@ class plistPlugin {
       try {
         safariAppExtPlistContent = fs.readFileSync(safariAppExtPlistPath, 'utf8')
       } catch (err) { console.error(`Cannot read ${safariAppExtPlistPath}: ${err.message}`); return }
-      safariAppExtPlistContent = safariAppExtPlistContent.replace(/(<key>CFBundleShortVersionString<\/key>\s+<string>)(\S+)(<\/string>)/, `$1${pkg.version}$3`)
-      safariAppExtPlistContent = safariAppExtPlistContent.replace(/(<key>CFBundleVersion<\/key>\s+<string>)(\S+)(<\/string>)/, `$1${this.buildInfo.name}$3`)
+      safariAppExtPlistContent = safariAppExtPlistContent.replace(/(<key>CFBundleShortVersionString<\/key>\s+<string>)(\.*)(<\/string>)/, `$1${pkg.version}$3`)
+      safariAppExtPlistContent = safariAppExtPlistContent.replace(/(<key>CFBundleVersion<\/key>\s+<string>)(\.*)(<\/string>)/, `$1${this.buildInfo.name}$3`)
       try {
         fs.writeFileSync(safariAppExtPlistPath, safariAppExtPlistContent)
       } catch (err) { console.error(`Cannot write ${safariAppExtPlistPath}: ${err.message}`); return }
@@ -45,8 +45,8 @@ class plistPlugin {
       try {
         safariAppExtPlistContent = fs.readFileSync(safariAppExtPlistPath, 'utf8')
       } catch (err) { console.error(`Cannot read ${safariAppExtPlistPath}: ${err.message}`); return }
-      safariAppExtPlistContent = safariAppExtPlistContent.replace(/(<key>CFBundleShortVersionString<\/key>\s+<string>)(\S+)(<\/string>)/, `$1${pkg.version}$3`)
-      safariAppExtPlistContent = safariAppExtPlistContent.replace(/(<key>CFBundleVersion<\/key>\s+<string>)(\S+)(<\/string>)/, `$1${this.buildInfo.name}$3`)
+      safariAppExtPlistContent = safariAppExtPlistContent.replace(/(<key>CFBundleShortVersionString<\/key>\s+<string>)(\.*)(<\/string>)/, `$1${pkg.version}$3`)
+      safariAppExtPlistContent = safariAppExtPlistContent.replace(/(<key>CFBundleVersion<\/key>\s+<string>)(\.*)(<\/string>)/, `$1${this.buildInfo.name}$3`)
       try {
         fs.writeFileSync(safariAppExtPlistPath, safariAppExtPlistContent)
       } catch (err) { console.error(`Cannot write ${safariAppExtPlistPath}: ${err.message}`) }
