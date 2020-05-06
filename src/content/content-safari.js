@@ -280,34 +280,45 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const logoutBtn = document.body.querySelector('#alpheios-logout')
 
     if (loginBtn) {
-      loginBtn.addEventListener('click', () => {
+      loginBtn.addEventListener('click', async () => {
         if (authClient) {
-          authClient.loginWithPopup({ max_age: env.AUTH0_MAX_AGE }, { timeoutInSeconds: LOGIN_TIMEOUT }).then(() => {
-            let authData = new AuthData() // eslint-disable-line prefer-const
-            authData.setAuthStatus(true)
-
-            authClient.getTokenSilently().then(accessToken => {
-              const decoded = jwt.decode(accessToken)
-              authData.accessToken = accessToken
-              // `exp` contains an expiration datetime in unix epoch, in seconds
-              authData.expirationDateTime = decoded.exp
-            }).catch(err => {
-              console.error('getTokenSilently() has failed:', err)
-            })
-
-            authClient.getUser().then(user => {
-              authData.userId = user.sub
-              authData.userName = user.name
-              authData.userNickname = user.nickname
-
-              const msg = new LoginMessage(authData)
-              safari.extension.dispatchMessage(Message.types.LOGIN_MESSAGE.description, msg)
-            }).catch(err => {
-              console.error('Auth0 user info request failed:', err)
-            })
-          }).catch(err => {
+          const popup = window.open(
+            '',
+            'auth0:authorize:popup',
+            'left=100,top=100,width=400,height=600,resizable,scrollbars=yes,status=1'
+          )
+          try {
+            await authClient.loginWithPopup(
+              { max_age: env.AUTH0_MAX_AGE || 60 },
+              { timeoutInSeconds: LOGIN_TIMEOUT, popup }
+            )
+          } catch (err) {
             console.error('Auth0 login request failed:', err)
-          })
+          }
+
+          let authData = new AuthData() // eslint-disable-line prefer-const
+          authData.setAuthStatus(true)
+          try {
+            const accessToken = await authClient.getTokenSilently()
+            const decoded = jwt.decode(accessToken)
+            authData.accessToken = accessToken
+            // `exp` contains an expiration datetime in unix epoch, in seconds
+            authData.expirationDateTime = decoded.exp
+          } catch (err) {
+            console.error('Unable to get Auth0 token:', err)
+          }
+
+          try {
+            const user = await authClient.getUser()
+            authData.userId = user.sub
+            authData.userName = user.name
+            authData.userNickname = user.nickname
+
+            const msg = new LoginMessage(authData)
+            safari.extension.dispatchMessage(Message.types.LOGIN_MESSAGE.description, msg)
+          } catch (err) {
+            console.error('Auth0 user info request failed:', err)
+          }
         } else {
           console.error('Auth0 client object does not exist')
         }
