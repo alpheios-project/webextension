@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
           const popup = window.open(
             '',
             'auth0:authorize:popup',
-            'left=100,top=100,width=400,height=600,resizable,scrollbars=yes,status=1'
+            'left=100,top=100,width=400,height=750,resizable,scrollbars=yes,status=1'
           )
           try {
             await authClient.loginWithPopup(
