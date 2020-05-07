@@ -279,13 +279,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const loginBtn = window.document.body.querySelector('#alpheios-login')
     const logoutBtn = document.body.querySelector('#alpheios-logout')
 
+    console.info('A')
     if (loginBtn) {
       loginBtn.addEventListener('click', async () => {
         if (authClient) {
           const popup = window.open(
             '',
             'auth0:authorize:popup',
-            'left=100,top=100,width=400,height=750,resizable,scrollbars=yes,status=1'
+            'left=100,top=100,width=400,height=600,resizable,scrollbars=yes,status=1'
           )
           try {
             await authClient.loginWithPopup(
