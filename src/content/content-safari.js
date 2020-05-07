@@ -279,7 +279,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const loginBtn = window.document.body.querySelector('#alpheios-login')
     const logoutBtn = document.body.querySelector('#alpheios-logout')
 
-    console.info('A')
     if (loginBtn) {
       loginBtn.addEventListener('click', async () => {
         if (authClient) {
