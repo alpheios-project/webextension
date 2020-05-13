@@ -1,9 +1,18 @@
 import VueLoaderPlugin from '../node_modules/vue-loader/lib/plugin.js'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import path from 'path'
+import PlistPlugin from './plist-plugin.mjs'
 const projectRoot = process.cwd()
 
 const webpack = {
+  custom: {
+    // The plist plugin must run in both production and development modes
+    common: {
+      plugins: [
+        PlistPlugin
+      ]
+    }
+  },
   common: {
     context: path.join(projectRoot, 'src/content'),
     entry: './content-safari.js',
