@@ -213,9 +213,10 @@ export default class BackgroundProcess {
   }
 
   loadContentScript (tabId) {
-    return browser.tabs.executeScript(tabId, {
-      file: this.settings.contentScriptFileName
-    })
+    return Promise.all([
+      browser.tabs.executeScript(tabId, { file: this.settings.compatibilityScriptFileName }),
+      browser.tabs.executeScript(tabId, { file: this.settings.contentScriptFileName })
+    ])
   }
 
   loadContentCSS (tabId, fileName) {
@@ -817,6 +818,7 @@ BackgroundProcess.defaults = {
   sendExperiencesMenuItemId: 'send-experiences',
   sendExperiencesMenuItemText: BackgroundProcess.l10n.getMsg('LABEL_CTXTMENU_SENDEXP'),
   contentCSSFileNames: ['style/style-components.css'],
+  compatibilityScriptFileName: 'compatibility-fixes.js',
   contentScriptFileName: 'content.js',
   browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
   experienceStorageCheckInterval: 10000,
