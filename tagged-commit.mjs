@@ -54,6 +54,8 @@ import { execFileSync, execSync } from 'child_process'
   console.info('Committing distributables')
   try {
     output = execFileSync('git', ['add', 'dist'])
+    output = execFileSync('git', ['add', 'src/safari-app-extension/AlpheiosSafari/Info.plist'])
+    output = execFileSync('git', ['add', 'src/safari-app-extension/AlpheiosReadingTools/Info.plist'])
   } catch (error) {
     console.log('Cannot add files to git index:', error)
   }
