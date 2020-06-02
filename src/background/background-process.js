@@ -117,13 +117,7 @@ export default class BackgroundProcess {
     if (details.previousVersion) {
       browser.tabs.query({}).then((tabs) => {
         tabs.forEach((t) => {
-          try {
-            browser.tabs.executeScript(t.id, {
-              code: "document.body.dispatchEvent(new Event('Alpheios_Reload'))"
-            })
-          } catch (e) {
-            // just quietly fail here
-          }
+          BackgroundProcess.executeScript(t.id, { code: "document.body.dispatchEvent(new Event('Alpheios_Reload'))" })
         })
       })
     }
@@ -199,13 +193,25 @@ export default class BackgroundProcess {
     this.setContentState(tab)
   }
 
+  static async executeScript (tabId, details = {}) {
+    try {
+      await browser.tabs.executeScript(tabId, details)
+    } catch (e) {
+      /*
+      Each browser has a set of pages on which `tab.executeScript()` is not allowed to run.
+      These could be extension pages or sites such as Play Store.
+      It is impossible to check if the script is allowed to run before running it.
+      The only way to figure this out is to actually run the script.
+      As a result, some scripts will fail to run, and, because of this,
+      it can be expected for `tabs.executeScript()` to fail from time to time.
+      So we will do nothing about it other than quietly catching an error here.
+       */
+    }
+  }
+
   loadPolyfill (tabId) {
     if (!this.browserFeatures.browserNamespace) {
-      return browser.tabs.executeScript(
-        tabId,
-        {
-          file: this.settings.browserPolyfillName
-        })
+      return BackgroundProcess.executeScript(tabId, { file: this.settings.browserPolyfillName })
     } else {
       // `browser` object is supported natively, no need to load a polyfill.
       return Promise.resolve()
@@ -214,8 +220,8 @@ export default class BackgroundProcess {
 
   loadContentScript (tabId) {
     return Promise.all([
-      browser.tabs.executeScript(tabId, { file: this.settings.compatibilityScriptFileName }),
-      browser.tabs.executeScript(tabId, { file: this.settings.contentScriptFileName })
+      BackgroundProcess.executeScript(tabId, { file: this.settings.compatibilityScriptFileName }),
+      BackgroundProcess.executeScript(tabId, { file: this.settings.contentScriptFileName })
     ])
   }
 
@@ -238,7 +244,7 @@ export default class BackgroundProcess {
     try {
       await this.loadContentData(newTab)
     } catch (error) {
-      console.error(`Cannot load content script for a tab with an ID of ${tabObj.uniqueId}`)
+      console.error(`Cannot load content script for a tab with an ID of ${tabObj.uniqueId.toString()}`, error)
     }
     return newTab
   }
@@ -255,9 +261,9 @@ export default class BackgroundProcess {
         const contentState = TabScript.readObject(message.body)
         if (contentState.isDeactivated() && !contentState.isEmbedLibActive()) {
           /*
-          If this is a user initiated deactivation (not the one caused by the presence
-          of an embedded library), reset to default panel and tab status then.
-           */
+            If this is a user initiated deactivation (not the one caused by the presence
+            of an embedded library), reset to default panel and tab status then.
+             */
           this.setDefaultTabState(tab)
         } else {
           // This is an activation or forced deactivation (due to embedded library's presence)
@@ -638,23 +644,11 @@ export default class BackgroundProcess {
   }
 
   checkEmbeddedContent (tabId) {
-    try {
-      browser.tabs.executeScript(tabId, {
-        code: "document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))"
-      })
-    } catch (e) {
-      console.error(e)
-    }
+    BackgroundProcess.executeScript(tabId, { code: "document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))" })
   }
 
   notifyPageLoad (tabId) {
-    try {
-      browser.tabs.executeScript(tabId, {
-        code: "document.body.dispatchEvent(new Event('Alpheios_Page_Load'))"
-      })
-    } catch (e) {
-      console.error(e)
-    }
+    BackgroundProcess.executeScript(tabId, { code: "document.body.dispatchEvent(new Event('Alpheios_Page_Load'))" })
   }
 
   /**
@@ -662,13 +656,7 @@ export default class BackgroundProcess {
    * @param {String} tabId  the id of the tab to notify
    */
   notifyPageActive (tabId) {
-    try {
-      browser.tabs.executeScript(tabId, {
-        code: "document.body.dispatchEvent(new Event('Alpheios_Active'))"
-      })
-    } catch (e) {
-      console.error(e)
-    }
+    BackgroundProcess.executeScript(tabId, { code: "document.body.dispatchEvent(new Event('Alpheios_Active'))" })
   }
 
   /**
@@ -676,13 +664,7 @@ export default class BackgroundProcess {
    * @param {String} tabId  the id of the tab to notify
    */
   notifyPageInactive (tabId) {
-    try {
-      browser.tabs.executeScript(tabId, {
-        code: "document.body.dispatchEvent(new Event('Alpheios_Inactive'))"
-      })
-    } catch (e) {
-      console.error(e)
-    }
+    BackgroundProcess.executeScript(tabId, { code: "document.body.dispatchEvent(new Event('Alpheios_Inactive'))" })
   }
 
   /**
@@ -820,7 +802,7 @@ BackgroundProcess.defaults = {
   contentCSSFileNames: ['style/style-components.css'],
   compatibilityScriptFileName: 'compatibility-fixes.js',
   contentScriptFileName: 'content.js',
-  browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.js',
+  browserPolyfillName: 'support/webextension-polyfill/browser-polyfill.min.js',
   experienceStorageCheckInterval: 10000,
   experienceStorageThreshold: 3,
   contentScriptLoaded: false

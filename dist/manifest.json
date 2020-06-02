@@ -13,8 +13,8 @@
   "homepage_url": "http://alpheios.net",
   "short_name": "Alpheios",
   "permissions": [
-    "http://*/",
-    "https://*/",
+    "http://*/*",
+    "https://*/*",
     "tabs",
     "activeTab",
     "contextMenus",

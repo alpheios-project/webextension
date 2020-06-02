@@ -6,12 +6,10 @@ import StoredOutgoingRequest from './stored-request'
 // Errors that are known to the Service
 import TransferrableError from '@/lib/messaging/error/transferrable-error.js'
 import AuthError from '@/lib/auth/errors/auth-error.js'
-import { Logger } from 'alpheios-components'
 
 const knownErrors = new Map([
   [AuthError.name, AuthError]
 ])
-const logger = Logger.getInstance()
 
 export default class Service extends BaseService {
   /**
@@ -59,7 +57,6 @@ export default class Service extends BaseService {
     const promise = this.registerRequest(request, timeout)
 
     browser.tabs.sendMessage(tabID, request).catch(error => {
-      logger.error('Tabs.sendMessage() failed:', error)
       this.rejectRequest(request.ID, error)
     })
     return promise
@@ -74,7 +71,6 @@ export default class Service extends BaseService {
   sendRequestToBg (request, timeout) {
     const promise = this.registerRequest(request, timeout)
     browser.runtime.sendMessage(request).catch(error => {
-      logger.error('Sending request to a background failed:', error)
       this.rejectRequest(request.ID, error)
     })
     return promise
