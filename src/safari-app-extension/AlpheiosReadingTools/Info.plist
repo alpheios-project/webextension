@@ -21,7 +21,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>3.1.0</string>
 	<key>CFBundleVersion</key>
-	<string>i294-account-prompt.20200603531</string>
+	<string>dev.20200603574</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.education</string>
 	<key>LSMinimumSystemVersion</key>
