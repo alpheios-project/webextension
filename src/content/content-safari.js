@@ -269,7 +269,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
       domain: env.AUTH0_DOMAIN,
       client_id: env.AUTH0_CLIENT_ID,
       audience: env.AUDIENCE,
-      scope: env.SCOPE
+      scope: env.SCOPE,
+      /*
+      The `prompt` option instructs social identity providers to prompt for a user account
+      before logging a user in. Without it, a user will be logged in with the last
+      social identity account.
+      See https://developers.google.com/identity/protocols/oauth2/openid-connect#authenticationuriparameters
+       */
+      prompt: 'select_account'
     }).then(auth0 => {
       authClient = auth0
     }).catch(err => {
