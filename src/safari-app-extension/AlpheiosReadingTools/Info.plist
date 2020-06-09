@@ -21,7 +21,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>3.3.0</string>
 	<key>CFBundleVersion</key>
-	<string>dev.20200605310</string>
+	<string>dev.20200609442</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.education</string>
 	<key>LSMinimumSystemVersion</key>
