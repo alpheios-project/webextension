@@ -7,25 +7,25 @@ import StateResponse from '../lib/messaging/response/state-response'
 import MessagingService from '@/lib/messaging/service.js'
 import BgAuthenticator from '@/lib/auth/bg-authenticator.js'
 import {
-  TabScript, UIController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB,
+  TabScript, AppController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB,
   AuthModule, PanelModule, PopupModule, ToolbarModule, ActionPanelModule, Platform, Logger
 } from 'alpheios-components'
 
 let messagingService = null
-let uiController = null
+let appController = null
 const logger = Logger.getInstance()
 
 const sendContentReadyToBackground = function sendContentReadToBackground () {
-  messagingService.sendMessageToBg(new ContentReadyMessage(uiController.state))
+  messagingService.sendMessageToBg(new ContentReadyMessage(appController.state))
     .catch((error) => logger.error('Unable to send content ready message to background', error))
 }
 
 const sendStateToBackground = function sendStateToBackground () {
-  messagingService.sendMessageToBg(new StateMessage(uiController.state))
+  messagingService.sendMessageToBg(new StateMessage(appController.state))
     .catch((error) => logger.error('Unable to send state to background', error))
 }
 
-const sendResponseToBackground = function sendResponseToBackground (request, state = uiController.state) {
+const sendResponseToBackground = function sendResponseToBackground (request, state = appController.state) {
   messagingService.sendResponseToBg(new StateResponse(request, state)).catch(
     (error) => {
       logger.error('Unable to send a response to a state request', error)
@@ -38,12 +38,12 @@ const sendResponseToBackground = function sendResponseToBackground (request, sta
  */
 const handleStateRequest = function handleStateRequest (request) {
   const requestState = TabScript.readObject(request.body)
-  const diff = uiController.state.diff(requestState)
+  const diff = appController.state.diff(requestState)
 
   // If there is an Alpheios embedded library present, ignore all requests from background
   // and send a response back informing that an embedded lib is enabled
-  uiController.state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
-  if (uiController.state.isEmbedLibActive()) {
+  appController.state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
+  if (appController.state.isEmbedLibActive()) {
     // Notify background if an embedded library is active
     requestState.setEmbedLibActiveStatus()
     sendResponseToBackground(request, requestState)
@@ -51,15 +51,15 @@ const handleStateRequest = function handleStateRequest (request) {
   }
 
   if (diff.has('tabID')) {
-    if (!uiController.state.tabID) {
+    if (!appController.state.tabID) {
       // Content script has been just loaded and does not have its tab ID yet
-      uiController.state.tabID = diff.tabID
-      uiController.state.tabObj = requestState.tabObj
-    } else if (!uiController.state.hasSameID(diff.tabID)) {
-      logger.warn(`State request with the wrong tab ID "${Symbol.keyFor(diff.tabID)}" received. This tab ID is "${Symbol.keyFor(uiController.state.tabID)}"`)
+      appController.state.tabID = diff.tabID
+      appController.state.tabObj = requestState.tabObj
+    } else if (!appController.state.hasSameID(diff.tabID)) {
+      logger.warn(`State request with the wrong tab ID "${Symbol.keyFor(diff.tabID)}" received. This tab ID is "${Symbol.keyFor(appController.state.tabID)}"`)
       // TODO: Should we ignore such requests?
-      uiController.state.tabID = requestState.tabID
-      uiController.state.tabObj = requestState.tabObj
+      appController.state.tabID = requestState.tabID
+      appController.state.tabObj = requestState.tabObj
     }
   }
 
@@ -67,20 +67,20 @@ const handleStateRequest = function handleStateRequest (request) {
     // This is an activation request
 
     // Set state according to activation request data
-    if (diff.has('panelStatus')) { uiController.state.panelStatus = diff.panelStatus }
-    if (diff.has('tab')) { uiController.state.tab = diff.tab }
-    uiController.activate()
+    if (diff.has('panelStatus')) { appController.state.panelStatus = diff.panelStatus }
+    if (diff.has('tab')) { appController.state.tab = diff.tab }
+    appController.activate()
       .then(() => {
         // Set watchers after UI Controller activation so they will not notify background of activation-related events
-        uiController.state.setWatcher('panelStatus', sendStateToBackground)
-        uiController.state.setWatcher('tab', sendStateToBackground)
+        appController.state.setWatcher('panelStatus', sendStateToBackground)
+        appController.state.setWatcher('tab', sendStateToBackground)
         sendResponseToBackground(request)
       })
       .catch((error) => logger.error(`Unable to activate Alpheios: ${error}`))
     return
   } else if (diff.has('status') && diff.status === TabScript.statuses.script.DEACTIVATED) {
     // This is a deactivation request
-    uiController.deactivate()
+    appController.deactivate()
       .then(() => {
         sendResponseToBackground(request)
       })
@@ -90,14 +90,14 @@ const handleStateRequest = function handleStateRequest (request) {
 
   if (diff.has('panelStatus')) {
     if (diff.panelStatus === TabScript.statuses.panel.OPEN) {
-      uiController.api.ui.openPanel()
+      appController.api.ui.openPanel()
     } else if (diff.panelStatus === TabScript.statuses.panel.CLOSED) {
-      uiController.api.ui.closePanel()
+      appController.api.ui.closePanel()
     }
   }
 
   if (diff.has('tab') && diff.tab) {
-    uiController.changeTab(diff.tab)
+    appController.changeTab(diff.tab)
   }
 
   sendResponseToBackground(request)
@@ -117,47 +117,47 @@ const url = new URL(window.location.href)
 let mode = url.searchParams.get('mode')
 mode = (['dev', 'development'].includes(mode)) ? 'development' : 'production'
 
-uiController = UIController.create(state, {
+appController = AppController.create(state, {
   storageAdapter: ExtensionSyncStorage,
   app: { name: browserManifest.name, version: browserManifest.version, buildBranch: BUILD_BRANCH, buildNumber: BUILD_NUMBER, buildName: BUILD_NAME },
   appType: Platform.appTypes.WEBEXTENSION,
   mode: mode
 })
 // Do environment-specific initializations
-uiController.registerModule(AuthModule, { auth: new BgAuthenticator(messagingService) })
-uiController.registerModule(PanelModule, {
+appController.registerModule(AuthModule, { auth: new BgAuthenticator(messagingService) })
+appController.registerModule(PanelModule, {
   mountPoint: '#alpheios-panel' // To what element a panel will be mounted
 })
-uiController.registerModule(PopupModule, {
+appController.registerModule(PopupModule, {
   mountPoint: '#alpheios-popup'
 })
-uiController.registerModule(ToolbarModule)
-uiController.registerModule(ActionPanelModule)
+appController.registerModule(ToolbarModule)
+appController.registerModule(ActionPanelModule)
 
 // A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
 document.body.addEventListener('Alpheios_Embedded_Response', () => {
-  uiController.state.setEmbedLibActiveStatus()
-  messagingService.sendMessageToBg(new EmbedLibMessage(uiController.state))
+  appController.state.setEmbedLibActiveStatus()
+  messagingService.sendMessageToBg(new EmbedLibMessage(appController.state))
     .catch((error) => logger.error('Unable to send embed lib message to background', error))
-  if (uiController.state.isActive()) {
+  if (appController.state.isActive()) {
     const l10n = new L10n().addMessages(enUS, Locales.en_US).addMessages(enGB, Locales.en_GB).setLocale(Locales.en_US)
-    const embedLibWarning = UIController.getEmbedLibWarning(l10n.getMsg('EMBED_LIB_WARNING_TEXT'))
+    const embedLibWarning = AppController.getEmbedLibWarning(l10n.getMsg('EMBED_LIB_WARNING_TEXT'))
     document.body.appendChild(embedLibWarning.$el)
-    uiController.deactivate().catch((error) => logger.error(`Unable to deactivate Alpheios: ${error}`))
+    appController.deactivate().catch((error) => logger.error(`Unable to deactivate Alpheios: ${error}`))
   }
 })
 
 document.body.addEventListener('Alpheios_Reload', () => {
-  if (uiController.state.isActive()) {
-    uiController.deactivate().catch((error) => logger.error(`Unable to deactivate Alpheios: ${error}`))
+  if (appController.state.isActive()) {
+    appController.deactivate().catch((error) => logger.error(`Unable to deactivate Alpheios: ${error}`))
   }
   window.location.reload()
 })
 
-uiController.init()
+appController.init()
   .then(() => {
-    uiController.state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
-    messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest, uiController)
+    appController.state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
+    messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest, appController)
     browser.runtime.onMessage.addListener(messagingService.listener.bind(messagingService))
     sendContentReadyToBackground()
   })
