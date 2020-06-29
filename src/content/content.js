@@ -97,7 +97,7 @@ const handleStateRequest = function handleStateRequest (request) {
   }
 
   if (diff.has('tab') && diff.tab) {
-    appController.changeTab(diff.tab)
+    appController.api.ui.changeTab(diff.tab)
   }
 
   sendResponseToBackground(request)

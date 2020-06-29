@@ -210,7 +210,7 @@ const handleStateRequest = async function handleStateRequest (message) {
       appController.api.ui.closePanel()
     }
   }
-  if (diff.has('tab') && diff.tab) { appController.changeTab(diff.tab) }
+  if (diff.has('tab') && diff.tab) { appController.api.ui.changeTab(diff.tab) }
   sendMessageToBackground('updateState')
 }
 
