@@ -3,6 +3,7 @@ node_js:
 - 13.2
 cache: npm
 script:
+- npm run build-prod
 - npm run test
 - npm run dist
 deploy:
