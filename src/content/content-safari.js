@@ -5,7 +5,7 @@ import LoginMessage from '@/lib/messaging/message/login-message.js'
 import LogoutMessage from '@/lib/messaging/message/logout-message.js'
 import MessagingService from '@/lib/messaging/service-safari.js'
 import {
-  TabScript, UIController, AuthModule, AuthData, ToolbarModule, ActionPanelModule, PanelModule, PopupModule, Platform,
+  TabScript, AppController, AuthModule, AuthData, ToolbarModule, ActionPanelModule, PanelModule, PopupModule, Platform,
   LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB, Logger
 } from 'alpheios-components'
 import SafariAuthenticator from '@/lib/auth/safari-authenticator.js'
@@ -17,7 +17,7 @@ const LOGIN_TIMEOUT = 300
 
 const pingInterval = 15000 // How often to ping background with a state message, in ms
 let pingIntervalID = null
-let uiController = null
+let appController = null
 let state = null
 const logger = Logger.getInstance()
 let authenticator = null
@@ -74,7 +74,7 @@ const notifyPageInactive = function () {
  * @param {Boolean} notify - Will notify app extension only if this parameter is true.
  */
 const deactivateUIController = function deactivateUIController (notify = true) {
-  uiController.deactivate()
+  appController.deactivate()
     .then(() => {
       if (notify) {
         sendMessageToBackground('updateState')
@@ -96,7 +96,7 @@ const embeddedLibListener = function embeddedLibListener () {
   if (state.isActive()) {
     // Display a panel with a warning about extension being deactivated
     const l10n = new L10n().addMessages(enUS, Locales.en_US).addMessages(enGB, Locales.en_GB).setLocale(Locales.en_US)
-    const embedLibWarning = UIController.getEmbedLibWarning(l10n.getMsg('EMBED_LIB_WARNING_TEXT'))
+    const embedLibWarning = AppController.getEmbedLibWarning(l10n.getMsg('EMBED_LIB_WARNING_TEXT'))
     document.body.appendChild(embedLibWarning.$el)
     deactivateUIController(false)
   }
@@ -133,24 +133,24 @@ const handleStateRequest = async function handleStateRequest (message) {
   to activate a message listener instead that, when an activation request from Safari App Extension is
   received, would create an instance of a UI controller, following a lazy initialization approach.
    */
-  if (!uiController) {
+  if (!appController) {
     if (diff.has('status') && diff.status === TabScript.statuses.script.ACTIVE) {
-      uiController = UIController.create(state, {
+      appController = AppController.create(state, {
         storageAdapter: LocalStorageArea,
         app: { name: 'Safari App Extension', version: Package.version, buildBranch: BUILD_BRANCH, buildNumber: BUILD_NUMBER, buildName: BUILD_NAME },
         appType: Platform.appTypes.SAFARI_APP_EXTENSION
       })
       authenticator = new SafariAuthenticator(messagingService)
-      uiController.registerModule(AuthModule, { auth: authenticator })
-      uiController.registerModule(PanelModule, {
+      appController.registerModule(AuthModule, { auth: authenticator })
+      appController.registerModule(PanelModule, {
         mountPoint: '#alpheios-panel' // To what element a panel will be mounted
       })
-      uiController.registerModule(PopupModule, {
+      appController.registerModule(PopupModule, {
         mountPoint: '#alpheios-popup'
       })
-      uiController.registerModule(ToolbarModule, {})
-      uiController.registerModule(ActionPanelModule)
-      await uiController.init()
+      appController.registerModule(ToolbarModule, {})
+      appController.registerModule(ActionPanelModule)
+      await appController.init()
     } else {
       // If uninitialized, ignore all other requests other than activate
       // TODO: This is due to Safari background sending state request after reload. Need to fix
@@ -164,17 +164,17 @@ const handleStateRequest = async function handleStateRequest (message) {
     // Set state according to activation request data
     if (diff.has('panelStatus')) { state.panelStatus = diff.panelStatus }
     if (diff.has('tab')) { state.tab = diff.tab }
-    uiController.activate()
+    appController.activate()
       .then(() => {
-        if (uiController.hasModule('auth')) {
+        if (appController.hasModule('auth')) {
           // Restore the logged in state if it was established during the previous sessions
           if (message.body.isAuthenticated === 'true') {
             // We need to update an authentication status only if the user has been logged in
-            uiController.api.auth.authenticate(message.body)
+            appController.api.auth.authenticate(message.body)
           }
           if (message.body.hasSessionExpired === 'true') {
             // We need to update an authentication status only if the user has been logged in
-            uiController.api.auth.expireSession()
+            appController.api.auth.expireSession()
           }
 
           // Subscribe to the SESSION_EXPIRED event
@@ -185,8 +185,8 @@ const handleStateRequest = async function handleStateRequest (message) {
         }
 
         // Set watchers after UI Controller activation so they will not notify background of activation-related events
-        uiController.state.setWatcher('panelStatus', sendMessageToBackground.bind(this, 'updateState'))
-        uiController.state.setWatcher('tab', sendMessageToBackground.bind(this, 'updateState'))
+        appController.state.setWatcher('panelStatus', sendMessageToBackground.bind(this, 'updateState'))
+        appController.state.setWatcher('tab', sendMessageToBackground.bind(this, 'updateState'))
         activatePing()
         notifyPageActive()
         sendMessageToBackground('updateState')
@@ -205,12 +205,12 @@ const handleStateRequest = async function handleStateRequest (message) {
 
   if (diff.has('panelStatus')) {
     if (diff.panelStatus === TabScript.statuses.panel.OPEN) {
-      uiController.api.ui.openPanel()
+      appController.api.ui.openPanel()
     } else if (diff.panelStatus === TabScript.statuses.panel.CLOSED) {
-      uiController.api.ui.closePanel()
+      appController.api.ui.closePanel()
     }
   }
-  if (diff.has('tab') && diff.tab) { uiController.changeTab(diff.tab) }
+  if (diff.has('tab') && diff.tab) { appController.api.ui.changeTab(diff.tab) }
   sendMessageToBackground('updateState')
 }
 
@@ -218,17 +218,17 @@ const handleLoginRequest = async function handleLoginRequest (message) {
   // Expiration datetime in the state request is in the Unix time (whole seconds)
   // It will be converted to a Date format below
   message.body.accessTokenExpiresIn = new Date(Number.parseInt(message.body.accessTokenExpiresIn, 10) * 1000)
-  uiController.api.auth.authenticate(message.body)
+  appController.api.auth.authenticate(message.body)
 }
 
 const handleLogoutRequest = async function handleLogoutRequest (message) {
   // Boolean values are sent being converted to strings
   if (message.body.hasSessionExpired === 'true') {
     // This is a logout due to expiration of a session
-    uiController.api.auth.expireSession()
+    appController.api.auth.expireSession()
   } else {
     // This is a user-initiated logout
-    uiController.api.auth.logout()
+    appController.api.auth.logout()
   }
 }
 

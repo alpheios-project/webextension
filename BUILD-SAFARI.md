@@ -5,8 +5,8 @@
 **Prerequisites**:
 * Node 13.7.0 or higher
 * Npm 6.13.6 or higher
-* XCode 10.0
-* Swift 4.2
+* XCode 11.3.1 or higher
+* Swift 5.1.3 or higher
 * Developer Certificate Registered with the Alpheios Apple Developer Account
   installed in your XCode environment
 * a local clone of the alpheios protected config repository, as a sibling
