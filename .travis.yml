@@ -1,8 +1,10 @@
+dist: bionic
 language: node_js
 node_js:
-- 13.2
+- 13.7.0
 cache: npm
 script:
+- npm run build-prod
 - npm run test
 - npm run dist
 deploy:
