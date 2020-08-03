@@ -21,7 +21,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>3.3.1</string>
 	<key>CFBundleVersion</key>
-	<string>dev-ui-controller-refactoring.20200724584</string>
+	<string>qa.20200803357</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.education</string>
 	<key>LSMinimumSystemVersion</key>
