@@ -1,7 +1,7 @@
 import Builder from 'alpheios-node-build'
 import generateBuildInfo from './node_modules/alpheios-node-build/dist/support/build-info.mjs'
 import { execFileSync, execSync } from 'child_process'
-const core = require('@actions/core')
+import * as core from '@actions/core'
 
 
 (async function () {
@@ -10,6 +10,7 @@ const core = require('@actions/core')
 
   // eslint-disable-next-line no-unused-vars
   let output
+
   try {
     if (buildInfo.branch !== 'master') {
       console.info('Installing alpheios-core')
