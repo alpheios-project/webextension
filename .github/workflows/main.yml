@@ -1,0 +1,16 @@
+name: QA Build
+on:
+  push:
+    branches: [ github-actions-test ]
+  
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      
+    - name: Configure git
+      run: bash scripts/configure-git-for-actions.sh
+
+    - name: build
+      run: npm install && npm update && npm run github-build
