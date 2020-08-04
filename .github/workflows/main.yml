@@ -17,3 +17,14 @@ jobs:
 
     - name: build
       run: npm install && npm update && npm run github-build
+    
+    - name: dist
+      run: npm run dist
+    
+    - name: commit
+      uses: EndBug/add-and-commit@v4
+      with:
+        message: "Commit build plist files"
+        add: "src/safari-app-extension/AlpheiosSafari/Info.plist src/safari-app-extension/AlpheiosReadingTools/Info.plist"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
