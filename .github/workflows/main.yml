@@ -37,7 +37,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ steps.run_build.outputs.buildName }}
-        release_name: Release ${{ $run_build.outputs.buildName }}
+        release_name: Release ${{ steps.run_build.outputs.buildName }}
         draft: false
         prerelease: true
     
