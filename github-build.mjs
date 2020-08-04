@@ -21,8 +21,6 @@ import * as core from '@actions/core'
     process.exit(1)
   }
 
-  console.info(`Starting a ${buildInfo.name} commit`)
-
   console.info('Rebuilding a webextension. This may take a while')
   try {
     let builder = new Builder({
@@ -53,5 +51,12 @@ import * as core from '@actions/core'
     process.exit(1)
   }
   console.info('Rebuilding of a webextension has been completed')
-  core.setOutput('buildName',buildInfo.name)
+
+  try {
+    console.info(core)
+    core.default.setOutput('buildName',buildInfo.name)
+  } catch (error) {
+    console.error('Failed to set output variable:', error)
+    process.exit(1)
+  }
 })()
