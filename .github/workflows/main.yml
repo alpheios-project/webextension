@@ -1,7 +1,7 @@
 name: QA Build
 on:
   push:
-    branches: [ github-actions-test ]
+    branches: [ qa ]
   
 jobs:
   build:
