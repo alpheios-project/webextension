@@ -11,10 +11,10 @@ jobs:
     - uses: actions/setup-node@v2-beta
       with:
         node-version: '14'
-      
+        
     - name: build
       id: run_build
-      run: npm install && npm update && npm run github-build
+      run: npm install && npm update && npm run update-dist && npm run github-build
     
     - name: update env
       run: bash scripts/update_env.sh ${{secrets.AUTH0_CLIENT_ID}}
