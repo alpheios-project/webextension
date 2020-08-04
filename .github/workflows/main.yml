@@ -12,19 +12,41 @@ jobs:
       with:
         node-version: '14'
       
-    - name: Configure git
-      run: bash scripts/configure-git-for-actions.sh
-
     - name: build
+      id: run_build
       run: npm install && npm update && npm run github-build
     
+    - name: update env
+      run: bash scripts/update_env.sh ${{secrets.AUTH0_CLIENT_ID}}
+      
     - name: dist
       run: npm run dist
     
     - name: commit
       uses: EndBug/add-and-commit@v4
       with:
-        message: "Commit build plist files"
+        message: "Commit files for build ${steps.run_build.outputs.buildName}"
         add: "src/safari-app-extension/AlpheiosSafari/Info.plist src/safari-app-extension/AlpheiosReadingTools/Info.plist"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.run_build.outputs.buildName }}
+        release_name: Release ${{ $run_build.outputs.buildName }}
+        draft: false
+        prerelease: true
+    
+    - name: Upload dist
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./dist.zip
+        asset_name: dist.zip
+        asset_content_type: application/zip
