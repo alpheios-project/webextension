@@ -12,7 +12,7 @@ import * as core from '@actions/core'
   let output
 
   try {
-    if (buildInfo.branch !== 'master') {
+    if (buildInfo.branch === 'qa' || buildInfo.branch === 'production') {
       console.info('Installing alpheios-core')
       output = execSync(`npm install https://github.com/alpheios-project/alpheios-core#${buildInfo.branch}`)
     }
