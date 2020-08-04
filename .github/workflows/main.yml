@@ -25,7 +25,7 @@ jobs:
     - name: commit
       uses: EndBug/add-and-commit@v4
       with:
-        message: "Commit files for build ${steps.run_build.outputs.buildName}"
+        message: "Commit files for build ${{ steps.run_build.outputs.buildName }}"
         add: "src/safari-app-extension/AlpheiosSafari/Info.plist src/safari-app-extension/AlpheiosReadingTools/Info.plist"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}      
