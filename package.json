@@ -48,7 +48,7 @@
     "@babel/preset-env": "^7.10.4",
     "@babel/register": "^7.10.5",
     "@babel/runtime": "^7.10.5",
-    "alpheios-core": "git+https://github.com/alpheios-project/alpheios-core.git#qa",
+    "alpheios-core": "git+https://github.com/alpheios-project/alpheios-core.git",
     "alpheios-node-build": "github:alpheios-project/node-build#semver:^3.5.1",
     "archiver": "^4.0.2",
     "autoprefixer": "^9.8.5",
