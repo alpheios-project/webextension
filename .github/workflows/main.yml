@@ -2,6 +2,7 @@ name: QA Build
 on:
   push:
     branches: [ qa ]
+  workflow_dispatch:
   
 jobs:
   build:
