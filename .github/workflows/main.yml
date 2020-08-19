@@ -13,12 +13,15 @@ jobs:
       with:
         node-version: '14'
         
-    - name: build
-      id: run_build
-      run: npm install && npm update && npm run update-dist && npm run github-build
+    - name: prep build
+      run: npm install && npm update && npm run update-dist 
     
     - name: update env
-      run: bash scripts/update_env.sh ${{secrets.AUTH0_CLIENT_ID}}
+      run: bash scripts/update_env.sh ${{secrets.AUTH0_CLIENT_ID}} ${{ secrets.AUTH0_SAFARI_CLIENT_ID }}
+
+    - name: build
+      id: run_build
+      run: npm run github-build
       
     - name: dist
       run: npm run dist

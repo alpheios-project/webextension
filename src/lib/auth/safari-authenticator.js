@@ -1,5 +1,5 @@
 import { AuthData } from 'alpheios-components'
-import Auth0env from '../../../../protected-config/auth0/prod/env-safari-app-ext.js'
+import Auth0env from '@/lib/auth/env-safari-app-ext.js'
 import Authenticator from '@/lib/auth/authenticator.js'
 
 /**
