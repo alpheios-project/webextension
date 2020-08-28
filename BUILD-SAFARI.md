@@ -3,15 +3,13 @@
 **1. Install Dependencies**
 
 **Prerequisites**:
-* Node 13.7.0 or higher
-* Npm 6.13.6 or higher
+
+* Node 14.1.0 or higher
+* npm 6.14.6 or higher.
 * XCode 11.3.1 or higher
 * Swift 5.1.3 or higher
 * Developer Certificate Registered with the Alpheios Apple Developer Account
   installed in your XCode environment
-* a local clone of the alpheios protected config repository, as a sibling
-  to the webextension directory
-
 ```
 npm install
 npm update
@@ -20,10 +18,10 @@ npm update
 **2. Build the distribution Javascript and CSS files**
 
 ```
-npm run build
+npm run update-dist && npm run update-styles
+bash scripts/update_env.sh <AUTH0_CLIENT_ID>
+npm run prod
 ```
-This uses Webpack to build the distribution Javascript and CSS files for Chrome,
-FF and Safari
 
 **3. Build Safari Package**
 
