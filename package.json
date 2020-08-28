@@ -24,7 +24,6 @@
     "version-set-minor": "npm version minor",
     "version-set-patch": "npm version patch",
     "dist": "node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs copy --s=/dist --t=dist-temp  --clean && node --experimental-modules ./node_modules/alpheios-node-build/dist/zip.mjs --s=/dist-temp --t=dist-zip --f=dist.zip && node --experimental-modules ./node_modules/alpheios-node-build/dist/files.mjs clean --t=dist-temp",
-    "tagged-commit": "node ./tagged-commit.mjs",
     "github-build": "node ./github-build.mjs"
   },
   "repository": {
