@@ -1,6 +1,6 @@
 ## Safari App Extension Build Instructions
 
-**1. Install Dependencies
+**1. Install Dependencies**
 
 **Prerequisites**:
 

@@ -1,6 +1,6 @@
 ## Webextension Build Instructions (Chrome and Firefox)
 
-**1. Install Dependencies
+**1. Install Dependencies**
 
 **Prerequisites**: Node 13.7.0 or higher, npm 6.13.6 or higher.
 
