@@ -7,9 +7,10 @@ import StateResponse from '../lib/messaging/response/state-response'
 import MessagingService from '@/lib/messaging/service.js'
 import BgAuthenticator from '@/lib/auth/bg-authenticator.js'
 import {
-  TabScript, AppController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB,
+  TabScript, AppController, HTMLPage, L10n, Locales, enUS, enGB,
   AuthModule, PanelModule, PopupModule, ToolbarModule, ActionPanelModule, Platform, Logger
 } from 'alpheios-components'
+import { ExtensionSyncStorage } from 'alpheios-data-models'
 
 let messagingService = null
 let appController = null

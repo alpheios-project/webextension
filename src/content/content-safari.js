@@ -6,8 +6,10 @@ import LogoutMessage from '@/lib/messaging/message/logout-message.js'
 import MessagingService from '@/lib/messaging/service-safari.js'
 import {
   TabScript, AppController, AuthModule, AuthData, ToolbarModule, ActionPanelModule, PanelModule, PopupModule, Platform,
-  LocalStorageArea, HTMLPage, L10n, enUS, Locales, enGB, Logger
+  HTMLPage, L10n, enUS, Locales, enGB, Logger
 } from 'alpheios-components'
+import { LocalStorageArea } from 'alpheios-data-models'
+
 import SafariAuthenticator from '@/lib/auth/safari-authenticator.js'
 import Package from '../../package.json'
 import env from '@/lib/auth/env-safari-app-ext.js'

@@ -27,6 +27,7 @@ const webpack = {
     resolve: {
       alias: {
         'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-core/packages/components/dist/alpheios-components.min.js'),
+        'alpheios-data-models$': path.join(projectRoot, 'node_modules/alpheios-core/packages/data-models/dist/alpheios-data-models.min.js'),
         '@': path.join(projectRoot, 'src'),
         '@safari': path.join(projectRoot, 'src/content-safari')
       }
@@ -45,6 +46,7 @@ const webpack = {
     resolve: {
       alias: {
         'alpheios-components$': path.join(projectRoot, 'node_modules/alpheios-core/packages/components/dist/alpheios-components.js'),
+        'alpheios-data-models$': path.join(projectRoot, 'node_modules/alpheios-core/packages/data-models/dist/alpheios-data-models.js'),
         '@': path.join(projectRoot, 'src'),
         '@safari': path.join(projectRoot, 'src/content-safari')
       }
