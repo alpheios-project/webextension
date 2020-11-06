@@ -17,7 +17,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>3.3.2</string>
 	<key>CFBundleVersion</key>
-	<string>dev.20201102626</string>
+	<string>core-i549-content-script-not-loading.20201106630</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSExtension</key>

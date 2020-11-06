@@ -12,7 +12,18 @@ const webpack = {
       new cwp.CleanWebpackPlugin({
         cleanOnceBeforeBuildPatterns: ['background*.js*', 'content*.js*']
       })
-    ]
+    ],
+    resolve: {
+      /*
+      Starting from version 5, webpack stopped to automatically include polyfills for
+      native node.js modules. The fallback object specify an in-browser replacements
+      for those modules.
+       */
+      fallback: {
+        crypto: path.resolve('crypto-browserify'),
+        stream: path.resolve('stream-browserify')
+      }
+    }
   },
 
   production: {

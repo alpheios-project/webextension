@@ -18,7 +18,18 @@ const webpack = {
     entry: './content-safari.js',
     plugins: [
       new VueLoaderPlugin()
-    ]
+    ],
+    resolve: {
+      /*
+      Starting from version 5, webpack stopped to automatically include polyfills for
+      native node.js modules. The fallback object specify an in-browser replacements
+      for those modules.
+       */
+      fallback: {
+        crypto: path.resolve('node_modules/crypto-browserify'),
+        stream: path.resolve('node_modules/stream-browserify')
+      }
+    }
   },
 
   production: {
