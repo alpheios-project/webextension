@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "set-node-build-deps": "npx install-peerdeps alpheios-node-build --dev --only-peers",
-    "build": "npm run build-dev && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs -m all -M all -p vue -c config-content-safari.mjs",
+    "build": "npm run build-prod && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs -m all -M all -p vue -c config-content-safari.mjs",
     "build-prod": "npm run update-dist && npm run update-styles && npm run lint && npm run prod",
     "build-dev": "npm run update-dist && npm run update-styles && npm run dev",
     "build-safari": "npm run update-dist && npm run update-styles && npm run lint && node --experimental-modules ./node_modules/alpheios-node-build/dist/build.mjs -m all -M all -p vue -c config-content-safari.mjs && npm run update-styles",
