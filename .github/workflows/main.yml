@@ -1,7 +1,7 @@
 name: QA Build
 on:
   push:
-    branches: [ qa ]
+    branches: [ qa, production ]
   workflow_dispatch:
   
 jobs:
