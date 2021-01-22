@@ -22,7 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     let headerText: String = "Alpheios Reading Tools"
     let headerIcon: NSImage! = NSImage.init(named: "AppIcon")
     
-    let littleIconInHelloText: NSImage! = NSImage.init(named: "alpheios_black_32_inverted")
+    let littleIconInHelloText: NSImage! = NSImage.init(named: "alpheios_black_32")
     
     let headerFontSize: CGFloat = 21
     let headerFontName: String = "Arial Bold"
