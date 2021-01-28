@@ -17,7 +17,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>3.3.3</string>
 	<key>CFBundleVersion</key>
-	<string>incr-3.3.x.20210127570</string>
+	<string>i319-safari-toolbar-icon.20210128527</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSExtension</key>
@@ -74,7 +74,7 @@
 			<key>Identifier</key>
 			<string>Button</string>
 			<key>Image</key>
-			<string>alpheios.pdf</string>
+			<string>alpheios_safari14.pdf</string>
 			<key>Label</key>
 			<string>Activate Alpheios Reading Tools</string>
 		</dict>

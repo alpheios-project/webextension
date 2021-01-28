@@ -29,6 +29,7 @@
 		BF568EED230A794400B5D073 /* NSCustomPersistantContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */; };
 		BF9D4CB1216E0D4E00E03D0C /* BackgroundProcess.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */; };
 		BFC1180023295BC4008D28A3 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7832F88C2147A4CC00CD96CB /* MainMenu.xib */; };
+		BFDD7A7825C2F359006D07B7 /* alpheios_safari14.pdf in Resources */ = {isa = PBXBuildFile; fileRef = BFDD7A7725C2F359006D07B7 /* alpheios_safari14.pdf */; };
 		BFE3A1B0231ADEAF008261CA /* LoginNtfyMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3A1AF231ADEAF008261CA /* LoginNtfyMessage.swift */; };
 		BFE3A1B2231ADF0D008261CA /* LogoutNtfyMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFE3A1B1231ADF0D008261CA /* LogoutNtfyMessage.swift */; };
 		BFEDB3FB231123F9005FDA7B /* Shared.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEDB3FA231123F9005FDA7B /* Shared.swift */; };
@@ -88,6 +89,7 @@
 		BF568EE823070F6B00B5D073 /* StateMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StateMessage.swift; sourceTree = "<group>"; };
 		BF568EEB230A794400B5D073 /* NSCustomPersistantContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NSCustomPersistantContainer.swift; sourceTree = "<group>"; };
 		BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BackgroundProcess.swift; sourceTree = "<group>"; };
+		BFDD7A7725C2F359006D07B7 /* alpheios_safari14.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = alpheios_safari14.pdf; sourceTree = "<group>"; };
 		BFE3A1AF231ADEAF008261CA /* LoginNtfyMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginNtfyMessage.swift; sourceTree = "<group>"; };
 		BFE3A1B1231ADF0D008261CA /* LogoutNtfyMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogoutNtfyMessage.swift; sourceTree = "<group>"; };
 		BFEDB3FA231123F9005FDA7B /* Shared.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Shared.swift; sourceTree = "<group>"; };
@@ -159,6 +161,7 @@
 		7832F89E2147A4E400CD96CB /* AlpheiosSafari */ = {
 			isa = PBXGroup;
 			children = (
+				BFDD7A7725C2F359006D07B7 /* alpheios_safari14.pdf */,
 				7832F8B32147A50A00CD96CB /* lib */,
 				BF9D4CB0216E0D4E00E03D0C /* BackgroundProcess.swift */,
 				BF10BF832359FD2C00F96E46 /* AuthData.swift */,
@@ -309,6 +312,7 @@
 				BF3927F9216F565E00213E05 /* alpheios.pdf in Resources */,
 				7832F8A52147A4E400CD96CB /* SafariExtensionViewController.xib in Resources */,
 				7832F8A82147A4E400CD96CB /* content-safari.js in Resources */,
+				BFDD7A7825C2F359006D07B7 /* alpheios_safari14.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

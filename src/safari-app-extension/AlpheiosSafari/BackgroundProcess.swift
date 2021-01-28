@@ -10,8 +10,8 @@ import os.log
 
 class BackgroundProcess {
     static let browserIcons: [String: NSImage] = [
-        "active": NSImage.init(named: "alpheios.pdf")!,
-        "nonactive": NSImage.init(named: "alpheios.pdf")!
+        "active": NSImage.init(named: "alpheios_safari14.pdf")!,
+        "nonactive": NSImage.init(named: "alpheios_safari14.pdf")!
     ]
     
     static var tabs: [Int: TabScript] = [:]
