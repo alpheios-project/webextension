@@ -15,7 +15,6 @@
   "permissions": [
     "http://*/*",
     "https://*/*",
-    "tabs",
     "activeTab",
     "contextMenus",
     "storage",
