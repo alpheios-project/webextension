@@ -64,7 +64,7 @@ export default class BackgroundProcess {
     browser.tabs.onAttached.addListener(this.tabAttachedListener.bind(this))
     browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
     browser.tabs.onCreated.addListener(this.tabCreatedListener.bind(this))
-    browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
+    // browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
     browser.runtime.onUpdateAvailable.addListener(this.updateAvailableListener.bind(this))
     browser.runtime.onInstalled.addListener(this.handleOnInstalled.bind(this))
 
@@ -528,6 +528,7 @@ export default class BackgroundProcess {
   }
 
   tabActivationListener (info) {
+    console.info('tabActivationListener - ', info)
     const tmpUniqueTabId = Tab.createUniqueId(info.tabId, info.windowId)
     this.tab = tmpUniqueTabId
     const tab = this.tabs.has(tmpUniqueTabId) ? this.tabs.get(tmpUniqueTabId) : undefined
