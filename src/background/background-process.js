@@ -49,6 +49,7 @@ export default class BackgroundProcess {
   }
 
   initialize () {
+    console.log('initialize started')
     this.messagingService.addHandler(Message.types.CONTENT_READY_MESSAGE, this.contentReadyMessageHandler, this)
     this.messagingService.addHandler(Message.types.EMBED_LIB_MESSAGE, this.embedLibMessageHandler, this)
     this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
@@ -64,6 +65,7 @@ export default class BackgroundProcess {
     browser.tabs.onAttached.addListener(this.tabAttachedListener.bind(this))
     browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
     browser.tabs.onCreated.addListener(this.tabCreatedListener.bind(this))
+    browser.tabs.onUpdated.addListener(this.navigationCompletedListener.bind(this))
     // browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
     browser.runtime.onUpdateAvailable.addListener(this.updateAvailableListener.bind(this))
     browser.runtime.onInstalled.addListener(this.handleOnInstalled.bind(this))
@@ -129,6 +131,7 @@ export default class BackgroundProcess {
    * @returns {Promise<void>}
    */
   async activateContent (tabObj) {
+    console.info('activateContent started', tabObj)
     if (!this.tabs.has(tabObj.uniqueId)) {
       /*
       This is a first activation of an extension within the tab.
@@ -163,6 +166,7 @@ export default class BackgroundProcess {
   }
 
   async deactivateContent (tabObj) {
+    // console.info('deactivateContent started', tabObj)
     if (this.tabs.has(tabObj.uniqueId)) {
       /*
       This is a deactivation on a page where content script is already loaded.
@@ -240,7 +244,8 @@ export default class BackgroundProcess {
     let newTab = new TabScript(tabObj) // eslint-disable-line prefer-const
     newTab.tab = TabScript.props.tab.values.INFO // Set active tab to `info` by default
     this.tabs.set(tabObj.uniqueId, newTab)
-
+    console.info('createTab - after 1', tabObj.uniqueId, newTab)
+    console.info('createTab - after 2', [...this.tabs.keys()])
     try {
       await this.loadContentData(newTab)
     } catch (error) {
@@ -577,6 +582,19 @@ export default class BackgroundProcess {
     this.setBadgeState()
   }
 
+  definedWindowIdByTabNum (tabId) {
+    let savedTab
+
+    for (let i = 0; i < this.tabs.size; i++) {
+      const tabsIter = this.tabs.values()
+      const tabInstance = tabsIter.next().value
+      if (tabInstance.tabObj && tabInstance.tabObj.tabId === tabId) {
+        savedTab = tabInstance
+      }
+    }
+    return savedTab ? savedTab.tabObj.windowId : 1
+  }
+
   /**
    * Called when a page is loaded.
    * Use this to listen on webNavigation.onCompleted rather than tabs.onUpdated
@@ -587,40 +605,23 @@ export default class BackgroundProcess {
    * @param details
    * @return {Promise.<void>}
    */
-  async navigationCompletedListener (details) {
-    // on Firefox, a click the download blob url for downloading
-    // the user wordlist causes Firefox to issue a webNavigationCompleted
-    // event. so we should ignore events whose urls are blob: urls
-    if (details.url && details.url.match(/^blob:/)) {
-      return
-    }
-    const finalWindowId = this.defineCurrentWindowIdForActivation(details)
-    const tmpTabUniqueId = Tab.createUniqueId(details.tabId, finalWindowId)
+  async navigationCompletedListener (tabId) {
+    const finalWindowId = this.definedWindowIdByTabNum(tabId)
+    const tmpTabUniqueId = Tab.createUniqueId(tabId, finalWindowId)
 
     if (this.tabs.has(tmpTabUniqueId)) {
       const tab = this.tabs.get(tmpTabUniqueId)
-      // make sure this is a tab we know about
-      if (details.frameId === 0) {
-        // AND that it's not an iframe event
-        try {
-          await this.loadContentData(tab)
-          this.setContentState(tab)
-          this.checkEmbeddedContent(details.tabId)
-          this.notifyPageLoad(details.tabId)
-          if (tab.isActive()) {
-            this.notifyPageActive(details.tabId)
-          }
-          this.setBadgeState(tab)
-        } catch (error) {
-          console.error(`Cannot load content script for a tab with an ID of tabId = ${details.tabId}, windowId = ${details.windowId}`)
+      try {
+        await this.loadContentData(tab)
+        this.setContentState(tab)
+        this.checkEmbeddedContent(tabId)
+        this.notifyPageLoad(tabId)
+        if (tab.isActive()) {
+          this.notifyPageActive(tabId)
         }
-      // but if it is an iFrame event
-      // firefox resets the browserAction icon and title when the user navigates to a new page
-      // even when the navigation is in a frame so we need to be sure it's updated
-      } else if (tab.isActive()) {
-        this.setIconState(tab)
         this.setBadgeState(tab)
-        this.updateBrowserActionForTab(this.tabs.get(tmpTabUniqueId))
+      } catch (error) {
+        console.error(`Cannot load content script for a tab with an ID of tabId = ${tabId}, windowId = ${finalWindowId}`)
       }
     }
   }
@@ -730,7 +731,6 @@ export default class BackgroundProcess {
   }
 
   setMenuForTab (tab) {
-    //
     // Deactivate all previously activated menu items to keep an order intact
     this.menuItems.activate.disable()
     this.menuItems.deactivate.disable()
