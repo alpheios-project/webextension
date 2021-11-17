@@ -49,7 +49,6 @@ export default class BackgroundProcess {
   }
 
   initialize () {
-    console.log('initialize started')
     this.messagingService.addHandler(Message.types.CONTENT_READY_MESSAGE, this.contentReadyMessageHandler, this)
     this.messagingService.addHandler(Message.types.EMBED_LIB_MESSAGE, this.embedLibMessageHandler, this)
     this.messagingService.addHandler(Message.types.STATE_MESSAGE, this.stateMessageHandler, this)
@@ -66,7 +65,6 @@ export default class BackgroundProcess {
     browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
     browser.tabs.onCreated.addListener(this.tabCreatedListener.bind(this))
     browser.tabs.onUpdated.addListener(this.navigationCompletedListener.bind(this))
-    // browser.webNavigation.onCompleted.addListener(this.navigationCompletedListener.bind(this))
     browser.runtime.onUpdateAvailable.addListener(this.updateAvailableListener.bind(this))
     browser.runtime.onInstalled.addListener(this.handleOnInstalled.bind(this))
 
