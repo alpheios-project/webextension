@@ -129,7 +129,6 @@ export default class BackgroundProcess {
    * @returns {Promise<void>}
    */
   async activateContent (tabObj) {
-    console.info('activateContent started', tabObj)
     if (!this.tabs.has(tabObj.uniqueId)) {
       /*
       This is a first activation of an extension within the tab.
@@ -164,7 +163,6 @@ export default class BackgroundProcess {
   }
 
   async deactivateContent (tabObj) {
-    // console.info('deactivateContent started', tabObj)
     if (this.tabs.has(tabObj.uniqueId)) {
       /*
       This is a deactivation on a page where content script is already loaded.
@@ -242,8 +240,6 @@ export default class BackgroundProcess {
     let newTab = new TabScript(tabObj) // eslint-disable-line prefer-const
     newTab.tab = TabScript.props.tab.values.INFO // Set active tab to `info` by default
     this.tabs.set(tabObj.uniqueId, newTab)
-    console.info('createTab - after 1', tabObj.uniqueId, newTab)
-    console.info('createTab - after 2', [...this.tabs.keys()])
     try {
       await this.loadContentData(newTab)
     } catch (error) {
@@ -531,7 +527,6 @@ export default class BackgroundProcess {
   }
 
   tabActivationListener (info) {
-    console.info('tabActivationListener - ', info)
     const tmpUniqueTabId = Tab.createUniqueId(info.tabId, info.windowId)
     this.tab = tmpUniqueTabId
     const tab = this.tabs.has(tmpUniqueTabId) ? this.tabs.get(tmpUniqueTabId) : undefined
