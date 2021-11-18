@@ -17,7 +17,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>3.4.1</string>
 	<key>CFBundleVersion</key>
-	<string>comp-i662-lexical-dicts.20211118615</string>
+	<string>comp-i662-lexical-dicts.20211118643</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSExtension</key>
