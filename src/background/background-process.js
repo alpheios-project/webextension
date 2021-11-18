@@ -575,19 +575,6 @@ export default class BackgroundProcess {
     this.setBadgeState()
   }
 
-  definedWindowIdByTabNum (tabId) {
-    let savedTab
-
-    for (let i = 0; i < this.tabs.size; i++) {
-      const tabsIter = this.tabs.values()
-      const tabInstance = tabsIter.next().value
-      if (tabInstance.tabObj && tabInstance.tabObj.tabId === tabId) {
-        savedTab = tabInstance
-      }
-    }
-    return savedTab ? savedTab.tabObj.windowId : 1
-  }
-
   /**
    * Called when a page is loaded.
    * Use this to listen on webNavigation.onCompleted rather than tabs.onUpdated
@@ -598,8 +585,9 @@ export default class BackgroundProcess {
    * @param details
    * @return {Promise.<void>}
    */
-  async navigationCompletedListener (tabId) {
-    const finalWindowId = this.definedWindowIdByTabNum(tabId)
+  async navigationCompletedListener (tabId, changeInfo, tab) {
+    if (changeInfo.status !== 'complete') { return }
+    const finalWindowId = tab.windowId
     const tmpTabUniqueId = Tab.createUniqueId(tabId, finalWindowId)
 
     if (this.tabs.has(tmpTabUniqueId)) {
