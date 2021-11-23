@@ -17,7 +17,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>3.4.1</string>
 	<key>CFBundleVersion</key>
-	<string>incr-3.4.x.20211123119</string>
+	<string>incr-3.4.x.20211123265</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>$(MACOSX_DEPLOYMENT_TARGET)</string>
 	<key>NSExtension</key>
