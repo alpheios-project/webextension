@@ -64,7 +64,7 @@ export default class BackgroundProcess {
     browser.tabs.onAttached.addListener(this.tabAttachedListener.bind(this))
     browser.tabs.onRemoved.addListener(this.tabRemovalListener.bind(this))
     browser.tabs.onCreated.addListener(this.tabCreatedListener.bind(this))
-    browser.tabs.onUpdated.addListener(this.navigationCompletedListener.bind(this))
+    browser.tabs.onUpdated.addListener(this.tabUpdatedListener.bind(this))
     browser.runtime.onUpdateAvailable.addListener(this.updateAvailableListener.bind(this))
     browser.runtime.onInstalled.addListener(this.handleOnInstalled.bind(this))
 
@@ -141,6 +141,7 @@ export default class BackgroundProcess {
       This way it will be guaranteed that the content script will be fully ready
       to enter the state we would like it to be.
        */
+
       await this.createTab(tabObj)
       const tab = this.tabs.get(tabObj.uniqueId)
       this.setDefaultTabState(tab)
@@ -585,8 +586,9 @@ export default class BackgroundProcess {
    * @param details
    * @return {Promise.<void>}
    */
-  async navigationCompletedListener (tabId, changeInfo, tab) {
-    if (changeInfo.status !== 'complete') { return }
+  async tabUpdatedListener (tabId, changeInfo, tab) {
+    if ((changeInfo.status !== 'complete') || (changeInfo.url !== undefined)) { return }
+
     const finalWindowId = tab.windowId
     const tmpTabUniqueId = Tab.createUniqueId(tabId, finalWindowId)
 
