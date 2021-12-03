@@ -587,7 +587,7 @@ export default class BackgroundProcess {
    * @return {Promise.<void>}
    */
   async tabUpdatedListener (tabId, changeInfo, tab) {
-    if (!changeInfo.favIconUrl && !changeInfo.url) { return }
+    if (!changeInfo.favIconUrl) { return }
 
     const finalWindowId = tab.windowId
     const tmpTabUniqueId = Tab.createUniqueId(tabId, finalWindowId)
@@ -606,7 +606,7 @@ export default class BackgroundProcess {
       } catch (error) {
         console.error(`Cannot load content script for a tab with an ID of tabId = ${tabId}, windowId = ${finalWindowId}`)
       }
-    } else if (tab.isActive()) {
+    } else if (tab && tab.isActive()) {
       this.setIconState(tab)
       this.setBadgeState(tab)
       this.updateBrowserActionForTab(this.tabs.get(tmpTabUniqueId))
