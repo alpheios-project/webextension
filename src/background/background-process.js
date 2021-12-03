@@ -79,9 +79,6 @@ export default class BackgroundProcess {
 
     browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
     browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
-
-    console.info('browser.runtime - ', browser.runtime)
-    // browser.runtime.getBrowserInfo().then((info) => { this.browserInfo = info })
   }
 
   updateIcon (active, tabId) {
