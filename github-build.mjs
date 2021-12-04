@@ -53,8 +53,10 @@ import * as core from '@actions/core'
   console.info('Rebuilding of a webextension has been completed')
 
   try {
+    let buildName = buildInfo.name.replace(' ', '_')
+    console.info('buildInfo - ', buildName)
     console.info(core)
-    core.default.setOutput('buildName',buildInfo.name)
+    core.default.setOutput('buildName', buildName)
   } catch (error) {
     console.error('Failed to set output variable:', error)
     process.exit(1)
