@@ -587,7 +587,7 @@ export default class BackgroundProcess {
    * @return {Promise.<void>}
    */
   async tabUpdatedListener (tabId, changeInfo, tab) {
-    if (!changeInfo.favIconUrl) { return }
+    if ((changeInfo.status !== 'complete') || (changeInfo.url !== undefined)) { return }
 
     const finalWindowId = tab.windowId
     const tmpTabUniqueId = Tab.createUniqueId(tabId, finalWindowId)
