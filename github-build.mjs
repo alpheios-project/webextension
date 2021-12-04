@@ -7,7 +7,6 @@ import * as core from '@actions/core'
 (async function () {
   const buildDT = Date.now()
   const buildInfo = generateBuildInfo(buildDT)
-  console.info('buildInfo - ', buildInfo)
 
   // eslint-disable-next-line no-unused-vars
   let output
