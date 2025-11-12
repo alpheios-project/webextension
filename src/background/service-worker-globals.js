@@ -37,14 +37,29 @@ if (typeof globalThis.document === 'undefined') {
   }
 
   globalThis.document = {
-    createElement: () => createNode(true),
-    createTextNode: () => ({ textContent: '' }),
+    createElement: (tagName) => {
+      const node = createNode(true)
+      node.tagName = tagName ? tagName.toUpperCase() : ''
+      node.nodeName = tagName ? tagName.toUpperCase() : ''
+      node.nodeType = 1 // ELEMENT_NODE
+      return node
+    },
+    createTextNode: (text) => ({
+      textContent: text || '',
+      nodeType: 3 // TEXT_NODE
+    }),
     createEvent: (type) => ({
-      type,
+      type: type || '',
       initEvent: noop,
       preventDefault: noop,
-      stopPropagation: noop
+      stopPropagation: noop,
+      stopImmediatePropagation: noop,
+      bubbles: false,
+      cancelable: false
     }),
+    getElementsByTagName: () => [],
+    getElementById: () => null,
+    getElementsByClassName: () => [],
     body,
     head: createNode(),
     documentElement: createNode(),

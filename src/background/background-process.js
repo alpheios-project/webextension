@@ -289,9 +289,20 @@ export default class BackgroundProcess {
     this.tabs.set(tabObj.uniqueId, newTab)
 
     try {
+      // Check if we can inject scripts into this tab (chrome://, edge://, etc. are not allowed)
+      const tabInfo = await browser.tabs.get(tabObj.tabId).catch(() => null)
+      if (!tabInfo || !tabInfo.url || tabInfo.url.match(/^(chrome|edge|about|moz-extension):/)) {
+        console.warn(`Cannot inject content scripts into ${tabInfo?.url || 'unknown URL'} (restricted page)`)
+        return newTab
+      }
       await this.loadContentData(newTab)
     } catch (error) {
-      console.error(`Cannot load content script for a tab with an ID of ${tabObj.uniqueId.toString()}`, error)
+      // Ignore errors for restricted pages (chrome://, etc.)
+      if (error.message && error.message.includes('Cannot access')) {
+        console.warn(`Cannot load content script for restricted page: ${error.message}`)
+      } else {
+        console.error(`Cannot load content script for a tab with an ID of ${tabObj.uniqueId.toString()}`, error)
+      }
     }
     return newTab
   }
@@ -303,18 +314,28 @@ export default class BackgroundProcess {
    * @param {TabScript} tab - A TabScript object that represents a tab and it desired state
    */
   setContentState (tab) {
+    if (!tab || !tab.tabObj || !tab.tabObj.tabId) {
+      console.warn('setContentState called with invalid tab object')
+      return
+    }
     this.messagingService.sendRequestToTab(new StateRequest(tab), 10000, tab.tabObj.tabId).then(
       message => {
+        if (!message || !message.body) {
+          console.warn('Invalid response from content script state request')
+          return
+        }
         const contentState = TabScript.readObject(message.body)
         if (contentState.isDeactivated() && !contentState.isEmbedLibActive()) {
           /*
             If this is a user initiated deactivation (not the one caused by the presence
             of an embedded library), reset to default panel and tab status then.
-             */
+            */
           this.setDefaultTabState(tab)
         } else {
           // This is an activation or forced deactivation (due to embedded library's presence)
-          tab.update(contentState)
+          if (tab && typeof tab.update === 'function') {
+            tab.update(contentState)
+          }
         }
         this.updateUI(tab)
       },
@@ -650,6 +671,10 @@ export default class BackgroundProcess {
     if (details.url && details.url.match(/^blob:/)) {
       return
     }
+    // Ignore chrome://, edge://, and other restricted URLs
+    if (details.url && details.url.match(/^(chrome|edge|about|moz-extension):/)) {
+      return
+    }
     const finalWindowId = this.defineCurrentWindowIdForActivation(details)
     const tmpTabUniqueId = Tab.createUniqueId(details.tabId, finalWindowId)
 
@@ -668,7 +693,12 @@ export default class BackgroundProcess {
           }
           this.setBadgeState(tab)
         } catch (error) {
-          console.error(`Cannot load content script for a tab with an ID of tabId = ${details.tabId}, windowId = ${details.windowId}`)
+          // Ignore errors for restricted pages
+          if (error.message && error.message.includes('Cannot access')) {
+            console.warn(`Cannot load content script for restricted page: ${details.url}`)
+          } else {
+            console.error(`Cannot load content script for a tab with an ID of tabId = ${details.tabId}, windowId = ${details.windowId}`, error)
+          }
         }
       // but if it is an iFrame event
       // firefox resets the browserAction icon and title when the user navigates to a new page
