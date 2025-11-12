@@ -9,10 +9,18 @@ export default class ContentMenuItem {
 
   enable () {
     if (!this.isActive) {
-      browser.contextMenus.create({
+      const creation = browser.contextMenus.create({
         id: this.id,
         title: this.title
       })
+      if (creation && typeof creation.catch === 'function') {
+        creation.catch(error => {
+          const isDuplicateError = error && error.message && error.message.includes('duplicate')
+          if (!isDuplicateError) {
+            console.error(`Unable to create context menu item "${this.id}": ${error && error.message ? error.message : error}`)
+          }
+        })
+      }
       this.isActive = true
     }
   }

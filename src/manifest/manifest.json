@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "__MSG_extensionName__",
   "version": "3.3.2",
   "default_locale": "en",
@@ -12,34 +12,42 @@
   "author": "The Alpheios Project, Ltd.",
   "homepage_url": "http://alpheios.net",
   "short_name": "Alpheios",
-  "permissions": [
-    "http://*/*",
-    "https://*/*",
-    "tabs",
-    "activeTab",
-    "contextMenus",
-    "storage",
-    "webNavigation",
-    "identity"
-  ],
-  "browser_action": {
+  "action": {
     "default_icon": "icons/alpheios_black_32.png",
     "default_title": "Activate Alpheios",
     "browser_style": true
   },
   "background": {
-    "scripts": [
-      "env-webext.js",
-      "support/auth0/auth0chrome.js",
-      "background.js"
-    ]
+    "service_worker": "background.js",
+    "type": "module"
   },
-  "web_accessible_resources": [
-    "styles/style.css"
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "contextMenus",
+    "storage",
+    "webNavigation",
+    "identity",
+    "scripting"
   ],
-  "applications": {
-    "gecko": {
-      "id": "alpheios@alpheios.net"
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "style/style-components.css",
+        "styles/style.css",
+        "compatibility-fixes.js",
+        "support/webextension-polyfill/browser-polyfill.min.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
     }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
   }
 }

@@ -1,5 +1,6 @@
-/* global browser, Auth0Chrome, auth0Env */
+import './service-worker-globals.js'
 import { enUS, enGB, Locales, L10n, Tab, TabScript, AuthData } from 'alpheios-components'
+import { loadAuthEnv } from './auth-env.js'
 import Message from '../lib/messaging/message/message.js'
 import MessagingService from '../lib/messaging/service.js'
 import StateRequest from '../lib/messaging/request/state-request.js'
@@ -46,6 +47,23 @@ export default class BackgroundProcess {
     this.authData = new AuthData()
 
     this.authResult = null // A result of Auth0 authentication
+    this.auth0ClientClass = null
+    this.authEnvPromise = null
+  }
+
+  async getAuthEnv () {
+    if (!this.authEnvPromise) {
+      this.authEnvPromise = loadAuthEnv()
+    }
+    return this.authEnvPromise
+  }
+
+  async getAuth0Client () {
+    if (!this.auth0ClientClass) {
+      const module = await import('auth0-chrome')
+      this.auth0ClientClass = module && module.default ? module.default : (module.Auth0Chrome || module)
+    }
+    return this.auth0ClientClass
   }
 
   initialize () {
@@ -75,16 +93,18 @@ export default class BackgroundProcess {
       info: new ContextMenuItem(BackgroundProcess.defaults.infoMenuItemId, BackgroundProcess.defaults.infoMenuItemText),
       disabled: new ContextMenuItem(BackgroundProcess.defaults.disabledMenuItemId, BackgroundProcess.defaults.disabledMenuItemText)
     }
-    this.menuItems.activate.enable() // This one will be enabled by default
+    browser.contextMenus.removeAll()
+      .catch(() => {})
+      .finally(() => this.menuItems.activate.enable()) // This one will be enabled by default
 
     browser.contextMenus.onClicked.addListener(this.menuListener.bind(this))
-    browser.browserAction.onClicked.addListener(this.browserActionListener.bind(this))
+    browser.action.onClicked.addListener(this.browserActionListener.bind(this))
   }
 
   updateIcon (active, tabId) {
     let params = { path: active ? this.browserIcons.active : this.browserIcons.nonactive } // eslint-disable-line prefer-const
     if (tabId) { params.tabId = tabId }
-    browser.browserAction.setIcon(params)
+    browser.action.setIcon(params)
   }
 
   setIconState (tab) {
@@ -95,13 +115,13 @@ export default class BackgroundProcess {
   setBadgeState (tab) {
     const badgeState = tab ? tab.isActive() && !tab.isEmbedLibActive() : false
     if (badgeState) {
-      browser.browserAction.setBadgeText({ text: 'On' })
-      browser.browserAction.setBadgeBackgroundColor({ color: [252, 20, 20, 255] })
-      if (browser.browserAction.setBadgeTextColor) {
-        browser.browserAction.setBadgeTextColor({ color: '#fff' })
+      browser.action.setBadgeText({ text: 'On' })
+      browser.action.setBadgeBackgroundColor({ color: [252, 20, 20, 255] })
+      if (browser.action.setBadgeTextColor) {
+        browser.action.setBadgeTextColor({ color: '#fff' })
       }
     } else {
-      browser.browserAction.setBadgeText({ text: '' })
+      browser.action.setBadgeText({ text: '' })
     }
   }
 
@@ -117,7 +137,7 @@ export default class BackgroundProcess {
     if (details.previousVersion) {
       browser.tabs.query({}).then((tabs) => {
         tabs.forEach((t) => {
-          BackgroundProcess.executeScript(t.id, { code: "document.body.dispatchEvent(new Event('Alpheios_Reload'))" })
+          BackgroundProcess.dispatchPageEvent(t.id, 'Alpheios_Reload')
         })
       })
     }
@@ -195,27 +215,50 @@ export default class BackgroundProcess {
 
   static async executeScript (tabId, details = {}) {
     try {
-      await browser.tabs.executeScript(tabId, details)
+      if (browser.scripting && browser.scripting.executeScript) {
+        if (details.file) {
+          await browser.scripting.executeScript({
+            target: { tabId },
+            files: [details.file]
+          })
+        } else if (details.func) {
+          await browser.scripting.executeScript({
+            target: { tabId },
+            func: details.func,
+            args: details.args || []
+          })
+        }
+      } else if (details.file) {
+        await browser.tabs.executeScript(tabId, { file: details.file })
+      } else if (details.func) {
+        const serializedArgs = JSON.stringify(details.args || [])
+        await browser.tabs.executeScript(tabId, {
+          code: `(${details.func.toString()}).apply(null, ${serializedArgs})`
+        })
+      }
     } catch (e) {
       /*
       Each browser has a set of pages on which `tab.executeScript()` is not allowed to run.
       These could be extension pages or sites such as Play Store.
-      It is impossible to check if the script is allowed to run before running it.
-      The only way to figure this out is to actually run the script.
-      As a result, some scripts will fail to run, and, because of this,
-      it can be expected for `tabs.executeScript()` to fail from time to time.
-      So we will do nothing about it other than quietly catching an error here.
+      It is impossible to check if the script is allowed before running it.
+      As a result, some scripts will fail to run, and we quietly ignore those errors.
        */
     }
   }
 
+  static dispatchPageEvent (tabId, eventName) {
+    return BackgroundProcess.executeScript(tabId, {
+      func: (customEventName) => {
+        document.body.dispatchEvent(new Event(customEventName))
+      },
+      args: [eventName]
+    })
+  }
+
   loadPolyfill (tabId) {
-    if (!this.browserFeatures.browserNamespace) {
-      return BackgroundProcess.executeScript(tabId, { file: this.settings.browserPolyfillName })
-    } else {
-      // `browser` object is supported natively, no need to load a polyfill.
-      return Promise.resolve()
-    }
+    // Always load the polyfill for content scripts to ensure browser API is available
+    // even if the background context supports it natively
+    return BackgroundProcess.executeScript(tabId, { file: this.settings.browserPolyfillName })
   }
 
   loadContentScript (tabId) {
@@ -226,9 +269,13 @@ export default class BackgroundProcess {
   }
 
   loadContentCSS (tabId, fileName) {
-    return browser.tabs.insertCSS(tabId, {
-      file: fileName
-    })
+    if (browser.scripting && browser.scripting.insertCSS) {
+      return browser.scripting.insertCSS({
+        target: { tabId },
+        files: [fileName]
+      })
+    }
+    return browser.tabs.insertCSS(tabId, { file: fileName })
   }
 
   /**
@@ -282,14 +329,17 @@ export default class BackgroundProcess {
    * @param tabScript
    * @return {Promise} Will be resolved when all scripts are loaded successfully.
    */
-  loadContentData (tabScript) {
-    const polyfillScript = this.loadPolyfill(tabScript.tabObj.tabId)
+  async loadContentData (tabScript) {
+    // Load polyfill first to ensure browser API is available
+    await this.loadPolyfill(tabScript.tabObj.tabId)
+
+    // Then load content script and CSS
     const contentScript = this.loadContentScript(tabScript.tabObj.tabId)
     let contentCSS = [] // eslint-disable-line prefer-const
     for (const fileName of this.settings.contentCSSFileNames) { // eslint-disable-line no-unused-vars
       contentCSS.push(this.loadContentCSS(tabScript.tabObj.tabId, fileName))
     }
-    return Promise.all([polyfillScript, contentScript, ...contentCSS])
+    return Promise.all([contentScript, ...contentCSS])
   }
 
   /**
@@ -358,7 +408,9 @@ export default class BackgroundProcess {
    * @param {RequestMessage} request - A request object received from a content script.
    * @param {Object} sender - A sender object
    */
-  loginRequestHandler (request, sender) {
+  async loginRequestHandler (request, sender) {
+    const Auth0Chrome = await this.getAuth0Client()
+    const auth0Env = await this.getAuthEnv()
     // scope
     //  - openid if you want an id_token returned
     //  - offline_access if you want a refresh_token returned
@@ -406,9 +458,10 @@ export default class BackgroundProcess {
     }
   }
 
-  sessionRequestHandler (request, sender) {
+  async sessionRequestHandler (request, sender) {
+    const auth0Env = await this.getAuthEnv()
     if (this.authResult && !this.authResult.is_test_user) {
-      window.fetch(`https://${auth0Env.AUTH0_DOMAIN}/userinfo`, {
+      globalThis.fetch(`https://${auth0Env.AUTH0_DOMAIN}/userinfo`, {
         headers: {
           Authorization: `Bearer ${this.authResult.access_token}`
         }
@@ -435,7 +488,8 @@ export default class BackgroundProcess {
    * @param {RequestMessage} request - A request object received from a content script.
    * @param {Object} sender - A sender object
    */
-  userProfileRequestHandler (request, sender) {
+  async userProfileRequestHandler (request, sender) {
+    const auth0Env = await this.getAuthEnv()
     if (!this.authResult) {
       console.error('Get user info: not authenticated')
     }
@@ -446,7 +500,7 @@ export default class BackgroundProcess {
       this.messagingService.sendResponseToTab(UserProfileResponse.Success(request, this.authData.serializable()), sender.tab.id)
         .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
     } else {
-      window.fetch(`https://${auth0Env.AUTH0_DOMAIN}/userinfo`, {
+      globalThis.fetch(`https://${auth0Env.AUTH0_DOMAIN}/userinfo`, {
         headers: {
           Authorization: `Bearer ${this.authResult.access_token}`
         }
@@ -481,7 +535,8 @@ export default class BackgroundProcess {
    * @param {RequestMessage} request - A request object received from a content script.
    * @param {Object} sender - A sender object
    */
-  endpointsRequestHandler (request, sender) {
+  async endpointsRequestHandler (request, sender) {
+    const auth0Env = await this.getAuthEnv()
     this.messagingService.sendResponseToTab(EndpointsResponse.Success(request, auth0Env.ENDPOINTS ? auth0Env.ENDPOINTS : { wordlist: auth0Env.ENDPOINT }), sender.tab.id)
       .catch(error => console.error(`Unable to send a response to a user profile request: ${error.message}`))
   }
@@ -513,7 +568,9 @@ export default class BackgroundProcess {
    * @param {RequestMessage} request - A request object received from a content script.
    * @param {Object} sender - A sender object
    */
-  logoutRequestHandler (request, sender) {
+  async logoutRequestHandler (request, sender) {
+    const Auth0Chrome = await this.getAuth0Client()
+    const auth0Env = await this.getAuthEnv()
     new Auth0Chrome(auth0Env.AUTH0_DOMAIN, auth0Env.AUTH0_CLIENT_ID)
       .logout()
       .then(() => {
@@ -644,11 +701,11 @@ export default class BackgroundProcess {
   }
 
   checkEmbeddedContent (tabId) {
-    BackgroundProcess.executeScript(tabId, { code: "document.body.dispatchEvent(new Event('Alpheios_Embedded_Check'))" })
+    BackgroundProcess.dispatchPageEvent(tabId, 'Alpheios_Embedded_Check')
   }
 
   notifyPageLoad (tabId) {
-    BackgroundProcess.executeScript(tabId, { code: "document.body.dispatchEvent(new Event('Alpheios_Page_Load'))" })
+    BackgroundProcess.dispatchPageEvent(tabId, 'Alpheios_Page_Load')
   }
 
   /**
@@ -656,7 +713,7 @@ export default class BackgroundProcess {
    * @param {String} tabId  the id of the tab to notify
    */
   notifyPageActive (tabId) {
-    BackgroundProcess.executeScript(tabId, { code: "document.body.dispatchEvent(new Event('Alpheios_Active'))" })
+    BackgroundProcess.dispatchPageEvent(tabId, 'Alpheios_Active')
   }
 
   /**
@@ -664,7 +721,7 @@ export default class BackgroundProcess {
    * @param {String} tabId  the id of the tab to notify
    */
   notifyPageInactive (tabId) {
-    BackgroundProcess.executeScript(tabId, { code: "document.body.dispatchEvent(new Event('Alpheios_Inactive'))" })
+    BackgroundProcess.dispatchPageEvent(tabId, 'Alpheios_Inactive')
   }
 
   /**
@@ -719,11 +776,11 @@ export default class BackgroundProcess {
   updateBrowserActionForTab (tab) {
     if (tab && tab.hasOwnProperty('status')) { // eslint-disable-line no-prototype-builtins
       if (tab.isEmbedLibActive() || tab.isDisabled()) {
-        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.disabledBrowserActionTitle, tabId: tab.tabObj.tabId })
+        browser.action.setTitle({ title: BackgroundProcess.defaults.disabledBrowserActionTitle, tabId: tab.tabObj.tabId })
       } else if (tab.isActive()) {
-        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.deactivateBrowserActionTitle, tabId: tab.tabObj.tabId })
+        browser.action.setTitle({ title: BackgroundProcess.defaults.deactivateBrowserActionTitle, tabId: tab.tabObj.tabId })
       } else if (tab.isDeactivated()) {
-        browser.browserAction.setTitle({ title: BackgroundProcess.defaults.activateBrowserActionTitle, tabId: tab.tabObj.tabId })
+        browser.action.setTitle({ title: BackgroundProcess.defaults.activateBrowserActionTitle, tabId: tab.tabObj.tabId })
       }
     }
   }

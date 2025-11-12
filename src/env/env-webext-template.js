@@ -8,3 +8,5 @@ const auth0Env = {
   AUDIENCE: 'alpheios.net:apis',
   LOGOUT_URL: 'https://alpheios.net/pages/logout'
 }
+
+export default auth0Env

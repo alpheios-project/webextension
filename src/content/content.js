@@ -1,4 +1,5 @@
-/* global browser, BUILD_NUMBER, BUILD_NAME, BUILD_BRANCH */
+/* global browser, chrome, BUILD_NUMBER, BUILD_NAME, BUILD_BRANCH */
+// Helper function to wait for browser API to be available
 import Message from '@/lib/messaging/message/message.js'
 import ContentReadyMessage from '@/lib/messaging/message/content-ready-message.js'
 import EmbedLibMessage from '@/lib/messaging/message/embed-lib-message.js'
@@ -10,6 +11,34 @@ import {
   TabScript, AppController, ExtensionSyncStorage, HTMLPage, L10n, Locales, enUS, enGB,
   AuthModule, PanelModule, PopupModule, ToolbarModule, ActionPanelModule, Platform, Logger
 } from 'alpheios-components'
+
+function waitForBrowser (maxAttempts = 50, interval = 100) {
+  return new Promise((resolve, reject) => {
+    let attempts = 0
+    const checkBrowser = () => {
+      attempts++
+      // Check if browser is available (from polyfill or native)
+      if (typeof browser !== 'undefined' && browser.runtime) {
+        resolve(browser)
+      } else if (typeof window !== 'undefined' && window.browser && window.browser.runtime) {
+        globalThis.browser = window.browser
+        resolve(window.browser)
+      } else if (typeof chrome !== 'undefined' && chrome.runtime) {
+        // Fallback to chrome API - we'll use webextension-polyfill to convert it
+        // For now, create a minimal browser object from chrome
+        if (!globalThis.browser) {
+          globalThis.browser = chrome
+        }
+        resolve(globalThis.browser)
+      } else if (attempts >= maxAttempts) {
+        reject(new Error('browser API not available after maximum attempts'))
+      } else {
+        setTimeout(checkBrowser, interval)
+      }
+    }
+    checkBrowser()
+  })
+}
 
 let messagingService = null
 let appController = null
@@ -103,62 +132,69 @@ const handleStateRequest = function handleStateRequest (request) {
   sendResponseToBackground(request)
 }
 
-messagingService = new MessagingService()
-const browserManifest = browser.runtime.getManifest()
-let state = new TabScript() // eslint-disable-line prefer-const
-// A message with PENDING status do not cause background object state updates
-state.status = TabScript.statuses.script.PENDING
-state.setPanelDefault()
-state.setTabDefault()
-
-// Set an application's mode from URL params
-// If it is `dev` or `development`, an app will show additional options
-const url = new URL(window.location.href)
-let mode = url.searchParams.get('mode')
-mode = (['dev', 'development'].includes(mode)) ? 'development' : 'production'
-
-appController = AppController.create(state, {
-  storageAdapter: ExtensionSyncStorage,
-  app: { name: browserManifest.name, version: browserManifest.version, buildBranch: BUILD_BRANCH, buildNumber: BUILD_NUMBER, buildName: BUILD_NAME },
-  appType: Platform.appTypes.WEBEXTENSION,
-  mode: mode
-})
-// Do environment-specific initializations
-appController.registerModule(AuthModule, { auth: new BgAuthenticator(messagingService) })
-appController.registerModule(PanelModule, {
-  mountPoint: '#alpheios-panel' // To what element a panel will be mounted
-})
-appController.registerModule(PopupModule, {
-  mountPoint: '#alpheios-popup'
-})
-appController.registerModule(ToolbarModule)
-appController.registerModule(ActionPanelModule)
-
-// A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
-document.body.addEventListener('Alpheios_Embedded_Response', () => {
-  appController.state.setEmbedLibActiveStatus()
-  messagingService.sendMessageToBg(new EmbedLibMessage(appController.state))
-    .catch((error) => logger.error('Unable to send embed lib message to background', error))
-  if (appController.state.isActive()) {
-    const l10n = new L10n().addMessages(enUS, Locales.en_US).addMessages(enGB, Locales.en_GB).setLocale(Locales.en_US)
-    const embedLibWarning = AppController.getEmbedLibWarning(l10n.getMsg('EMBED_LIB_WARNING_TEXT'))
-    document.body.appendChild(embedLibWarning.$el)
-    appController.deactivate().catch((error) => logger.error(`Unable to deactivate Alpheios: ${error}`))
-  }
-})
-
-document.body.addEventListener('Alpheios_Reload', () => {
-  if (appController.state.isActive()) {
-    appController.deactivate().catch((error) => logger.error(`Unable to deactivate Alpheios: ${error}`))
-  }
-  window.location.reload()
-})
-
-appController.init()
+// Initialize content script after browser API is available
+waitForBrowser()
   .then(() => {
-    appController.state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
-    messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest, appController)
-    browser.runtime.onMessage.addListener(messagingService.listener.bind(messagingService))
-    sendContentReadyToBackground()
+    messagingService = new MessagingService()
+    const browserManifest = browser.runtime.getManifest()
+    let state = new TabScript() // eslint-disable-line prefer-const
+    // A message with PENDING status do not cause background object state updates
+    state.status = TabScript.statuses.script.PENDING
+    state.setPanelDefault()
+    state.setTabDefault()
+
+    // Set an application's mode from URL params
+    // If it is `dev` or `development`, an app will show additional options
+    const url = new URL(window.location.href)
+    let mode = url.searchParams.get('mode')
+    mode = (['dev', 'development'].includes(mode)) ? 'development' : 'production'
+
+    appController = AppController.create(state, {
+      storageAdapter: ExtensionSyncStorage,
+      app: { name: browserManifest.name, version: browserManifest.version, buildBranch: BUILD_BRANCH, buildNumber: BUILD_NUMBER, buildName: BUILD_NAME },
+      appType: Platform.appTypes.WEBEXTENSION,
+      mode: mode
+    })
+    // Do environment-specific initializations
+    appController.registerModule(AuthModule, { auth: new BgAuthenticator(messagingService) })
+    appController.registerModule(PanelModule, {
+      mountPoint: '#alpheios-panel' // To what element a panel will be mounted
+    })
+    appController.registerModule(PopupModule, {
+      mountPoint: '#alpheios-popup'
+    })
+    appController.registerModule(ToolbarModule)
+    appController.registerModule(ActionPanelModule)
+
+    // A notification from a embedded lib that it is present on a page. Upon receiving this we should destroy all Alpheios objects.
+    document.body.addEventListener('Alpheios_Embedded_Response', () => {
+      appController.state.setEmbedLibActiveStatus()
+      messagingService.sendMessageToBg(new EmbedLibMessage(appController.state))
+        .catch((error) => logger.error('Unable to send embed lib message to background', error))
+      if (appController.state.isActive()) {
+        const l10n = new L10n().addMessages(enUS, Locales.en_US).addMessages(enGB, Locales.en_GB).setLocale(Locales.en_US)
+        const embedLibWarning = AppController.getEmbedLibWarning(l10n.getMsg('EMBED_LIB_WARNING_TEXT'))
+        document.body.appendChild(embedLibWarning.$el)
+        appController.deactivate().catch((error) => logger.error(`Unable to deactivate Alpheios: ${error}`))
+      }
+    })
+
+    document.body.addEventListener('Alpheios_Reload', () => {
+      if (appController.state.isActive()) {
+        appController.deactivate().catch((error) => logger.error(`Unable to deactivate Alpheios: ${error}`))
+      }
+      window.location.reload()
+    })
+
+    appController.init()
+      .then(() => {
+        appController.state.setEmbedLibStatus(HTMLPage.isEmbedLibActive)
+        messagingService.addHandler(Message.types.STATE_REQUEST, handleStateRequest, appController)
+        browser.runtime.onMessage.addListener(messagingService.listener.bind(messagingService))
+        sendContentReadyToBackground()
+      })
+      .catch((error) => logger.error('Unable to activate Alpheios', error))
   })
-  .catch((error) => logger.error('Unable to activate Alpheios', error))
+  .catch((error) => {
+    console.error('Failed to initialize content script - browser API not available:', error)
+  })

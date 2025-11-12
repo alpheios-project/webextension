@@ -44,7 +44,7 @@ export default class Service extends BaseService {
     let requestInfo = new StoredOutgoingRequest(request) // eslint-disable-line prefer-const
     this.messages.set(request.ID, requestInfo)
     if (timeout) {
-      requestInfo.timeoutID = window.setTimeout((requestID) => {
+      requestInfo.timeoutID = globalThis.setTimeout((requestID) => {
         let requestInfo = this.messages.get(requestID) // eslint-disable-line prefer-const
         requestInfo.reject(new Error('Timeout has been expired'))
         this.messages.delete(requestID) // Remove from map
@@ -96,7 +96,7 @@ export default class Service extends BaseService {
     if (this.messages.has(responseMessage.requestID)) {
       const requestInfo = this.messages.get(responseMessage.requestID)
       const responseCode = ResponseMessage.responseCode(responseMessage)
-      window.clearTimeout(requestInfo.timeoutID) // Clear a timeout
+      globalThis.clearTimeout(requestInfo.timeoutID) // Clear a timeout
       if (responseCode === ResponseMessage.responseCodes.ERROR) {
         // There was an error
         if (!responseMessage.body.name) {
@@ -121,7 +121,7 @@ export default class Service extends BaseService {
   rejectRequest (requestID, error) {
     if (requestID && this.messages.has(requestID)) {
       let requestInfo = this.messages.get(requestID) // eslint-disable-line prefer-const
-      window.clearTimeout(requestInfo.timeoutID) // Clear a timeout
+      globalThis.clearTimeout(requestInfo.timeoutID) // Clear a timeout
       requestInfo.reject(error)
       this.messages.delete(requestID) // Remove request from a map
     }
